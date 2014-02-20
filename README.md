@@ -5,7 +5,6 @@ Gothic Mod Manager - Manage your modifications team, tasks and assets.
 
 
 Forum Thread (german): http://forum.worldofplayers.de/forum/threads/1295046-Gothic-Mod-Manager
-
 Gothic Reloaded Mod Website: http://www.gothic-reloaded-mod.de/
 
 
