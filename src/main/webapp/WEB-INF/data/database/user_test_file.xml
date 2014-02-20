@@ -1,0 +1,127 @@
+<gmm.util.LinkedList serialization="custom">
+  <unserializable-parents/>
+  <linked-list>
+    <default/>
+    <int>10</int>
+    <User id="1" idName="Rolf">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="2" idName="Kellendil">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="3" idName="ThielHater">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="4" idName="EvilTwin">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="5" idName="BlackBat">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="6" idName="Gnox">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="7" idName="AmProsius">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="8" idName="anselm">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="9" idName="NaikJoy">
+      <created>2013-10-28 01:57:17.52 UTC</created>
+      <passwordHash>123456</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email></email>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+    <User id="14" idName="testUser">
+      <created>2013-10-28 01:57:17.174 UTC</created>
+      <passwordHash>testPasswordHash</passwordHash>
+      <isAdmin>false</isAdmin>
+      <email>testEmail</email>
+      <oldNotifications class="linked-list">
+        <gmm.domain.Notification id="16">
+          <created>2013-10-28 01:57:17.175 UTC</created>
+          <text>testNotification2</text>
+        </gmm.domain.Notification>
+      </oldNotifications>
+      <newNotifications class="linked-list">
+        <gmm.domain.Notification id="15">
+          <created>2013-10-28 01:57:17.175 UTC</created>
+          <text>testNotification1</text>
+        </gmm.domain.Notification>
+      </newNotifications>
+      <sentNotificationsToMail>false</sentNotificationsToMail>
+      <daysToSaveNotifiations>30</daysToSaveNotifiations>
+      <maximumSavedNotifications>100</maximumSavedNotifications>
+    </User>
+  </linked-list>
+</gmm.util.LinkedList>

@@ -1,0 +1,167 @@
+/* //////////////////////////////////////////////////
+ * Additional "HTML tags" as CSS classes (mostly !important)
+ * //////////////////////////////////////////////////*/
+/*Input*/
+.button {
+	position:relative;
+	padding:3px;
+}
+
+
+/*Tab-Menus and tabs with borders*/
+.tabmenu .tab{
+	text-align:center;
+	position:relative;
+}
+.tabmenu .tab.activeTab{
+	border-bottom-width:0px	!important;
+}
+.tabmenu .tab:not(:first-child){
+	border-left-width:0px	!important;
+}
+.tabmenu .middle{
+	width:auto 				!important;
+	overflow:hidden			!important;
+	border-top-width: 0px	!important;
+}
+.tabbody{
+	border-top-width: 0px	!important;
+}
+
+/*Floating elements & Size/Positioning*/
+.left{float:left}
+.right{float:right}
+.clear{clear:both;}
+.table{display:table;}
+.tr{display:table-row;}
+.td{display:table-cell;}
+
+/*Alignment & Other*/
+.center, .button{text-align:center;}
+a span{
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	height:100%;
+}
+label, .button, .clickable{
+	cursor:pointer;
+}
+.input *{
+	font-family:Calibri, Verdana, Arial, sans-serif	!important;
+	font-size:inherit		!important;
+}
+
+
+/* //////////////////////////////////////////////////
+ * General style settings and colour sets
+ * //////////////////////////////////////////////////*/
+
+/*Default*/
+a {text-decoration: none;}
+a:link{color:inherit;}
+a:visited{color:inherit;}
+a:active{color:inherit;}/*orange*/
+a:hover{}
+.warning {
+	text-align: center;
+	border:6px solid red;
+	margin:10px 0px;
+	background-color:#000000;
+	font-size: large;
+	font-style: italic;
+}
+
+/*Text Size*/
+h1, .h1{font-size:x-large 	!important;}
+h2, .h2{font-size:1.33rem;	!important;}
+h3, .h3{font-size:1.14rem;	!important;}
+
+/*Inherited & font types*/
+html {	
+	font-family:Calibri, Verdana, Arial, sans-serif;
+	margin:0px;
+	padding:0px;
+	height:100%;
+}
+body {
+	font-size:0.9375em;
+	height:96%;
+}
+
+/*Colours Main Page*/
+.activePage{
+	color:#F6F6F6;
+	background-color:#151515;
+}
+.inactivePage{
+	color:#FFFFFF;
+	background-color:#999999;
+}
+.noPage{
+	color:#FFFFFF;
+	background-color:#EEEEEE;
+}
+.pageButton{
+	color:#000000;
+	background-color:#EEEEEE;
+}
+
+/*Colours Sub Page*/
+.activeSubpage{
+	color:#F6F6F6;
+	background-color:#145959;
+}
+.inactiveSubpage{
+	color:#DDDDDD;
+	background-color:#1E3636;
+}
+.noSubpage{
+	color:inherit;
+	background-color:inherit;
+}
+.listElement{
+	color:inherit;
+	background-color:#1A1A1A;
+}
+
+/* //////////////////////////////////////////////////
+ * Template Structure
+ * //////////////////////////////////////////////////*/
+
+/*Site position and size on screen*/
+#wrap {
+	width:93%;
+	margin:20px auto 0px;
+	height:90%;
+}
+
+#main {
+	margin-bottom:20px;
+	padding-bottom:50px;
+	min-height:100%;
+	overflow:hidden;
+}
+
+/*Sites main menu at the top: tabs and empty middle/in-between tab*/
+#top .tab{
+	width:17%;
+	min-width:5em;
+	max-width:10em;
+	height:30px;
+	padding:5px;
+	padding-top:7px;
+}
+
+#top .tab.middle{
+	/*padding-top:5px;/*padding from #top .tab + border-top-width*/
+	min-width:0em;
+	max-width:none;
+}
+
+#top .tab.activeTab{
+	/*padding-bottom:5px;*/
+}
+
+

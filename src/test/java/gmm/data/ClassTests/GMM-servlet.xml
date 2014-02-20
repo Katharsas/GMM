@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+    
+	<!-- the application context definition for the GMM DispatcherServlet -->
+	
+
+
+	<!-- reference messages from text_english.properties -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="messages"/>
+    </bean>
+	
+	<!-- activate annotations for controllers-->
+	<mvc:annotation-driven />
+	
+	<!-- InternalResourceViewResolver resolves the name given from controller to a file by using prefix and suffix -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+  		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+  		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+<!-- 	<bean id="userDetailsManager" -->
+<!-- 		class="org.springframework.security.provisioning.JdbcUserDetailsManager"> -->
+<!-- 	</bean> -->
+	
+<!-- 	<bean id="task" class="gmm.service.TaskFacade"> -->
+<!-- 	</bean> -->
+<!-- 	<bean id="comment" class="gmm.service.CommentFacade"> -->
+<!-- 	</bean> -->
+	
+	<!-- Scans the package gmm.web for classes with @Component annotations (controllers, ...)-->
+	<context:component-scan base-package="gmm" />
+	
+	
+	<bean id="dataLocation" class="java.lang.String">
+        <constructor-arg value="WEB-INF/data/"/>
+    </bean>
+    
+    <bean class="org.springframework.mock.web.MockServletContext"/>
+	
+</beans>
+

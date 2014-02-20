@@ -1,0 +1,236 @@
+.pageButton {
+	width:9em;
+	background-color:#333333;
+	color:#FFFFFF;
+}
+.filterGroup {
+	padding:5px;
+}
+
+/*Content/Body of the tasks tab*/
+#main{
+    padding-right:1.5%;
+}
+
+#generalArea{
+	margin:1em 0em;
+}
+
+.taskElement {
+	background-color:#333333;
+	padding:5px;
+	margin-right:20px;
+	margin-bottom:10px;
+}
+.taskDescription, .taskInput {
+	margin-bottom:5px;
+}
+
+.taskDescription {
+	width:5em;
+	float:left;
+}
+.taskInput {
+	min-width:20em;
+}
+.taskInput *{
+	min-width:75% !important;
+}
+
+.taskButtons {
+	margin:1em 0em;
+}
+#submitTaskButton {
+	margin-right:2em;
+}
+
+.filterGroup {
+}
+.filterBorder {
+	border:0px solid;
+	border-top-width: 5px;
+}
+
+.generalFilters{
+	width:9em;
+	margin-left:2px;
+	margin-right:13px;
+	margin-bottom:13%;
+}
+.generalFilters .filterGroup{
+	/*background-color:#3A5514;*/
+	background-color:#1E3636;
+}
+.generalFilters .filterBorder{
+	border-color:#202828;
+}
+
+.specificFilters{
+	width:9em;
+	margin-right:2px;
+	margin-left:13px;
+}
+
+
+.specificFilters .filterGroup{
+	background-color:#145959;
+}
+.specificFilters .filterBorder{
+	border-color:#1E3636;
+}
+
+
+#lists{
+	overflow:hidden;
+}
+
+#listsTop .tab{
+	width:33%;
+	height:30px;
+	padding-top:5px;
+}
+
+#listsMain {
+	/*min-height:500px;*/
+	padding:10px;
+	column-count:10;
+	column-width:460px;
+	column-gap:10px;
+	/*CSS3 (following can be removed later)*/
+	-moz-column-count:10;
+	-moz-column-width:460px;
+	-moz-column-gap:10px;
+	-webkit-column-count:10;
+	-webkit-column-width:460px;
+	-webkit-column-gap:10px;
+}
+
+#listsMain .listElement{
+	margin-top:5px;
+	padding:4px 6px;
+	border:0px solid #AAAAAA;
+	/*Using following only because avoid column-break-inside not working yet*/
+	/*Can be removed when avoid is working*/
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	width:100%;
+	display: inline-block;
+	/*Not working yet
+	column-break-inside: avoid;*/
+}
+
+.searchInputField, .searchSubmitButton {
+	width:33%;
+}
+.searchDescription, .searchInputField, .searchSubmitButton, .switchSearchButton {
+	margin-top:5px;
+}
+.switchSearchButton {
+	width:28%;
+	margin-right:5px;
+	color:#EEEEEE;
+	text-align:center;
+	padding:2px 0px;
+	background-color:333333;
+}
+.searchDescription {
+	width:16.5%;
+}
+.elementContent {
+	 word-wrap:break-word;
+	 max-width:100%;
+}
+
+.elementPriority{
+	margin-left:10px;
+	margin-top:3px;
+	height:1em;
+	width:1em;
+}
+.elementLabel{
+	padding-right:10px;
+	color:#CCCCCC;
+}
+.elementName{
+	padding-bottom:5px;
+}
+.elementAuthorDate{
+	margin-top:10px;
+	color:#999999;
+	font-size:0.7em;
+}
+.elementButton{
+	padding:0px;
+	font-size:0.85em;
+	margin:15px 10px 3px 0px;
+	width:6em;
+	color:#CCCCCC;
+	background-color:333333;
+}
+.elementButton.commentElement {
+	margin-left:3px;
+}
+
+.elementPriority.ULTRA{
+	background-color:#BB0044;
+}
+.elementPriority.HIGH{
+	background-color:red;
+}
+.elementPriority.MID{
+	background-color:orange;
+}
+.elementPriority.LOW{
+	background-color:#FFFFFF;
+}
+
+.elementDetails, .elementComments {
+	margin:5px;
+}
+.elementComments {
+	margin-top:7px;
+}
+.elementDetails, .subListElement {
+	color:#D5D5D5;
+	padding:0px 3px;
+	background-color:333333;
+}
+.subListElement{
+	margin-top:3px;
+}
+.subElementAuthor {
+	color:#FFFFFF;
+	margin-right:5px;
+	min-width:4.7em;
+}
+
+/* .taskInput *{ */
+/* 	width:20em				!important; */
+/* } */
+.commentInput {
+	margin-top:5px;
+}
+.commentInput .subElementText{
+	width:auto;
+	overflow:hidden;
+}
+#text {
+	background-color:#333333;
+	color:#D5D5D5;
+	width:100%				!important;
+}
+
+.elementDelete {
+	background-color:#000000;
+	border:3px solid red;
+}
+.elementDelete .deleteQuestion{
+	margin:6px;
+}
+.elementDelete .deleteButton{
+	margin:3px;
+	width:5em;
+	color:#000000;
+	background-color:#FFFFFF;
+}

@@ -1,0 +1,21 @@
+<%@ include file="/WEB-INF/jsp/include.jsp" %>
+
+<t:templateAll>
+
+	<jsp:attribute name="js">
+    	<script src="/GMM/javascript/admin.js" type="text/javascript"></script>
+    </jsp:attribute>
+	<jsp:attribute name="css">
+    	<link id="css_link" href="/GMM/css/admin.css" media="screen" rel="stylesheet" type="text/css" />
+    </jsp:attribute>
+    
+    
+    <jsp:body>
+        <div>
+        	<div class="button pageButton" onclick="saveTasks()">save Tasks</div>
+        	<div class="button pageButton" onclick="loadTasks()">load Tasks</div>
+        </div>
+        
+        
+    </jsp:body>
+</t:templateAll>
