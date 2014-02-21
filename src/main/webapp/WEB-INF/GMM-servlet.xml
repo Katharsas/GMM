@@ -15,9 +15,12 @@
 
 
 	<!-- reference messages from text_english.properties -->
-    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
-        <property name="basename" value="messages"/>
-    </bean>
+    <bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>messages</value>
+		</property>
+	</bean>
 	
 	<!-- activate annotations for controllers-->
 	<mvc:annotation-driven />
