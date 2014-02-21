@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<title>Developers Environment Setup Guide</title>
+		<meta name="Jan Mothes"/>
+	</head>
+
+	<body>
+		<div style="margin:30px;">
+			<h2>Developers Environment Setup Guide</h2>
+			<div style="border:1px solid grey;padding:20px;">
+			
+			
+				<h3>1. SCM Setup</h3>
+				<p>
+				The Project is distributed via Git and hosted by GitHub.</br>
+				=> GitHub Homepage: <a href="https://github.com/">https://github.com/</a>
+				</p>
+				<p>
+				I recommend using the official GitHub Client for Windows or Mac, which can be found on the GitHub Homepage. Go to the clients options and set the directory for your local GitHub projects as you like. To clone the repository to your local GitHub client, just open the projects <a href="https://github.com/Katharsas/GMM">URL</a>
+				and drag and drop the URL from your browser into the GitHub client.</br>
+				To commit changes, you need a GitHub account. This account can get permission to commit changes by the project owner (me).
+				</p>
+				
+				
+				<br/><br/>
+				<h3>2. IDE Setup</h3>
+				<p>
+				As this project is an Apache Maven web application written in Java, so your IDE should support Maven.
+				I recommend using the Eclipse IDE for Java EE Developers, which an be found at 
+				<a href="https://www.eclipse.org/downloads/">www.eclipse.org/downloads/</a>. It includes maven integration via m2e by default.
+				</p>
+				<p>
+				To import the project into Eclipse, choose:<b>
+				File -> Import -> Maven -> Existing maven projects -> Next</b>
+				</p>
+				<p>
+				Select the folder of your local git project repository that your created in the SCM Setup. If you used the GitHub official client, the path to the project folder can be found in the clients options. Make sure the pom.xml of the project is selected and hit <b>Finish</b>. The project should now appear in your project explorer.
+				</p>
+				
+				<br/><br/>
+				<h3>3. Run the project</h3>
+				<p>
+				Make sure Eclipse has access to the internet. To test that, you can access the Eclipse Marketplace in Eclipse via <b>Help -> Eclipse Marketplace</b>
+				</p>
+				<p>
+				<b>Rightclick</b> on the eclipse project and hit <b>Maven -> Update Project...</b><br/> Make sure Offline is NOT selected, but everything else is selected. Then hit <b>OK</b>.You should do this whenever the pom.xml changes.
+				</p>
+				<p>
+				<b>Rightclick</b> on the eclipse project and hit <b>Run As -> Maven Build...</b><br>
+				Type <b>tomcat7:run</b> and select the Skip Tests option. Hit <b>Apply</b> and <b>Run</b>. You should now see the console logging output from the embedded tomcat server starting up and initializing the project servlet.
+				<p>
+				<p>
+				Open your browser and type <b>localhost:8080/GMM</b> in the browsers adress bar.
+				You should now see the applications login screen.
+				</p>
+			</div>
+		</div>
+	</body>
+
+</html>
