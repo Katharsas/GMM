@@ -2,16 +2,17 @@ package gmm.domain;
 
 
 import java.util.Collection;
+import java.util.Objects;
+
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public abstract class NamedObject extends UniqueObject{
 
 	@XStreamAsAttribute
-	private String idName;
+	private String name;
 	
-	public NamedObject(String idName) {
-		if (idName==null) throw new NullPointerException();
-		this.idName = idName;
+	public NamedObject(String name) {
+		setName(name);
 	}
 	
 	/**
@@ -22,9 +23,9 @@ public abstract class NamedObject extends UniqueObject{
 	 * @return
 	 */
 	public static <N extends NamedObject> N getFromName(Collection<N> c, String name) {
-		if (c==null) throw new NullPointerException();
+		Objects.requireNonNull(c);
 		for(N n : c) {
-			if(n.getIdName().equals(name)) return n;
+			if(n.getName().equals(name)) return n;
 		}
 		return null;
 	}
@@ -33,21 +34,22 @@ public abstract class NamedObject extends UniqueObject{
 	public boolean equals(Object o) {
 		if((o!=null) && o instanceof NamedObject){
 			NamedObject p = (NamedObject) o;
-    		return getIdName().equals(p.getIdName());
+    		return getName().equals(p.getName());
     	}
     	return false;
 	}
 
-	public String getIdName() {
-		return idName;
+	public String getName() {
+		return name;
 	}
 
-	protected void setIdName(String idName) {
-		this.idName = idName;
+	public void setName(String idName) {
+		Objects.requireNonNull(idName);
+		this.name = idName;
 	}
 	
 	@Override
 	public String toString() {
-		return getIdName();
+		return getName();
 	}
 }

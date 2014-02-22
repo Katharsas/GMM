@@ -1,4 +1,4 @@
-package gmm.data.ClassTests;
+package gmm.service.data.ClassTests;
 
 import static org.junit.Assert.*;
 
@@ -19,7 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="GMM-servlet.xml")
+@ContextConfiguration(locations="XMLSerializerServiceTest-Context.xml")
 public class XMLSerializerServiceTest {
 
 	@Autowired

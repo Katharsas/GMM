@@ -93,6 +93,7 @@
 #listsMain {
 	/*min-height:500px;*/
 	padding:10px;
+/* 	width:100%; */
 	column-count:10;
 	column-width:460px;
 	column-gap:10px;

@@ -27,11 +27,16 @@ import org.springframework.web.bind.support.SessionStatus;
 
 import javax.servlet.http.HttpSession;
 
+/** Logging */
+import org.apache.juli.logging.Log;
+import org.apache.juli.logging.LogFactory;
+
 
 /** java */
 import java.security.Principal;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 
 /* project */
 import gmm.domain.*;
@@ -73,7 +78,7 @@ import gmm.util.*;
 @Scope("session")
 @Controller
 public class TaskController {
-//	private final Log logger = LogFactory.getLog(getClass());
+	private final Log logger = LogFactory.getLog(getClass());
 	private List<? extends Task> tasks;
 	
 	@Autowired

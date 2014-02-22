@@ -1,4 +1,4 @@
-package gmm.data.ClassTests;
+package gmm.service.data.ClassTests;
 
 import static org.junit.Assert.*;
 import gmm.service.data.DataConfigService;

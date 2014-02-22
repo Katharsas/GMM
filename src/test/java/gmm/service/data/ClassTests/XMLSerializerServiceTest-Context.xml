@@ -46,7 +46,8 @@
         <constructor-arg value="WEB-INF/data/"/>
     </bean>
     
-    <bean class="org.springframework.mock.web.MockServletContext"/>
+<!--     <bean class="org.springframework.mock.web.MockServletContext"/> -->
+	<bean id="applicationContextProvider" class="gmm.service.ApplicationContextProvider"></bean>
 	
 </beans>
 

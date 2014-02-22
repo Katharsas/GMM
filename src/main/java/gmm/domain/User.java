@@ -2,6 +2,9 @@ package gmm.domain;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public class User extends NamedObject {
 	
@@ -9,7 +12,9 @@ public class User extends NamedObject {
 	//Domain - Set by constructor
 	private String passwordHash;
 	//Domain - Default
+	@XStreamAsAttribute
 	private boolean isAdmin=false;
+	@XStreamAsAttribute
 	private String email="";
 	final private List<Notification> oldNotifications = new LinkedList<Notification>();;
 	final private List<Notification> newNotifications = new LinkedList<Notification>();
@@ -24,15 +29,14 @@ public class User extends NamedObject {
 	 * @param idName - Identificator (name) of the user.
 	 * @param passwordHash - The users password hash.
 	 */
-	public User(String idName, String passwordHash) {
-		super(idName);
-		if (passwordHash==null) throw new NullPointerException();
-		this.passwordHash = passwordHash;
+	public User(String name, String passwordHash) {
+		super(name);
+		setPasswordHash(passwordHash);
 	}
 	
 	//Setters, Getters---------------------------------------
 	public void setPasswordHash(String passwordHash) {
-		if (passwordHash==null) throw new NullPointerException();
+		Objects.requireNonNull(passwordHash);
 		this.passwordHash = passwordHash;
 	}
 	public String getPasswordHash() {
@@ -47,9 +51,10 @@ public class User extends NamedObject {
 	}
 
 	public void setEmail(String email) {
-		if (email==null) throw new NullPointerException();
+		Objects.requireNonNull(email);
 		this.email = email;
 	}
+	
 	public String getEmail() {
 		return email;
 	}
@@ -59,13 +64,5 @@ public class User extends NamedObject {
 	}
 	public List<Notification> getNewNotifications() {
 		return newNotifications;
-	}
-
-	public String getName() {
-		return getIdName();
-	}
-
-	public void setName(String name) {
-		setIdName(name);
 	}
 }

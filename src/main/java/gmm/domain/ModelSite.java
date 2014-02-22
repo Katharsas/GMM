@@ -7,6 +7,6 @@ public class ModelSite extends NamedObject{
 	}
 	
 	public String getSite() {
-		return getIdName();
+		return getName();
 	}
 }

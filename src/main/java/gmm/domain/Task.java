@@ -4,37 +4,35 @@ import gmm.service.converters.UserReferenceConverter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
 
-public class Task extends UniqueObject{
+public class Task extends NamedObject{
 	
 	//Variables--------------------------------------------------
-	//Domain - Set by constructor
 	@XStreamAsAttribute
 	private String name;
 	@XStreamConverter(UserReferenceConverter.class)
 	private User author;
-	//Domain - Default
+	@XStreamConverter(UserReferenceConverter.class)
 	private User assigned = null;
 	private String details = "";
 	private String label="";
+	@XStreamAsAttribute
 	private Priority priority = Priority.MID;
+	@XStreamAsAttribute
 	private TaskStatus taskStatus = TaskStatus.TODO;
-	@XStreamImplicit
+	
 	final private List<Comment> comments = new LinkedList<Comment>();
-	@XStreamImplicit(itemFieldName="dependsOn")
 	final private List<Task> dependsOn = new LinkedList<Task>();
-	@XStreamImplicit(itemFieldName="dependencyFor")
 	final private List<Task> dependencyFor = new LinkedList<Task>();
 	
 	//Methods--------------------------------------------------------
 	public Task(String name, User author) {
-		super();
-		if(name==null || author==null) throw new NullPointerException();
-		this.name = name;
+		super(name);
+		Objects.requireNonNull(author);
 		this.author = author;
 	}
 	
@@ -43,13 +41,6 @@ public class Task extends UniqueObject{
 		return label+": "+name+" by "+author.toString(); 
 	}
 	//Setters, Getters-------------------------------------------
-	public void setName(String idName) {
-		if (idName==null) throw new NullPointerException();
-		this.name = idName;
-	}
-	public String getName() {
-		return name;
-	}
 	public void setDetails(String details) {
 		if (details==null) throw new NullPointerException();
 		this.details = details;
