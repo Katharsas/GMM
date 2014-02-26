@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import gmm.domain.*;
 import gmm.util.LinkedList;
 import gmm.util.List;
+import gmm.util.HashSet;
+import gmm.util.Set;
 
 @Service
 public class DataBase implements DataAccess {
@@ -27,8 +29,8 @@ public class DataBase implements DataAccess {
 	final private List<TextureTask> textureTasks = new LinkedList<TextureTask>();
 	final private List<ModelTask> modelTasks = new LinkedList<ModelTask>();
 	
-	final private List<String> taskLabels = new LinkedList<String>();
-	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
+	final private Set<Label> taskLabels = new HashSet<Label>();
+//	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
 	
 	public DataBase(){
 		//add somehow users, usually from xml
@@ -59,10 +61,10 @@ public class DataBase implements DataAccess {
 	private void testFill(){
 		
 		//DO NOT CHANGE ANYMORE!
-		modelSites.add(new ModelSite("OldCamp"));
-		modelSites.add(new ModelSite("NewCamp"));
-		modelSites.add(new ModelSite("Surface"));
-		modelSites.add(new ModelSite("OldMine"));
+//		modelSites.add(new ModelSite("OldCamp"));
+//		modelSites.add(new ModelSite("NewCamp"));
+//		modelSites.add(new ModelSite("Surface"));
+//		modelSites.add(new ModelSite("OldMine"));
 		//DO NOT CHANGE ANYMORE!
 	}
 	
@@ -122,10 +124,6 @@ public class DataBase implements DataAccess {
 					return (List<T>) textureTasks;
 				case "ModelTask":
 					return (List<T>) modelTasks;
-				case "String":
-					return (List<T>) taskLabels;
-				case "ModelSite":
-					return (List<T>) modelSites;
 				default:
 					throw new UnsupportedOperationException();
 			}
@@ -133,5 +131,27 @@ public class DataBase implements DataAccess {
 			System.err.println("Database Error: Request for class type: "+clazz.getSimpleName()+" not implemented!");
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	public List<User> getUsers() {
+		return users.clone();
+	}
+	
+	public List<Task> getGeneralTasks() {
+		List<Task> result = generalTasks.clone();
+		result.addAll(generalFileTasks);
+		return result;
+	}
+	
+	public List<TextureTask> getTextureTasks() {
+		return textureTasks.clone();
+	}
+	
+	public List<ModelTask> getModelTasks() {
+		return modelTasks.clone();
+	}
+	
+	public Set<Label> getLabels() {
+		return taskLabels.clone();
 	}
 }

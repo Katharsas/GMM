@@ -12,8 +12,6 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	}
 
 	public LinkedList<E> clone() {
-		LinkedList<E> buffer = new LinkedList<E>();
-		buffer.addAll(this);
-		return buffer;
+		return new LinkedList<E>(this);
 	}
 }

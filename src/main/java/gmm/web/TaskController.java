@@ -2,7 +2,6 @@ package gmm.web;
 
 /** Controller class & ModelAndView */
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 /** Annotations */
@@ -36,13 +35,10 @@ import org.apache.juli.logging.LogFactory;
 import java.security.Principal;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Objects;
 
 /* project */
 import gmm.domain.*;
-import gmm.service.*;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataBase;
 import gmm.service.data.DataBaseFilter;
 import gmm.service.data.DataFilter;
 import gmm.service.forms.CommentFacade;
@@ -314,7 +310,7 @@ public class TaskController {
 		}
 	    model.put("taskList", tasks);
 	    model.put("users", data.getList(User.class));
-	    model.put("taskLabels", data.getList(String.class));
+	    model.put("taskLabels", data.getLabels());
 	    model.put("taskStatuses", TaskStatus.values());
 	    model.put("priorities", Priority.values());
 	    model.put("tab", tab);
@@ -330,37 +326,14 @@ public class TaskController {
 		return idNumber.matches("[0-9]+");
 	}
 	
-	private <T extends Task> List<T> getTaskList (String tab) {
+	private List<? extends Task> getTaskList (String tab) {
 		switch(tab) {
 		case "textures":
-			return (List<T>) data.getList(TextureTask.class);
+			return data.getTextureTasks();
 		case "models":
-			return (List<T>) data.getList(ModelTask.class);
+			return data.getModelTasks();
 		case "general":
-			List<Task> taskList = data.getList(Task.class);
-			taskList.addAll(data.getList(FileTask.class));
-			return (List<T>) taskList;
-		case "all":
-			List<Task> taskList2 = getTaskList("general");
-			taskList2.addAll(getTaskList("textures"));
-			taskList2.addAll(getTaskList("models"));
-			return (List<T>) taskList2;
-		default:
-			System.err.println("TaskController Error: Wrong tab name!");
-			throw new UnsupportedOperationException();
-		}
-	}
-	
-	private Class<?> getClass(String tab) {
-		switch(tab) {
-		case "textures":
-			return TextureTask.class;
-		case "models":
-			return ModelTask.class;
-		case "general":
-			return Task.class;
-		case "all":
-			return getClass("general");
+			return data.getGeneralTasks();
 		default:
 			System.err.println("TaskController Error: Wrong tab name!");
 			throw new UnsupportedOperationException();

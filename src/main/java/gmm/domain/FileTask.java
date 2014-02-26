@@ -3,6 +3,7 @@ package gmm.domain;
 import java.util.LinkedList;
 import java.util.List;
 
+@Deprecated
 public class FileTask extends Task {
 
 	//Variables------------------------------------------

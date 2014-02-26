@@ -2,7 +2,7 @@ package gmm.domain;
 
 import java.net.URI;
 
-
+@Deprecated
 @SuppressWarnings("serial")
 public class File extends java.io.File {
 	
