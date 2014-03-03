@@ -10,3 +10,6 @@ Gothic Reloaded Mod Website: http://www.gothic-reloaded-mod.de/
 
 
 This is an web application for managing big amounts of tasks and assets. It's is specialized towards modification projects for the PC game "Gothic" from the german developer studio "Piranha Bytes".
+
+
+More information here: https://github.com/Katharsas/GMM/wiki
