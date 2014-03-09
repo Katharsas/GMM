@@ -2,25 +2,32 @@ package gmm.web;
 
 
 /** Controller class & ModelAndView */
+import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 /** Annotations */
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import gmm.domain.GeneralTask;
 import gmm.domain.Task;
 import gmm.service.data.DataAccess;
+
+
 
 /** javax.servlets */
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
+
 /** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+
+
 
 
 
@@ -54,13 +61,19 @@ public class AdminController {
 	
 	@RequestMapping(value = {"/admin.htm/saveTasks.htm"} , method = RequestMethod.GET)
 	public ModelAndView saveTasks() {
-		data.saveData(Task.class);
+		data.saveData(GeneralTask.class);
 		return new ModelAndView("redirect:/admin.htm");
 	}
 	
 	@RequestMapping(value = {"/admin.htm/loadTasks.htm"} , method = RequestMethod.GET)
 	public ModelAndView loadTasks() {
-		data.loadData(Task.class);
+		data.loadData(GeneralTask.class);
 		return new ModelAndView("redirect:/admin.htm");
+	}
+	
+	@RequestMapping(value = {"/admin.htm/test.htm"} , method = RequestMethod.POST)
+	public String testFileTree(ModelMap model) {
+		System.out.println("Directory Tree controller method hit successfully!");
+		return "jqueryFileTree";
 	}
 }

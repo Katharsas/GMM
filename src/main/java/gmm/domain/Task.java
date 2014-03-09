@@ -9,7 +9,7 @@ import java.util.Objects;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
-public class Task extends NamedObject{
+public abstract class Task extends NamedObject{
 	
 	//Variables--------------------------------------------------
 	@XStreamAsAttribute

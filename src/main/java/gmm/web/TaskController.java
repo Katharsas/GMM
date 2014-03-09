@@ -75,7 +75,7 @@ import gmm.util.*;
 @Controller
 public class TaskController {
 	private final Log logger = LogFactory.getLog(getClass());
-	private List<? extends Task> tasks;
+	private Collection<? extends Task> tasks;
 	
 	@Autowired
 	DataAccess data;
@@ -98,7 +98,7 @@ public class TaskController {
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) return new ModelAndView("redirect:/tasks.htm/reset.htm?tab=general");
 		tasks = getTaskList(tab);
-		List<User> users = data.getList(User.class);
+		Collection<User> users = data.getList(User.class);
 		User user = User.getFromName(users, principal.getName());
 		DataFilter<Task> filter = new DataBaseFilter<Task>();
 		filter.setOnlyFilterEqual(true);
@@ -231,15 +231,15 @@ public class TaskController {
 			@ModelAttribute("task") TaskFacade facade,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		List<User> users = data.getList(User.class);
+		Collection<User> users = data.getList(User.class);
 		User user = User.getFromName(users, principal.getName());
-		Task task;
+		GeneralTask task;
 		if (validateId(edit)) {
-			task = UniqueObject.getFromId(getTaskList("all"), edit);
+			task = UniqueObject.getFromId(data.getList(GeneralTask.class), edit);
 			task.setName(facade.getIdName());
 		}
 		else {
-			task = new Task(facade.getIdName(), user);
+			task = new GeneralTask(facade.getIdName(), user);
 		}
 		task.setPriority(facade.getPriority());
 		task.setTaskStatus(facade.getStatus());
@@ -247,8 +247,9 @@ public class TaskController {
 		task.setLabel(facade.getLabel());
 		User assigned = facade.getAssigned().equals("") ? null : User.getFromName(users, facade.getAssigned());
 		task.setAssigned(assigned);
-		if(!facade.getLabel().equals("") && !data.getList(String.class).contains(facade.getLabel())) {
-			data.addData(facade.getLabel());
+		String label = facade.getLabel();
+		if(!label.equals("")) {
+			data.addData(new Label(label));
 		}
 		facade.setDefaultState();
 		if (validateId(edit)) {
@@ -300,7 +301,7 @@ public class TaskController {
 			facade.setDefaultState();
 		}
 		else if (validateId(edit)) {
-			Task task = UniqueObject.getFromId(getTaskList("all"), edit);
+			Task task = UniqueObject.getFromId(getTaskList("general"), edit);
 			facade.setIdName(task.getName());
 			facade.setDetails(task.getDetails());
 			facade.setStatus(task.getTaskStatus());
@@ -310,7 +311,7 @@ public class TaskController {
 		}
 	    model.put("taskList", tasks);
 	    model.put("users", data.getList(User.class));
-	    model.put("taskLabels", data.getLabels());
+	    model.put("taskLabels", data.getList(Label.class));
 	    model.put("taskStatuses", TaskStatus.values());
 	    model.put("priorities", Priority.values());
 	    model.put("tab", tab);
@@ -326,14 +327,14 @@ public class TaskController {
 		return idNumber.matches("[0-9]+");
 	}
 	
-	private List<? extends Task> getTaskList (String tab) {
+	private Collection<? extends Task> getTaskList (String tab) {
 		switch(tab) {
 		case "textures":
-			return data.getTextureTasks();
+			return data.<TextureTask>getList(TextureTask.class);
 		case "models":
-			return data.getModelTasks();
+			return data.<ModelTask>getList(ModelTask.class);
 		case "general":
-			return data.getGeneralTasks();
+			return data.<GeneralTask>getList(GeneralTask.class);
 		default:
 			System.err.println("TaskController Error: Wrong tab name!");
 			throw new UnsupportedOperationException();

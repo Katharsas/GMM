@@ -16,6 +16,7 @@ import gmm.util.LinkedList;
 import gmm.util.List;
 import gmm.util.HashSet;
 import gmm.util.Set;
+import gmm.util.Collection;
 
 @Service
 public class DataBase implements DataAccess {
@@ -24,8 +25,8 @@ public class DataBase implements DataAccess {
 	XMLSerializerService xmlService;
 
 	final private List<User> users = new LinkedList<User>();
-	final private List<Task> generalTasks = new LinkedList<Task>();
-	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
+	final private List<GeneralTask> generalTasks = new LinkedList<GeneralTask>();
+//	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
 	final private List<TextureTask> textureTasks = new LinkedList<TextureTask>();
 	final private List<ModelTask> modelTasks = new LinkedList<ModelTask>();
 	
@@ -69,8 +70,8 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T> List<T> getList(Class<T> clazz) {
-		return getDataList(clazz).clone();
+	public synchronized <T> Collection<T> getList(Class<T> clazz) {
+		return this.<T>getDataList(clazz).clone();
 	}
 
 	@Override
@@ -79,10 +80,11 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T> boolean addAllData(List<T> data) {
+	public synchronized <T> boolean addAllData(Class<T> clazz, Collection<? extends T> data) {
+		Collection<T> collection = getDataList(clazz);
 		boolean buffer = true;
 		for(T t : data) {
-			buffer = addData(t) && buffer;
+			buffer = collection.add(t) && buffer;
 		}
 		return buffer;
 	}
@@ -93,7 +95,7 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T> void removeAllData(Class<T> clazz) {
+	public synchronized void removeAllData(Class<?> clazz) {
 		getDataList(clazz).clear();
 	}
 	
@@ -106,52 +108,30 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T> void loadData(Class<T> clazz) {
 		removeAllData(clazz);
-		List<T> data = (List<T>) xmlService.deserialize(clazz.getSimpleName()+"List");
-		addAllData(data);
+		List<? extends T> data = (List<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
+		addAllData(clazz, data);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> List<T> getDataList(Class<? extends T> clazz) {
+	private <T> Collection<T> getDataList(Class<?> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":
 					return (List<T>) users;
-				case "Task":
+				case "GeneralTask":
 					return (List<T>) generalTasks;
-				case "FileTask":
-					return (List<T>) generalFileTasks;
 				case "TextureTask":
 					return (List<T>) textureTasks;
 				case "ModelTask":
 					return (List<T>) modelTasks;
+				case "Label":
+					return (Set<T>) taskLabels;
 				default:
 					throw new UnsupportedOperationException();
 			}
 		} catch (UnsupportedOperationException e) {
-			System.err.println("Database Error: Request for class type: "+clazz.getSimpleName()+" not implemented!");
+			System.err.println("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
 			throw new UnsupportedOperationException();
 		}
-	}
-	
-	public List<User> getUsers() {
-		return users.clone();
-	}
-	
-	public List<Task> getGeneralTasks() {
-		List<Task> result = generalTasks.clone();
-		result.addAll(generalFileTasks);
-		return result;
-	}
-	
-	public List<TextureTask> getTextureTasks() {
-		return textureTasks.clone();
-	}
-	
-	public List<ModelTask> getModelTasks() {
-		return modelTasks.clone();
-	}
-	
-	public Set<Label> getLabels() {
-		return taskLabels.clone();
 	}
 }

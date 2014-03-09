@@ -8,11 +8,19 @@ function loadTasks() {
 }
 
 $(document).ready( function() {
-    $('#fileTreeContainer').fileTree(
-    		{
-    			root : '/',
-    			script : 'jqueryFileTree.jsp'
-    		}, function(file) {
-        alert(file);
-    });
+//    $('#fileTreeContainer').fileTree(
+//    		{
+//    			root : '/',
+//    			script : 'jqueryFileTree.jsp'
+//    		}, function(file) {
+//        alert(file);
+//    });
+	
+	 $('#fileTreeContainer').fileTree(
+	    		{
+	    			root : '/TEMP/',
+	    			script : 'admin.htm/test.htm'
+	    		}, function(file) {
+	        alert(file);
+	    });
 });

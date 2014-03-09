@@ -7,7 +7,8 @@
   * Copyright 2008 Joshua Gould
   * 21 April 2008
 */	
-    String dir = request.getParameter("dir");
+//     String dir = request.getParameter("dir");
+	String dir = "/Users/";
     if (dir == null) {
     	return;
     }

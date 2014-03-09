@@ -3,15 +3,14 @@
   <linked-list>
     <default/>
     <int>1</int>
-    <Task id="27" name="test" priority="MID" taskStatus="TODO">
-      <created>2014-02-22 02:02:07.945 UTC</created>
-      <author id="15" name="Kellendil"/>
-      <assigned id="15" name="Kellendil"/>
-      <details></details>
-      <label></label>
+    <GeneralTask id="19" name="test" priority="MID" taskStatus="TODO">
+      <created>2014-03-09 20:38:39.388 UTC</created>
+      <author id="11" name="Kellendil"/>
+      <details>test</details>
+      <label>test</label>
       <comments class="linked-list"/>
       <dependsOn class="linked-list"/>
       <dependencyFor class="linked-list"/>
-    </Task>
+    </GeneralTask>
   </linked-list>
 </gmm.util.LinkedList>
