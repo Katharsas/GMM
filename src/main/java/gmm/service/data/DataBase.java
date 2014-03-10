@@ -25,10 +25,10 @@ public class DataBase implements DataAccess {
 	XMLSerializerService xmlService;
 
 	final private List<User> users = new LinkedList<User>();
-	final private List<GeneralTask> generalTasks = new LinkedList<GeneralTask>();
+	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
 //	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
-	final private List<TextureTask> textureTasks = new LinkedList<TextureTask>();
-	final private List<ModelTask> modelTasks = new LinkedList<ModelTask>();
+	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
+	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
 	
 	final private Set<Label> taskLabels = new HashSet<Label>();
 //	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
@@ -107,7 +107,6 @@ public class DataBase implements DataAccess {
 	@SuppressWarnings("unchecked")
 	@Override
 	public synchronized <T> void loadData(Class<T> clazz) {
-		removeAllData(clazz);
 		List<? extends T> data = (List<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
 		addAllData(clazz, data);
 	}
@@ -117,15 +116,15 @@ public class DataBase implements DataAccess {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":
-					return (List<T>) users;
+					return (Collection<T>) users;
 				case "GeneralTask":
-					return (List<T>) generalTasks;
+					return (Collection<T>) generalTasks;
 				case "TextureTask":
-					return (List<T>) textureTasks;
+					return (Collection<T>) textureTasks;
 				case "ModelTask":
-					return (List<T>) modelTasks;
+					return (Collection<T>) modelTasks;
 				case "Label":
-					return (Set<T>) taskLabels;
+					return (Collection<T>) taskLabels;
 				default:
 					throw new UnsupportedOperationException();
 			}

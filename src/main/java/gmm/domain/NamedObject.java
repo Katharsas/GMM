@@ -29,15 +29,6 @@ public abstract class NamedObject extends UniqueObject{
 		}
 		return null;
 	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if((o!=null) && o instanceof NamedObject){
-			NamedObject p = (NamedObject) o;
-    		return getName().equals(p.getName());
-    	}
-    	return false;
-	}
 
 	public String getName() {
 		return name;

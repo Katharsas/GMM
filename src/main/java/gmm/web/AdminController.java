@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import gmm.domain.GeneralTask;
-import gmm.domain.Task;
 import gmm.service.data.DataAccess;
 
 
@@ -95,6 +94,12 @@ public class AdminController {
 	@RequestMapping(value = {"/admin.htm/loadTasks.htm"} , method = RequestMethod.GET)
 	public ModelAndView loadTasks() {
 		data.loadData(GeneralTask.class);
+		return new ModelAndView("redirect:/admin.htm");
+	}
+	
+	@RequestMapping(value = {"/admin.htm/deleteTasks.htm"} , method = RequestMethod.GET)
+	public ModelAndView deleteTasks() {
+		data.removeAllData(GeneralTask.class);
 		return new ModelAndView("redirect:/admin.htm");
 	}
 	

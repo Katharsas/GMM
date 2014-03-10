@@ -15,13 +15,16 @@
     
     
     <jsp:body>
-        <div>
+    	<div class="groupDescriptor">DataBase Operations</div>
+        <div class="adminElementGroup">
         	<div class="button pageButton" onclick="saveTasks()">save Tasks</div>
         	<div class="button pageButton" onclick="loadTasks()">load Tasks</div>
-        	<div id="fileTreeContainer" style="background-color:white;margin:40px;">
-        	</div>
+        	<div class="button pageButton" onclick="deleteTasks()">delete Tasks</div>
         </div>
-        
+        <div class="groupDescriptor">Import Assets</div>
+        <div class="adminElementGroup">
+        	<div id="fileTreeContainer" style="background-color:white;margin:40px;"></div>
+        </div>
         
     </jsp:body>
 </t:templateAll>

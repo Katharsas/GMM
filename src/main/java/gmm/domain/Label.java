@@ -1,13 +1,16 @@
 package gmm.domain;
 
+import java.util.Objects;
+
 public class Label {
 	private final String label;
 	public Label(String label) {
+		Objects.requireNonNull(label);
 		this.label = label;
 	}
 	@Override
 	public int hashCode() {
-		return (label == null) ? 0 : label.hashCode();
+		return label.hashCode();
 	}
 	@Override
 	public boolean equals(Object obj) {

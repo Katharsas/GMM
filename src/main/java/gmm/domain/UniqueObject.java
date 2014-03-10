@@ -34,6 +34,11 @@ public abstract class UniqueObject implements Linkable{
 	}
 	
 	@Override
+	public int hashCode() {
+		return getIdLink().hashCode();
+	}
+	
+	@Override
 	public boolean equals(Object o) {
 		if((o!=null) && o instanceof UniqueObject){
 			UniqueObject p = (UniqueObject) o;
