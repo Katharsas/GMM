@@ -24,10 +24,10 @@ public class DataConfigService {
 	public String DATA_CURRENT;
 	public String DATA_BACKUP;
 	
-	public String PROJECT_ORIGINAL_FILES;
-	public String PROJECT_NEW_FILES;
-	public String PROJECT_UPLOADED_FILES;
-	public String PROJECT_BACKUP;
+	public String ASSETS_ORIGINAL;
+	public String ASSETS_NEW;
+	public String ASSETS_NEW_BACKUP;
+	public String UPLOAD;
 	
 	@PostConstruct
 	private void setUpConfigService() {
@@ -51,9 +51,10 @@ public class DataConfigService {
 		}
 		DATA_CURRENT = basePath+property.getProperty("database_current_path");
 		DATA_BACKUP = basePath+property.getProperty("database_autobackup_path");
-		PROJECT_ORIGINAL_FILES = basePath+property.getProperty("filedirectory_original_path");
-		PROJECT_NEW_FILES = basePath+property.getProperty("filedirectory_new_path");
-		PROJECT_UPLOADED_FILES = basePath+property.getProperty("filedirectory_upload_path");
-		PROJECT_BACKUP = basePath+property.getProperty("filedirectory_new_autobackup_path");
+		ASSETS_ORIGINAL = basePath+property.getProperty("filedirectory_original_path");
+		ASSETS_NEW = basePath+property.getProperty("filedirectory_new_path");
+		ASSETS_NEW_BACKUP = basePath+property.getProperty("filedirectory_new_autobackup_path");
+		UPLOAD = basePath+property.getProperty("filedirectory_upload_path");
+		
 	}
 }

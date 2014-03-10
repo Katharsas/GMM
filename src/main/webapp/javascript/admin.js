@@ -19,7 +19,7 @@ $(document).ready( function() {
 	 $('#fileTreeContainer').fileTree(
 	    		{
 	    			root : '',
-	    			script : 'admin.htm/test.htm'
+	    			script : 'admin.htm/import.htm'
 	    		}, function(file) {
 	        alert(file);
 	    });

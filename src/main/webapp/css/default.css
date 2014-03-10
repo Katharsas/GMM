@@ -79,15 +79,16 @@ h2, .h2{font-size:1.33rem;	!important;}
 h3, .h3{font-size:1.14rem;	!important;}
 
 /*Inherited & font types*/
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
 html {	
 	font-family:Calibri, Verdana, Arial, sans-serif;
-	margin:0px;
-	padding:0px;
-	height:100%;
 }
 body {
 	font-size:0.9375em;
-	height:96%;
 }
 
 /*Colours Main Page*/
@@ -132,18 +133,22 @@ body {
 
 /*Site position and size on screen*/
 #wrap {
-	width:93%;
-	margin:20px auto 0px;
-	height:90%;
+/* 	display: table; */
+	background-color:#151515;
+	width:100%;
+	height:100%;
 }
 
 #main {
-	margin-bottom:20px;
-	padding-bottom:50px;
-	min-height:100%;
+/* 	margin-bottom:20px; */
+	padding-bottom:100px;
+/* 	display: table-row; */
+/* 	min-height:100%; */
 	overflow:hidden;
 }
-
+#top {
+/* 	display: table-row; */
+}
 /*Sites main menu at the top: tabs and empty middle/in-between tab*/
 #top .tab{
 	width:17%;

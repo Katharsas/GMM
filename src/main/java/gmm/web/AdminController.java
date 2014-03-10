@@ -98,17 +98,17 @@ public class AdminController {
 		return new ModelAndView("redirect:/admin.htm");
 	}
 	
-	@RequestMapping(value = {"/admin.htm/test.htm"} , method = RequestMethod.POST)
+	@RequestMapping(value = {"/admin.htm/import.htm"} , method = RequestMethod.POST)
 	public String testFileTree(ModelMap model,
 			@RequestParam("dir") String dir) throws Exception {
 		
 		try {dir = java.net.URLDecoder.decode(dir, "UTF-8");}
 		catch (UnsupportedEncodingException e1) {e1.printStackTrace();}	
 		
-		//Base path restricts path access to base path or below.
+		//Base path restricts dir path access to base path or below.
 		//If the dir variable does not point below the base directory,
 		//it will be treated as relative path below the base directory
-		String base = config.PROJECT_ORIGINAL_FILES;
+		String base = config.ASSETS_ORIGINAL;
 		try {
 			String baseCanonical = new File(base).getCanonicalPath();
 			String dirCanonical = new File(dir).getCanonicalPath();
