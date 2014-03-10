@@ -12,8 +12,7 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
 public abstract class Task extends NamedObject{
 	
 	//Variables--------------------------------------------------
-	@XStreamAsAttribute
-	private String name;
+	
 	@XStreamConverter(UserReferenceConverter.class)
 	private User author;
 	@XStreamConverter(UserReferenceConverter.class)
@@ -38,7 +37,7 @@ public abstract class Task extends NamedObject{
 	
 	@Override
 	public String toString() {
-		return label+": "+name+" by "+author.toString(); 
+		return label+": "+getName()+" by "+author.toString(); 
 	}
 	//Setters, Getters-------------------------------------------
 	public void setDetails(String details) {

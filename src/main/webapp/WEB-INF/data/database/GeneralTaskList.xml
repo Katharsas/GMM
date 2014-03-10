@@ -3,11 +3,12 @@
   <linked-list>
     <default/>
     <int>1</int>
-    <GeneralTask id="19" name="test" priority="MID" taskStatus="TODO">
-      <created>2014-03-09 20:38:39.388 UTC</created>
+    <GeneralTask id="19" name="test222" priority="MID" taskStatus="TODO">
+      <created>2014-03-10 09:33:32.686 UTC</created>
       <author id="11" name="Kellendil"/>
-      <details>test</details>
-      <label>test</label>
+      <assigned id="11" name="Kellendil"/>
+      <details></details>
+      <label>blub</label>
       <comments class="linked-list"/>
       <dependsOn class="linked-list"/>
       <dependencyFor class="linked-list"/>
