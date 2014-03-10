@@ -18,7 +18,7 @@ $(document).ready( function() {
 	
 	 $('#fileTreeContainer').fileTree(
 	    		{
-	    			root : '/',
+	    			root : '',
 	    			script : 'admin.htm/test.htm'
 	    		}, function(file) {
 	        alert(file);
