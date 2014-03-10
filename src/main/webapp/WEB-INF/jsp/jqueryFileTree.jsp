@@ -7,11 +7,13 @@
   * Copyright 2008 Joshua Gould
   * 21 April 2008
 */	
-//     String dir = request.getParameter("dir");
-	String dir = "/Users/";
+// 	String base = "/Users";
+    String dir = request.getParameter("dir");
     if (dir == null) {
+//     	System.out.println("dir is null");
     	return;
     }
+//     System.out.println("dir is: "+dir);
 	
 	if (dir.charAt(dir.length()-1) == '\\') {
     	dir = dir.substring(0, dir.length()-1) + "/";

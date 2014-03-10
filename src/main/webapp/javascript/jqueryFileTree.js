@@ -53,23 +53,24 @@ if(jQuery) (function($){
 				function showTree(c, t) {
 					$(c).addClass('wait');
 					$(".jqueryFileTree.start").remove();
-//					$.post(o.script, { dir: t }, function(data) {
-//						$(c).find('.start').html('');
-//						$(c).removeClass('wait').append(data);
-//						if( o.root == t ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
-//						bindTree(c);
-//					});
-					$.post(o.script, function(data) {
+					$.post(o.script, { dir: t }, function(data) {
 						$(c).find('.start').html('');
 						$(c).removeClass('wait').append(data);
-						if( o.root == t ) {
-							$(c).find('UL:hidden').show();
-						}
-						else {
-							$(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
-						}
+						if( o.root == t ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
 						bindTree(c);
 					});
+//					$.post(o.script, { dir: t}, function(data) {
+//						$(c).find('.start').html('');
+//						$(c).removeClass('wait').append(data);
+//						if( o.root == t ) {
+//							$(c).find('UL:hidden').show();
+//							alert("why? how?");
+//						}
+//						else {
+//							$(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
+//						}
+//						bindTree(c);
+//					});
 				}
 				
 				function bindTree(t) {
