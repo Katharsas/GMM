@@ -12,6 +12,8 @@ public abstract class NamedObject extends UniqueObject{
 	private String name;
 	
 	public NamedObject(String name) {
+		super();
+		System.out.println("Created named Object with Name: "+name);
 		setName(name);
 	}
 	

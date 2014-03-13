@@ -2,7 +2,7 @@ package gmm.domain;
 
 import java.util.Objects;
 
-public class Label {
+public class Label implements Linkable{
 	private final String label;
 	public Label(String label) {
 		Objects.requireNonNull(label);
@@ -30,5 +30,9 @@ public class Label {
 	@Override
 	public String toString() {
 		return this.label.toString();
+	}
+	@Override
+	public String getIdLink() {
+		return this.toString();
 	}
 }

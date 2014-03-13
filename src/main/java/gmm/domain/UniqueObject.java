@@ -1,6 +1,5 @@
 package gmm.domain;
 
-
 import java.util.Collection;
 import java.util.Date;
 
@@ -17,12 +16,13 @@ public abstract class UniqueObject implements Linkable{
 	//Methods---------------------------------------------------
 	public UniqueObject() {
 		id = ++idCount;
-		created = new Date();
+		this.created = new Date();
+		System.out.println("Created "+this.getIdLink());
 	}
 	
 	@Override
 	public String getIdLink() {
-		return id+"";
+		return getClass().getSimpleName()+id;
 	}
 	
 	public  static <U extends UniqueObject> U getFromId(Collection<U> c, String idLink) {
