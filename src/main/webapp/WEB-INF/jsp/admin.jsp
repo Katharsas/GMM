@@ -14,13 +14,18 @@
     
     
     <jsp:body>
-        <div>
-        	<div class="button pageButton" onclick="saveTasks()">save Tasks</div>
-        	<div class="button pageButton" onclick="loadTasks()">load Tasks</div>
-        	<div id="fileTreeContainer" style="background-color:white;margin:40px;">
-        	</div>
+    	<div class="groupDescriptor">DataBase Operations</div>
+        <div class="adminElementGroup">
+        	<div class="button pageButton left" onclick="saveTasks()">save Tasks</div>
+        	<div class="button pageButton left" onclick="loadTasks()">load Tasks</div>
+        	<div class="button pageButton left" onclick="deleteTasks()">delete Tasks</div>
+        	<div class="clear"></div>
+        	<div class="hint">Loading will delete all current Tasks!</div>
         </div>
-        
+        <div class="groupDescriptor">Import Assets</div>
+        <div class="adminElementGroup">
+        	<div id="fileTreeContainer"></div>
+        </div>
         
     </jsp:body>
 </t:templateAll>

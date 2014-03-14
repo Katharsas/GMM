@@ -6,23 +6,12 @@
   * Version 1.0
   * Copyright 2008 Joshua Gould
   * 21 April 2008
-*/	
-    String dir = request.getParameter("dir");
-	System.out.println("Directory: "+dir);
-    if (dir == null) {
-    	return;
-    }
+  * 
+  * MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION
+  */	
 	
-	if (dir.charAt(dir.length()-1) == '\\') {
-    	dir = dir.substring(0, dir.length()-1) + "/";
-	} else if (dir.charAt(dir.length()-1) != '/') {
-	    dir += "/";
-	}
-	
-	dir = java.net.URLDecoder.decode(dir, "UTF-8");	
-	System.out.println("Directory decoded: "+dir);
-// 	dir = (String) pageContext.findAttribute("path");
-	
+	String dir = (String) request.getAttribute("dir");
+
     if (new File(dir).exists()) {
 		String[] files = new File(dir).list(new FilenameFilter() {
 		    public boolean accept(File dir, String name) {

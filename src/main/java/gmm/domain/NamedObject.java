@@ -12,6 +12,8 @@ public abstract class NamedObject extends UniqueObject{
 	private String name;
 	
 	public NamedObject(String name) {
+		super();
+		System.out.println("Created named Object with Name: "+name);
 		setName(name);
 	}
 	
@@ -28,15 +30,6 @@ public abstract class NamedObject extends UniqueObject{
 			if(n.getName().equals(name)) return n;
 		}
 		return null;
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if((o!=null) && o instanceof NamedObject){
-			NamedObject p = (NamedObject) o;
-    		return getName().equals(p.getName());
-    	}
-    	return false;
 	}
 
 	public String getName() {

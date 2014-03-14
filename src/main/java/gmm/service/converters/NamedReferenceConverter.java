@@ -2,9 +2,10 @@ package gmm.service.converters;
 
 import gmm.domain.NamedObject;
 import gmm.domain.UniqueObject;
-import gmm.util.List;
+import gmm.util.Collection;
 
 import org.springframework.stereotype.Service;
+
 
 
 
@@ -38,5 +39,5 @@ abstract class NamedReferenceConverter implements Converter{
         return UniqueObject.getFromId(getNamedObjects(), id);
 	}
 	
-	abstract List<? extends NamedObject> getNamedObjects();
+	abstract Collection<? extends NamedObject> getNamedObjects();
 }

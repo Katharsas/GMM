@@ -2,6 +2,7 @@
 	width:9em;
 	background-color:#333333;
 	color:#FFFFFF;
+	border:1px solid #A82709;
 }
 .filterGroup {
 	padding:5px;
@@ -120,20 +121,23 @@
 	/*Not working yet
 	column-break-inside: avoid;*/
 }
-
-.searchInputField, .searchSubmitButton {
+.submitSearchButton, .switchSearchButton {
+	padding:0px 0px;
+}
+.searchInputField, .submitSearchButton {
 	width:33%;
 }
-.searchDescription, .searchInputField, .searchSubmitButton, .switchSearchButton {
+.searchDescription, .searchInputField, .submitSearchButton, .switchSearchButton {
 	margin-top:5px;
 }
 .switchSearchButton {
 	width:28%;
 	margin-right:5px;
-	color:#EEEEEE;
-	text-align:center;
-	padding:2px 0px;
-	background-color:333333;
+/* 	color:#EEEEEE; */
+/* 	text-align:center; */
+
+/* 	background-color:333333; */
+/* 	border:1px solid #A82709; */
 }
 .searchDescription {
 	width:16.5%;

@@ -11,28 +11,35 @@ package gmm.service.data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import gmm.domain.*;
+import gmm.domain.GeneralTask;
+import gmm.domain.Label;
+import gmm.domain.Linkable;
+import gmm.domain.ModelTask;
+import gmm.domain.TextureTask;
+import gmm.domain.User;
 import gmm.util.LinkedList;
 import gmm.util.List;
 import gmm.util.HashSet;
 import gmm.util.Set;
+import gmm.util.Collection;
 
 @Service
-public class DataBase implements DataAccess {
+public class DataBase<T extends Linkable> implements DataAccess<T> {
 
 	@Autowired
 	XMLSerializerService xmlService;
 
 	final private List<User> users = new LinkedList<User>();
-	final private List<Task> generalTasks = new LinkedList<Task>();
-	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
-	final private List<TextureTask> textureTasks = new LinkedList<TextureTask>();
-	final private List<ModelTask> modelTasks = new LinkedList<ModelTask>();
+	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
+//	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
+	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
+	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
 	
 	final private Set<Label> taskLabels = new HashSet<Label>();
 //	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
 	
 	public DataBase(){
+		System.out.println("This shit should be a singleton dammit!!!");
 		//add somehow users, usually from xml
 		users.add(new User("Rolf", "123456"));
 		users.add(new User("Kellendil", "123456"));
@@ -69,31 +76,29 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T> List<T> getList(Class<T> clazz) {
-		return getDataList(clazz).clone();
+	public synchronized Collection<T> getList(Class<?> clazz) {
+		return this.<T>getDataList(clazz).clone();
 	}
 
 	@Override
-	public synchronized <T> boolean addData(T data) {
+	public synchronized boolean addData(T data) {
 		return getDataList(data.getClass()).add(data);
 	}
 	
 	@Override
-	public synchronized <T> boolean addAllData(List<T> data) {
-		boolean buffer = true;
-		for(T t : data) {
-			buffer = addData(t) && buffer;
-		}
-		return buffer;
+	public synchronized boolean addAllData(Class<?> clazz, Collection<? extends T> data) {
+		Collection<T> collection = getDataList(clazz);
+		return collection.addAll(data);
 	}
 
 	@Override
-	public synchronized <T> boolean removeData(T data) {
+	public synchronized boolean removeData(T data) {
+		System.out.println("Removing "+data.getIdLink());
 		return getDataList(data.getClass()).remove(data);
 	}
 	
 	@Override
-	public synchronized <T> void removeAllData(Class<T> clazz) {
+	public synchronized void removeAllData(Class<?> clazz) {
 		getDataList(clazz).clear();
 	}
 	
@@ -104,54 +109,32 @@ public class DataBase implements DataAccess {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized <T> void loadData(Class<T> clazz) {
+	public synchronized void loadData(Class<?> clazz) {
 		removeAllData(clazz);
-		List<T> data = (List<T>) xmlService.deserialize(clazz.getSimpleName()+"List");
-		addAllData(data);
+		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
+		addAllData(clazz, data);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> List<T> getDataList(Class<? extends T> clazz) {
+	private Collection<T> getDataList(Class<?> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":
-					return (List<T>) users;
-				case "Task":
-					return (List<T>) generalTasks;
-				case "FileTask":
-					return (List<T>) generalFileTasks;
+					return (Collection<T>) users;
+				case "GeneralTask":
+					return (Collection<T>) generalTasks;
 				case "TextureTask":
-					return (List<T>) textureTasks;
+					return (Collection<T>) textureTasks;
 				case "ModelTask":
-					return (List<T>) modelTasks;
+					return (Collection<T>) modelTasks;
+				case "Label":
+					return (Collection<T>) taskLabels;
 				default:
 					throw new UnsupportedOperationException();
 			}
 		} catch (UnsupportedOperationException e) {
-			System.err.println("Database Error: Request for class type: "+clazz.getSimpleName()+" not implemented!");
+			System.err.println("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
 			throw new UnsupportedOperationException();
 		}
-	}
-	
-	public List<User> getUsers() {
-		return users.clone();
-	}
-	
-	public List<Task> getGeneralTasks() {
-		List<Task> result = generalTasks.clone();
-		result.addAll(generalFileTasks);
-		return result;
-	}
-	
-	public List<TextureTask> getTextureTasks() {
-		return textureTasks.clone();
-	}
-	
-	public List<ModelTask> getModelTasks() {
-		return modelTasks.clone();
-	}
-	
-	public Set<Label> getLabels() {
-		return taskLabels.clone();
 	}
 }

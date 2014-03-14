@@ -5,7 +5,7 @@ import gmm.domain.NamedObject;
 import gmm.domain.User;
 import gmm.service.ApplicationContextProvider;
 import gmm.service.data.DataAccess;
-import gmm.util.List;
+import gmm.util.Collection;
 
 
 public class UserReferenceConverter extends NamedReferenceConverter{
@@ -17,7 +17,7 @@ public class UserReferenceConverter extends NamedReferenceConverter{
 	}
 
 	@Override
-	List<? extends NamedObject> getNamedObjects() {
+	Collection<? extends NamedObject> getNamedObjects() {
 		ApplicationContext context = ApplicationContextProvider.getApplicationContext();
 		DataAccess data =  context.getBean(DataAccess.class);
 		return data.getList(User.class);

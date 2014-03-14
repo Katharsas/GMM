@@ -30,6 +30,8 @@
 // This plugin is dual-licensed under the GNU General Public License and the MIT License and
 // is copyright 2008 A Beautiful Site, LLC. 
 //
+// MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION
+//
 if(jQuery) (function($){
 	
 	$.extend($.fn, {
@@ -57,6 +59,18 @@ if(jQuery) (function($){
 						if( o.root == t ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
 						bindTree(c);
 					});
+//					$.post(o.script, { dir: t}, function(data) {
+//						$(c).find('.start').html('');
+//						$(c).removeClass('wait').append(data);
+//						if( o.root == t ) {
+//							$(c).find('UL:hidden').show();
+//							alert("why? how?");
+//						}
+//						else {
+//							$(c).find('UL:hidden').slideDown({ duration: o.expandSpeed, easing: o.expandEasing });
+//						}
+//						bindTree(c);
+//					});
 				}
 				
 				function bindTree(t) {
@@ -84,8 +98,12 @@ if(jQuery) (function($){
 					// Prevent A from triggering the # on non-click events
 					if( o.folderEvent.toLowerCase != 'click' ) $(t).find('LI A').bind('click', function() { return false; });
 				}
+				
+				
 				// Loading message
 				$(this).html('<ul class="jqueryFileTree start"><li class="wait">' + o.loadMessage + '<li></ul>');
+				
+				
 				// Get the initial file list
 				showTree( $(this), escape(o.root) );
 			});

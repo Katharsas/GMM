@@ -50,7 +50,8 @@ $(document).ready(function() {
 	toggleSpecificFilters();//TODO
 	
 	//listener
-	$("#submitTaskButton").click(function() {submitTaskForm();});
+	$("#submitTaskButton").click(function() {submitSearchForm();});
+	$("#submitSearchButton").click(function() {submitTaskForm();});
 	$("#generalFiltersAllCheckbox").change(function() {switchGeneralFiltersAll($(this));});
 	$(".generalFiltersFormElement").change(function() {submitGeneralFilters();});
 	
@@ -156,6 +157,10 @@ function switchSpecificFilters() {
 function switchGeneralFiltersAll($element){
 	 $(".generalFiltersAllCheckBoxTarget").attr("checked", $element.is(":checked"));
 	 submitGeneralFilters();
+}
+
+function submitSearchForm(){
+	$("#searchForm").submit();
 }
 
 function submitTaskForm(){

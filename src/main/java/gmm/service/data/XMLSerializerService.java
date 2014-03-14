@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.domain.Comment;
 import gmm.domain.FileTask;
+import gmm.domain.GeneralTask;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
@@ -32,6 +33,7 @@ public class XMLSerializerService {
 		
 		Class<?>[] clazzes = {
 							Task.class,
+							GeneralTask.class,
 							FileTask.class,
 							ModelTask.class,
 							ModelTask.class,
