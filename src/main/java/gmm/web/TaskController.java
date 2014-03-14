@@ -24,6 +24,7 @@ import org.springframework.web.bind.support.SessionStatus;
 //import javax.servlet.http.HttpServletResponse;
 
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 
 /** Logging */
@@ -78,6 +79,12 @@ public class TaskController {
 	
 	@Autowired
 	DataAccess data;
+	Collection<User> users;
+	
+	@PostConstruct
+	private void init() {
+		users = data.getList(User.class);
+	}
 
 	@ModelAttribute("task")
 	public TaskFacade getTaskFacade() {return new TaskFacade();}
@@ -97,8 +104,7 @@ public class TaskController {
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
 		tasks = getTaskList(tab);
-		Collection<User> users = data.getList(User.class);
-		User user = User.getFromName(users, principal.getName());
+		User user = getUser(principal);
 		DataFilter<Task> filter = new DataBaseFilter<Task>();
 		filter.setOnlyFilterEqual(true);
 		if (generalFacade.isCreatedByMe()) {
@@ -146,16 +152,16 @@ public class TaskController {
 				"getDetails",
 				"getLabel",
 				"getAssigned"};
-		String[] filters = new String[]{
-				facade.getName(),
-				facade.getAuthor(),
-				facade.getDetails(),
-				facade.getLabel(),
-				facade.getAssigned()};
 		if(facade.isEasySearch()) {
 			filter.filterOr(tasks, getters, ListUtil.inflateToArray(facade.getEasy(), getters.length));
 		}
 		else {
+			String[] filters = new String[]{
+					facade.getName(),
+					facade.getAuthor(),
+					facade.getDetails(),
+					facade.getLabel(),
+					facade.getAssigned()};
 			filter.filterAnd(tasks, getters, filters);
 		}
 		tasks = filter.getFilteredElements();
@@ -205,8 +211,7 @@ public class TaskController {
 				@RequestParam(value="editComment", defaultValue="") String editComment,
 				@RequestParam(value="edit", defaultValue="") String edit) {
 		if (validateId(editComment)) {
-			User user = User.getFromName(data.<User>getList(User.class), principal.getName());
-			Comment comment = new Comment(user, facade.getText());
+			Comment comment = new Comment(getUser(principal), facade.getText());
 			UniqueObject.getFromId(tasks, editComment).getComments().add(comment);
 		}
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
@@ -230,10 +235,7 @@ public class TaskController {
 			@ModelAttribute("task") TaskFacade facade,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		Collection<User> users = data.getList(User.class);
-		User user = (principal == null) ?
-				User.NULL : 
-				User.getFromName(users, principal.getName());
+		User user = getUser(principal);
 		GeneralTask task;
 		if (validateId(edit)) {
 			task = UniqueObject.getFromId(data.<GeneralTask>getList(GeneralTask.class), edit);
@@ -339,5 +341,11 @@ public class TaskController {
 			System.err.println("TaskController Error: Wrong tab name!");
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	private User getUser(Principal principal) {
+		return (principal == null) ?
+				User.NULL : 
+				User.getFromName(users, principal.getName());
 	}
 }
