@@ -208,7 +208,7 @@ public class TaskController {
 				@RequestParam(value="editComment", defaultValue="") String editComment,
 				@RequestParam(value="edit", defaultValue="") String edit) {
 		if (validateId(editComment)) {
-			User user = User.getFromName(data.getList(User.class), principal.getName());
+			User user = User.getFromName(data.<User>getList(User.class), principal.getName());
 			Comment comment = new Comment(user, facade.getText());
 			UniqueObject.getFromId(tasks, editComment).getComments().add(comment);
 		}
@@ -237,7 +237,7 @@ public class TaskController {
 		User user = User.getFromName(users, principal.getName());
 		GeneralTask task;
 		if (validateId(edit)) {
-			task = UniqueObject.getFromId(data.getList(GeneralTask.class), edit);
+			task = UniqueObject.getFromId(data.<GeneralTask>getList(GeneralTask.class), edit);
 			task.setName(facade.getIdName());
 		}
 		else {

@@ -24,7 +24,7 @@ import gmm.util.Set;
 import gmm.util.Collection;
 
 @Service
-public class DataBase<T extends Linkable> implements DataAccess<T> {
+public class DataBase implements DataAccess {
 
 	@Autowired
 	XMLSerializerService xmlService;
@@ -76,23 +76,23 @@ public class DataBase<T extends Linkable> implements DataAccess<T> {
 	}
 	
 	@Override
-	public synchronized Collection<T> getList(Class<?> clazz) {
+	public synchronized <T extends Linkable> Collection<T> getList(Class<?> clazz) {
 		return this.<T>getDataList(clazz).clone();
 	}
 
 	@Override
-	public synchronized boolean addData(T data) {
+	public synchronized <T extends Linkable> boolean addData(T data) {
 		return getDataList(data.getClass()).add(data);
 	}
 	
 	@Override
-	public synchronized boolean addAllData(Class<?> clazz, Collection<? extends T> data) {
+	public synchronized <T extends Linkable> boolean addAllData(Class<?> clazz, Collection<? extends T> data) {
 		Collection<T> collection = getDataList(clazz);
 		return collection.addAll(data);
 	}
 
 	@Override
-	public synchronized boolean removeData(T data) {
+	public synchronized <T extends Linkable> boolean removeData(T data) {
 		System.out.println("Removing "+data.getIdLink());
 		return getDataList(data.getClass()).remove(data);
 	}
@@ -109,14 +109,14 @@ public class DataBase<T extends Linkable> implements DataAccess<T> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized void loadData(Class<?> clazz) {
+	public synchronized <T extends Linkable> void loadData(Class<?> clazz) {
 		removeAllData(clazz);
 		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
 		addAllData(clazz, data);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Collection<T> getDataList(Class<?> clazz) {
+	private <T extends Linkable> Collection<T> getDataList(Class<?> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":

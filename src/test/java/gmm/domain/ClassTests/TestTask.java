@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.util.LinkedList;
 
 import gmm.domain.Comment;
+import gmm.domain.GeneralTask;
 import gmm.domain.Priority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
@@ -21,7 +22,7 @@ public class TestTask {
 	@Before
 	public void setUp() throws Exception {
 		user = new User("Ralf", "123456");
-		objectUnderTest = new Task("testTask", user);
+		objectUnderTest = new GeneralTask("testTask", user);
 	}
 	
 	@Test
@@ -50,10 +51,10 @@ public class TestTask {
 	@Test
 	public void testNullPointerExceptions() {
 		boolean thrown = true;
-	    try {objectUnderTest = new Task(null, user);
+	    try {objectUnderTest = new GeneralTask(null, user);
 	    	thrown = false;}
 	    catch(NullPointerException e){}
-	    try {objectUnderTest = new Task("testTask", null);
+	    try {objectUnderTest = new GeneralTask("testTask", null);
 	    	thrown = false;}
 	    catch(NullPointerException e){}
 	    try {objectUnderTest.setName(null);

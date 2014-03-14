@@ -71,7 +71,7 @@ import java.util.Date;
 public class AdminController {
 	protected final Log logger = LogFactory.getLog(getClass());
 	@Autowired
-	DataAccess<? extends Task> data;
+	DataAccess data;
 	@Autowired
 	DataConfigService config;
 	
