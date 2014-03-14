@@ -14,8 +14,8 @@
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form method="POST" action="/GMM/tasks.htm/submitSearch.htm?tab=${model.tab}&edit=${model.edit}" commandName="search">
-			<div class="right switchSearchButton clickable" onclick="switchSearchType()">
+		<form:form id="searchForm" method="POST" action="/GMM/tasks.htm/submitSearch.htm?tab=${model.tab}&edit=${model.edit}" commandName="search">
+			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
 				Complex Search
 			</div>
 			<form:select id="searchTypeSelect" path="easySearch">
@@ -42,7 +42,8 @@
 				<form:input class="searchInputField left" path="assigned" value=""/>
 				<div class="searchDescription left">&#160;</div>
 			</div>
-			<input class="searchSubmitButton left" type="submit" value="Start Search!"><br>
+<!-- 			<input class="searchSubmitButton button pageButton left" type="submit" value="Start Search!"><br> -->
+			<div class="submitSearchButton button pageButton left">Start Search!</div>
 			<div class="clear"></div>
 			</form:form>
 		</div>

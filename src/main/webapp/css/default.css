@@ -52,7 +52,9 @@ label, .button, .clickable{
 	font-family:Calibri, Verdana, Arial, sans-serif	!important;
 	font-size:inherit		!important;
 }
-
+submit {
+	font-size: inherit;
+}
 
 /* //////////////////////////////////////////////////
  * General style settings and colour sets
@@ -96,14 +98,14 @@ body {
 	color:#F6F6F6;
 	background-color:#151515;
 }
-.inactivePage{
+.inactivePage, .noPage {
 	color:#FFFFFF;
 	background-color:#999999;
 }
-.noPage{
-	color:#FFFFFF;
-	background-color:#EEEEEE;
-}
+/* .noPage{ */
+/* 	color:#FFFFFF; */
+/* 	background-color:#EEEEEE; */
+/* } */
 .pageButton{
 	color:#000000;
 	background-color:#EEEEEE;

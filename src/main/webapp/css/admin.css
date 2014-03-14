@@ -8,6 +8,7 @@
 .adminElementGroup, .groupDescriptor {
 	width:600px;
 	margin-left:20px;
+	padding:0 5px;
 }
 .adminElementGroup {
 	
@@ -18,4 +19,13 @@
 	margin-top:20px;
 	color: white;
 	background-color: #145959;
+}
+.hint {
+	font-size:0.8em;
+	font-style:italic;
+}
+
+#fileTreeContainer {
+	background-color:#333333;
+	margin:40px;
 }
