@@ -8,6 +8,7 @@
   * 21 April 2008
 */	
     String dir = request.getParameter("dir");
+	System.out.println("Directory: "+dir);
     if (dir == null) {
     	return;
     }
@@ -19,6 +20,8 @@
 	}
 	
 	dir = java.net.URLDecoder.decode(dir, "UTF-8");	
+	System.out.println("Directory decoded: "+dir);
+// 	dir = (String) pageContext.findAttribute("path");
 	
     if (new File(dir).exists()) {
 		String[] files = new File(dir).list(new FilenameFilter() {

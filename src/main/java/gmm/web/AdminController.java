@@ -2,6 +2,7 @@ package gmm.web;
 
 
 /** Controller class & ModelAndView */
+import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,40 +28,45 @@ import org.apache.juli.logging.LogFactory;
 /** java */
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
 
 /* project */
 
 
 @Controller
+@RequestMapping("admin")
 public class AdminController {
 	protected final Log logger = LogFactory.getLog(getClass());
 	@Autowired
 	DataAccess data;
 	
-	@RequestMapping(value = {"/admin.htm"} , method = RequestMethod.GET)
-    public ModelAndView send(HttpServletRequest request, HttpServletResponse response)
+	@RequestMapping(method = RequestMethod.GET)
+    public String send(ModelMap model)
     		throws ServletException, IOException {
 
 		String now = (new Date()).toString();
 		logger.info("Returning admin tab view");
 		
-		Map<String, Object> myModel = new HashMap<String, Object>();
-        myModel.put("now", now);
-
-        return new ModelAndView("admin", "model", myModel);
+        model.addAttribute("now", now);
+        
+        return "admin";
     }
 	
-	@RequestMapping(value = {"/admin.htm/saveTasks.htm"} , method = RequestMethod.GET)
-	public ModelAndView saveTasks() {
+	@RequestMapping(value = "/saveTasks", method = RequestMethod.GET)
+	public String saveTasks() {
 		data.saveData(Task.class);
-		return new ModelAndView("redirect:/admin.htm");
+		return "redirect:/admin";
 	}
 	
-	@RequestMapping(value = {"/admin.htm/loadTasks.htm"} , method = RequestMethod.GET)
-	public ModelAndView loadTasks() {
+	@RequestMapping(value = "/loadTasks", method = RequestMethod.GET)
+	public String loadTasks() {
 		data.loadData(Task.class);
-		return new ModelAndView("redirect:/admin.htm");
+		return "redirect:/admin";
+	}
+	
+	
+	@RequestMapping(value = "/treeplugin", method = RequestMethod.POST)
+	public String loadDataTreePlugin(ModelMap model) {
+		model.addAttribute("path", "/Users/Jan/");
+		return "jqueryFileTree";
 	}
 }

@@ -13,11 +13,11 @@
 			<title>GMM - Tasks</title>
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
 		<!-- Javascript -->
-			<script src="/GMM/javascript/jQuery.js" type="text/javascript"></script>
-			<script src="/GMM/javascript/default.js" type="text/javascript"></script>
+			<script src="/res/javascript/jQuery.js" type="text/javascript"></script>
+			<script src="/res/javascript/default.js" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
-			<link id="css_link" href="/GMM/css/default.css" media="screen" rel="stylesheet" type="text/css" />
+			<link id="css_link" href="/res/css/default.css" media="screen" rel="stylesheet" type="text/css" />
 			<jsp:invoke fragment="css"/>
 	</head>
 	
@@ -37,12 +37,12 @@
 		
 			<!-- Top Tab-Menu -->
 			<div id="top" class="pageTabmenu tabmenu inactivePage h2">
-				<div class="tab left"><a href="tasks.htm"><fmt:message key="menu.tasks"/><span></span></a></div>
-<%-- 				<div class="tab left"><a href="notifications.htm"><fmt:message key="menu.notifications"/><span></span></a></div> --%>
-<%-- 				<div class="tab left"><a href="files.htm"><fmt:message key="menu.files"/><span></span></a></div> --%>
+				<div class="tab left"><a href="tasks"><fmt:message key="menu.tasks"/><span></span></a></div>
+<%-- 				<div class="tab left"><a href="notifications"><fmt:message key="menu.notifications"/><span></span></a></div> --%>
+<%-- 				<div class="tab left"><a href="files"><fmt:message key="menu.files"/><span></span></a></div> --%>
 				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>
-<%-- 				<div class="tab right"><a href="options.htm"><fmt:message key="menu.options"/><span></span></a></div> --%>
-				<div class="tab right"><a href="admin.htm"><fmt:message key="menu.admin"/><span></span></a></div>
+<%-- 				<div class="tab right"><a href="options"><fmt:message key="menu.options"/><span></span></a></div> --%>
+				<div class="tab right"><a href="admin"><fmt:message key="menu.admin"/><span></span></a></div>
 				<div class="tab middle noPage"></div>
 				<div class="clear"></div>
 			</div>

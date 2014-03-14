@@ -1,6 +1,7 @@
 package gmm.web;
 
 /** Controller class & ModelAndView */
+import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -48,7 +49,7 @@ import gmm.service.forms.TaskFacade;
 import gmm.util.*;
 
 /**
- * Controller class which handles all GET & POST requests with root "tasks.htm".
+ * Controller class which handles all GET & POST requests with root "tasks".
  * This class is responsible for most CRUD operations on tasks and task comments.
  * 
  * If provides following functionality:
@@ -59,17 +60,18 @@ import gmm.util.*;
  * - Deleting an existing Task
  * 
  * TODO:
- * - filtering by options
+ * - specific filtering
  * - creating/editing/deleting ModelTask and TextureTask
- * 
- * Nice to have:
  * - Editing any Comments created by the same user
  * - Deleting any Comments created by the same user
+ * 
+ * Nice to have:
  * - Highlight text caught by search filter
  * 
  * 
  * @author Jan Mothes aka Kellendil
  */
+@RequestMapping("tasks")
 @SessionAttributes({"task","search","generalFilter"})
 @Scope("session")
 @Controller
@@ -90,13 +92,13 @@ public class TaskController {
 	public GeneralFilterFacade getGeneralFilter() {return new GeneralFilterFacade();}
 	
 	
-	@RequestMapping(value="/tasks.htm/submitFilter.htm", method = RequestMethod.POST)
-	public ModelAndView handleFilter(
+	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
+	public String handleFilter(
 				Principal principal,
 		 		@ModelAttribute("generalFilter") GeneralFilterFacade generalFacade,
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
-		if (!validateTab(tab)) return new ModelAndView("redirect:/tasks.htm/reset.htm?tab=general");
+		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
 		tasks = getTaskList(tab);
 		List<User> users = data.getList(User.class);
 		User user = User.getFromName(users, principal.getName());
@@ -122,7 +124,7 @@ public class TaskController {
 				tasks = filter.filterField((List<Task>)tasks, "getTaskStatus", TaskStatus.values()[i]);
 			}
 		}
-		return new ModelAndView("redirect:/tasks.htm?tab="+tab+"&edit="+edit);
+		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
 	
@@ -135,8 +137,8 @@ public class TaskController {
 	 * @param taskFacade - object containing task information about task currently being edited.
 	 * @param facade - object containing all search information
 	 */
-	@RequestMapping(value="/tasks.htm/submitSearch.htm", method = RequestMethod.POST)
-	public ModelAndView handleTasksSearch(
+	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
+	public String handleTasksSearch(
 		 		@ModelAttribute("search") SearchFacade facade,
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
@@ -160,7 +162,7 @@ public class TaskController {
 			filter.filterAnd((List<Task>)tasks, getters, filters);
 		}
 		tasks = filter.getFilteredElements();
-		return new ModelAndView("redirect:/tasks.htm?tab="+tab+"&edit="+edit);
+		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
 	/**
@@ -171,8 +173,8 @@ public class TaskController {
 	 * @param delete - id of task which will be deleted
 	 * @return No edit/facade, because edit id could be the id of the deleted task.
 	 */
-	@RequestMapping(value="/tasks.htm/deleteTask.htm", method = RequestMethod.GET)
-	public ModelAndView handleTasksDelete(
+	@RequestMapping(value="/deleteTask", method = RequestMethod.GET)
+	public String handleTasksDelete(
 				SessionStatus status,
 				@RequestParam(value="tab", defaultValue="") String tab,
 				@RequestParam(value="tab", defaultValue="") String edit,
@@ -186,7 +188,7 @@ public class TaskController {
 	 		data.removeData(UniqueObject.getFromId(tasks, delete));
 	 		tasks.remove(UniqueObject.getFromId(tasks, delete));
 	 	}
-		return new ModelAndView("redirect:/tasks.htm?tab="+tab+"&edit="+edit+"&resetFacade="+resetFacade);
+		return "redirect:/tasks?tab="+tab+"&edit="+edit+"&resetFacade="+resetFacade;
 	}
 
 	/**
@@ -198,8 +200,8 @@ public class TaskController {
 	 * @param editComment - id of task to which the comment will be added
 	 * @param edit - id of task currently being edited
 	 */
-	@RequestMapping(value="/tasks.htm/submitComment.htm", method = RequestMethod.POST)
-	public ModelAndView handleTasksComment(
+	@RequestMapping(value="/submitComment", method = RequestMethod.POST)
+	public String handleTasksComment(
 				Principal principal,
 				@ModelAttribute("comment") CommentFacade facade,
 				@RequestParam(value="tab", defaultValue="") String tab,
@@ -210,7 +212,7 @@ public class TaskController {
 			Comment comment = new Comment(user, facade.getText());
 			UniqueObject.getFromId(tasks, editComment).getComments().add(comment);
 		}
-		return new ModelAndView("redirect:/tasks.htm?tab="+tab+"&edit="+edit);
+		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 
 	/**
@@ -223,8 +225,8 @@ public class TaskController {
 	 * @param tab - see send method
 	 * @param edit - id of task to be edited or null/"" if the task should be added as new task
 	 */
-	@RequestMapping(value="/tasks.htm/submitTask.htm", method = RequestMethod.POST)
-	public ModelAndView handleTasksCreateEdit(
+	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
+	public String handleTasksCreateEdit(
 			HttpSession session,
 			SessionStatus status,
 			Principal principal,
@@ -252,11 +254,11 @@ public class TaskController {
 		}
 		facade.setDefaultState();
 		if (validateId(edit)) {
-			return new ModelAndView("redirect:/tasks.htm?tab="+tab);
+			return "redirect:/tasks?tab="+tab;
 		}
 		else {
 			data.addData(task);
-			return new ModelAndView("redirect:/tasks.htm/reset.htm?tab="+tab);
+			return "redirect:/tasks/reset?tab="+tab;
 		}
 		
 	}
@@ -270,13 +272,13 @@ public class TaskController {
 	 * @param tab - type of task list which will be retrieved from DataBase and sent to client
 	 * @param edit - see send method
 	 */
-	@RequestMapping(value="/tasks.htm/reset.htm", method = RequestMethod.GET)
-	public ModelAndView handleTasks(
+	@RequestMapping(value="/reset", method = RequestMethod.GET)
+	public String handleTasks(
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		if (!validateTab(tab)) return new ModelAndView("redirect:/tasks.htm/reset.htm?tab=general");
+		if (!validateTab(tab)) {return "redirect:/tasks/reset?tab=general";}
 		tasks = getTaskList(tab);
-		return new ModelAndView("redirect:/tasks.htm?tab="+tab+"&edit="+edit);
+		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
 	/**
@@ -287,13 +289,12 @@ public class TaskController {
 	 * @param tab - determines which tab will be selected on client page.
 	 * @param edit - Task ID to be made editable in task form
 	 */
-	@RequestMapping(value="/tasks.htm", method = RequestMethod.GET)
-	public ModelAndView send(HttpSession session, 
+	@RequestMapping(method = RequestMethod.GET)
+	public String send(HttpSession session, ModelMap model,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit,
 			@RequestParam(value="resetFacade", defaultValue="false") boolean resetFacade) {
-		if(tasks==null||!validateTab(tab)) return new ModelAndView("redirect:/tasks.htm/reset.htm");
-		Map<String, Object> model = new HashMap<String, Object>();
+		if(tasks==null||!validateTab(tab)) return "redirect:/tasks/reset";
 		
 		TaskFacade facade = (TaskFacade) session.getAttribute("task");
 		if (resetFacade) {
@@ -306,16 +307,16 @@ public class TaskController {
 			facade.setStatus(task.getTaskStatus());
 			facade.setPriority(task.getPriority());
 			facade.setAssigned(task.getAssigned());
-			model.put("label", task.getLabel());
+			model.addAttribute("label", task.getLabel());
 		}
-	    model.put("taskList", tasks);
-	    model.put("users", data.getList(User.class));
-	    model.put("taskLabels", data.getLabels());
-	    model.put("taskStatuses", TaskStatus.values());
-	    model.put("priorities", Priority.values());
-	    model.put("tab", tab);
-	    model.put("edit", edit);
-	    return new ModelAndView("tasks", "model", model);
+	    model.addAttribute("taskList", tasks);
+	    model.addAttribute("users", data.getList(User.class));
+	    model.addAttribute("taskLabels", data.getLabels());
+	    model.addAttribute("taskStatuses", TaskStatus.values());
+	    model.addAttribute("priorities", Priority.values());
+	    model.addAttribute("tab", tab);
+	    model.addAttribute("edit", edit);
+	    return "tasks";
 	}
 	
 	private boolean validateTab(String tab){

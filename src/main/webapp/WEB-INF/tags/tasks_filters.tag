@@ -5,7 +5,7 @@
 <%-- Template Start --%>
 
 <div id="filters">
-	<form:form class="generalFilters" method="POST" action="/GMM/tasks.htm/submitFilter.htm?tab=${model.tab}&edit=${model.edit}" commandName="generalFilter">
+	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${model.tab}&edit=${model.edit}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">
 			&#62;&#62;
 		</div>

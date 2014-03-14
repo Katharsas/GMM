@@ -4,13 +4,12 @@
 <t:templateAll>
 
 	<jsp:attribute name="js">
-    	<script src="/GMM/javascript/admin.js" type="text/javascript"></script>
-    	<script src="/GMM/javascript/jQuery.js" type="text/javascript"></script>
-    	<script src="/GMM/javascript/jqueryFileTree.js" type="text/javascript"></script>
+    	<script src="/res/javascript/admin.js" type="text/javascript"></script>
+    	<script src="/res/javascript/jqueryFileTree.js" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
-    	<link id="css_link" href="/GMM/css/admin.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="/GMM/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link id="css_link" href="/res/css/admin.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link id="css_link" href="/res/GMM/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
     
     

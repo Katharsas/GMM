@@ -9,7 +9,7 @@
 		<fmt:message key="tasks.new"/>
 	</div>
 
-	<form:form id="taskForm" method="POST" action="/GMM/tasks.htm/submitTask.htm?tab=${model.tab}&edit=${model.edit}" commandName="task">
+	<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${model.tab}&edit=${model.edit}" commandName="task">
 		<div class="taskElement left">
 <!--PRIORITY------------------------------------- -->
 			<div class="taskDescription">Priority:</div>

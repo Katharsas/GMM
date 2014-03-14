@@ -7,14 +7,14 @@
 
 <div id="lists">
 	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h2">
-		<div class="tab left"><a href="tasks.htm/reset.htm?tab=general&edit=${model.edit}"><fmt:message key="tasks.menu.general"/><span></span></a></div>
-		<div class="tab left"><a href="tasks.htm/reset.htm?tab=textures&edit=${model.edit}"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
-		<div class="tab middle"><a href="tasks.htm/reset.htm?tab=models&edit=${model.edit}"><fmt:message key="tasks.menu.models"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=general&edit=${model.edit}"><fmt:message key="tasks.menu.general"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=textures&edit=${model.edit}"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
+		<div class="tab middle"><a href="tasks/reset?tab=models&edit=${model.edit}"><fmt:message key="tasks.menu.models"/><span></span></a></div>
 		<div class="clear"></div>
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form method="POST" action="/GMM/tasks.htm/submitSearch.htm?tab=${model.tab}&edit=${model.edit}" commandName="search">
+		<form:form method="POST" action="/GMM/tasks/submitSearch?tab=${model.tab}&edit=${model.edit}" commandName="search">
 			<div class="right switchSearchButton clickable" onclick="switchSearchType()">
 				Complex Search
 			</div>
@@ -85,7 +85,7 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
-					    <form:form class="commentInput input" method="POST" action="/GMM/tasks.htm/submitComment.htm?tab=${model.tab}&edit=${model.edit}&editComment=${task.getIdLink()}" commandName="comment">
+					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${model.tab}&edit=${model.edit}&editComment=${task.getIdLink()}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
 					    	</div>
@@ -99,7 +99,7 @@
 				    		<fmt:message key="task.deleteQuestion"/>
 				    	</div>
 						<div class="right button deleteButton">
-							<a href="/GMM/tasks.htm/deleteTask.htm?tab=${model.tab}&edit=${model.edit}&delete=${task.getIdLink()}">
+							<a href="/GMM/tasks/deleteTask?tab=${model.tab}&edit=${model.edit}&delete=${task.getIdLink()}">
 								<fmt:message key="ok"/><span></span>
 							</a>
 						</div>
