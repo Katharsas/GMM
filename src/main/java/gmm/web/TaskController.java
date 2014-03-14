@@ -2,7 +2,6 @@ package gmm.web;
 
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 /** Annotations */
@@ -34,8 +33,6 @@ import org.apache.juli.logging.LogFactory;
 
 /** java */
 import java.security.Principal;
-import java.util.Map;
-import java.util.HashMap;
 
 /* project */
 import gmm.domain.*;
@@ -105,23 +102,23 @@ public class TaskController {
 		DataFilter<Task> filter = new DataBaseFilter<Task>();
 		filter.setOnlyFilterEqual(true);
 		if (generalFacade.isCreatedByMe()) {
-			filter.filterField((List<Task>)tasks, "getAuthor", user);
+			filter.filterField(tasks, "getAuthor", user);
 			tasks = filter.getFilteredElements();
 			filter.clear();
 		}
 		if (generalFacade.isAssignedToMe()) {
-			filter.filterField((List<Task>)tasks, "getAssigned", user);
+			filter.filterField(tasks, "getAssigned", user);
 			tasks = filter.getFilteredElements();
 			filter.clear();
 		}
 		for(int i = 0; i<Priority.values().length; i++) {
 			if (!generalFacade.getPriority()[i]) {
-				tasks = filter.filterField((List<Task>)tasks, "getPriority", Priority.values()[i]);
+				tasks = filter.filterField(tasks, "getPriority", Priority.values()[i]);
 			}
 		}
 		for(int i = 0; i<TaskStatus.values().length; i++) {
 			if (!generalFacade.getTaskStatus()[i]) {
-				tasks = filter.filterField((List<Task>)tasks, "getTaskStatus", TaskStatus.values()[i]);
+				tasks = filter.filterField(tasks, "getTaskStatus", TaskStatus.values()[i]);
 			}
 		}
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
@@ -156,10 +153,10 @@ public class TaskController {
 				facade.getLabel(),
 				facade.getAssigned()};
 		if(facade.isEasySearch()) {
-			filter.filterOr((List<Task>)tasks, getters, ListUtil.inflateToArray(facade.getEasy(), getters.length));
+			filter.filterOr(tasks, getters, ListUtil.inflateToArray(facade.getEasy(), getters.length));
 		}
 		else {
-			filter.filterAnd((List<Task>)tasks, getters, filters);
+			filter.filterAnd(tasks, getters, filters);
 		}
 		tasks = filter.getFilteredElements();
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
@@ -234,7 +231,9 @@ public class TaskController {
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
 		Collection<User> users = data.getList(User.class);
-		User user = User.getFromName(users, principal.getName());
+		User user = (principal == null) ?
+				User.NULL : 
+				User.getFromName(users, principal.getName());
 		GeneralTask task;
 		if (validateId(edit)) {
 			task = UniqueObject.getFromId(data.<GeneralTask>getList(GeneralTask.class), edit);

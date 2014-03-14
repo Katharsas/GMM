@@ -50,8 +50,8 @@ $(document).ready(function() {
 	toggleSpecificFilters();//TODO
 	
 	//listener
-	$("#submitTaskButton").click(function() {submitSearchForm();});
-	$("#submitSearchButton").click(function() {submitTaskForm();});
+	$("#submitTaskButton").click(function() {submitTaskForm();});
+	$("#submitSearchButton").click(function() {submitSearchForm();});
 	$("#generalFiltersAllCheckbox").change(function() {switchGeneralFiltersAll($(this));});
 	$(".generalFiltersFormElement").change(function() {submitGeneralFilters();});
 	

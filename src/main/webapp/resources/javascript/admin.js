@@ -1,14 +1,14 @@
 
 function saveTasks() {
-	window.location = "admin.htm/saveTasks.htm";
+	window.location = "admin/saveTasks";
 }
 
 function loadTasks() {
-	window.location = "admin.htm/loadTasks.htm";
+	window.location = "admin/loadTasks";
 }
 
 function deleteTasks() {
-	window.location = "admin.htm/deleteTasks.htm";
+	window.location = "admin/deleteTasks";
 }
 
 $(document).ready( function() {
@@ -23,7 +23,7 @@ $(document).ready( function() {
 	 $('#fileTreeContainer').fileTree(
 	    		{
 	    			root : '',
-	    			script : 'admin.htm/import.htm'
+	    			script : 'admin/import'
 	    		}, function(file) {
 	        alert(file);
 	    });

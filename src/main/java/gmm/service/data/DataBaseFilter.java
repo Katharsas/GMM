@@ -3,9 +3,9 @@ package gmm.service.data;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import gmm.util.Collection;
 import gmm.util.LinkedList;
 import gmm.util.List;
-import gmm.util.ListUtil;
 import gmm.util.StringUtil;
 
 public class DataBaseFilter<T> implements DataFilter<T> {
@@ -25,8 +25,8 @@ public class DataBaseFilter<T> implements DataFilter<T> {
 	}
 	
 	@Override
-	public List<T> filterType(List<T> list, Class<T> filter) {
-		List<T> buffer = list.clone();
+	public Collection<? extends T> filterType(Collection<? extends T> list, Class<T> filter) {
+		Collection<? extends T> buffer = list.clone();
 		
 		for(T t : buffer)	{
 			Class<? extends Object> clazz = t.getClass();
@@ -37,9 +37,9 @@ public class DataBaseFilter<T> implements DataFilter<T> {
 	}
 	
 	@Override
-	public List<T> filterField(List<T> originalList, String getterMethodName, Object filter) {
-		List<T> list = originalList.clone();
-		List<T> buffer = list.clone();
+	public Collection<? extends T> filterField(Collection<? extends T> originalList, String getterMethodName, Object filter) {
+		Collection<? extends T> list = originalList.clone();
+		Collection<? extends T> buffer = list.clone();
 		for (T t : buffer) {
 			try {
 				StringUtil.IGNORE_CASE=true;
@@ -71,9 +71,9 @@ public class DataBaseFilter<T> implements DataFilter<T> {
 	}
 	
 	@Override
-	public List<T>filterAnd(List<T> originalList, String[] getterMethodNames, Object[] filters) {
-		List<T> list = originalList.clone();
-		List<T> buffer = list.clone();
+	public Collection<? extends T>filterAnd(Collection<? extends T> originalList, String[] getterMethodNames, Object[] filters) {
+		Collection<? extends T> list = originalList.clone();
+		Collection<? extends T> buffer = list.clone();
 		List<T> originalSearch = searchResults.clone();
 		int size = getterMethodNames.length < filters.length ? getterMethodNames.length : filters.length;
 		for(int i = 0; i<size; i++) {
@@ -89,19 +89,13 @@ public class DataBaseFilter<T> implements DataFilter<T> {
 	}
 	
 	@Override
-	public List<T>filterOr(List<T> originalList, String[] getterMethodNames, Object[] filters) {
-		List<T> list = originalList.clone();
+	public Collection<? extends T> filterOr(Collection<? extends T> originalList, String[] getterMethodNames, Object[] filters) {
+		Collection<? extends T> list = originalList.clone();
 		int size = getterMethodNames.length < filters.length ? getterMethodNames.length : filters.length;
 		for(int i = 0; i<size; i++) {
 			list = filterField(list, getterMethodNames[i], filters[i]);
 		}
 		return list;
-	}
-
-	@Override
-	@Deprecated
-	public List<T> filterTask(List<T> list, String filter) {
-		return filterOr(list, new String[]{"getLabel","getDetails","getAuthor","getName"}, ListUtil.inflateToArray(filter, 4));
 	}
 
 	@Override

@@ -13,11 +13,11 @@
 			<title>GMM - Tasks</title>
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
 		<!-- Javascript -->
-			<script src="/res/javascript/jQuery.js" type="text/javascript"></script>
-			<script src="/res/javascript/default.js" type="text/javascript"></script>
+			<script src="res/javascript/jQuery.js" type="text/javascript"></script>
+			<script src="res/javascript/default.js" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
-			<link id="css_link" href="/res/css/default.css" media="screen" rel="stylesheet" type="text/css" />
+			<link id="css_link" href="res/css/default.css" media="screen" rel="stylesheet" type="text/css" />
 			<jsp:invoke fragment="css"/>
 	</head>
 	

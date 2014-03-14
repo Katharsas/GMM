@@ -1,7 +1,6 @@
 package gmm.service.data;
 
-import gmm.util.List;
-
+import gmm.util.Collection;
 /**
  * Provides methods for filtering elements of type T by an attribute of these elements and stores the filtered elements.
  * Usually returns a list containing all remaining list elements. Usually does not alter input list.
@@ -18,7 +17,7 @@ public interface DataFilter<T> {
 	 * @param filter - filter class
 	 * @return List containing all elements whose attribute did not match the filter.
 	 */
-	public abstract List<T> filterType(List<T> originalList, Class<T> filter);
+	public abstract Collection<? extends T> filterType(Collection<? extends T> originalList, Class<T> filter);
 	
 	/**
 	 * 
@@ -49,36 +48,25 @@ public interface DataFilter<T> {
 	 * @param filter - filter object
 	 * @return List containing all elements whose attribute did not match the filter.
 	 */
-	public abstract List<T> filterField(List<T> originalList, String getterMethodName, Object filter);
+	public abstract Collection<? extends T> filterField(Collection<? extends T> originalList, String getterMethodName, Object filter);
 	
 	/**
 	 * Filters out only objects which match all filter objects.
 	 * See method filterField for parameters and return.
 	 */
-	public abstract List<T> filterAnd(List<T> originalList, String[] getterMethodNames, Object[] filters);
+	public abstract Collection<? extends T> filterAnd(Collection<? extends T> originalList, String[] getterMethodNames, Object[] filters);
 	
 	/**
 	 * Filters out all objects which match any filter objects.
 	 * See method filterField for parameters and return.
 	 */
-	public abstract List<T> filterOr(List<T> originalList, String[] getterMethodNames, Object[] filters);
-
-	
-	/**
-	 * Filters out all Tasks whose getName OR getLabel OR getAuthor OR getDetails match the filter string.
-	 * @param list - List with the tasks to be filtered, is not altered.
-	 * @param filter - filter String
-	 * @return List containing the tasks with none of each tasks attributes matching the filter.
-	 * @deprecated Use method filterOr with custom attribute getter method names instead.
-	 */
-	@Deprecated
-	public abstract List<T> filterTask(List<T> list, String filter);
+	public abstract Collection<? extends T> filterOr(Collection<? extends T> originalList, String[] getterMethodNames, Object[] filters);
 	
 	/**
 	 * See method filterField.
 	 * @return All filtered elements. Every method adds its filtered elements to previous filtered elements.
 	 */
-	public abstract List<T> getFilteredElements();
+	public abstract Collection<? extends T> getFilteredElements();
 
 	/**
 	 * Clear list with filtered elements

@@ -24,6 +24,9 @@ public class User extends NamedObject {
 	public int daysToSaveNotifiations = 30;
 	public int maximumSavedNotifications = 100;
 	
+	//Constants
+	public final static User NULL = new User("EMPTY", "");
+	
 	//Methods--------------------------------------------
 	/**
 	 * @param idName - Identificator (name) of the user.
