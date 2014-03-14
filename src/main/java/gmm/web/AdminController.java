@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import gmm.domain.GeneralTask;
+import gmm.domain.Task;
 import gmm.service.data.DataAccess;
 
 
@@ -20,6 +21,7 @@ import gmm.service.data.DataAccess;
 
 
 import gmm.service.data.DataConfigService;
+
 
 
 
@@ -38,9 +40,11 @@ import javax.servlet.http.HttpServletResponse;
 
 
 
+
 /** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+
 
 
 
@@ -68,7 +72,7 @@ import java.util.HashMap;
 public class AdminController {
 	protected final Log logger = LogFactory.getLog(getClass());
 	@Autowired
-	DataAccess data;
+	DataAccess<? extends Task> data;
 	@Autowired
 	DataConfigService config;
 	

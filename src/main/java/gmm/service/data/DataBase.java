@@ -11,7 +11,12 @@ package gmm.service.data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import gmm.domain.*;
+import gmm.domain.GeneralTask;
+import gmm.domain.Label;
+import gmm.domain.Linkable;
+import gmm.domain.ModelTask;
+import gmm.domain.TextureTask;
+import gmm.domain.User;
 import gmm.util.LinkedList;
 import gmm.util.List;
 import gmm.util.HashSet;
@@ -19,7 +24,7 @@ import gmm.util.Set;
 import gmm.util.Collection;
 
 @Service
-public class DataBase implements DataAccess {
+public class DataBase<T extends Linkable> implements DataAccess<T> {
 
 	@Autowired
 	XMLSerializerService xmlService;
@@ -34,6 +39,7 @@ public class DataBase implements DataAccess {
 //	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
 	
 	public DataBase(){
+		System.out.println("This shit should be a singleton dammit!!!");
 		//add somehow users, usually from xml
 		users.add(new User("Rolf", "123456"));
 		users.add(new User("Kellendil", "123456"));
@@ -70,27 +76,24 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T> Collection<T> getList(Class<T> clazz) {
+	public synchronized Collection<T> getList(Class<?> clazz) {
 		return this.<T>getDataList(clazz).clone();
 	}
 
 	@Override
-	public synchronized <T> boolean addData(T data) {
+	public synchronized boolean addData(T data) {
 		return getDataList(data.getClass()).add(data);
 	}
 	
 	@Override
-	public synchronized <T> boolean addAllData(Class<T> clazz, Collection<? extends T> data) {
+	public synchronized boolean addAllData(Class<?> clazz, Collection<? extends T> data) {
 		Collection<T> collection = getDataList(clazz);
-		boolean buffer = true;
-		for(T t : data) {
-			buffer = collection.add(t) && buffer;
-		}
-		return buffer;
+		return collection.addAll(data);
 	}
 
 	@Override
-	public synchronized <T> boolean removeData(T data) {
+	public synchronized boolean removeData(T data) {
+		System.out.println("Removing "+data.getIdLink());
 		return getDataList(data.getClass()).remove(data);
 	}
 	
@@ -106,13 +109,14 @@ public class DataBase implements DataAccess {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized <T> void loadData(Class<T> clazz) {
-		List<? extends T> data = (List<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
+	public synchronized void loadData(Class<?> clazz) {
+		removeAllData(clazz);
+		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
 		addAllData(clazz, data);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> Collection<T> getDataList(Class<?> clazz) {
+	private Collection<T> getDataList(Class<?> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":
