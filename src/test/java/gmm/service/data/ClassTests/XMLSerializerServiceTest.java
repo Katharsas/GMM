@@ -1,12 +1,12 @@
 package gmm.service.data.ClassTests;
 
 import static org.junit.Assert.*;
-
 import gmm.domain.Notification;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLSerializerService;
+import gmm.util.Collection;
 import gmm.util.List;
 
 import org.junit.After;
@@ -49,10 +49,10 @@ public class XMLSerializerServiceTest {
 		
 		//serialize and deserialize
 		String filename = "user_test_file";
-		List<User> users = data.getList(User.class);
+		Collection<User> users = data.<User>getList(User.class);
 		xmlService.serialize(users, filename);
 		@SuppressWarnings("unchecked")
-		List<User> resultUsers = (List<User>) xmlService.deserialize(filename);
+		Collection<User> resultUsers = (Collection<User>) xmlService.deserialize(filename);
 		
 		//compare
 		for (User u : users) {

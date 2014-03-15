@@ -7,14 +7,14 @@
 
 <div id="lists">
 	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h2">
-		<div class="tab left"><a href="tasks/reset?tab=general&edit=${model.edit}"><fmt:message key="tasks.menu.general"/><span></span></a></div>
-		<div class="tab left"><a href="tasks/reset?tab=textures&edit=${model.edit}"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
-		<div class="tab middle"><a href="tasks/reset?tab=models&edit=${model.edit}"><fmt:message key="tasks.menu.models"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=general&edit=${edit}"><fmt:message key="tasks.menu.general"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=textures&edit=${edit}"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
+		<div class="tab middle"><a href="tasks/reset?tab=models&edit=${edit}"><fmt:message key="tasks.menu.models"/><span></span></a></div>
 		<div class="clear"></div>
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${model.tab}&edit=${model.edit}" commandName="search">
+		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${tab}&edit=${edit}" commandName="search">
 			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
 				Complex Search
 			</div>
@@ -47,7 +47,7 @@
 			<div class="clear"></div>
 			</form:form>
 		</div>
-		<c:forEach items="${model.taskList}" var="task">
+		<c:forEach items="${taskList}" var="task">
 			<div id="task_${task.getIdLink()}" class="listElement">
 				<div class="listElementTop clickable" onclick="switchListElement(this)">
 					<div class="right elementPriority ${task.getPriority().toString()}">
@@ -86,7 +86,7 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
-					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${model.tab}&edit=${model.edit}&editComment=${task.getIdLink()}" commandName="comment">
+					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${tab}&edit=${edit}&editComment=${task.getIdLink()}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
 					    	</div>
@@ -100,7 +100,7 @@
 				    		<fmt:message key="task.deleteQuestion"/>
 				    	</div>
 						<div class="right button deleteButton">
-							<a href="/GMM/tasks/deleteTask?tab=${model.tab}&edit=${model.edit}&delete=${task.getIdLink()}">
+							<a href="/GMM/tasks/deleteTask?tab=${tab}&edit=${edit}&delete=${task.getIdLink()}">
 								<fmt:message key="ok"/><span></span>
 							</a>
 						</div>
@@ -124,7 +124,7 @@
 				    		<fmt:message key="delete"/>
 				    	</div>
 				    	<div class="right editElement elementButton button">
-				    		<a href="?tab=${model.tab}&edit=${task.getIdLink()}"><fmt:message key="edit"/><span></span></a>
+				    		<a href="?tab=${tab}&edit=${task.getIdLink()}"><fmt:message key="edit"/><span></span></a>
 				    	</div>
 				    	<div class="clear"></div>
 			    	</div>

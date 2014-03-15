@@ -326,7 +326,7 @@ public class TaskController {
 	}
 	
 	private boolean validateId(String idNumber){
-		return idNumber.matches("[0-9]+");
+		return idNumber.matches(".*[0-9]+");
 	}
 	
 	private Collection<? extends Task> getTaskList (String tab) {

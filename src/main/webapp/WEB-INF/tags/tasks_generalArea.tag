@@ -9,13 +9,13 @@
 		<fmt:message key="tasks.new"/>
 	</div>
 
-	<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${model.tab}&edit=${model.edit}" commandName="task">
+	<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}" commandName="task">
 		<div class="taskElement left">
 <!--PRIORITY------------------------------------- -->
 			<div class="taskDescription">Priority:</div>
 			<div class="taskInput">
 			<form:select path="priority">
-				<c:forEach items="${model.priorities}" var="priority">
+				<c:forEach items="${priorities}" var="priority">
 					<c:set var="pvalue"><fmt:message key="${priority.getMessageKey()}"/></c:set> 
 					<form:option value="${priority}" label="${pvalue}"/>
 				</c:forEach>
@@ -37,9 +37,9 @@
 			<div class="taskInput">
 				<form:select id="labelSelect" path="labelSelect"> 
 					<form:option value="" label=""/>
-					<c:forEach items="${model.taskLabels}" var="singleLabel">
+					<c:forEach items="${taskLabels}" var="singleLabel">
 						<c:choose>
-							<c:when test="${singleLabel.equals(model.label)}">
+							<c:when test="${singleLabel.equals(label)}">
 								<form:option value="${singleLabel}" label="${singleLabel}" selected="selected"/>
 							</c:when>
 							<c:otherwise>
@@ -62,7 +62,7 @@
 			<div class="taskDescription">Status:</div>
 			<div class="taskInput">
 			<form:select path="status">
-				<c:forEach items="${model.taskStatuses}" var="status">
+				<c:forEach items="${taskStatuses}" var="status">
 					<c:set var="svalue"><fmt:message key="${status.getMessageKey()}"/></c:set> 
 					<form:option value="${status}" label="${svalue}"/>
 				</c:forEach>
@@ -73,7 +73,7 @@
 			<div class="taskInput">
 				<form:select path="assigned">
 					<form:option value="" label=""/>
-					<c:forEach items="${model.users}" var="user">
+					<c:forEach items="${users}" var="user">
 						<c:choose>
 							<c:when test="${user.getName().equals(assigned)}">
 								<form:option value="${user.getName()}" label="${user.getName()}" selected="selected"/>
@@ -94,7 +94,7 @@
 			Submit Task
 		</div>
 		<div id="cancelTaskButton" class="button pageButton left">
-			<a href="?tab=${model.tab}&resetFacade=true">
+			<a href="?tab=${tab}&resetFacade=true">
 				<fmt:message key="tasks.new.cancel"/><span></span>
 			</a>
 		</div>

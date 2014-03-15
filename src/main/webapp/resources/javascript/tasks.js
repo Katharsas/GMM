@@ -13,7 +13,7 @@ $(document).ready(function() {
 	//get subTab and set as active tab / others as inactivetabs
 	var tabName = getURLParameter("tab");
 	var editName = getURLParameter("edit");
-	var activeTab = $(".subTabmenu .tab a[href=\"tasks.htm/reset.htm?tab="+tabName+"&edit="+editName+"\"]").parent();
+	var activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tabName+"&edit="+editName+"\"]").parent();
 	activeTab.addClass("activeSubpage");
 	
 	//make #lists div align with #specificFilters div at bottom

@@ -5,7 +5,7 @@
 <%-- Template Start --%>
 
 <div id="filters">
-	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${model.tab}&edit=${model.edit}" commandName="generalFilter">
+	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${tab}&edit=${edit}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">
 			&#62;&#62;
 		</div>
@@ -37,7 +37,7 @@
 				<c:forEach items="${generalFilter.getTaskStatus()}" var="taskStatus" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="taskStatus[${count.index}]" />
-						<fmt:message key="${model.taskStatuses[count.index].getMessageKey()}"/>
+						<fmt:message key="${taskStatuses[count.index].getMessageKey()}"/>
 					</label><br>
 				</c:forEach>
 			</div>
@@ -46,7 +46,7 @@
 				<c:forEach items="${generalFilter.getPriority()}" var="priority" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="priority[${count.index}]" />
-						<fmt:message key="${model.priorities[count.index].getMessageKey()}"/>
+						<fmt:message key="${priorities[count.index].getMessageKey()}"/>
 					</label><br>
 				</c:forEach>
 			</div>
