@@ -108,8 +108,8 @@ public class TaskController {
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
-		tasks = getTaskList(tab);
-		tasks = filter.filter(tasks, generalFacade, getUser(principal));
+		filteredTasks = filter.filter(getTaskList(tab), generalFacade, getUser(principal));
+		tasks = filteredTasks;
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
@@ -129,8 +129,7 @@ public class TaskController {
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		
-		tasks = getTaskList(tab);
-		tasks = filter.search(tasks, facade);
+		tasks = filter.search(filteredTasks, facade);
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
@@ -245,7 +244,8 @@ public class TaskController {
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) {return "redirect:/tasks/reset?tab=general";}
-		tasks = getTaskList(tab);
+		filteredTasks = getTaskList(tab);
+		tasks = filteredTasks;
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
