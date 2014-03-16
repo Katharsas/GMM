@@ -26,11 +26,20 @@ public abstract class UniqueObject implements Linkable{
 	}
 	
 	public  static <U extends UniqueObject> U getFromId(Collection<U> c, String idLink) {
-		if (c==null || idLink==null) throw new NullPointerException();
 		for(U u : c) {
 			if(u.getIdLink().equals(idLink)) return u;
 		}
 		return null;
+	}
+	
+	public  static <U extends UniqueObject> void updateCounter(Collection<U> c) {
+		for(U u : c) {
+			if(u.getId() > idCount) idCount = u.getId();
+		}
+	}
+	
+	public long getId() {
+		return id;
 	}
 	
 	@Override

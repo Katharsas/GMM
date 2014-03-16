@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 import org.springframework.web.bind.annotation.SessionAttributes;
-
 import org.springframework.web.bind.support.SessionStatus;
 
 
@@ -24,22 +23,35 @@ import org.springframework.web.bind.support.SessionStatus;
 //import javax.servlet.http.HttpServletResponse;
 
 
+
+
+
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
+
+
+
 
 /** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 
+
+
+
 /** java */
 import java.security.Principal;
 
+
+
+
 /* project */
 import gmm.domain.*;
+import gmm.service.TaskFilterService;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataBaseFilter;
-import gmm.service.data.DataFilter;
+import gmm.service.filter.Selection;
+import gmm.service.filter.SimpleSelection;
 import gmm.service.forms.CommentFacade;
 import gmm.service.forms.GeneralFilterFacade;
 import gmm.service.forms.SearchFacade;
@@ -50,18 +62,7 @@ import gmm.util.*;
  * Controller class which handles all GET & POST requests with root "tasks".
  * This class is responsible for most CRUD operations on tasks and task comments.
  * 
- * If provides following functionality:
- * - Sending tasks sorted by type, filtered by filter otions and filtered by user search simultaneously
- * - Creating new Tasks of any type
- * - Creating new Comments on an existing task
- * - Editing an existing Task
- * - Deleting an existing Task
  * 
- * TODO:
- * - specific filtering
- * - creating/editing/deleting ModelTask and TextureTask
- * - Editing any Comments created by the same user
- * - Deleting any Comments created by the same user
  * 
  * Nice to have:
  * - Highlight text caught by search filter
@@ -75,10 +76,14 @@ import gmm.util.*;
 @Controller
 public class TaskController {
 	private final Log logger = LogFactory.getLog(getClass());
+	
+	private Collection<? extends Task> filteredTasks;
 	private Collection<? extends Task> tasks;
 	
 	@Autowired
 	DataAccess data;
+	@Autowired
+	TaskFilterService filter;
 	Collection<User> users;
 	
 	@PostConstruct
@@ -104,29 +109,7 @@ public class TaskController {
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
 		tasks = getTaskList(tab);
-		User user = getUser(principal);
-		DataFilter<Task> filter = new DataBaseFilter<Task>();
-		filter.setOnlyFilterEqual(true);
-		if (generalFacade.isCreatedByMe()) {
-			filter.filterField(tasks, "getAuthor", user);
-			tasks = filter.getFilteredElements();
-			filter.clear();
-		}
-		if (generalFacade.isAssignedToMe()) {
-			filter.filterField(tasks, "getAssigned", user);
-			tasks = filter.getFilteredElements();
-			filter.clear();
-		}
-		for(int i = 0; i<Priority.values().length; i++) {
-			if (!generalFacade.getPriority()[i]) {
-				tasks = filter.filterField(tasks, "getPriority", Priority.values()[i]);
-			}
-		}
-		for(int i = 0; i<TaskStatus.values().length; i++) {
-			if (!generalFacade.getTaskStatus()[i]) {
-				tasks = filter.filterField(tasks, "getTaskStatus", TaskStatus.values()[i]);
-			}
-		}
+		tasks = filter.filter(tasks, generalFacade, getUser(principal));
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	
@@ -145,26 +128,9 @@ public class TaskController {
 		 		@ModelAttribute("search") SearchFacade facade,
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
-		DataFilter<Task> filter = new DataBaseFilter<Task>();
-		String[] getters = new String[]{
-				"getName",
-				"getAuthor",
-				"getDetails",
-				"getLabel",
-				"getAssigned"};
-		if(facade.isEasySearch()) {
-			filter.filterOr(tasks, getters, ListUtil.inflateToArray(facade.getEasy(), getters.length));
-		}
-		else {
-			String[] filters = new String[]{
-					facade.getName(),
-					facade.getAuthor(),
-					facade.getDetails(),
-					facade.getLabel(),
-					facade.getAssigned()};
-			filter.filterAnd(tasks, getters, filters);
-		}
-		tasks = filter.getFilteredElements();
+		
+		tasks = getTaskList(tab);
+		tasks = filter.search(tasks, facade);
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
 	

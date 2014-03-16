@@ -97,6 +97,23 @@
 <!-- 					<password>jdfA-.4*sad+BV5</password> -->
 					<encoding>UTF-8</encoding>
 				</configuration>
+				
+				 <executions>
+		        <execution>
+		            <id>tomcat-run</id>
+		            <goals>
+		                <goal>exec-war-only</goal>
+		            </goals>
+		            <phase>package</phase>
+		            <configuration>
+<!-- 		                <path>/gmm</path> -->
+<!-- 		                <enableNaming>false</enableNaming> -->
+<!-- 		                <finalName>gmm.jar</finalName> -->
+		                <charset>utf-8</charset>
+		            </configuration>
+		        </execution>
+		    </executions>
+		    
 			</plugin>
 
 			<plugin>

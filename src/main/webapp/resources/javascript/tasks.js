@@ -51,7 +51,7 @@ $(document).ready(function() {
 	
 	//listener
 	$("#submitTaskButton").click(function() {submitTaskForm();});
-	$("#submitSearchButton").click(function() {submitSearchForm();});
+	$(".submitSearchButton").click(function() {submitSearchForm();});
 	$("#generalFiltersAllCheckbox").change(function() {switchGeneralFiltersAll($(this));});
 	$(".generalFiltersFormElement").change(function() {submitGeneralFilters();});
 	

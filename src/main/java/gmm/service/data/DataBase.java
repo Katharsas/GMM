@@ -16,6 +16,7 @@ import gmm.domain.Label;
 import gmm.domain.Linkable;
 import gmm.domain.ModelTask;
 import gmm.domain.TextureTask;
+import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.util.LinkedList;
 import gmm.util.List;
@@ -113,6 +114,8 @@ public class DataBase implements DataAccess {
 		removeAllData(clazz);
 		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
 		addAllData(clazz, data);
+		//TODO FIXME
+		UniqueObject.updateCounter(generalTasks);
 	}
 	
 	@SuppressWarnings("unchecked")
