@@ -24,8 +24,14 @@
         </div>
         <div class="groupDescriptor">Import Assets</div>
         <div class="adminElementGroup">
-        	<div id="fileTreeContainer"></div>
-        </div>
-        
-    </jsp:body>
+			<div id="fileTreeContainer"></div>
+			<div class="button pageButton" onclick="addFile()">add selected</div>
+			<div id="selectedPaths">
+				<ul>
+				</ul>
+			</div>
+			<div class="button pageButton" onclick="importAssets()">import assets</div>
+		</div>
+
+	</jsp:body>
 </t:templateAll>

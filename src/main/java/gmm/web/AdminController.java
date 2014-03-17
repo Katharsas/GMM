@@ -3,7 +3,6 @@ package gmm.web;
 
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.beans.factory.annotation.Autowired;
 /** Annotations */
 import org.springframework.stereotype.Controller;
@@ -12,49 +11,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import gmm.domain.GeneralTask;
-import gmm.domain.Task;
 import gmm.service.data.DataAccess;
-
-
-
-
-
 
 import gmm.service.data.DataConfigService;
 
-
-
-
-
 /** javax.servlets */
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
-
-
-
-
-
-
 
 
 
 /** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-
-
-
-
-
-
-
-
-
-
-
 
 
 import java.io.File;

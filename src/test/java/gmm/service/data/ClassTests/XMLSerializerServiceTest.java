@@ -7,7 +7,6 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLSerializerService;
 import gmm.util.Collection;
-import gmm.util.List;
 
 import org.junit.After;
 import org.junit.Before;

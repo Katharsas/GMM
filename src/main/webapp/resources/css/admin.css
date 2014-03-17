@@ -25,7 +25,18 @@
 	font-style:italic;
 }
 
-#fileTreeContainer {
+#fileTreeContainer, #selectedPaths {
 	background-color:#333333;
 	margin:40px;
+}
+.selectedFile {
+	background-color:#A82709;
+	font-weight: bold;
+}
+#selectedPaths ul{
+	font-family: Verdana, sans-serif;
+	font-size: 9px;
+	line-height: 18px;
+/* 	list-style: none; */
+	padding: 0px;
 }

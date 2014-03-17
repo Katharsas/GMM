@@ -40,7 +40,7 @@ public class DataConfigService {
 		 */
 		basePath = context.getRealPath("")+"/"+dataLocation;
 		
-		
+		basePath = basePath.replace('\\', '/');
 		Properties property = new Properties();
 		try {
 			property.load(new FileInputStream(basePath+"config.properties"));

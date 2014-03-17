@@ -23,7 +23,8 @@ UL.jqueryFileTree A {
 }
 
 UL.jqueryFileTree A:hover {
-	background: #BDF;
+/* 	background: #555; */
+	text-decoration: underline;
 }
 
 /* Core Styles */
