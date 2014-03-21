@@ -42,7 +42,6 @@
 				<form:input class="searchInputField left" path="assigned" value=""/>
 				<div class="searchDescription left">&#160;</div>
 			</div>
-<!-- 			<input class="searchSubmitButton button pageButton left" type="submit" value="Start Search!"><br> -->
 			<div class="submitSearchButton button pageButton left">Start Search!</div>
 			<div class="clear"></div>
 			</form:form>
@@ -81,7 +80,7 @@
 					    		<c:out value="${comment.getAuthor().getName()}"/>
 					    	</div>
 					    	<div class=" left subElementText elementContent">
-					    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br>")}
+					    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
 					    	</div>
 					    	<div class="clear"></div>
 					    </div>
@@ -112,11 +111,11 @@
 				    	</div>
 					    <div class="right elementAuthorDate">
 				    		<div class=" elementContent right">
-				    			<c:out value="${task.getAuthor().getName()}"/><br>
+				    			<c:out value="${task.getAuthor().getName()}"/><br/>
 					    		<c:out value="${task.getCreationDate().toString()}"/>
 				    		</div>
 				    		<div class="elementContent right">
-				    			<fmt:message key="author"/>:&#160;&#160;<br>
+				    			<fmt:message key="author"/>:&#160;&#160;<br/>
 					    		<fmt:message key="tasks.list.created"/>:&#160;&#160;
 				    		</div>
 				    	</div>

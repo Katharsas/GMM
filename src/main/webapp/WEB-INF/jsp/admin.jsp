@@ -32,6 +32,5 @@
 			</div>
 			<div class="button pageButton" onclick="importAssets()">import assets</div>
 		</div>
-
 	</jsp:body>
 </t:templateAll>

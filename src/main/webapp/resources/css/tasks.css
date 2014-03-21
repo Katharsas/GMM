@@ -1,9 +1,14 @@
 .pageButton {
 	width:9em;
-	background-color:#333333;
-	color:#FFFFFF;
-	border:1px solid #A82709;
+/* 	background-color:#333333; */
+/* 	color:#FFFFFF; */
+/* 	border:1px solid #A82709; */
 }
+
+#filters {
+	overflow: hidden;
+}
+
 .filterGroup {
 	padding:5px;
 }
@@ -46,10 +51,11 @@
 }
 
 .filterGroup {
+	border-bottom:5px solid #151515;
 }
 .filterBorder {
-	border:0px solid;
-	border-top-width: 5px;
+/* 	border:0px solid; */
+/* 	border-top-width: 5px; */
 }
 
 .generalFilters{
@@ -59,11 +65,16 @@
 	margin-bottom:13%;
 }
 .generalFilters .filterGroup{
-	/*background-color:#3A5514;*/
-	background-color:#1E3636;
+/* 	background-color:#3A5514; */
+/* 	background-color:#1E3636; */
+/* 	background-color:#1D3052; */
+	background-color:#072737;
 }
 .generalFilters .filterBorder{
-	border-color:#202828;
+/* 	border-color:#202828; */
+/* 	border-color:#222222; */
+	border-color:#151515;
+
 }
 
 .specificFilters{
@@ -74,10 +85,14 @@
 
 
 .specificFilters .filterGroup{
-	background-color:#145959;
+/* 	background-color:#145959; */
+/* 	background-color:#29477F; */
+	background-color:#164054;
 }
 .specificFilters .filterBorder{
-	border-color:#1E3636;
+/* 	border-color:#1E3636; */
+/* 	border-color:#222222; */
+	border-color:#151515;
 }
 
 
@@ -92,7 +107,7 @@
 }
 
 #listsMain {
-	/*min-height:500px;*/
+	min-height:600px;
 	padding:10px;
 /* 	width:100%; */
 	column-count:10;
@@ -166,12 +181,15 @@
 	font-size:0.7em;
 }
 .elementButton{
-	padding:0px;
+	padding:1px;
 	font-size:0.85em;
 	margin:15px 10px 3px 0px;
 	width:6em;
 	color:#CCCCCC;
 	background-color:333333;
+}
+.elementButton:hover{
+	background-color:292929;
 }
 .elementButton.commentElement {
 	margin-left:3px;

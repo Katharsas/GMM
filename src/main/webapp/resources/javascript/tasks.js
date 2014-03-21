@@ -1,5 +1,9 @@
 var oldElement;
 
+$.expr[':'].blank = function(obj){
+	return !$.trim($(obj).text()).length;
+};
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -16,13 +20,6 @@ $(document).ready(function() {
 	var activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tabName+"&edit="+editName+"\"]").parent();
 	activeTab.addClass("activeSubpage");
 	
-	//make #lists div align with #specificFilters div at bottom
-	var $filter = $(".specificFilters");
-	var $list = $("#listsMain");
-	var height = $filter.offset().top + $filter.outerHeight(false);
-	var pos = $list.offset().top + parseInt($list.css("padding-top")) + parseInt($list.css("padding-bottom"));
-	$("#listsMain").css("min-height", (height-pos)+"px");
-	
 	//show
 	$("#cancelTaskButton").show();
 	//hide #taskForm
@@ -34,7 +31,7 @@ $(document).ready(function() {
 	}
 	else newTask();
 	//hide .listElementBody
-	switchListElements();
+	collapseListElements();
 	//hide comment input field & delete question
 	$(".commentInput").hide();
 	//hide delete question
@@ -64,31 +61,33 @@ function newTask() {
 	$("#newTaskButton").hide();
 }
 
-function switchListElements() {
+function collapseListElements() {
 	$(".listElementBody").hide();
 }
 
 function expandListElements() {
-	$(".listElementBody").css("display", "block");
+	$(".listElementBody").show();
 }
 
 function switchListElement(element) {
+	var slideTime = 300;
 	var newElement = ($(element).parent())[0];
 	
 	if(newElement!=oldElement) {
 		//hide previous elements footer and border
-		$(oldElement).children(".listElementBody").children(".listElementBodyFooter").css("display", "none");
+		$(oldElement).find(".listElementBody > *:blank").hide();
+		$(oldElement).find(".listElementBody > .listElementBodyFooter").slideUp(slideTime);
 		$(oldElement).css("border-width", "0px");
 		//show new elements footer and border
-		$(newElement).children(".listElementBody").children(".listElementBodyFooter").css("display", "block");
-		$(newElement).css("border-width", "2px");
+		$(newElement).find(".listElementBody > .listElementBodyFooter").slideDown(slideTime);
+		$(newElement).css("border-width", "1px");
 	}
 	
 	if(($(element).parent().children(".listElementBody").css("display"))=="none") {
-		$(element).parent().children(".listElementBody").css("display", "block");
+		$(element).parent().children(".listElementBody").slideDown(slideTime);
 	}
 	else if(newElement==oldElement) {
-		$(element).parent().children(".listElementBody").css("display", "none");
+		$(element).parent().children(".listElementBody").slideUp(slideTime);
 		$(newElement).css("border-width", "0px");
 		newElement=null;
 	}
@@ -129,10 +128,14 @@ function switchSearchType() {
 function toggleFilters($toggle, $resize) {
 	if($toggle.is(":visible")) {
 		$toggle.hide();
+//		$toggle.animate({left:'400px'},900);
+//		$toggle.hide();
+		
 		$resize.css("width","2em");
 		return true;
 	}
 	$toggle.show();
+//	$toggle.animate({left:'0px'},900);
 	$resize.css("width","9em");
 	return false;
 }

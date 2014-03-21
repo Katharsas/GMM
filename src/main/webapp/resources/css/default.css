@@ -34,7 +34,7 @@
 .clear{clear:both;}
 .table{display:table;}
 .tr{display:table-row;}
-.td{display:table-cell;}
+.td{display:table-cell;vertical-align: top;}
 
 /*Alignment & Other*/
 .center, .button{text-align:center;}
@@ -100,25 +100,33 @@ body {
 }
 .inactivePage, .noPage {
 	color:#FFFFFF;
-	background-color:#999999;
+/* 	background-color:#999999; */
+	background-color:#B4B7BF;
 }
-/* .noPage{ */
-/* 	color:#FFFFFF; */
-/* 	background-color:#EEEEEE; */
-/* } */
-.pageButton{
+.pageButton {
 	color:#000000;
-	background-color:#EEEEEE;
+	background-color:#333333;
+	color:#FFFFFF;
+	border:1px solid #A82709;
+}
+.pageButton:hover {
+/* 	background-color:#382F2D; */
+	background-color:#292929;
 }
 
 /*Colours Sub Page*/
 .activeSubpage{
 	color:#F6F6F6;
-	background-color:#145959;
+/* 	background-color:#145959; */
+/* 	background-color:#29477F; */
+	background-color:#164054;
+	
 }
 .inactiveSubpage{
 	color:#DDDDDD;
-	background-color:#1E3636;
+/* 	background-color:#1E3636; */
+/* 	background-color:#1D3052; */
+	background-color:#072737;
 }
 .noSubpage{
 	color:inherit;

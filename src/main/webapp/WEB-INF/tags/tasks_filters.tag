@@ -3,7 +3,6 @@
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
 <%-- Template Start --%>
-
 <div id="filters">
 	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${tab}&edit=${edit}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">
@@ -12,7 +11,7 @@
 		<div id="generalFilterBody">
 			<div class="filterBorder"></div>
 			<div class="filterGroup center h3">
-				<fmt:message key="tasks.filter.general"/>		
+				<fmt:message key="tasks.filter.general"/>
 			</div>
 			<div class="filterBorder"></div>
 			<div class="filterGroup">
