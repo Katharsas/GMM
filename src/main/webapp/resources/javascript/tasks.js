@@ -78,9 +78,11 @@ function switchListElement(element) {
 		$(oldElement).find(".listElementBody > *:blank").hide();
 		$(oldElement).find(".listElementBody > .listElementBodyFooter").slideUp(slideTime);
 		$(oldElement).css("border-width", "0px");
+		$(oldElement).css("padding-left", "6px");
 		//show new elements footer and border
 		$(newElement).find(".listElementBody > .listElementBodyFooter").slideDown(slideTime);
-		$(newElement).css("border-width", "1px");
+		$(newElement).css("border-width", "2px");
+		$(newElement).css("padding-left", "16px");
 	}
 	
 	if(($(element).parent().children(".listElementBody").css("display"))=="none") {
@@ -89,6 +91,7 @@ function switchListElement(element) {
 	else if(newElement==oldElement) {
 		$(element).parent().children(".listElementBody").slideUp(slideTime);
 		$(newElement).css("border-width", "0px");
+		$(newElement).css("padding-left", "6px");
 		newElement=null;
 	}
 	oldElement = newElement;

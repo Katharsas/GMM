@@ -79,7 +79,7 @@
 					    	<div class="left subElementAuthor elementContent">
 					    		<c:out value="${comment.getAuthor().getName()}"/>
 					    	</div>
-					    	<div class=" left subElementText elementContent">
+					    	<div class="subElementText elementContent">
 					    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
 					    	</div>
 					    	<div class="clear"></div>

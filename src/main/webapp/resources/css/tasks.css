@@ -1,8 +1,5 @@
 .pageButton {
 	width:9em;
-/* 	background-color:#333333; */
-/* 	color:#FFFFFF; */
-/* 	border:1px solid #A82709; */
 }
 
 #filters {
@@ -54,8 +51,6 @@
 	border-bottom:5px solid #151515;
 }
 .filterBorder {
-/* 	border:0px solid; */
-/* 	border-top-width: 5px; */
 }
 
 .generalFilters{
@@ -65,14 +60,9 @@
 	margin-bottom:13%;
 }
 .generalFilters .filterGroup{
-/* 	background-color:#3A5514; */
-/* 	background-color:#1E3636; */
-/* 	background-color:#1D3052; */
 	background-color:#072737;
 }
 .generalFilters .filterBorder{
-/* 	border-color:#202828; */
-/* 	border-color:#222222; */
 	border-color:#151515;
 
 }
@@ -109,7 +99,6 @@
 #listsMain {
 	min-height:600px;
 	padding:10px;
-/* 	width:100%; */
 	column-count:10;
 	column-width:460px;
 	column-gap:10px;
@@ -125,7 +114,7 @@
 #listsMain .listElement{
 	margin-top:5px;
 	padding:4px 6px;
-	border:0px solid #AAAAAA;
+	border-left:0px solid #AAAAAA;
 	/*Using following only because avoid column-break-inside not working yet*/
 	/*Can be removed when avoid is working*/
 	box-sizing: border-box;
@@ -148,11 +137,6 @@
 .switchSearchButton {
 	width:28%;
 	margin-right:5px;
-/* 	color:#EEEEEE; */
-/* 	text-align:center; */
-
-/* 	background-color:333333; */
-/* 	border:1px solid #A82709; */
 }
 .searchDescription {
 	width:16.5%;
@@ -207,30 +191,30 @@
 .elementPriority.LOW{
 	background-color:#FFFFFF;
 }
-
+.elementDetails{
+}
 .elementDetails, .elementComments {
 	margin:5px;
 }
 .elementComments {
-	margin-top:7px;
+	margin-top:10px;
 }
 .elementDetails, .subListElement {
 	color:#D5D5D5;
-	padding:0px 3px;
-	background-color:333333;
+	padding:0px 5px;
 }
 .subListElement{
+	border-top: 1px solid #555555;
 	margin-top:3px;
 }
 .subElementAuthor {
-	color:#FFFFFF;
-	margin-right:5px;
+	font-weight:bold;
+	margin-right:2px;
 	min-width:4.7em;
 }
-
-/* .taskInput *{ */
-/* 	width:20em				!important; */
-/* } */
+.subElementText {
+	padding-left:4px;
+}
 .commentInput {
 	margin-top:5px;
 }
