@@ -1,37 +1,26 @@
 package gmm.web;
 
+import java.util.Arrays;
 
-/** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
-/** Annotations */
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.GeneralTask;
+import gmm.service.AssetFileService;
 import gmm.service.data.DataAccess;
 
 import gmm.service.data.DataConfigService;
+import gmm.util.HashSet;
+import gmm.util.Set;
 
-/** javax.servlets */
-import javax.servlet.ServletException;
-
-
-
-/** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-
-
-import java.io.File;
-/** java */
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-
-/* project */
 
 
 @Controller
@@ -42,16 +31,14 @@ public class AdminController {
 	DataAccess data;
 	@Autowired
 	DataConfigService config;
+	@Autowired
+	AssetFileService assetFileService;
+	
+	private Set<String> filePaths = new HashSet<>();
+	boolean areTexturePaths = true;
 	
 	@RequestMapping(method = RequestMethod.GET)
-    public String send(ModelMap model)
-    		throws ServletException, IOException {
-
-		String now = (new Date()).toString();
-		logger.info("Returning admin tab view");
-		
-        model.addAttribute("now", now);
-        
+    public String send(ModelMap model) {
         return "admin";
     }
 	
@@ -77,29 +64,32 @@ public class AdminController {
 	public String testFileTree(ModelMap model,
 			@RequestParam("dir") String dir) throws Exception {
 		
-		try {dir = java.net.URLDecoder.decode(dir, "UTF-8");}
-		catch (UnsupportedEncodingException e1) {e1.printStackTrace();}	
-		
-		//Base path restricts dir path access to base path or below.
-		//If the dir variable does not point below the base directory,
-		//it will be treated as relative path below the base directory
-		String base = config.ASSETS_ORIGINAL;
-		try {
-			String baseCanonical = new File(base).getCanonicalPath();
-			String dirCanonical = new File(dir).getCanonicalPath();
-			if (!dirCanonical.startsWith(baseCanonical)) {
-				dir = base+dir;
-				dirCanonical = new File(dir).getCanonicalPath();
-			}
-			if (!dirCanonical.startsWith(baseCanonical)) {
-				throw new IllegalArgumentException();
-			}
-		}
-		catch(Exception e) {
-			throw new IllegalArgumentException("Wrong path input! Path is not a valid relative path!");
-		}
+		dir = assetFileService.restrictAccess(dir, config.ASSETS_ORIGINAL);
 		model.addAttribute("dir", dir);
 		
 		return "jqueryFileTree";
+	}
+	
+	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
+	public @ResponseBody String[] getAssetPaths(ModelMap model,
+			@RequestParam("dir") String dir,
+			@RequestParam("textures") boolean textures) {
+		
+		dir = assetFileService.restrictAccess(dir, config.ASSETS_ORIGINAL);
+		if(this.areTexturePaths!=textures) {
+			this.filePaths.clear();
+			this.areTexturePaths = textures;
+		}
+		String[] extensions;
+		if(textures) {
+			extensions = new String[]{"tga","TGA"};
+		}
+		else {
+			extensions = new String[]{"3ds","3DS"};
+		}
+		this.filePaths.addAll(assetFileService.getFilePaths(dir, extensions));
+		String[] result = this.filePaths.toArray(new String[filePaths.size()]);
+		Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
+		return result;
 	}
 }

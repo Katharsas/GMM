@@ -20,27 +20,44 @@ var adminVars = {
 };
 
 $(document).ready( function() {
-    $('#fileTreeContainer').fileTree(
-    		{
-    			root : '/',
-    			script : 'jqueryFileTree.jsp'
-    		}, function(file) {
-        alert(file);
-    });
-	
-	 $('#fileTreeContainer').fileTree(
-			{
-				root : '',
-				script : 'admin/import'
-			}, function(file) {
-		var old = adminVars["selected"];
-		$("a[rel='"+old+"']").removeClass("selectedFile");
-		$("a[rel='"+file+"']").addClass("selectedFile");
-		adminVars["selected"] = file;
-	});
+	cancelImport();
+	//set up jquery fileTree plugin
+	$('#fileTreeContainer').fileTree(
+		{
+			root : '',
+			script : 'admin/import'
+		},
+		function(file) {
+			var old = adminVars["selected"];
+			$("a[rel='"+old+"']").removeClass("selectedFile");
+			$("a[rel='"+file+"']").addClass("selectedFile");
+			adminVars["selected"] = file;
+		}
+	);
 });
 
-function addFile() {
-	var file = adminVars["selected"];
-	$("#selectedPaths ul").append("<li>"+file+"</li>");
+function addAssetPaths(textures) {
+	if(textures) $('#importTexturesButton').show();
+	else $('#importMeshesButton').show();
+	$('#cancelImportButton').show();
+	
+	var dir = adminVars["selected"];
+	$("#selectedPaths ul").empty();
+	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
+		for(var i in paths) {
+			$("#selectedPaths ul").append("<li>"+paths[i]+"</li>");
+		}
+	});
+}
+
+function cancelImport() {
+	$("#selectedPaths ul").empty();
+	$('#importButtons .button').hide();
+}
+
+function importTextures() {
+	alert("Not yet implemented!");
+}
+function importMeshes() {
+	alert("Not yet implemented!");
 }

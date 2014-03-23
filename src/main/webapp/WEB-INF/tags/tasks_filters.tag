@@ -6,7 +6,7 @@
 <div id="filters">
 	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${tab}&edit=${edit}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">
-			&#62;&#62;
+			&#160;&#62;&#62;
 		</div>
 		<div id="generalFilterBody">
 			<div class="filterBorder"></div>

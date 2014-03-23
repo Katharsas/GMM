@@ -1,5 +1,4 @@
 <%@ include file="/WEB-INF/jsp/include.jsp" %>
-<%-- <%@ include file="/WEB-INF/jsp/jqueryFileTree.jsp" %> --%>
 
 <t:templateAll>
 
@@ -14,23 +13,31 @@
     
     
     <jsp:body>
-    	<div class="groupDescriptor">DataBase Operations</div>
+    	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
         <div class="adminElementGroup">
-        	<div class="button pageButton left" onclick="saveTasks()">save Tasks</div>
-        	<div class="button pageButton left" onclick="loadTasks()">load Tasks</div>
-        	<div class="button pageButton left" onclick="deleteTasks()">delete Tasks</div>
+        	<div class="button pageButton left" onclick="saveTasks()"><fmt:message key="admin.database.save"/></div>
+        	<div class="button pageButton left" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
+        	<div class="button pageButton left" onclick="deleteTasks()"><fmt:message key="admin.database.delete"/></div>
         	<div class="clear"></div>
-        	<div class="hint">Loading will delete all current Tasks!</div>
+        	<div class="hint"><fmt:message key="admin.database.hint"/></div>
         </div>
-        <div class="groupDescriptor">Import Assets</div>
+        
+        <div class="groupDescriptor">Import Assets (WIP)</div>
         <div class="adminElementGroup">
 			<div id="fileTreeContainer"></div>
-			<div class="button pageButton" onclick="addFile()">add selected</div>
+			<div class="left button pageButton" onclick="addAssetPaths(true)">Scan for Textures</div>
+			<div class="left button pageButton" onclick="addAssetPaths(false)">Scan for 3D Meshes</div>
+			<div class="clear"></div>
 			<div id="selectedPaths">
 				<ul>
 				</ul>
 			</div>
-			<div class="button pageButton" onclick="importAssets()">import assets</div>
+			<div id="importButtons">
+				<div id="importTexturesButton" class="left button pageButton" onclick="importTextures()">Import Textures</div>
+				<div id="importMeshesButton" class="left button pageButton" onclick="importMeshes()">Import 3D Meshes</div>
+				<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
+				<div class="clear"></div>
+			</div>
 		</div>
 	</jsp:body>
 </t:templateAll>

@@ -111,13 +111,17 @@ function switchCommentInput(element) {
  * @param isEasySearch - String or boolean
  */
 function setSearchVisibility(isEasySearch) {
+	var slideTime = 300;
 	if(isEasySearch.toString()=="true") {
 		$(".complexSearch").hide();
 		$(".easySearch").show();
+//		$(".complexSearch").slideUp(slideTime, function(){$(".easySearch").show();});
 	}
 	else {
 		$(".complexSearch").show();
 		$(".easySearch").hide();
+//		$(".complexSearch").slideDown(slideTime, function(){$(".easySearch").hide();});
+		
 	}
 }
 
