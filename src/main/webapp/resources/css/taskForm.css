@@ -1,0 +1,13 @@
+.taskDescription, .taskInput {
+	margin-bottom:5px;
+}
+.taskDescription {
+	width:5em;
+	float:left;
+}
+.taskInput {
+	min-width:20em;
+}
+.taskInput *{
+	min-width:75% !important;
+}

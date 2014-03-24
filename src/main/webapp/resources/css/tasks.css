@@ -25,20 +25,6 @@
 	margin-right:20px;
 	margin-bottom:10px;
 }
-.taskDescription, .taskInput {
-	margin-bottom:5px;
-}
-
-.taskDescription {
-	width:5em;
-	float:left;
-}
-.taskInput {
-	min-width:20em;
-}
-.taskInput *{
-	min-width:75% !important;
-}
 
 .taskButtons {
 	margin:1em 0em;
@@ -146,18 +132,39 @@
 	 max-width:100%;
 }
 
+.elementStatus, .elementAssigned {
+	margin-top:4px;
+	font-size:0.96em;
+	color:#E8E8E8;
+}
+
+.elementPriority, .elementLabel {
+	margin-top:5px;
+}
+
 .elementPriority{
 	margin-left:10px;
-	margin-top:3px;
 	height:1em;
-	width:1em;
+	width:0.5em;
+}
+
+.elementId, .elementLabel{
+	padding-right:3px;
+
+}
+.elementId{
+	margin-top:6px;
+	color:#6D6D6D;
+	font-size:0.8em;
 }
 .elementLabel{
-	padding-right:10px;
-	color:#CCCCCC;
+	font-weight:600;
+	color:#DDDDDD;
+	font-size:0.9em;
 }
 .elementName{
-	padding-bottom:5px;
+	padding-left:5px;
+	padding-bottom:3px;
 }
 .elementAuthorDate{
 	margin-top:10px;
@@ -180,16 +187,19 @@
 }
 
 .elementPriority.ULTRA{
-	background-color:#BB0044;
+	width:0.9em;
+	background-color:#F30021;
 }
 .elementPriority.HIGH{
-	background-color:red;
+	width:0.7em;
+	background-color:#FF4F00;
 }
 .elementPriority.MID{
-	background-color:orange;
+	background-color:#FFB400;
 }
 .elementPriority.LOW{
-	background-color:#FFFFFF;
+	width:0.3em;
+	background-color:#DDDDDD;
 }
 .elementDetails{
 }
@@ -200,7 +210,7 @@
 	margin-top:10px;
 }
 .elementDetails, .subListElement {
-	color:#D5D5D5;
+	color:#DDDDDD;
 	padding:0px 5px;
 }
 .subListElement{
@@ -208,9 +218,10 @@
 	margin-top:3px;
 }
 .subElementAuthor {
-	font-weight:bold;
+	color:#AAAAAA;
 	margin-right:2px;
 	min-width:4.7em;
+	font-style:italic;
 }
 .subElementText {
 	padding-left:4px;

@@ -1,4 +1,5 @@
-<%@ include file="/WEB-INF/jsp/include.jsp" %>
+<%@ include file="/WEB-INF/tags/include.tagf" %>
+<% pageContext.setAttribute("newLine", "\n"); %>
 
 <t:templateAll>
 
@@ -6,6 +7,7 @@
     	<script src="res/javascript/tasks.js" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
+		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/tasks.css" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 

@@ -51,9 +51,12 @@
 				<div class="listElementTop clickable" onclick="switchListElement(this)">
 					<div class="right elementPriority ${task.getPriority().toString()}">
 				    </div>
+					<div class="left elementId elementContent">
+						<c:out value="${task.getId()}"/>:
+				    </div>
 				    <c:if test="${!task.getLabel().equals(\"\")}">
 					    <div class="left elementLabel elementContent">
-							[<c:out value="${task.getLabel()}"/>]
+							[<c:out value="${task.getLabel()}"/>]&#160;&#160;
 					    </div>
 					</c:if>
 					<div class="left elementName elementContent h3">

@@ -37,22 +37,38 @@ $(document).ready( function() {
 });
 
 function addAssetPaths(textures) {
-	if(textures) $('#importTexturesButton').show();
-	else $('#importMeshesButton').show();
-	$('#cancelImportButton').show();
-	
 	var dir = adminVars["selected"];
 	$("#selectedPaths ul").empty();
 	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
+		if(paths.length==0) {
+			cancelImport();
+			return;
+		}
 		for(var i in paths) {
 			$("#selectedPaths ul").append("<li>"+paths[i]+"</li>");
 		}
 	});
+	
+	if(textures) {
+		$('#importTexturesButton').show();
+		$('#importMeshesButton').hide();
+		$('#addMeshesButton').hide();
+	}
+	else {
+		$('#importMeshesButton').show();
+		$('#importTexturesButton').hide();
+		$('#addTexturesButton').hide();
+	}
+	$('#cancelImportButton').show();
+	$('#taskForm').show();
 }
 
 function cancelImport() {
 	$("#selectedPaths ul").empty();
 	$('#importButtons .button').hide();
+	$('#taskForm').hide();
+	$('#addMeshesButton').show();
+	$('#addTexturesButton').show();
 }
 
 function importTextures() {

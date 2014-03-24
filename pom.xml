@@ -98,8 +98,8 @@
 <!-- 					<url>http://localhost:8080/manager/text</url> -->
 <!-- 					<server>TomcatServer</server> -->
 					<path>/GMM</path>
-<!-- 					<username>admin</username> -->
-<!-- 					<password>jdfA-.4*sad+BV5</password> -->
+					<username>admin</username>
+					<password>jdfA-.4*sad+BV5</password>
 					<encoding>UTF-8</encoding>
 				</configuration>
 				

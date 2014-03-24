@@ -1,4 +1,5 @@
-<%@ include file="/WEB-INF/jsp/include.jsp" %>
+<%@ include file="/WEB-INF/tags/include.tagf" %>
+<% pageContext.setAttribute("newLine", "\n"); %>
 
 <t:templateAll>
 
@@ -7,6 +8,7 @@
     	<script src="res/javascript/jqueryFileTree.js" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
+		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/admin.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
@@ -25,18 +27,29 @@
         <div class="groupDescriptor">Import Assets (WIP)</div>
         <div class="adminElementGroup">
 			<div id="fileTreeContainer"></div>
-			<div class="left button pageButton" onclick="addAssetPaths(true)">Scan for Textures</div>
-			<div class="left button pageButton" onclick="addAssetPaths(false)">Scan for 3D Meshes</div>
+			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)">Add Textures</div>
+			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)">Add 3D Meshes</div>
 			<div class="clear"></div>
 			<div id="selectedPaths">
 				<ul>
 				</ul>
 			</div>
-			<div id="importButtons">
+
+			<div id="importTaskForm">
+				<form:form id="taskForm" method="POST" action="/GMM/admin/import/submit" commandName="task">
+					<div style="width:100%;">
+						<t:all_taskForm>
+						</t:all_taskForm>
+					</div>
+				</form:form>
+				
+				<div class="clear"></div>
+				<div id="importButtons">
 				<div id="importTexturesButton" class="left button pageButton" onclick="importTextures()">Import Textures</div>
 				<div id="importMeshesButton" class="left button pageButton" onclick="importMeshes()">Import 3D Meshes</div>
 				<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
 				<div class="clear"></div>
+			</div>
 			</div>
 		</div>
 	</jsp:body>
