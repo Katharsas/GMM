@@ -2,14 +2,16 @@
 	width:9em;
 }
 .adminElementGroup, .groupDescriptor {
-	margin:0 20px;
+	margin:0 auto;
 	padding:5 20px;
+	max-width:850px;
 }
 .adminElementGroup {
 	background-color:#072737;
+	overflow: hidden;
 }
-#fileTreeContainer, #selectedPaths, .pageButton{
-	margin:15px 10px;
+.adminElement, .pageButton{
+	margin:12px 10px;
 }
 
 .groupDescriptor {
@@ -22,9 +24,17 @@
 	font-style:italic;
 }
 
-.selectedFile {
+.selectedAssetFile, .selectedBackupFile {
 	background-color:#A82709;
 	font-weight: bold;
+
+}
+#taskBackupsContainer, #fileTreeContainer {
+	max-width:500px;
+}
+#loadTasks {
+	background-color:#164054;
+	width:75%;
 }
 #selectedPaths ul{
 	font-family: Verdana, sans-serif;
@@ -38,6 +48,7 @@
 	background-color:#164054;
 	padding:5px;
 	margin:15px 10px;
-/* 	margin-right:20px; */
-/* 	margin-bottom:10px; */
+}
+#saveAllTasksDialog {
+	background-color: red;
 }

@@ -35,6 +35,7 @@
 .table{display:table;}
 .tr{display:table-row;}
 .td{display:table-cell;vertical-align: top;}
+.verticalSpace{height:1px;}
 
 /*Alignment & Other*/
 .center, .button{text-align:center;}

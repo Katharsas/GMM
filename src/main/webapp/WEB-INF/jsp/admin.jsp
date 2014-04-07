@@ -17,23 +17,28 @@
     <jsp:body>
     	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
         <div class="adminElementGroup">
-        	<div class="button pageButton left" onclick="saveTasks()"><fmt:message key="admin.database.save"/></div>
-        	<div class="button pageButton left" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
-        	<div class="button pageButton left" onclick="deleteTasks()"><fmt:message key="admin.database.delete"/></div>
-        	<div class="clear"></div>
-        	<div class="hint"><fmt:message key="admin.database.hint"/></div>
+        	<div id="loadTasks" class="adminElement left">
+        	    <div class="adminElement hint">Select a file to load tasks from:</div>
+        		<div id="taskBackupsContainer" class="adminElement"></div>
+        		<br/>
+        		<div class="button pageButton" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
+        	</div>
+        	<div id="saveDeleteTasks" class="adminElement left">
+        		<div id="saveAllTasksButton" class="button pageButton" onclick="saveAllTasks()"><fmt:message key="admin.database.saveall"/></div>
+<!--         		<div id="saveAllTasksDialog" class="dialogContainer">test</div> -->
+        		<div class="verticalSpace"></div>
+        		<div class="button pageButton" onclick="deleteAllTasks()"><fmt:message key="admin.database.deleteall"/></div>
+			</div>
+			<div class="clear"></div>
         </div>
         
         <div class="groupDescriptor">Import Assets (WIP)</div>
         <div class="adminElementGroup">
-			<div id="fileTreeContainer"></div>
+			<div id="fileTreeContainer" class="adminElement"></div>
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)">Add Textures</div>
 			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)">Add 3D Meshes</div>
 			<div class="clear"></div>
-			<div id="selectedPaths">
-				<ul>
-				</ul>
-			</div>
+			<div id="selectedPaths" class="adminElement"><ul></ul></div>
 
 			<div id="importTaskForm">
 				<form:form id="taskForm" method="POST" action="/GMM/admin/import/submit" commandName="task">

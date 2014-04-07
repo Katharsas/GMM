@@ -18,10 +18,11 @@
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
 			<link id="css_link" href="res/css/default.css" media="screen" rel="stylesheet" type="text/css" />
+			<link id="css_link" href="res/css/dialog.css" media="screen" rel="stylesheet" type="text/css" />
 			<jsp:invoke fragment="css"/>
 	</head>
 	
-	
+	<div id="overlay"></div>
 	
 	<body class="noPage">
 		<div id="wrap">

@@ -1,10 +1,53 @@
+var adminVars = {
+	"selectedAssetFile":$(),
+	"selectedBackupFile":$()
+};
+var adminFuncs = {
+	"selectTreeElement":
+		function($newFile, marker) {
+			var $oldFile = adminVars[marker];
+			$($oldFile).removeClass(marker);
+			$($newFile).addClass(marker);
+			adminVars[marker] = $newFile;
+		},
+	"treePluginOptions":
+		function(mapping, directories) {
+			return {
+				root : "",
+				script : mapping,
+				expandSpeed : 300,
+				collapseSpeed : 300,
+				directoryClickable : directories
+			};
+		}
+};
 
-function saveTasks() {
-	window.location = "admin/saveTasks";
+$(document).ready( function() {
+	cancelImport();
+	refreshTaskBackups();
+	refreshTaskImportTree();
+});
+
+function refreshTaskBackups() {
+	$('#taskBackupsContainer').fileTree(
+		adminFuncs.treePluginOptions("admin/backups", false),
+		function($file) {
+			adminFuncs.selectTreeElement($file, "selectedBackupFile");
+		}
+	);
 }
 
 function loadTasks() {
-	window.location = "admin/loadTasks";
+//	var dir = adminVars["selectedBackupFile"].attr('rel');
+	alert("Not yet implemented!");
+//	window.location = "admin/loadTasks";
+}
+
+function saveAllTasks() {
+//	$.post("admin/saveAllTasks", {}, function(data) {
+//		showDialogue($("saveAllTasksButton"), true, data);
+//	});
+	showDialogue($("#saveAllTasksButton"), true, "test");
 }
 
 function deleteTasks() {
@@ -15,29 +58,17 @@ function importAssets() {
 	alert("Not yet implemented");
 }
 
-var adminVars = {
-	"selected":""
-};
-
-$(document).ready( function() {
-	cancelImport();
-	//set up jquery fileTree plugin
+function refreshTaskImportTree() {
 	$('#fileTreeContainer').fileTree(
-		{
-			root : '',
-			script : 'admin/import'
-		},
-		function(file) {
-			var old = adminVars["selected"];
-			$("a[rel='"+old+"']").removeClass("selectedFile");
-			$("a[rel='"+file+"']").addClass("selectedFile");
-			adminVars["selected"] = file;
+		adminFuncs.treePluginOptions("admin/originalAssets", true),
+		function($file) {
+			adminFuncs.selectTreeElement($file, "selectedAssetFile");
 		}
 	);
-});
+}
 
 function addAssetPaths(textures) {
-	var dir = adminVars["selected"];
+	var dir = adminVars["selectedAssetFile"].attr('rel');
 	$("#selectedPaths ul").empty();
 	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
 		if(paths.length==0) {

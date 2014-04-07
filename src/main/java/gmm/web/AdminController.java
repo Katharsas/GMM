@@ -54,6 +54,7 @@ public class AdminController {
 	
 	@RequestMapping(method = RequestMethod.GET)
     public String send(ModelMap model) {
+		filePaths = new HashSet<>();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("taskStatuses", TaskStatus.values());
@@ -79,13 +80,21 @@ public class AdminController {
 		return "redirect:/admin";
 	}
 	
-	@RequestMapping(value = {"/import"} , method = RequestMethod.POST)
-	public String testFileTree(ModelMap model,
+	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
+	public String showAutoBackUps(ModelMap model,
+			@RequestParam("dir") String dir) throws Exception {
+		
+		dir = assetFileService.restrictAccess(dir, config.DATA_BACKUP);
+		model.addAttribute("dir", dir);
+		return "jqueryFileTree";
+	}
+	
+	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
+	public String showOriginalAssets(ModelMap model,
 			@RequestParam("dir") String dir) throws Exception {
 		
 		dir = assetFileService.restrictAccess(dir, config.ASSETS_ORIGINAL);
 		model.addAttribute("dir", dir);
-		
 		return "jqueryFileTree";
 	}
 	

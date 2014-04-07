@@ -12,6 +12,7 @@ var paramString = window.location.search.substring(1);
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(function() {
+	hideDialogue();
 	//find page tab by URL and set as active tab
 	var activeTab = $(".pageTabmenu .tab a[href=\""+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
@@ -33,6 +34,21 @@ function getURLParameter(sParam)
         }
     }
     return "";
+}
+
+function showDialogue($relative, shift, html) {
+	var id = $relative.attr('id')+"-dialog";
+	$relative.after("<div id='"+id+"' style='display:none;'><div>");
+	$dialog = $("#"+id);
+	$dialog.addClass("dialogContainer");
+	$dialog.html(html);
+	
+	$dialog.show();
+	$("#overlay").show();
+}
+
+function hideDialogue() {
+	$("#overlay").hide();
 }
 
 
