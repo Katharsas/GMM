@@ -16,6 +16,7 @@
 	<authentication-manager>
 	  <authentication-provider>
 	    <user-service id="userService">
+	    	<user name="Fracer" password="123456" authorities="ROLE_USER"/>
 	    	<user name="Rolf" password="123456" authorities="ROLE_USER" />
 			<user name="Kellendil" password="123456" authorities="ROLE_USER" />
 			<user name="ThielHater" password="123456" authorities="ROLE_USER" />

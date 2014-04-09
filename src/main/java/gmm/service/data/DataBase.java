@@ -42,6 +42,7 @@ public class DataBase implements DataAccess {
 	public DataBase(){
 		System.out.println("This shit should be a singleton dammit!!!");
 		//add somehow users, usually from xml
+		users.add(new User("Fracer","123456"));
 		users.add(new User("Rolf", "123456"));
 		users.add(new User("Kellendil", "123456"));
 		users.add(new User("ThielHater", "123456"));
