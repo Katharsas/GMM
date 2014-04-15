@@ -45,13 +45,13 @@ public class XMLSerializerService {
 		}
 	}
 	
-	public void serialize(Object object, String name) {
+	public void serialize(Object object, String path) {
 		String xml= xstream.toXML(object);
-		writeToFile(xml, dataConfig.DATA_CURRENT+name+".xml");
+		writeToFile(xml, path);
 	}
 
-	public Object deserialize(String name) {
-		return xstream.fromXML(new File(dataConfig.DATA_CURRENT+name+".xml"));
+	public Object deserialize(String path) {
+		return xstream.fromXML(new File(path));
 	}
         
     private void writeToFile(String content, String filePath) {

@@ -21,12 +21,10 @@ public class DataConfigService {
 	private ServletContext context;
 	private String basePath;
 	
-	public String DATA_CURRENT;
-	public String DATA_BACKUP;
-	
+	public String DATA;
+	public String DATA_AUTO;
 	public String ASSETS_ORIGINAL;
 	public String ASSETS_NEW;
-	public String ASSETS_NEW_BACKUP;
 	public String UPLOAD;
 	
 	@PostConstruct
@@ -49,12 +47,10 @@ public class DataConfigService {
 			System.err.println("DataConfigService Error: Could not load config.properties file!");
 			e.printStackTrace();
 		}
-		DATA_CURRENT = basePath+property.getProperty("database_current_path");
-		DATA_BACKUP = basePath+property.getProperty("database_autobackup_path");
-		ASSETS_ORIGINAL = basePath+property.getProperty("filedirectory_original_path");
-		ASSETS_NEW = basePath+property.getProperty("filedirectory_new_path");
-		ASSETS_NEW_BACKUP = basePath+property.getProperty("filedirectory_new_autobackup_path");
-		UPLOAD = basePath+property.getProperty("filedirectory_upload_path");
-		
+		DATA = basePath+property.getProperty("data_backup_path");
+		DATA_AUTO = basePath+property.getProperty("data_backup_automatic_path");
+		ASSETS_ORIGINAL = basePath+property.getProperty("assets_original_path");
+		ASSETS_NEW = basePath+property.getProperty("assets_new_path");
+		UPLOAD = basePath+property.getProperty("upload_path");
 	}
 }

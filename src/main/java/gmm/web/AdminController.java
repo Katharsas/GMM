@@ -14,14 +14,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
+import gmm.domain.Linkable;
 import gmm.domain.Priority;
+import gmm.domain.Task;
 import gmm.domain.TaskStatus;
+import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.AssetFileService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.XMLSerializerService;
 
 import gmm.service.data.DataConfigService;
 import gmm.service.forms.TaskFacade;
+import gmm.util.Collection;
 import gmm.util.HashSet;
 import gmm.util.Set;
 
@@ -33,12 +38,15 @@ import org.apache.juli.logging.LogFactory;
 @RequestMapping("admin")
 public class AdminController {
 	protected final Log logger = LogFactory.getLog(getClass());
+	
 	@Autowired
 	DataAccess data;
 	@Autowired
 	DataConfigService config;
 	@Autowired
 	AssetFileService assetFileService;
+	@Autowired
+	XMLSerializerService xmlService;
 	
 	private Set<String> filePaths = new HashSet<>();
 	boolean areTexturePaths = true;
@@ -62,9 +70,10 @@ public class AdminController {
         return "admin";
     }
 	
-	@RequestMapping(value = "/saveTasks", method = RequestMethod.GET)
-	public String saveTasks() {
-		data.saveData(GeneralTask.class);
+	@RequestMapping(value = "/save", method = RequestMethod.POST)
+	public String saveTasks(@RequestParam("name") String name) {
+		String path = assetFileService.restrictAccess(config.DATA+name, config.DATA);
+		xmlService.serialize(data.getList(Task.class), path+".xml");
 		return "redirect:/admin";
 	}
 	
@@ -81,10 +90,10 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
-	public String showAutoBackUps(ModelMap model,
+	public String showBackups(ModelMap model,
 			@RequestParam("dir") String dir) throws Exception {
 		
-		dir = assetFileService.restrictAccess(dir, config.DATA_BACKUP);
+		dir = assetFileService.restrictAccess(dir, config.DATA);
 		model.addAttribute("dir", dir);
 		return "jqueryFileTree";
 	}

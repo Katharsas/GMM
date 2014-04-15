@@ -43,15 +43,12 @@ function loadTasks() {
 //	window.location = "admin/loadTasks";
 }
 
-function saveAllTasks() {
-//	$.post("admin/saveAllTasks", {}, function(data) {
-//		showDialogue($("saveAllTasksButton"), true, data);
-//	});
-	showDialogue($("#saveAllTasksButton"), true, "test");
+function deleteAllTasks() {
+	window.location = "admin/deleteTasks";
 }
 
-function deleteTasks() {
-	window.location = "admin/deleteTasks";
+function saveAllTasks() {
+	$("#saveAllTasksForm").submit();
 }
 
 function importAssets() {

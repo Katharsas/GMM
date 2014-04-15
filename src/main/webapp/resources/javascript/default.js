@@ -36,18 +36,13 @@ function getURLParameter(sParam)
     return "";
 }
 
-function showDialogue($relative, shift, html) {
-	var id = $relative.attr('id')+"-dialog";
-	$relative.after("<div id='"+id+"' style='display:none;'><div>");
-	$dialog = $("#"+id);
-	$dialog.addClass("dialogContainer");
-	$dialog.html(html);
-	
-	$dialog.show();
+function showDialogue(selector) {
 	$("#overlay").show();
+	$(selector).show();
 }
 
 function hideDialogue() {
+	$(".dialogContainer").hide();
 	$("#overlay").hide();
 }
 

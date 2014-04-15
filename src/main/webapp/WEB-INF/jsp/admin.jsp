@@ -24,8 +24,16 @@
         		<div class="button pageButton" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
-        		<div id="saveAllTasksButton" class="button pageButton" onclick="saveAllTasks()"><fmt:message key="admin.database.saveall"/></div>
-<!--         		<div id="saveAllTasksDialog" class="dialogContainer">test</div> -->
+        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue('#saveAllTasksDialog')"><fmt:message key="admin.database.saveall"/></div>
+        		<div id="saveAllTasksDialog" class="dialogContainer">
+        			<form id="saveAllTasksForm" method="POST" action="/GMM/admin/save">
+        				Enter a name for the save file:<br/><br/>
+        				<input name="name" value="manual/example"/>.xml
+        			</form><br/>
+        			<div class="dialogButton button left" onclick="saveAllTasks()">Save</div>
+        			<div class="dialogButton button right" onclick="hideDialogue()">Cancel</div>
+        			<div class="clear"></div>
+        		</div>
         		<div class="verticalSpace"></div>
         		<div class="button pageButton" onclick="deleteAllTasks()"><fmt:message key="admin.database.deleteall"/></div>
 			</div>

@@ -15,6 +15,7 @@ import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Linkable;
 import gmm.domain.ModelTask;
+import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
@@ -78,7 +79,15 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
+	@SuppressWarnings("unchecked")
 	public synchronized <T extends Linkable> Collection<T> getList(Class<?> clazz) {
+		if(clazz.equals(Task.class)) {
+			Collection<T> allTasks = new HashSet<>();
+			allTasks.addAll((Collection<T>) generalTasks);
+			allTasks.addAll((Collection<T>) textureTasks);
+			allTasks.addAll((Collection<T>) modelTasks);
+			return allTasks;
+		}
 		return this.<T>getDataList(clazz).clone();
 	}
 
@@ -101,13 +110,18 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized void removeAllData(Class<?> clazz) {
+		if(clazz.equals(Task.class)) {
+			generalTasks.clear();
+			textureTasks.clear();
+			modelTasks.clear();
+		}
 		getDataList(clazz).clear();
 	}
 	
-	@Override
-	public synchronized void saveData(Class<?> clazz) {
-		xmlService.serialize(getDataList(clazz), clazz.getSimpleName()+"List");
-	}
+//	@Override
+//	public synchronized void saveData(Class<?> clazz) {
+//		xmlService.serialize(getDataList(clazz), clazz.getSimpleName()+"List");
+//	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
