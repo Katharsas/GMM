@@ -66,14 +66,7 @@ public class DataBase implements DataAccess {
 		testFill();
 	}
 	
-	private void testFill(){
-		
-		//DO NOT CHANGE ANYMORE!
-//		modelSites.add(new ModelSite("OldCamp"));
-//		modelSites.add(new ModelSite("NewCamp"));
-//		modelSites.add(new ModelSite("Surface"));
-//		modelSites.add(new ModelSite("OldMine"));
-		//DO NOT CHANGE ANYMORE!
+	private void testFill() {
 	}
 	
 	@Override
@@ -90,24 +83,23 @@ public class DataBase implements DataAccess {
 	}
 
 	@Override
-	public synchronized <T extends Linkable> boolean addData(T data) {
+	public synchronized <T extends Linkable> boolean add(T data) {
 		return getDataList(data.getClass()).add(data);
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> boolean addAllData(Class<?> clazz, Collection<? extends T> data) {
+	public synchronized <T extends Linkable> boolean addAll(Class<?> clazz, Collection<? extends T> data) {
 		Collection<T> collection = getDataList(clazz);
 		return collection.addAll(data);
 	}
 
 	@Override
-	public synchronized <T extends Linkable> boolean removeData(T data) {
-		System.out.println("Removing "+data.getIdLink());
+	public synchronized <T extends Linkable> boolean remove(T data) {
 		return getDataList(data.getClass()).remove(data);
 	}
 	
 	@Override
-	public synchronized void removeAllData(Class<?> clazz) {
+	public synchronized void removeAll(Class<?> clazz) {
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
 			textureTasks.clear();
@@ -115,21 +107,6 @@ public class DataBase implements DataAccess {
 		}
 		getDataList(clazz).clear();
 	}
-	
-//	@Override
-//	public synchronized void saveData(Class<?> clazz) {
-//		xmlService.serialize(getDataList(clazz), clazz.getSimpleName()+"List");
-//	}
-	
-//	@SuppressWarnings("unchecked")
-//	@Override
-//	public synchronized <T extends Linkable> void loadData(Class<?> clazz) {
-//		removeAllData(clazz);
-//		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
-//		addAllData(clazz, data);
-//		//TODO FIXME
-//		UniqueObject.updateCounter(generalTasks);
-//	}
 	
 	@SuppressWarnings("unchecked")
 	private <T extends Linkable> Collection<T> getDataList(Class<?> clazz) {

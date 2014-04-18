@@ -54,11 +54,16 @@
 	padding:10px;
 }
 #conflictOptions > .dialogButton{
-	margin:7 10px;
+	margin: 8px 20px;
+	margin-left: 0px;
 }
 #loadTasksDialog {
-	min-width:350px;
+	min-width:600px;
 }
 #loadTasksDialog > *{
 	margin:7px 10px;
+}
+#conflictMessage {
+	font-size: large;
+	color:#A82709;
 }

@@ -48,7 +48,7 @@
         <constructor-arg value="WEB-INF/data/"/>
     </bean>
 
-    <bean id="applicationContextProvider" class="gmm.service.ApplicationContextProvider"></bean>
+    <bean id="applicationContextProvider" class="gmm.service.Spring"></bean>
 	
 </beans>
 

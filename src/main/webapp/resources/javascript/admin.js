@@ -48,22 +48,29 @@ function loadTasks() {
 	$.getJSON("admin/load", { dir: dir }, handleLoadAnswer);
 }
 
-function loadTasksNextElement(answer) {
-	$.getJSON("admin/load/next", { operation: answer, doForAll: "false" }, handleLoadAnswer);
+function loadTasksNext(answer) {
+	$("#conflictOptions").hide();
+	$("#conflictMessage").empty();
+	var doForAll = $('#doForAllCheckbox input').is(":checked");
+	loadTasksNextElement(answer, doForAll);
+}
+
+function loadTasksNextElement(answer, doForAll) {
+	$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll }, handleLoadAnswer);
 }
 
 function handleLoadAnswer(data) {
-	$("#conflictOptions").hide();
 	if(data.status == "finished") {
 		$("#finishLoadingButton").show();
 	}
 	else {
-		$("#loadedTasks ul").append("<li>"+data.element+"</li>");
 		if(data.status == "conflict") {
+			$("#conflictMessage").html(data.message);
 			$("#conflictOptions").show();
 		}
 		else {
-			loadTasksNextElement("");
+			$("#loadedTasks ul").append("<li>"+data.message+"</li>");
+			loadTasksNextElement("default", false);
 		}
 	}
 	return;

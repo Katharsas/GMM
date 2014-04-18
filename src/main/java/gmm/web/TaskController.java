@@ -153,7 +153,7 @@ public class TaskController {
 				edit="";
 				resetFacade = true;
 			}
-	 		data.removeData(UniqueObject.getFromId(tasks, delete));
+	 		data.remove(UniqueObject.getFromId(tasks, delete));
 	 		tasks.remove(UniqueObject.getFromId(tasks, delete));
 	 	}
 		return "redirect:/tasks?tab="+tab+"&edit="+edit+"&resetFacade="+resetFacade;
@@ -217,14 +217,14 @@ public class TaskController {
 		task.setAssigned(assigned);
 		String label = facade.getLabel();
 		if(!label.equals("")) {
-			data.addData(new Label(label));
+			data.add(new Label(label));
 		}
 		facade.setDefaultState();
 		if (validateId(edit)) {
 			return "redirect:/tasks?tab="+tab;
 		}
 		else {
-			data.addData(task);
+			data.add(task);
 			return "redirect:/tasks/reset?tab="+tab;
 		}
 		

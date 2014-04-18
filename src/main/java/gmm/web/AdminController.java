@@ -1,7 +1,6 @@
 package gmm.web;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,20 +14,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
-import gmm.domain.Linkable;
 import gmm.domain.Priority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
-import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.TaskLoader;
+import gmm.service.TaskLoader.TaskLoaderResult;
 import gmm.service.data.DataAccess;
-import gmm.service.data.XMLSerializerService;
+import gmm.service.data.XMLService;
 
 import gmm.service.data.DataConfigService;
 import gmm.service.forms.TaskFacade;
-import gmm.util.Collection;
 import gmm.util.HashSet;
 import gmm.util.Set;
 
@@ -48,7 +45,7 @@ public class AdminController {
 	@Autowired
 	FileService fileService;
 	@Autowired
-	XMLSerializerService xmlService;
+	XMLService xmlService;
 	
 	private TaskLoader taskLoader;
 	
@@ -81,14 +78,14 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody String loadTasks(@RequestParam("dir") String dir) {
+	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") String dir) {
 		String path = fileService.restrictAccess(dir, config.DATA);
 		taskLoader = new TaskLoader(path);
-		return taskLoader.loadNext("",false);
+		return taskLoader.loadNext("default",false);
 	}
 	
 	@RequestMapping(value = "/load/next", method = RequestMethod.GET)
-	public @ResponseBody String loadNextTask (
+	public @ResponseBody TaskLoaderResult loadNextTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		return taskLoader.loadNext(operation, doForAll);
@@ -96,7 +93,7 @@ public class AdminController {
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.GET)
 	public String deleteTasks() {
-		data.removeAllData(GeneralTask.class);
+		data.removeAll(GeneralTask.class);
 		return "redirect:/admin";
 	}
 	

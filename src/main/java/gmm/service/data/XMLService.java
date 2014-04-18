@@ -19,14 +19,14 @@ import com.thoughtworks.xstream.XStream;
 
 
 @Service
-public class XMLSerializerService {
+public class XMLService {
 	
 	@Autowired
 	DataConfigService dataConfig;
 	
 	final private XStream xstream;
 	
-	public XMLSerializerService() {
+	public XMLService() {
 		xstream = new XStream();
 		xstream.autodetectAnnotations(true);
 		xstream.setMode(XStream.NO_REFERENCES);

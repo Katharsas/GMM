@@ -24,11 +24,12 @@
         		<div class="button pageButton" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
         		<div id="loadTasksDialog" class="dialogContainer">
         			<p>Loading tasks:</p>
+        			<p id="conflictMessage"></p>
         			<div id="loadedTasks" class="dialogList"><ul></ul></div>
         			<div id="conflictOptions">
-	        			<div id="skipTaskButton" class="left dialogButton button" onclick="loadTasksNextElement('skip');">Skip</div>
-	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="loadTasksNextElement('overwrite');">Overwrite</div>
-	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="loadTasksNextElement('both');">Add Both</div>
+	        			<div id="skipTaskButton" class="left dialogButton button" onclick="loadTasksNext('skip');">Skip</div>
+	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="loadTasksNext('overwrite');">Overwrite</div>
+	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="loadTasksNext('both');">Keep Both</div>
 	        			<div class="clear"></div>
 	        			<label id="doForAllCheckbox">
 	        				<input type="checkbox" name="doForAll" value="doForAll">Für alle aktuellen Elemente wiederholen<br>

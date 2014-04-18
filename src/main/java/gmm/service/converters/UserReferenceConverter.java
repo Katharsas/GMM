@@ -3,7 +3,7 @@ import org.springframework.context.ApplicationContext;
 
 import gmm.domain.NamedObject;
 import gmm.domain.User;
-import gmm.service.ApplicationContextProvider;
+import gmm.service.Spring;
 import gmm.service.data.DataAccess;
 import gmm.util.Collection;
 
@@ -18,7 +18,7 @@ public class UserReferenceConverter extends NamedReferenceConverter{
 
 	@Override
 	Collection<? extends NamedObject> getNamedObjects() {
-		ApplicationContext context = ApplicationContextProvider.getApplicationContext();
+		ApplicationContext context = Spring.getApplicationContext();
 		DataAccess data =  context.getBean(DataAccess.class);
 		return data.getList(User.class);
 	}

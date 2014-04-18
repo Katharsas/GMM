@@ -3,7 +3,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
  
-public class ApplicationContextProvider implements ApplicationContextAware{
+public class Spring implements ApplicationContextAware{
 	private static ApplicationContext ctx = null;
 	public static ApplicationContext getApplicationContext() {
 		return ctx;
@@ -12,7 +12,7 @@ public class ApplicationContextProvider implements ApplicationContextAware{
 	public void setApplicationContext(ApplicationContext ctx) throws BeansException {
 		this.ctx = ctx;
 	}
-	public static <T> T getService(Class<T> clazz) {
+	public static <T> T get(Class<T> clazz) {
 		return ctx.getBean(clazz);
 	}
 }

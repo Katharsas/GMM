@@ -5,7 +5,7 @@ import gmm.domain.Notification;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.XMLSerializerService;
+import gmm.service.data.XMLService;
 import gmm.util.Collection;
 
 import org.junit.After;
@@ -24,7 +24,7 @@ public class XMLSerializerServiceTest {
 	@Autowired
 	DataAccess data;
 	@Autowired
-	XMLSerializerService xmlService;
+	XMLService xmlService;
 	@Autowired
 	DataConfigService dataConfig;
 	
@@ -44,7 +44,7 @@ public class XMLSerializerServiceTest {
 		testUser.setAdmin(false);
 		testUser.getNewNotifications().add(new Notification("testNotification1"));
 		testUser.getOldNotifications().add(new Notification("testNotification2"));
-		data.addData(testUser);
+		data.add(testUser);
 		
 		//serialize and deserialize
 		String filename = "user_test_file";
@@ -63,6 +63,6 @@ public class XMLSerializerServiceTest {
 			assertEquals(u.getNewNotifications(), result.getNewNotifications());
 		}
 		//remove test user
-		data.removeData(testUser);
+		data.remove(testUser);
 	}
 }

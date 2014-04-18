@@ -34,8 +34,16 @@ public abstract class UniqueObject implements Linkable{
 	
 	public  static <U extends UniqueObject> void updateCounter(Collection<U> c) {
 		for(U u : c) {
-			if(u.getId() > idCount) idCount = u.getId();
+			updateCounter(u);
 		}
+	}
+	public static <U extends UniqueObject> void updateCounter(U u) {
+		if(u.getId() > idCount) idCount = u.getId();
+	}
+	
+	public <U extends UniqueObject> void makeUnique() {
+		System.out.println("Made unique "+this.getIdLink());
+		id = ++idCount;
 	}
 	
 	public long getId() {
