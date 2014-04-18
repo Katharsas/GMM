@@ -22,6 +22,20 @@
         		<div id="taskBackupsContainer" class="adminElement"></div>
         		<br/>
         		<div class="button pageButton" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
+        		<div id="loadTasksDialog" class="dialogContainer">
+        			<p>Loading tasks:</p>
+        			<div id="loadedTasks" class="dialogList"><ul></ul></div>
+        			<div id="conflictOptions">
+	        			<div id="skipTaskButton" class="left dialogButton button" onclick="loadTasksNextElement('skip');">Skip</div>
+	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="loadTasksNextElement('overwrite');">Overwrite</div>
+	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="loadTasksNextElement('both');">Add Both</div>
+	        			<div class="clear"></div>
+	        			<label id="doForAllCheckbox">
+	        				<input type="checkbox" name="doForAll" value="doForAll">Für alle aktuellen Elemente wiederholen<br>
+        				</label>
+        			</div>
+        			<div id="finishLoadingButton" class="dialogButton button" onclick="finishTaskLoading()">Finish</div>
+        		</div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
         		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue('#saveAllTasksDialog')"><fmt:message key="admin.database.saveall"/></div>

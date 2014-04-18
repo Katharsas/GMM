@@ -12,4 +12,7 @@ public class ApplicationContextProvider implements ApplicationContextAware{
 	public void setApplicationContext(ApplicationContext ctx) throws BeansException {
 		this.ctx = ctx;
 	}
+	public static <T> T getService(Class<T> clazz) {
+		return ctx.getBean(clazz);
+	}
 }

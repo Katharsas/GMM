@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AssetFileService {
+public class FileService {
 	
 	/**
 	 * Restricts dir path access to public directory or below.

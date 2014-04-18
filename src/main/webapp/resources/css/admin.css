@@ -49,6 +49,16 @@
 	padding:5px;
 	margin:15px 10px;
 }
+
 #saveAllTasksDialog {
-	
+	padding:10px;
+}
+#conflictOptions > .dialogButton{
+	margin:7 10px;
+}
+#loadTasksDialog {
+	min-width:350px;
+}
+#loadTasksDialog > *{
+	margin:7px 10px;
 }

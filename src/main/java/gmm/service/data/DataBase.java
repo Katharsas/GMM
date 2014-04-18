@@ -8,7 +8,6 @@ package gmm.service.data;
 //import org.springframework.security.provisioning.UserDetailsManager;
 //import org.springframework.web.context.ContextLoader;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.GeneralTask;
@@ -17,7 +16,6 @@ import gmm.domain.Linkable;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
-import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.util.LinkedList;
 import gmm.util.List;
@@ -28,8 +26,8 @@ import gmm.util.Collection;
 @Service
 public class DataBase implements DataAccess {
 
-	@Autowired
-	XMLSerializerService xmlService;
+//	@Autowired
+//	XMLSerializerService xmlService;
 
 	final private List<User> users = new LinkedList<User>();
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
@@ -123,15 +121,15 @@ public class DataBase implements DataAccess {
 //		xmlService.serialize(getDataList(clazz), clazz.getSimpleName()+"List");
 //	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public synchronized <T extends Linkable> void loadData(Class<?> clazz) {
-		removeAllData(clazz);
-		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
-		addAllData(clazz, data);
-		//TODO FIXME
-		UniqueObject.updateCounter(generalTasks);
-	}
+//	@SuppressWarnings("unchecked")
+//	@Override
+//	public synchronized <T extends Linkable> void loadData(Class<?> clazz) {
+//		removeAllData(clazz);
+//		Collection<? extends T> data = (Collection<? extends T>) xmlService.deserialize(clazz.getSimpleName()+"List");
+//		addAllData(clazz, data);
+//		//TODO FIXME
+//		UniqueObject.updateCounter(generalTasks);
+//	}
 	
 	@SuppressWarnings("unchecked")
 	private <T extends Linkable> Collection<T> getDataList(Class<?> clazz) {

@@ -1,0 +1,206 @@
+<gmm.util.HashSet serialization="custom">
+  <unserializable-parents/>
+  <set>
+    <default/>
+    <int>32</int>
+    <float>0.75</float>
+    <int>22</int>
+    <GeneralTask id="20" name="test1" priority="MID" taskStatus="TODO">
+      <created>2014-03-11 17:14:38.631 UTC</created>
+      <assigned id="User12" name="Fracer"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="23" name="neu1" priority="MID" taskStatus="TODO">
+      <created>2014-03-16 15:09:11.766 UTC</created>
+      <author id="User12" name="Fracer"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="24" name="neu2" priority="MID" taskStatus="TODO">
+      <created>2014-03-16 15:09:19.365 UTC</created>
+      <author id="User12" name="Fracer"/>
+      <assigned id="User12" name="Fracer"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="21" name="test2" priority="MID" taskStatus="TODO">
+      <created>2014-03-11 17:14:44.934 UTC</created>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="22" name="test3" priority="MID" taskStatus="TODO">
+      <created>2014-03-11 17:14:51.456 UTC</created>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="33" name="test11" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:50.848 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="32" name="test10" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:46.190 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="35" name="test13" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:10.514 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="34" name="test12" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:56.17 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="42" name="test20" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:50.588 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="41" name="test19" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:44.374 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="31" name="test9" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:41.228 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="40" name="test18" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:39.406 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="30" name="test8" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:36.21 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="36" name="test14" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:16.377 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="37" name="test15" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:21.129 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="38" name="test16" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:26.613 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="39" name="test17" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:18:32.308 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="28" name="test6" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:26.545 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="27" name="test5" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:20.842 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="26" name="test4" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:11.150 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="29" name="test7" priority="MID" taskStatus="TODO">
+      <created>2014-04-18 15:17:31.613 UTC</created>
+      <author id="User14" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+  </set>
+</gmm.util.HashSet>

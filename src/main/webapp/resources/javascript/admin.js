@@ -38,9 +38,39 @@ function refreshTaskBackups() {
 }
 
 function loadTasks() {
-//	var dir = adminVars["selectedBackupFile"].attr('rel');
-	alert("Not yet implemented!");
-//	window.location = "admin/loadTasks";
+	var dir = adminVars["selectedBackupFile"].attr('rel');
+	if(dir == "") {
+		return;
+	}
+	$("#conflictOptions").hide();
+	$("#finishLoadingButton").hide();
+	showDialogue("#loadTasksDialog");
+	$.getJSON("admin/load", { dir: dir }, handleLoadAnswer);
+}
+
+function loadTasksNextElement(answer) {
+	$.getJSON("admin/load/next", { operation: answer, doForAll: "false" }, handleLoadAnswer);
+}
+
+function handleLoadAnswer(data) {
+	$("#conflictOptions").hide();
+	if(data.status == "finished") {
+		$("#finishLoadingButton").show();
+	}
+	else {
+		$("#loadedTasks ul").append("<li>"+data.element+"</li>");
+		if(data.status == "conflict") {
+			$("#conflictOptions").show();
+		}
+		else {
+			loadTasksNextElement("");
+		}
+	}
+	return;
+}
+function finishTaskLoading() {
+	hideDialogue();
+	$("#loadedTasks ul").empty();
 }
 
 function deleteAllTasks() {
