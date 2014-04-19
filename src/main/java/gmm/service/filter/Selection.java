@@ -34,7 +34,7 @@ import gmm.util.Collection;
  * 		.remove().matching("getName","Tom")
  * 		.uniteWith().matching("getHometown", "Boston")
  * 		.intersectWith().matching("getSex", "male")
- * 		.bufferGetter("getName")
+ * 		.bufferGetter("getAge")
  * 		.intersectWith()
  * 		.matchingFilter("20")
  * 		.matchingFilter("21")

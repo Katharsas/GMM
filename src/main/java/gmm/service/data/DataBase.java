@@ -1,13 +1,5 @@
 package gmm.service.data;
 
-//import org.springframework.context.ApplicationContext;
-//import org.springframework.security.core.authority.SimpleGrantedAuthority;
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-//import org.springframework.security.provisioning.JdbcUserDetailsManager;
-//import org.springframework.security.provisioning.UserDetailsManager;
-//import org.springframework.web.context.ContextLoader;
-
 import org.springframework.stereotype.Service;
 
 import gmm.domain.GeneralTask;
@@ -26,12 +18,8 @@ import gmm.util.Collection;
 @Service
 public class DataBase implements DataAccess {
 
-//	@Autowired
-//	XMLSerializerService xmlService;
-
 	final private List<User> users = new LinkedList<User>();
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
-//	final private List<FileTask> generalFileTasks = new LinkedList<FileTask>();
 	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
 	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
 	
@@ -39,7 +27,6 @@ public class DataBase implements DataAccess {
 //	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
 	
 	public DataBase(){
-		System.out.println("This shit should be a singleton dammit!!!");
 		//add somehow users, usually from xml
 		users.add(new User("Fracer","123456"));
 		users.add(new User("Rolf", "123456"));
@@ -63,10 +50,6 @@ public class DataBase implements DataAccess {
 //					u.getName(), u.getPasswordHash(), authorities));
 //		}
 //		
-		testFill();
-	}
-	
-	private void testFill() {
 	}
 	
 	@Override
