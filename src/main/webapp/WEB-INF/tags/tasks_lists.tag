@@ -16,7 +16,7 @@
 		<div class="search listElement">
 		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${tab}&edit=${edit}" commandName="search">
 			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
-				Complex Search
+				<fmt:message key="search.complex"/>
 			</div>
 			<form:select id="searchTypeSelect" path="easySearch">
 				<form:option value="true" label="easySearch"/>
@@ -28,21 +28,21 @@
 			</div>
 			<div class="complexSearch">
 				<div class="clear"></div>
-				<div class="searchDescription left">Label:</div>
+				<div class="searchDescription left"><fmt:message key="tasks.label"/>:</div>
 				<form:input class="searchInputField left" path="label" value=""/>
-				<div class="searchDescription left">&#160;&#160;Name:</div>
+				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.title"/>:</div>
 				<form:input class="searchInputField left" path="name" value=""/>
 				<div class="clear"></div>
-				<div class="searchDescription left">Details:</div>
+				<div class="searchDescription left"><fmt:message key="tasks.details"/>:</div>
 				<form:input class="searchInputField left" path="details" value=""/>
-				<div class="searchDescription left">&#160;&#160;Author:</div>
+				<div class="searchDescription left">&#160;&#160;<fmt:message key="author"/>:</div>
 				<form:input class="searchInputField left" path="author" value=""/>
 				<div class="clear"></div>
-				<div class="searchDescription left">Assigned:</div>
+				<div class="searchDescription left"><fmt:message key="tasks.assigned"/>:</div>
 				<form:input class="searchInputField left" path="assigned" value=""/>
 				<div class="searchDescription left">&#160;</div>
 			</div>
-			<div class="submitSearchButton button pageButton left">Start Search!</div>
+			<div class="submitSearchButton button pageButton left"><fmt:message key="search.start"/>!</div>
 			<div class="clear"></div>
 			</form:form>
 		</div>
@@ -85,7 +85,7 @@
 					    	<div class="left subElementAuthor elementContent">
 					    		<c:out value="${comment.getAuthor().getName()}"/>
 					    	</div>
-					    	<div class="subElementText elementContent">
+					    	<div class="left subElementText elementContent">
 					    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
 					    	</div>
 					    	<div class="clear"></div>

@@ -12,7 +12,7 @@
 	<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}" commandName="task">
 		<div class="taskElement left">
 <!--PRIORITY------------------------------------- -->
-			<div class="taskDescription">Priority:</div>
+			<div class="taskDescription"><fmt:message key="tasks.priority"/>:</div>
 			<div class="taskInput">
 			<form:select path="priority">
 				<c:forEach items="${priorities}" var="priority">
@@ -22,14 +22,14 @@
 			</form:select>
 			</div>
 <!--TITLE------------------------------------------ -->
-			<div class="taskDescription">Title:</div>
+			<div class="taskDescription"><fmt:message key="tasks.title"/>:</div>
 			<div class="taskInput">
 				<form:input path="idName" value=""/>
 			</div>
 		</div>
 		<div class="taskElement left">
 <!--LABEL------------------------------------ -->
-			<div class="taskDescription">Label:</div>
+			<div class="taskDescription"><fmt:message key="tasks.label"/>:</div>
 			<div class="taskInput">
 				<form:input id="labelInput" path="label" value=""/>
 			</div>
@@ -52,14 +52,14 @@
 		</div>
 		<div class="taskElement left">
 <!--DETAILS----------------------------------------- -->
-			<div class="taskDescription">Details:</div>
+			<div class="taskDescription"><fmt:message key="tasks.details"/>:</div>
 			<div class="taskInput">
 			<form:textarea rows="2" cols="1" path="details"></form:textarea>
 			</div>
 		</div>
 		<div class="taskElement left">
 <!--STATUS-------------------------------------------- -->
-			<div class="taskDescription">Status:</div>
+			<div class="taskDescription"><fmt:message key="tasks.status"/>:</div>
 			<div class="taskInput">
 			<form:select path="status">
 				<c:forEach items="${taskStatuses}" var="status">
@@ -69,7 +69,7 @@
 			</form:select>
 			</div>
 <!--ASSIGNED-------------------------------------------- -->
-			<div class="taskDescription">Assigned:</div>
+			<div class="taskDescription"><fmt:message key="tasks.assigned"/>:</div>
 			<div class="taskInput">
 				<form:select path="assigned">
 					<form:option value="" label=""/>

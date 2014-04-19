@@ -10,7 +10,7 @@ public class ModelTask extends FileTask {
 	private int originalFaceCount;
 	private int newFaceCount;
 	
-	public ModelTask(String idName, User author, File oldFile) {
+	public ModelTask(String idName, User author, MyFile oldFile) {
 		super(idName, author, oldFile);
 	}
 

@@ -45,12 +45,12 @@ public class XMLService {
 		}
 	}
 	
-	public void serialize(Object object, String path) {
+	public synchronized void serialize(Object object, String path) {
 		String xml= xstream.toXML(object);
 		writeToFile(xml, path);
 	}
 
-	public Object deserialize(String path) {
+	public synchronized Object deserialize(String path) {
 		return xstream.fromXML(new File(path));
 	}
         

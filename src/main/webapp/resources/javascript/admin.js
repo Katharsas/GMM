@@ -85,8 +85,7 @@ function deleteFile() {
 	if(dir == undefined || dir == "") {
 		return;
 	}
-	$.post("admin/deleteFile", { dir: dir });
-	refreshTaskBackups();
+	$.post("admin/deleteFile", { dir: dir }, refreshTaskBackups);
 }
 
 function deleteAllTasks() {

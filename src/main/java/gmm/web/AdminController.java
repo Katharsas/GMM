@@ -99,7 +99,7 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public void deleteFile(@RequestParam("dir") String dir) {
+	public @ResponseBody void deleteFile(@RequestParam("dir") String dir) {
 		fileService.deleteFile(fileService.restrictAccess(dir, config.DATA));
 	}
 	

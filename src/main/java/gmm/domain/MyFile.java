@@ -4,23 +4,23 @@ import java.net.URI;
 
 @Deprecated
 @SuppressWarnings("serial")
-public class File extends java.io.File {
+public class MyFile extends java.io.File {
 	
 	//Variables----------------------------------------
 	private String description="";
 	private String details="";
 
 	//Methods------------------------------------------
-	public File(URI uri) {
+	public MyFile(URI uri) {
 		super(uri);
 	}
-	public File(String parent, String child) {
+	public MyFile(String parent, String child) {
 		super(parent, child);
 	}
-	public File(String pathname) {
+	public MyFile(String pathname) {
 		super(pathname);
 	}
-	public File(java.io.File parent, String child) {
+	public MyFile(java.io.File parent, String child) {
 		super(parent, child);
 	}
 	

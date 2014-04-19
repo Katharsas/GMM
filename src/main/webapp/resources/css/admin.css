@@ -64,6 +64,7 @@
 	margin:7px 10px;
 }
 #conflictMessage {
-	font-size: large;
+/* 	font-size: large; */
+	font-weight: bold;
 	color:#A82709;
 }

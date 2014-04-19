@@ -7,25 +7,25 @@ import java.util.List;
 public class FileTask extends Task {
 
 	//Variables------------------------------------------
-	private File oldFile;
-	private List<File> newFiles = new LinkedList<File>();
+	private MyFile oldFile;
+	private List<MyFile> newFiles = new LinkedList<MyFile>();
 	
 	//Methods--------------------------------------------
-	public FileTask(String idName, User author, File oldFile) {
+	public FileTask(String idName, User author, MyFile oldFile) {
 		super(idName, author);
 		this.oldFile = oldFile;
 	}
 	
 	//Setters, Getters---------------------------------
-	public void setOldFile(File oldFile) {
+	public void setOldFile(MyFile oldFile) {
 		if (oldFile==null) throw new NullPointerException();
 		this.oldFile = oldFile;
 	}
-	public File getOldFile() {
+	public MyFile getOldFile() {
 		return oldFile;
 	}
 	
-	public List<File> getNewFiles() {
+	public List<MyFile> getNewFiles() {
 		return newFiles;
 	}
 }
