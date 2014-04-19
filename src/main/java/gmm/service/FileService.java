@@ -65,6 +65,11 @@ public class FileService {
 		}
 		return list;
 	}
+	
+	public boolean deleteFile(String dir) {
+		File file = new File(dir);
+		return file.delete();
+	}
 		
 	public class FileExtensionFilter implements FilenameFilter {
 		private String[] extensions;

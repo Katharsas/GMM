@@ -21,7 +21,9 @@
         	    <div class="adminElement hint">Select a file to load tasks from:</div>
         		<div id="taskBackupsContainer" class="adminElement"></div>
         		<br/>
-        		<div class="button pageButton" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
+        		<div class="button pageButton left" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
+        		<div class="button pageButton left" onclick="deleteFile()"><fmt:message key="admin.database.deletefile"/></div>
+        		<div class="clear"></div>
         		<div id="loadTasksDialog" class="dialogContainer">
         			<p>Loading tasks:</p>
         			<p id="conflictMessage"></p>

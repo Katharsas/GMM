@@ -46,6 +46,9 @@
 			<div class="clear"></div>
 			</form:form>
 		</div>
+		<div class="elementCount center">---------------------------------------- 
+		<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
+		----------------------------------------</div>
 		<c:forEach items="${taskList}" var="task">
 			<div id="task_${task.getIdLink()}" class="listElement">
 				<div class="listElementTop clickable" onclick="switchListElement(this)">

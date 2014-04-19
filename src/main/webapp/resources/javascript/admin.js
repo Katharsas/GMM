@@ -39,7 +39,7 @@ function refreshTaskBackups() {
 
 function loadTasks() {
 	var dir = adminVars["selectedBackupFile"].attr('rel');
-	if(dir == "") {
+	if(dir == undefined || dir == "") {
 		return;
 	}
 	$("#conflictOptions").hide();
@@ -80,8 +80,17 @@ function finishTaskLoading() {
 	$("#loadedTasks ul").empty();
 }
 
+function deleteFile() {
+	var dir = adminVars["selectedBackupFile"].attr('rel');
+	if(dir == undefined || dir == "") {
+		return;
+	}
+	$.post("admin/deleteFile", { dir: dir });
+	refreshTaskBackups();
+}
+
 function deleteAllTasks() {
-	window.location = "admin/deleteTasks";
+	$.post("admin/deleteTasks");
 }
 
 function saveAllTasks() {

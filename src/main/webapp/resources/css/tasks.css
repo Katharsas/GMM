@@ -127,6 +127,12 @@
 .searchDescription {
 	width:16.5%;
 }
+.elementCount {
+	font-size:0.9em;
+	margin-top:3px;
+	font-weight:bold;
+	color:#000510;
+}
 .elementContent {
 	 word-wrap:break-word;
 	 max-width:100%;
