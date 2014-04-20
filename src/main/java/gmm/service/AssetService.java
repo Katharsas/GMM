@@ -2,6 +2,8 @@ package gmm.service;
 
 import java.io.File;
 
+import javax.imageio.spi.IIORegistry;
+
 import gmm.service.data.DataConfigService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,12 @@ public class AssetService {
 
 	@Autowired
 	DataConfigService service;
+	
+	public AssetService() {
+		//register TGA loader plugin
+		IIORegistry registry = IIORegistry.getDefaultInstance();
+		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
+	}
 	
 	public File linkNewAssetFolder(String newAssetFolderPath) {
 		boolean success = true;

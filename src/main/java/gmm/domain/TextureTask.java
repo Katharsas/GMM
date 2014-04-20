@@ -8,10 +8,12 @@ import gmm.util.Set;
 
 public class TextureTask extends Task {
 	
-	final private Set<ModelTask> models = new HashSet<ModelTask>();
+	final public Set<ModelTask> models = new HashSet<ModelTask>();
 	
 	private String originalAssetPath;
 	private String newAssetFolderPath;
+	
+	//not persisted (needs to be updated on load)
 	private File originalAsset;
 	private File newAssetFolder;
 	
@@ -29,10 +31,6 @@ public class TextureTask extends Task {
 			originalAsset = new File(originalAssetPath);
 		}
 		newAssetFolder = service.linkNewAssetFolder(newAssetFolderPath);
-	}
-	
-	public Set<ModelTask> getModels() {
-		return models;
 	}
 	
 	public boolean hasOriginalPreview() {
