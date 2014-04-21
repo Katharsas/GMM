@@ -10,48 +10,34 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-//import org.springframework.web.bind.annotation.RequestMethod;
-
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 
-
-/** javax.servlets */
-//import javax.servlet.ServletException;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpServletResponse;
-
-
-
-
-
-import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-
-
 
 /** Logging */
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 
-
-
-
+import java.io.IOException;
 /** java */
 import java.security.Principal;
-
-
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 
 /* project */
 import gmm.domain.*;
+import gmm.service.AssetService;
 import gmm.service.TaskFilterService;
+import gmm.service.UserService;
 import gmm.service.data.DataAccess;
-import gmm.service.filter.Selection;
-import gmm.service.filter.SimpleSelection;
 import gmm.service.forms.CommentFacade;
 import gmm.service.forms.GeneralFilterFacade;
 import gmm.service.forms.SearchFacade;
@@ -84,12 +70,10 @@ public class TaskController {
 	DataAccess data;
 	@Autowired
 	TaskFilterService filter;
-	Collection<User> users;
-	
-	@PostConstruct
-	private void init() {
-		users = data.getList(User.class);
-	}
+	@Autowired
+	UserService users;
+	@Autowired
+	AssetService assetService;
 
 	@ModelAttribute("task")
 	public TaskFacade getTaskFacade() {return new TaskFacade();}
@@ -101,6 +85,29 @@ public class TaskController {
 	public GeneralFilterFacade getGeneralFilter() {return new GeneralFilterFacade();}
 	
 	
+	public void setHeaderCaching(HttpServletResponse response) {
+		Calendar date = new GregorianCalendar(3000, 1, 1);
+		SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyy hh:mm:ss z", Locale.US);
+		
+		response.setHeader("Cache-Control", "Public");
+		response.setHeader("Max-Age", "2629000");
+		response.setHeader("Pragma", "");
+		response.setHeader("Expires", formatter.format(date.getTime()));
+	}
+	
+	
+	@RequestMapping(value="/preview", method = RequestMethod.GET, produces="image/png")
+	public @ResponseBody byte[] sendPreview(
+			HttpServletResponse response,
+			@RequestParam(value="tab", defaultValue="") String tab,
+			@RequestParam(value="id", defaultValue="") String id) throws IOException {
+
+		setHeaderCaching(response);
+		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), id);
+		return assetService.getPreview(task.getNewAssetFolderPath());
+	}
+	
+	
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
 				Principal principal,
@@ -108,7 +115,7 @@ public class TaskController {
 		 		@RequestParam(value="tab", defaultValue="") String tab,
 		 		@RequestParam(value="edit", defaultValue="") String edit) {
 		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
-		filteredTasks = filter.filter(getTaskList(tab), generalFacade, getUser(principal));
+		filteredTasks = filter.filter(getTaskList(tab), generalFacade, users.get(principal));
 		tasks = filteredTasks;
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
 	}
@@ -176,7 +183,7 @@ public class TaskController {
 				@RequestParam(value="editComment", defaultValue="") String editComment,
 				@RequestParam(value="edit", defaultValue="") String edit) {
 		if (validateId(editComment)) {
-			Comment comment = new Comment(getUser(principal), facade.getText());
+			Comment comment = new Comment(users.get(principal), facade.getText());
 			UniqueObject.getFromId(tasks, editComment).getComments().add(comment);
 		}
 		return "redirect:/tasks?tab="+tab+"&edit="+edit;
@@ -200,10 +207,10 @@ public class TaskController {
 			@ModelAttribute("task") TaskFacade facade,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		User user = getUser(principal);
-		GeneralTask task;
+		User user = users.get(principal);
+		Task task;
 		if (validateId(edit)) {
-			task = UniqueObject.getFromId(data.<GeneralTask>getList(GeneralTask.class), edit);
+			task = UniqueObject.getFromId(getTaskList(tab), edit);
 			task.setName(facade.getIdName());
 		}
 		else {
@@ -213,7 +220,7 @@ public class TaskController {
 		task.setTaskStatus(facade.getStatus());
 		task.setDetails(facade.getDetails());
 		task.setLabel(facade.getLabel());
-		User assigned = facade.getAssigned().equals("") ? null : User.getFromName(users, facade.getAssigned());
+		User assigned = facade.getAssigned().equals("") ? null : users.get(facade.getAssigned());
 		task.setAssigned(assigned);
 		String label = facade.getLabel();
 		if(!label.equals("")) {
@@ -269,7 +276,7 @@ public class TaskController {
 			facade.setDefaultState();
 		}
 		else if (validateId(edit)) {
-			Task task = UniqueObject.getFromId(getTaskList("general"), edit);
+			Task task = UniqueObject.getFromId(getTaskList(tab), edit);
 			facade.setIdName(task.getName());
 			facade.setDetails(task.getDetails());
 			facade.setStatus(task.getTaskStatus());
@@ -307,11 +314,5 @@ public class TaskController {
 			System.err.println("TaskController Error: Wrong tab name!");
 			throw new UnsupportedOperationException();
 		}
-	}
-	
-	private User getUser(Principal principal) {
-		return (principal == null) ?
-				User.NULL : 
-				User.getFromName(users, principal.getName());
 	}
 }

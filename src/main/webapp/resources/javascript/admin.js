@@ -96,8 +96,8 @@ function saveAllTasks() {
 	$("#saveAllTasksForm").submit();
 }
 
-function importAssets() {
-	alert("Not yet implemented");
+function importAssets(textures) {
+	$.post("admin/importAssets", { textures: textures });
 }
 
 function refreshTaskImportTree() {
@@ -142,11 +142,4 @@ function cancelImport() {
 	$('#taskForm').hide();
 	$('#addMeshesButton').show();
 	$('#addTexturesButton').show();
-}
-
-function importTextures() {
-	alert("Not yet implemented!");
-}
-function importMeshes() {
-	alert("Not yet implemented!");
 }

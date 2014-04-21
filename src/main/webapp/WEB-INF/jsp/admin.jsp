@@ -75,8 +75,8 @@
 				
 				<div class="clear"></div>
 				<div id="importButtons">
-				<div id="importTexturesButton" class="left button pageButton" onclick="importTextures()">Import Textures</div>
-				<div id="importMeshesButton" class="left button pageButton" onclick="importMeshes()">Import 3D Meshes</div>
+				<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')">Import Textures</div>
+				<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')">Import 3D Meshes</div>
 				<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
 				<div class="clear"></div>
 			</div>

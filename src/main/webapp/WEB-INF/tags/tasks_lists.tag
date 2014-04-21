@@ -52,22 +52,28 @@
 		<c:forEach items="${taskList}" var="task">
 			<div id="task_${task.getIdLink()}" class="listElement">
 				<div class="listElementTop clickable" onclick="switchListElement(this)">
+<%-- Priority --%>
 					<div class="right elementPriority ${task.getPriority().toString()}">
 				    </div>
+<%-- ID --%>
 					<div class="left elementId elementContent">
 						<c:out value="${task.getId()}"/>:
 				    </div>
+<%-- Label --%>
 				    <c:if test="${!task.getLabel().equals(\"\")}">
 					    <div class="left elementLabel elementContent">
 							[<c:out value="${task.getLabel()}"/>]&#160;&#160;
 					    </div>
 					</c:if>
+<%-- Title --%>
 					<div class="left elementName elementContent h3">
 						<c:out value="${task.getName()}"/>
 				    </div>
+<%-- Status --%>
 				    <div class="right elementStatus elementContent">
 				    	<fmt:message key="${task.getTaskStatus().getMessageKey()}"/>
 				    </div>
+<%-- Assigned --%>
 				    <div class="right elementAssigned elementContent">
 				    	<c:if test="${!(task.getAssigned()==null)}">
 				    		<c:out value="${task.getAssigned().getName()}"/>&#160;&#160;-&#160;&#160;
@@ -76,9 +82,17 @@
 			    	<div class="clear"></div>
 			    </div>
 			    <div class="listElementBody">
+<%-- Details --%>
 				    <div class="elementDetails elementContent">
 				    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
 				    </div>
+<%-- TexturePreview --%>
+				    <c:if test="${tab.equals('textures')}">
+				    	<div class="elementPreview elementContent">
+				    		<img src="/GMM/tasks/preview?tab=${tab}&id=${task.getIdLink()}" alt="Texture Preview">
+				    	</div>
+					</c:if>
+<%-- Comments --%>
 				    <div class="elementComments">
 					    <c:forEach items="${task.getComments()}" var="comment">
 					    <div id="comment_${comment.getIdLink()}" class="subListElement">
@@ -91,6 +105,7 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
+<%-- Comment Form --%>
 					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${tab}&edit=${edit}&editComment=${task.getIdLink()}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
@@ -100,6 +115,7 @@
 					    	</div>
 					    </form:form>
 				    </div>
+<%-- Deletion --%>
 				    <div class="elementDelete">
 				    	<div class="left deleteQuestion">
 				    		<fmt:message key="task.deleteQuestion"/>
@@ -115,6 +131,7 @@
 					    <div class="left commentElement elementButton button" onclick="switchCommentInput(this)">
 				    		<fmt:message key="to.comment"/>
 				    	</div>
+<%-- Author/Date --%>
 					    <div class="right elementAuthorDate">
 				    		<div class=" elementContent right">
 				    			<c:out value="${task.getAuthor().getName()}"/><br/>
@@ -125,6 +142,7 @@
 					    		<fmt:message key="tasks.list.created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
+<%-- Buttons --%>
 				    	<div class="right deleteElement elementButton button" onclick="switchDeleteQuestion(this)">
 				    		<fmt:message key="delete"/>
 				    	</div>

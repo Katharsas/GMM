@@ -1,5 +1,6 @@
 package gmm.web;
 
+import java.security.Principal;
 import java.util.Arrays;
 
 import org.springframework.ui.ModelMap;
@@ -20,7 +21,9 @@ import gmm.domain.TaskStatus;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.TaskLoader;
+import gmm.service.TextureTaskImporter;
 import gmm.service.TaskLoader.TaskLoaderResult;
+import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 
@@ -46,6 +49,10 @@ public class AdminController {
 	FileService fileService;
 	@Autowired
 	XMLService xmlService;
+	@Autowired
+	TextureTaskImporter textureImporter;
+	@Autowired
+	UserService users;
 	
 	private TaskLoader taskLoader;
 	
@@ -150,8 +157,11 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
-	public @ResponseBody String importAssets (ModelMap model,
-			@RequestParam("textures") boolean textures) {
-		return null;
+	public @ResponseBody void importAssets (ModelMap model,
+			@RequestParam("textures") boolean textures,
+			Principal principal) {
+		if(textures) {
+			textureImporter.importTasks(filePaths, null, users.get(principal));
+		}
 	}
 }

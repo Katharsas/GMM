@@ -10,12 +10,12 @@ public class TextureTask extends Task {
 	
 	final public Set<ModelTask> models = new HashSet<ModelTask>();
 	
-	private String originalAssetPath;
-	private String newAssetFolderPath;
+	private String originalAssetPath = null;
+	private String newAssetFolderPath = null;
 	
 	//not persisted (needs to be updated on load)
-	private File originalAsset;
-	private File newAssetFolder;
+//	private File originalAsset;
+//	private File newAssetFolder;
 	
 	public TextureTask(String idName, User author) {
 		super(idName, author);
@@ -27,10 +27,11 @@ public class TextureTask extends Task {
 	}
 	
 	public void updateAssetAccess(AssetService service) {
-		if(!(originalAssetPath == null)) {
-			originalAsset = new File(originalAssetPath);
-		}
-		newAssetFolder = service.linkNewAssetFolder(newAssetFolderPath);
+//		if(!(originalAssetPath == null)) {
+//			originalAsset = new File(originalAssetPath);
+//		}
+//		newAssetFolder = service.linkNewAssetFolder(newAssetFolderPath);
+		service.linkNewAssetFolder(newAssetFolderPath);
 	}
 	
 	public boolean hasOriginalPreview() {
@@ -38,5 +39,13 @@ public class TextureTask extends Task {
 	}
 	public boolean hasNewPreview() {
 		return false;
+	}
+	
+	public String getNewAssetFolderPath() {
+		return newAssetFolderPath;
+	}
+	
+	public String getOriginalAssetPath() {
+		return originalAssetPath;
 	}
 }
