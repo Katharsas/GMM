@@ -88,7 +88,9 @@ public class DataBase implements DataAccess {
 			textureTasks.clear();
 			modelTasks.clear();
 		}
-		getDataList(clazz).clear();
+		else {
+			getDataList(clazz).clear();
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

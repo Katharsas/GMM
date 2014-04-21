@@ -112,7 +112,7 @@ public class AdminController {
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
 	public void deleteTasks() {
-		data.removeAll(GeneralTask.class);
+		data.removeAll(Task.class);
 	}
 	
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
