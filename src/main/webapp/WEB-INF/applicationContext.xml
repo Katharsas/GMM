@@ -1,12 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="
-       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
-       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
-       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.2.xsd
+		http://www.springframework.org/schema/mvc
+		http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-3.2.xsd
+">
 
-	<import resource="spring-security.xml"/>
+
+	<!-- map links starting with res (used for css/js files) to appropriate folder-->
+	<mvc:resources mapping="/res/**" location="/resources/"/>
+
+	<!-- provide property-files for fmt:message keys from jsps -->
+    <bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename">
+			<value>messages</value>
+		</property>
+	</bean>
+	
+	<!-- activate java annotations-->
+	<mvc:annotation-driven />
+	
+	<!-- activate scan for annotations in given packages-->
+	<context:component-scan base-package="gmm" />
+	
+	<!-- InternalResourceViewResolver resolves the name given from controller to a file by using prefix and suffix -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+  		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+  		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	
+	<!-- Custom Beans -->
+	<bean id="dataLocation" class="java.lang.String">
+        <constructor-arg value="WEB-INF/data/"/>
+    </bean>
+    <bean id="applicationContextProvider" class="gmm.service.Spring"></bean>
+    
+	<!-- Spring Security -->
+	<import resource="applicationContext-security.xml"/>
 </beans>
 

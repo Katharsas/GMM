@@ -13,7 +13,54 @@
 		</welcome-file>
 	</welcome-file-list>
 	
-	<!-- Servlets -->
+	
+	
+	
+	
+	<!-- 	Application Context Configuration 
+	
+			This is the configuration for root/parent container for all servlets.
+			This context is configured in applicationContext.xml by default.
+			(Use context-param to define different context configuration location.)
+			
+			Holds all data that is shared by the servlets or that must be accessible
+			to Spring Security. So this context holds DAOs and Services.-->
+	
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	
+	
+	
+	
+	
+	<!--	Security Filters
+	
+			This is the Spring Security filter configuration.
+			It requires more configuration in the application context configuration to work.
+			Can not be set up for a single servlet context. This is the reason why the application
+			context is used at all in this project, and not only the child (servlet) context.-->
+	
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	
+	
+	
+	
+	<!--	DispatcherServlet
+			
+			Configuration for the single servlet used in this project.
+			Servlets are configured in <servlet-name>-servlet.xml.
+			So in this case the servlet is configured in GMM-servlet.xml-->
 	
 	<servlet>
 		<servlet-name>GMM</servlet-name>
@@ -25,23 +72,5 @@
 		<servlet-name>GMM</servlet-name>
 		<url-pattern>/</url-pattern>
 	</servlet-mapping>
-	
-	<!-- Context Configuration -->
-	
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-	
-	<!-- Security Filters -->
-	
-	<filter>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter>
-	
-	<filter-mapping>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
 	
 </web-app>

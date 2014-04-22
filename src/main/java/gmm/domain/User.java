@@ -13,7 +13,7 @@ public class User extends NamedObject {
 	private String passwordHash;
 	//Domain - Default
 	@XStreamAsAttribute
-	private boolean isAdmin=false;
+	private String role = "ROLE_USER";
 	@XStreamAsAttribute
 	private String email="";
 	final private List<Notification> oldNotifications = new LinkedList<Notification>();;
@@ -46,11 +46,12 @@ public class User extends NamedObject {
 		return passwordHash;
 	}
 
-	public void setAdmin(boolean isAdmin) {
-		this.isAdmin = isAdmin;
+	public void setRole(String role) {
+		this.role = role;
 	}
-	public boolean isAdmin() {
-		return isAdmin;
+	
+	public String getRole() {
+		return role;
 	}
 
 	public void setEmail(String email) {
