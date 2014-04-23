@@ -89,7 +89,13 @@
 <%-- TexturePreview --%>
 				    <c:if test="${tab.equals('textures')}">
 				    	<div class="elementPreview elementContent">
-				    		<img src="/GMM/tasks/preview?tab=${tab}&id=${task.getIdLink()}" alt="Texture Preview">
+				    		<div class="subElementPreview left">
+				    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
+				    		</div>
+				    		<div class="subElementPreview right">
+				    			<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
+				    		</div>
+				    		<div class="clear"></div>
 				    	</div>
 					</c:if>
 <%-- Comments --%>
@@ -128,7 +134,7 @@
 						<div class="clear"></div>
 					</div>
 				    <div class="listElementBodyFooter">
-					    <div class="left commentElement elementButton button" onclick="switchCommentInput(this)">
+					    <div class="left commentElement elementButton button" onclick="findSwitchCommentInput(this)">
 				    		<fmt:message key="to.comment"/>
 				    	</div>
 <%-- Author/Date --%>

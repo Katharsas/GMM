@@ -41,7 +41,6 @@ public class XMLSerializerServiceTest {
 		//add test user
 		User testUser = new User("testUser", "testPasswordHash");
 		testUser.setEmail("testEmail");
-		testUser.setAdmin(false);
 		testUser.getNewNotifications().add(new Notification("testNotification1"));
 		testUser.getOldNotifications().add(new Notification("testNotification2"));
 		data.add(testUser);

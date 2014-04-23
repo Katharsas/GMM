@@ -24,7 +24,6 @@ public class TestUser {
 		assertEquals("Ralf", objectUnderTest.getName());
 		assertEquals("123456", objectUnderTest.getPasswordHash());
 		assertEquals("", objectUnderTest.getEmail());
-		assertFalse(objectUnderTest.isAdmin());
 		assertEquals(new LinkedList<Notification>(), objectUnderTest.getOldNotifications());
 		assertEquals(new LinkedList<Notification>(), objectUnderTest.getNewNotifications());
 		
@@ -38,12 +37,10 @@ public class TestUser {
 		objectUnderTest.setName("Timo");
 		objectUnderTest.setPasswordHash("654321");
 		objectUnderTest.setEmail("Timo@project.gmm");
-		objectUnderTest.setAdmin(true);
 		
 		assertEquals("Timo", objectUnderTest.getName());
 		assertEquals("654321", objectUnderTest.getPasswordHash());
 		assertEquals("Timo@project.gmm", objectUnderTest.getEmail());
-		assertTrue(objectUnderTest.isAdmin());
 	}
 	
 	@Test

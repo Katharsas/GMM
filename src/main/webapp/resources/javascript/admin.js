@@ -97,7 +97,10 @@ function saveAllTasks() {
 }
 
 function importAssets(textures) {
-	$.post("admin/importAssets", { textures: textures });
+	$("#overlay").show();
+	$.post("admin/importAssets", { textures: textures }, function() {
+		$("#overlay").hide();
+	});
 }
 
 function refreshTaskImportTree() {

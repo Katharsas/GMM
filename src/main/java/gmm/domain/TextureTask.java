@@ -1,8 +1,8 @@
 package gmm.domain;
 
-import java.io.File;
+//import java.io.IOException;
 
-import gmm.service.AssetService;
+//import gmm.service.AssetService;
 import gmm.util.HashSet;
 import gmm.util.Set;
 
@@ -24,14 +24,6 @@ public class TextureTask extends Task {
 	public void setAssetFolderPaths(String originalAssetPath, String newAssetFolderPath) {
 		this.originalAssetPath = originalAssetPath;
 		this.newAssetFolderPath = newAssetFolderPath;
-	}
-	
-	public void updateAssetAccess(AssetService service) {
-//		if(!(originalAssetPath == null)) {
-//			originalAsset = new File(originalAssetPath);
-//		}
-//		newAssetFolder = service.linkNewAssetFolder(newAssetFolderPath);
-		service.linkNewAssetFolder(newAssetFolderPath);
 	}
 	
 	public boolean hasOriginalPreview() {

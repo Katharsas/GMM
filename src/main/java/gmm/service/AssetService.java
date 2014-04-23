@@ -12,46 +12,35 @@ import gmm.service.data.DataConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Should be used for asset operations like asset loading/asset conversion.
+ * TODO: Move tga to png conversion here.
+ * 
+ * @author Jan
+ */
 @Service
 public class AssetService {
 
 	@Autowired
+	FileService fileService;
+	
+	@Autowired
 	DataConfigService config;
 	
-	public File linkNewAssetFolder(String newAssetFolderPath) {
-		boolean success = true;
+	/**
+	 * Returns a texture preview image (png) as byte array.
+	 */
+	public byte[] getPreview(String newAssetFolder, boolean small, String version) throws IOException {
 		
-		File result = new File(newAssetFolderPath);
-		if(!result.exists()) {
-			success = success && result.mkdirs();
+		String imageName = version + "_" + (small ? "small" : "full") + ".png";
+		File imageFile = new File(newAssetFolder+"/"+config.NEW_TEX_PREVIEW, imageName);
+		if(!imageFile.exists()) {
+			return null;
 		}
-		success = success && createNewAssetSubFolder(result, config.NEW_TEX_ASSETS);
-		success = success && createNewAssetSubFolder(result, config.NEW_TEX_PREVIEW);
-		success = success && createNewAssetSubFolder(result, config.NEW_TEX_OTHER);
-		if(!success) {
-			throw new IllegalStateException("Could not create folders for new texture asset at "+newAssetFolderPath+"!");
-		}
-		return result;
-	}
-	
-	private boolean createNewAssetSubFolder(File newAssetFolder, String folderName){
-		File subFolder = new File(newAssetFolder.getPath()+"/"+folderName);
-		return subFolder.exists() ? true : subFolder.mkdir();
-	}
-	
-	public byte[] getPreview(String newAssetFolder) throws IOException {
-		File imageFile = new File(newAssetFolder+"/"+config.NEW_TEX_PREVIEW, "preview.png");
 		BufferedImage image = ImageIO.read(imageFile);
-		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", baos);
-		baos.flush();
 		byte[] bytes = baos.toByteArray();
-		baos.close();
 		return bytes;
-		
-//		return ((DataBufferByte) image.getData().getDataBuffer()).getData();
-//		return ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
 	}
-
 }

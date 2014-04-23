@@ -207,9 +207,27 @@
 	width:0.3em;
 	background-color:#DDDDDD;
 }
+.elementPreview {
+	overflow:hidden;
+}
+.subElementPreview {
+	text-align: center;
+	width:49%;
+	min-height:10px;
+	overflow:hidden;
+}
+.subElementPreview img{
+	margin:1px;
+	max-width: 99%;
+	vertical-align: bottom;
+}
+.subElementPreview img:hover {
+	margin:0px;
+	border:1px dashed #999;
+}
 .elementDetails{
 }
-.elementDetails, .elementComments {
+.elementDetails, .elementComments, .elementPreview {
 	margin:5px;
 }
 .elementComments {

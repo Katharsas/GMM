@@ -32,6 +32,8 @@ $(document).ready(function() {
 	else newTask();
 	//hide .listElementBody
 	collapseListElements();
+	//hide comment and details when empty
+	$(".elementComments:blank, .elementDetails:blank").hide();
 	//hide comment input field & delete question
 	$(".commentInput").hide();
 	//hide delete question
@@ -74,17 +76,19 @@ function switchListElement(element) {
 	var newElement = ($(element).parent())[0];
 	
 	if(newElement!=oldElement) {
-		//hide previous elements footer and border
-		$(oldElement).find(".listElementBody > *:blank").hide();
-		$(oldElement).find(".listElementBody > .listElementBodyFooter").slideUp(slideTime);
+		//hide elements that need to be hidden without Focus, hide comment input
+		hideCommentInput($(oldElement).find(".commentInput"));
+		$(oldElement).find(".listElementBodyFooter, elementPreview").slideUp(slideTime);
+		$(oldElement).find(".elementPreview").css("height","50px").show();
+//		$(oldElement).find(".elementPreview").slideDown(slideTime);
 		$(oldElement).css("border-width", "0px");
 		$(oldElement).css("padding-left", "6px");
-		//show new elements footer and border
-		$(newElement).find(".listElementBody > .listElementBodyFooter").slideDown(slideTime);
+		//show elements that were hidden without focus
+		$(newElement).find(".elementPreview").css("height","");
+		$(newElement).find(".listElementBodyFooter, .elementPreview").slideDown(slideTime);
 		$(newElement).css("border-width", "2px");
 		$(newElement).css("padding-left", "16px");
 	}
-	
 	if(($(element).parent().children(".listElementBody").css("display"))=="none") {
 		$(element).parent().children(".listElementBody").slideDown(slideTime);
 	}
@@ -102,16 +106,34 @@ function switchDeleteQuestion(element) {
 	$delete.toggle();
 }
 
-function switchCommentInput(element) {
-	var $commentInput = $(element).parent().parent().children(".elementComments").children(".commentInput");
-	$commentInput.toggle();
+function findSwitchCommentInput(element) {
+	switchCommentInput($(element).parents(".listElementBody").find(".commentInput"));
+}
+function switchCommentInput($commentInput) {
+	if($commentInput.is(":visible")) {
+		hideCommentInput($commentInput);
+	}
+	else {
+		showCommentInput($commentInput);
+	}
+}
+function hideCommentInput($commentInput) {
+	var $elementComments = $commentInput.parent();
+	if($elementComments.is(":visible:blank")) {
+		$elementComments.hide();
+	}
+	$commentInput.hide();
+}
+function showCommentInput($commentInput) {
+	$commentInput.parent().show();
+	$commentInput.show();
 }
 
 /**
  * @param isEasySearch - String or boolean
  */
 function setSearchVisibility(isEasySearch) {
-	var slideTime = 300;
+//	var slideTime = 300;
 	if(isEasySearch.toString()=="true") {
 		$(".complexSearch").hide();
 		$(".easySearch").show();

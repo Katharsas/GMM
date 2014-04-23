@@ -99,12 +99,13 @@ public class TaskController {
 	@RequestMapping(value="/preview", method = RequestMethod.GET, produces="image/png")
 	public @ResponseBody byte[] sendPreview(
 			HttpServletResponse response,
-			@RequestParam(value="tab", defaultValue="") String tab,
-			@RequestParam(value="id", defaultValue="") String id) throws IOException {
+			@RequestParam(value="small", defaultValue="false") boolean small,
+			@RequestParam(value="ver") String version,
+			@RequestParam(value="id") String id) throws IOException {
 
-		setHeaderCaching(response);
+//		setHeaderCaching(response);
 		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), id);
-		return assetService.getPreview(task.getNewAssetFolderPath());
+		return assetService.getPreview(task.getNewAssetFolderPath(),small,version);
 	}
 	
 	

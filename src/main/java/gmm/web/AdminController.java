@@ -1,5 +1,7 @@
 package gmm.web;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Priority;
 import gmm.domain.Task;
@@ -78,8 +79,9 @@ public class AdminController {
     }
 	
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
-	public String saveTasks(@RequestParam("name") String name) {
+	public String saveTasks(@RequestParam("name") String name) throws IOException {
 		String path = fileService.restrictAccess(config.DATA+name, config.DATA);
+		fileService.prepareFileCreation(path);
 		xmlService.serialize(data.getList(Task.class), path+".xml");
 		return "redirect:/admin";
 	}
@@ -106,8 +108,8 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(@RequestParam("dir") String dir) {
-		fileService.deleteFile(fileService.restrictAccess(dir, config.DATA));
+	public @ResponseBody void deleteFile(@RequestParam("dir") String dir) throws IOException {
+		fileService.delete(fileService.restrictAccess(dir, config.DATA));
 	}
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
@@ -159,7 +161,7 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody void importAssets (ModelMap model,
 			@RequestParam("textures") boolean textures,
-			Principal principal) {
+			Principal principal) throws IOException {
 		if(textures) {
 			textureImporter.importTasks(filePaths, null, users.get(principal));
 		}
