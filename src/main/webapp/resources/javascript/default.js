@@ -2,6 +2,31 @@ var fileName = window.location.pathname.substr(window.location.pathname.lastInde
 var paramString = window.location.search.substring(1);
 
 
+var allVars = {
+	"selectedTaskFile":$(),
+	"selectedAssetFile":$(),
+	"selectedBackupFile":$()
+};
+var allFuncs = {
+	"selectTreeElement":
+		function($newFile, marker) {
+			var $oldFile = allVars[marker];
+			$($oldFile).removeClass(marker);
+			$($newFile).addClass(marker);
+			allVars[marker] = $newFile;
+		},
+	"treePluginOptions":
+		function(mapping, directories) {
+			return {
+				root : "",
+				script : mapping,
+				expandSpeed : 300,
+				collapseSpeed : 300,
+				directoryClickable : directories
+			};
+		}
+};
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS

@@ -134,7 +134,7 @@ public class SimpleSelection<T> implements Selection<T> {
 						StringUtil.equals(result.toString(), filter.toString()) :
 						StringUtil.contains(result.toString(), filter.toString())));
 				
-				this.applyMatching(bothNull || equalsOrContainsOrToString, t);
+				this.applyMatching(equalsOrContainsOrToString, t);
 			}
 			catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				System.err.println("SimpleSelection Error: Wrong getterMethodName or wrong list item!");

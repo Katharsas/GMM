@@ -98,9 +98,11 @@
 }
 
 #listsMain .listElement{
-	margin-top:5px;
-	padding:4px 6px;
-	border-left:0px solid #AAAAAA;
+	margin-top:7px;
+	padding:4px 8px;
+/* 	border-left:0px solid #AAAAAA; */
+/* 	border-left:0px solid #A82709; */
+	border-left:0px solid #D35A3D;
 	/*Using following only because avoid column-break-inside not working yet*/
 	/*Can be removed when avoid is working*/
 	box-sizing: border-box;
@@ -172,18 +174,21 @@
 	padding-left:5px;
 	padding-bottom:3px;
 }
+.listElementBodyFooter {
+	margin: 25px 0px 2px 0px;
+}
 .elementAuthorDate{
-	margin-top:10px;
+	bottom:0px;
 	color:#999999;
 	font-size:0.7em;
 }
 .elementButton{
-	padding:1px;
-	font-size:0.85em;
-	margin:15px 10px 3px 0px;
-	width:6em;
+	padding:3px 7px;
+	font-size:0.87em;
+	margin:2px 10px 0px 0px;
+	min-width:5.5em;
 	color:#CCCCCC;
-	background-color:333333;
+	background-color: #3A3A3A;
 }
 .elementButton:hover{
 	background-color:292929;
@@ -208,7 +213,19 @@
 	background-color:#DDDDDD;
 }
 .elementPreview {
+/* 	border-left: 1px solid #777; */
+/* 	background:#2D2D2D; */
 	overflow:hidden;
+}
+.subPreviewDescriptor {
+/* 	border-top: 1px solid #777; */
+	width:50%;
+/* 	background-color: #414141; */
+background-color: #333;
+}
+.subPreviewDescriptor > *{
+	padding:4px;
+	padding-left:10px;
 }
 .subElementPreview {
 	text-align: center;
@@ -221,14 +238,60 @@
 	max-width: 99%;
 	vertical-align: bottom;
 }
-.subElementPreview img:hover {
+.subElementPreview:hover img {
 	margin:0px;
 	border:1px dashed #999;
 }
 .elementDetails{
 }
-.elementDetails, .elementComments, .elementPreview {
-	margin:5px;
+.elementDetails, .elementComments, .elementPreview, .elementFiles {
+	margin:10px 5px;
+}
+.elementPreview {
+/* 	margin-bottom:0px; */
+}
+.elementFiles {
+/* 	margin-top:0px; */
+/* 	border-left: 1px solid #777; */
+/* 	border-right: 1px solid #777; */
+/* 	background-color:#2D2D2D; */
+}
+.subElementAssets {
+}
+.subElementWip {
+}
+.subElementAssets, .subElementWip {
+	width: 50%;
+}
+.subFilesDescriptor {
+	padding:4px;
+	padding-left:10px;
+/* 	border-top: 1px solid #777; */
+/* 	border-bottom: 1px solid #555; */
+	background-color: #333;
+}
+.subElementFileOperations {
+	background-color: #333;
+/* 	border-top: 1px solid #555; */
+/* 	border-bottom: 1px solid #555; */
+	margin-top:10px;
+	padding:4px 2px;
+}
+.subFilesContainer {
+	padding:5px;
+	padding-left:10px;
+}
+.subElementButton {
+	border: 1px solid #555;
+	min-width:5em;
+	font-size: 0.85em;
+	margin:0px 5px;
+	padding:2px 8px;
+	background-color: #666;
+}
+.selectedTaskFile {
+	background-color:#A82709;
+	font-weight: bold;
 }
 .elementComments {
 	margin-top:10px;

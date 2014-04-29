@@ -5,10 +5,12 @@
 
 	<jsp:attribute name="js">
     	<script src="res/javascript/tasks.js" type="text/javascript"></script>
+    	<script src="res/javascript/jqueryFileTree.js" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
 		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/tasks.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link id="css_link" href="res/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 
     <jsp:body>

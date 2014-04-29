@@ -86,19 +86,7 @@
 				    <div class="elementDetails elementContent">
 				    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
 				    </div>
-<%-- TexturePreview --%>
-				    <c:if test="${tab.equals('textures')}">
-				    	<div class="elementPreview elementContent">
-				    		<div class="subElementPreview left">
-				    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
-				    		</div>
-				    		<div class="subElementPreview right">
-				    			<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
-				    		</div>
-				    		<div class="clear"></div>
-				    	</div>
-					</c:if>
-<%-- Comments --%>
+<%-- Comments & Comment Form--%>
 				    <div class="elementComments">
 					    <c:forEach items="${task.getComments()}" var="comment">
 					    <div id="comment_${comment.getIdLink()}" class="subListElement">
@@ -111,7 +99,6 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
-<%-- Comment Form --%>
 					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${tab}&edit=${edit}&editComment=${task.getIdLink()}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
@@ -121,6 +108,49 @@
 					    	</div>
 					    </form:form>
 				    </div>
+<%-- TexturePreview --%>
+				    <c:if test="${tab.equals('textures')}">
+				    	<div class="elementPreview elementContent">
+				    		<div class="subPreviewDescriptor left">
+				    			<div class="center">Original</div>
+				    		</div>
+				    		<div class="subPreviewDescriptor right">
+				    			<div class="center">Newest</div>
+				    		</div>
+				    		<div class="subElementPreview left">
+				    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
+				    		</div>
+				    		<div class="subElementPreview right">
+				    			<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
+				    		</div>
+				    		<div class="clear"></div>
+				    	</div>
+					</c:if>
+<%-- Files --%>
+					<c:if test="${tab.equals('textures')}">
+						<div class="elementFiles elementContent">
+							<div class="subElementAssets left">
+								<div class="subFilesDescriptor">
+									Assets
+								</div>
+								<div id="assetFilesContainer" class="subFilesContainer"></div>
+							</div>
+							<div class="subElementWip right">
+								<div class="subFilesDescriptor">
+									Other
+								</div>
+								<div id="wipFilesContainer" class="subFilesContainer">
+								</div>
+							</div>
+							<div class="clear"></div>
+							<div class="subElementFileOperations">
+								<div class="button subElementButton left">Upload</div>
+								<div class="button subElementButton left">Download</div>
+								<div class="button subElementButton right">Delete</div>
+								<div class="clear"></div>
+							</div>
+						</div>
+					</c:if>
 <%-- Deletion --%>
 				    <div class="elementDelete">
 				    	<div class="left deleteQuestion">
@@ -133,12 +163,13 @@
 						</div>
 						<div class="clear"></div>
 					</div>
+					<div class="clear"></div>
+<%-- Footer --%>
 				    <div class="listElementBodyFooter">
 					    <div class="left commentElement elementButton button" onclick="findSwitchCommentInput(this)">
 				    		<fmt:message key="to.comment"/>
 				    	</div>
-<%-- Author/Date --%>
-					    <div class="right elementAuthorDate">
+					    <div class="elementAuthorDate right">
 				    		<div class=" elementContent right">
 				    			<c:out value="${task.getAuthor().getName()}"/><br/>
 					    		<c:out value="${task.getCreationDate().toString()}"/>
@@ -148,7 +179,6 @@
 					    		<fmt:message key="tasks.list.created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
-<%-- Buttons --%>
 				    	<div class="right deleteElement elementButton button" onclick="switchDeleteQuestion(this)">
 				    		<fmt:message key="delete"/>
 				    	</div>

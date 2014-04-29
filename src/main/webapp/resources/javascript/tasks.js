@@ -1,4 +1,5 @@
-var oldElement;
+
+var $oldElement = $();
 
 $.expr[':'].blank = function(obj){
 	return !$.trim($(obj).text()).length;
@@ -53,7 +54,6 @@ $(document).ready(function() {
 	$(".submitSearchButton").click(function() {submitSearchForm();});
 	$("#generalFiltersAllCheckbox").change(function() {switchGeneralFiltersAll($(this));});
 	$(".generalFiltersFormElement").change(function() {submitGeneralFilters();});
-	
 });
 
 function newTask() {
@@ -73,32 +73,55 @@ function expandListElements() {
 
 function switchListElement(element) {
 	var slideTime = 300;
-	var newElement = ($(element).parent())[0];
+	var $newElement = $(element).parent().first();
 	
-	if(newElement!=oldElement) {
+	if($newElement[0]!=$oldElement[0]) {
 		//hide elements that need to be hidden without Focus, hide comment input
-		hideCommentInput($(oldElement).find(".commentInput"));
-		$(oldElement).find(".listElementBodyFooter, elementPreview").slideUp(slideTime);
-		$(oldElement).find(".elementPreview").css("height","50px").show();
-//		$(oldElement).find(".elementPreview").slideDown(slideTime);
-		$(oldElement).css("border-width", "0px");
-		$(oldElement).css("padding-left", "6px");
+		hideCommentInput($oldElement.find(".commentInput"));
+		$oldElement.find(".listElementBodyFooter, .elementFiles, .elementPreview").slideUp(slideTime);
+//		$oldElement.find(".elementPreview").css("height","50px").show();
+//		oldElement.find(".elementPreview").slideDown(slideTime);
+		$oldElement.css("border-width", "0px");
+		$oldElement.css("padding-left", "8px");
+		removeTaskFileTrees($oldElement);
 		//show elements that were hidden without focus
-		$(newElement).find(".elementPreview").css("height","");
-		$(newElement).find(".listElementBodyFooter, .elementPreview").slideDown(slideTime);
-		$(newElement).css("border-width", "2px");
-		$(newElement).css("padding-left", "16px");
+		addTaskFileTrees($newElement);
+		$newElement.find(".elementPreview").css("height","");
+		$newElement.find(".listElementBodyFooter, .elementPreview, .elementFiles").slideDown(slideTime);
+		$newElement.css("border-width", "2px");
+//		$newElement.css("padding-left", "16px");
+		$newElement.css("padding-left", "6px");
 	}
 	if(($(element).parent().children(".listElementBody").css("display"))=="none") {
 		$(element).parent().children(".listElementBody").slideDown(slideTime);
 	}
-	else if(newElement==oldElement) {
+	else if($newElement[0]==$oldElement[0]) {
 		$(element).parent().children(".listElementBody").slideUp(slideTime);
-		$(newElement).css("border-width", "0px");
-		$(newElement).css("padding-left", "6px");
-		newElement=null;
+		$newElement.css("border-width", "0px");
+		$newElement.css("padding-left", "6px");
+		$newElement=$();
 	}
-	oldElement = newElement;
+	$oldElement = $newElement;
+}
+
+function addTaskFileTrees($element) {
+	$element.find('#assetFilesContainer').fileTree(
+		allFuncs.treePluginOptions("admin/backups", false),
+		function($file) {
+			allFuncs.selectTreeElement($file, "selectedTaskFile");
+		}
+	);
+	$element.find('#wipFilesContainer').fileTree(
+		allFuncs.treePluginOptions("admin/backups", false),
+		function($file) {
+			allFuncs.selectTreeElement($file, "selectedTaskFile");
+		}
+	);
+}
+
+function removeTaskFileTrees($element) {
+	$element.find('#assetFilesContainer').empty();
+	$element.find('#wipFilesContainer').empty();
 }
 
 function switchDeleteQuestion(element) {
