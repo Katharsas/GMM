@@ -1,27 +1,3 @@
-var adminVars = {
-	"selectedAssetFile":$(),
-	"selectedBackupFile":$()
-};
-var adminFuncs = {
-	"selectTreeElement":
-		function($newFile, marker) {
-			var $oldFile = adminVars[marker];
-			$($oldFile).removeClass(marker);
-			$($newFile).addClass(marker);
-			adminVars[marker] = $newFile;
-		},
-	"treePluginOptions":
-		function(mapping, directories) {
-			return {
-				root : "",
-				script : mapping,
-				expandSpeed : 300,
-				collapseSpeed : 300,
-				directoryClickable : directories
-			};
-		}
-};
-
 $(document).ready( function() {
 	cancelImport();
 	refreshTaskBackups();
@@ -30,16 +6,16 @@ $(document).ready( function() {
 
 function refreshTaskBackups() {
 	$('#taskBackupsContainer').fileTree(
-		adminFuncs.treePluginOptions("admin/backups", false),
+		allFuncs.treePluginOptions("admin/backups", false),
 		function($file) {
-			adminFuncs.selectTreeElement($file, "selectedBackupFile");
+			allFuncs.selectTreeElement($file, "selectedBackupFile");
 		}
 	);
 }
 
 function loadTasks() {
-	var dir = adminVars["selectedBackupFile"].attr('rel');
-	if(dir == undefined || dir == "") {
+	var dir = allVars["selectedBackupFile"].attr('rel');
+	if(dir === undefined || dir === "") {
 		return;
 	}
 	$("#conflictOptions").hide();
@@ -81,8 +57,8 @@ function finishTaskLoading() {
 }
 
 function deleteFile() {
-	var dir = adminVars["selectedBackupFile"].attr('rel');
-	if(dir == undefined || dir == "") {
+	var dir = allVars["selectedBackupFile"].attr('rel');
+	if(dir === undefined || dir === "") {
 		return;
 	}
 	$.post("admin/deleteFile", { dir: dir }, refreshTaskBackups);
@@ -105,18 +81,18 @@ function importAssets(textures) {
 
 function refreshTaskImportTree() {
 	$('#fileTreeContainer').fileTree(
-		adminFuncs.treePluginOptions("admin/originalAssets", true),
+		allFuncs.treePluginOptions("admin/originalAssets", true),
 		function($file) {
-			adminFuncs.selectTreeElement($file, "selectedAssetFile");
+			allFuncs.selectTreeElement($file, "selectedAssetFile");
 		}
 	);
 }
 
 function addAssetPaths(textures) {
-	var dir = adminVars["selectedAssetFile"].attr('rel');
+	var dir = allVars["selectedAssetFile"].attr('rel');
 	$("#selectedPaths ul").empty();
 	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
-		if(paths.length==0) {
+		if(paths.length===0) {
 			cancelImport();
 			return;
 		}

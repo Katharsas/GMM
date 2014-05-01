@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 /** Annotations */
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,9 +36,11 @@ import java.util.Locale;
 /* project */
 import gmm.domain.*;
 import gmm.service.AssetService;
+import gmm.service.FileService;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataConfigService;
 import gmm.service.forms.CommentFacade;
 import gmm.service.forms.GeneralFilterFacade;
 import gmm.service.forms.SearchFacade;
@@ -74,6 +77,10 @@ public class TaskController {
 	UserService users;
 	@Autowired
 	AssetService assetService;
+	@Autowired
+	DataConfigService config;
+	@Autowired
+	FileService fileService;
 
 	@ModelAttribute("task")
 	public TaskFacade getTaskFacade() {return new TaskFacade();}
@@ -104,10 +111,28 @@ public class TaskController {
 			@RequestParam(value="id") String id) throws IOException {
 
 //		setHeaderCaching(response);
+		//TODO enable reasonable caching
 		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), id);
 		return assetService.getPreview(task.getNewAssetFolderPath(),small,version);
 	}
 	
+	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
+	public String showAssetFiles(ModelMap model,
+			@PathVariable String idLink,
+			@PathVariable String subDir,
+			@RequestParam("dir") String dir,
+			@RequestParam("tab") String tab) {
+		
+		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
+		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		String base = task.getNewAssetFolderPath()+"/"+subDir;
+		logger.debug("Base: "+base);
+		logger.debug("Dir: "+dir);
+		
+		dir = fileService.restrictAccess(dir, base);
+		model.addAttribute("dir", dir);
+		return "jqueryFileTree";
+	}
 	
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(

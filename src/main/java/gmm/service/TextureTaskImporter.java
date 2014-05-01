@@ -9,6 +9,7 @@ import gmm.util.HashSet;
 import gmm.util.Set;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,18 +66,27 @@ public class TextureTaskImporter {
 		
 		
 		//generate original previews
+		Path previewPath;
+		File previewFile;
 		BufferedImage image = ImageIO.read(path.toFile());
-		//full preview
-		Path previewPath = newFolder.resolve(config.NEW_TEX_PREVIEW).resolve("original_full.png");
-		fileService.prepareFileCreation(previewPath.toFile());
-		ImageIO.write(image, "png", previewPath.toFile());
-		//small preview
-		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
-			image = Scalr.resize(image, SMALL_SIZE);
-		}
-		previewPath = newFolder.resolve(config.NEW_TEX_PREVIEW).resolve("original_small.png");
-		ImageIO.write(image, "png", previewPath.toFile());
 		
+		//full preview
+		previewPath = newFolder.resolve(config.NEW_TEX_PREVIEW).resolve("original_full.png");
+		previewFile = previewPath.toFile();
+		if(!previewFile.exists()) {
+			fileService.prepareFileCreation(previewFile);
+			ImageIO.write(image, "png", previewFile);
+		}
+		//small preview
+		previewPath = newFolder.resolve(config.NEW_TEX_PREVIEW).resolve("original_small.png");
+		previewFile = previewPath.toFile();
+		if(!previewFile.exists()) {
+			if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
+				image = Scalr.resize(image, SMALL_SIZE);
+			}
+			fileService.prepareFileCreation(previewFile);
+			ImageIO.write(image, "png", previewFile);
+		}
 		
 		return result;
 	}

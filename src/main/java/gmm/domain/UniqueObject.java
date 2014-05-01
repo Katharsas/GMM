@@ -1,5 +1,6 @@
 package gmm.domain;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
@@ -68,5 +69,10 @@ public abstract class UniqueObject implements Linkable{
 	//Setters, Getters----------------------------------------------
 	public Date getCreationDate() {
 		return created;
+	}
+	
+	public String getFormattedCreationDate() {
+		SimpleDateFormat formattter = new SimpleDateFormat("dd.MM.yyyy");
+		return formattter.format(created);
 	}
 }

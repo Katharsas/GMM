@@ -5,6 +5,11 @@ $.expr[':'].blank = function(obj){
 	return !$.trim($(obj).text()).length;
 };
 
+var tasksVars = {
+	"tab":"",
+	"edit":""
+};
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -16,15 +21,15 @@ $.expr[':'].blank = function(obj){
  */
 $(document).ready(function() {
 	//get subTab and set as active tab / others as inactivetabs
-	var tabName = getURLParameter("tab");
-	var editName = getURLParameter("edit");
-	var activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tabName+"&edit="+editName+"\"]").parent();
-	activeTab.addClass("activeSubpage");
+	tasksVars.tab = getURLParameter("tab");
+	tasksVars.edit = getURLParameter("edit");
+	var $activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tasksVars.tab+"&edit="+tasksVars.edit+"\"]").parent();
+	$activeTab.addClass("activeSubpage");
 	
 	//show
 	$("#cancelTaskButton").show();
 	//hide #taskForm
-	if (getURLParameter("edit")=="") {
+	if (getURLParameter("edit")==="") {
 		$("#taskForm").hide();
 		$("#submitTaskButton").hide();
 		$("#cancelTaskButton").hide();
@@ -105,14 +110,16 @@ function switchListElement(element) {
 }
 
 function addTaskFileTrees($element) {
+	var idLink = $element.attr('id');
+	var url = idLink+"?tab="+tasksVars.tab;
 	$element.find('#assetFilesContainer').fileTree(
-		allFuncs.treePluginOptions("admin/backups", false),
+		allFuncs.treePluginOptions("tasks/files/assets/"+url, false),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedTaskFile");
 		}
 	);
 	$element.find('#wipFilesContainer').fileTree(
-		allFuncs.treePluginOptions("admin/backups", false),
+		allFuncs.treePluginOptions("tasks/files/other/"+url, false),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedTaskFile");
 		}
@@ -172,7 +179,7 @@ function setSearchVisibility(isEasySearch) {
 
 function switchSearchType() {
 	var easySearch = $("#searchTypeSelect").val();
-	var newEasySearch = (!(easySearch=="true")).toString();
+	var newEasySearch = (easySearch!=="true").toString();
 	$("#searchTypeSelect").val(newEasySearch);
 	setSearchVisibility(newEasySearch);
 }
@@ -210,8 +217,8 @@ function switchSpecificFilters() {
 }
 
 function switchGeneralFiltersAll($element){
-	 $(".generalFiltersAllCheckBoxTarget").attr("checked", $element.is(":checked"));
-	 submitGeneralFilters();
+	$(".generalFiltersAllCheckBoxTarget").attr("checked", $element.is(":checked"));
+	submitGeneralFilters();
 }
 
 function submitSearchForm(){

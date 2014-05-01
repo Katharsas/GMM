@@ -1,0 +1,129 @@
+<gmm.util.HashSet serialization="custom">
+  <unserializable-parents/>
+  <set>
+    <default/>
+    <int>16</int>
+    <float>0.75</float>
+    <int>6</int>
+    <TextureTask id="15" name="ItMiDrum.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:21.769 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\testfolder\ItMiDrum.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\testfolder\ItMiDrum.tga</newAssetFolderPath>
+    </TextureTask>
+    <TextureTask id="16" name="ItMiCrawlerEgg.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:21.812 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\testfolder\ItMiCrawlerEgg.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\testfolder\ItMiCrawlerEgg.tga</newAssetFolderPath>
+    </TextureTask>
+    <TextureTask id="17" name="ItMeleeRest.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:21.855 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\testfolder\ItMeleeRest.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\testfolder\ItMeleeRest.tga</newAssetFolderPath>
+    </TextureTask>
+    <TextureTask id="12" name="ItFood.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:20.776 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\ItFood.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\ItFood.tga</newAssetFolderPath>
+    </TextureTask>
+    <TextureTask id="13" name="ItFlamedBlade.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:21.52 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\ItFlamedBlade.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\ItFlamedBlade.tga</newAssetFolderPath>
+    </TextureTask>
+    <TextureTask id="14" name="ItArRunes.tga" priority="MID" taskStatus="TODO">
+      <created>2014-05-01 15:45:21.81 UTC</created>
+      <author id="User4" name="Kellendil"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+      <models class="gmm.util.HashSet" serialization="custom">
+        <unserializable-parents/>
+        <set>
+          <default/>
+          <int>16</int>
+          <float>0.75</float>
+          <int>0</int>
+        </set>
+      </models>
+      <originalAssetPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\original\Textures\ItArRunes.tga</originalAssetPath>
+      <newAssetFolderPath>C:\Users\Jan\Eigene Repositories\GMM\src\main\webapp\WEB-INF\data\assets\new\Textures\ItArRunes.tga</newAssetFolderPath>
+    </TextureTask>
+  </set>
+</gmm.util.HashSet>

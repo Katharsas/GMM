@@ -50,7 +50,7 @@
 		<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
 		----------------------------------------</div>
 		<c:forEach items="${taskList}" var="task">
-			<div id="task_${task.getIdLink()}" class="listElement">
+			<div id="${task.getIdLink()}" class="listElement">
 				<div class="listElementTop clickable" onclick="switchListElement(this)">
 <%-- Priority --%>
 					<div class="right elementPriority ${task.getPriority().toString()}">
@@ -125,9 +125,9 @@
 				    		</div>
 				    		<div class="clear"></div>
 				    	</div>
-					</c:if>
+<%-- 					</c:if> --%>
 <%-- Files --%>
-					<c:if test="${tab.equals('textures')}">
+<%-- 					<c:if test="${tab.equals('textures')}"> --%>
 						<div class="elementFiles elementContent">
 							<div class="subElementAssets left">
 								<div class="subFilesDescriptor">
@@ -172,7 +172,7 @@
 					    <div class="elementAuthorDate right">
 				    		<div class=" elementContent right">
 				    			<c:out value="${task.getAuthor().getName()}"/><br/>
-					    		<c:out value="${task.getCreationDate().toString()}"/>
+					    		<c:out value="${task.getFormattedCreationDate()}"/>
 				    		</div>
 				    		<div class="elementContent right">
 				    			<fmt:message key="author"/>:&#160;&#160;<br/>
