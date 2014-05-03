@@ -42,6 +42,10 @@
 		<property name="suffix" value=".jsp" />
 	</bean>
 	
+	<!-- Handle Multipart File Upload -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	</bean>
+	
 	<!-- Custom Beans -->
 	<bean id="dataLocation" class="java.lang.String">
         <constructor-arg value="WEB-INF/data/"/>

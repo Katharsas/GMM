@@ -8,6 +8,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.StandardOpenOption;
 
 import org.springframework.stereotype.Service;
 
@@ -145,5 +147,13 @@ public class FileService {
 			}
 			Files.createDirectory(file.toPath());
 		}
+	}
+	
+	/**
+	 * Creates a directory and any necessary parent directories.
+	 */
+	public synchronized void createFile(String path, byte[] data) throws IOException {
+		prepareFileCreation(path);
+		Files.write(new File(path).toPath(), data);
 	}
 }

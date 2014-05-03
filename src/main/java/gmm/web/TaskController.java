@@ -2,6 +2,7 @@ package gmm.web;
 
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 /** Annotations */
@@ -15,7 +16,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -24,6 +28,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 
+import java.io.File;
 import java.io.IOException;
 /** java */
 import java.security.Principal;
@@ -126,12 +131,25 @@ public class TaskController {
 		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
 		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
 		String base = task.getNewAssetFolderPath()+"/"+subDir;
-		logger.debug("Base: "+base);
-		logger.debug("Dir: "+dir);
 		
 		dir = fileService.restrictAccess(dir, base);
 		model.addAttribute("dir", dir);
 		return "jqueryFileTree";
+	}
+	
+	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
+	public @ResponseBody String handleUpload(HttpServletRequest request,
+			@PathVariable String idLink,
+			@RequestParam("tab") String tab) throws IOException {
+		
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+		MultipartFile file = (MultipartFile) map.getFirst("myFile");
+		
+		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
+		assetService.addTextureFile(file, task);
+		
+		return file.isEmpty()? "Upload failed!" : "Upload successfull!";
 	}
 	
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)

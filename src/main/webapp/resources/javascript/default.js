@@ -11,8 +11,8 @@ var allFuncs = {
 	"selectTreeElement":
 		function($newFile, marker) {
 			var $oldFile = allVars[marker];
-			$($oldFile).removeClass(marker);
-			$($newFile).addClass(marker);
+			$oldFile.removeClass(marker);
+			$newFile.addClass(marker);
 			allVars[marker] = $newFile;
 		},
 	"treePluginOptions":
@@ -71,7 +71,24 @@ function hideDialogue() {
 	$("#overlay").hide();
 }
 
-
+/**
+ * See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#Handling_the_upload_process_for_a_file.2C_asynchronously
+ * @param file - See HTML 5 File API
+ */
+function sendFile(file, uri, callback) {
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    
+    xhr.open("POST", uri, true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // Handle response
+            callback(xhr.responseText);
+        }
+    };
+    fd.append('myFile', file);
+    xhr.send(fd);
+}
 
 /**
  * Don't worry about this one.

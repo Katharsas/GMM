@@ -232,3 +232,12 @@ function submitTaskForm(){
 function submitGeneralFilters(){
 	$(".generalFilters").submit();
 }
+
+function handleFileUpload(input, idLink) {
+	var file = input.files[0];
+	var uri = "tasks/upload/"+idLink+"?tab="+tasksVars.tab;
+	
+	sendFile(file, uri, function(responseText) {
+//		alert("Server Response: "+responseText);
+	});
+}

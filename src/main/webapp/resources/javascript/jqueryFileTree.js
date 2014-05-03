@@ -41,16 +41,16 @@ if(jQuery) (function($){
 		fileTree: function(options, callback) {
 			// Defaults
 			if( !options ) options = {};
-			if( options.root == undefined ) options.root = '/';
-			if( options.script == undefined ) options.script = 'jqueryFileTree.php';
-			if( options.folderEvent == undefined ) options.folderEvent = 'click';
-			if( options.expandSpeed == undefined ) options.expandSpeed= 500;
-			if( options.collapseSpeed == undefined ) options.collapseSpeed= 500;
-			if( options.expandEasing == undefined ) options.expandEasing = null;
-			if( options.collapseEasing == undefined ) options.collapseEasing = null;
-			if( options.multiFolder == undefined ) options.multiFolder = true;
-			if( options.loadMessage == undefined ) options.loadMessage = 'Loading...';
-			if( options.directoryClickable == undefined ) options.directoryClickable = true;
+			if( options.root === undefined ) options.root = '/';
+			if( options.script === undefined ) options.script = 'jqueryFileTree.php';
+			if( options.folderEvent === undefined ) options.folderEvent = 'click';
+			if( options.expandSpeed === undefined ) options.expandSpeed= 500;
+			if( options.collapseSpeed === undefined ) options.collapseSpeed= 500;
+			if( options.expandEasing === undefined ) options.expandEasing = null;
+			if( options.collapseEasing === undefined ) options.collapseEasing = null;
+			if( options.multiFolder === undefined ) options.multiFolder = true;
+			if( options.loadMessage === undefined ) options.loadMessage = 'Loading...';
+			if( options.directoryClickable === undefined ) options.directoryClickable = true;
 			
 			$(this).each( function() {
 				

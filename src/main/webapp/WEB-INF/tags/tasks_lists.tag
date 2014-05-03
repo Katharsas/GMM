@@ -125,9 +125,7 @@
 				    		</div>
 				    		<div class="clear"></div>
 				    	</div>
-<%-- 					</c:if> --%>
 <%-- Files --%>
-<%-- 					<c:if test="${tab.equals('textures')}"> --%>
 						<div class="elementFiles elementContent">
 							<div class="subElementAssets left">
 								<div class="subFilesDescriptor">
@@ -139,12 +137,12 @@
 								<div class="subFilesDescriptor">
 									Other
 								</div>
-								<div id="wipFilesContainer" class="subFilesContainer">
-								</div>
+								<div id="wipFilesContainer" class="subFilesContainer"></div>
 							</div>
 							<div class="clear"></div>
 							<div class="subElementFileOperations">
-								<div class="button subElementButton left">Upload</div>
+								<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="handleFileUpload(this,'${task.getIdLink()}')"/>
+								<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">Upload</div>
 								<div class="button subElementButton left">Download</div>
 								<div class="button subElementButton right">Delete</div>
 								<div class="clear"></div>
