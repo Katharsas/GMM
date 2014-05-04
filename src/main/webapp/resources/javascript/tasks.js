@@ -10,6 +10,15 @@ var tasksVars = {
 	"edit":""
 };
 
+var tasksFuncs = {
+	"tabPar" : function () {
+		return "?tab="+tasksVars.tab;
+	},
+	"refresh" : function () {
+		window.location.href = "tasks"+tasksFuncs.tabPar()+"&edit="+tasksVars.edit;
+	}
+};
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -235,9 +244,20 @@ function submitGeneralFilters(){
 
 function handleFileUpload(input, idLink) {
 	var file = input.files[0];
-	var uri = "tasks/upload/"+idLink+"?tab="+tasksVars.tab;
+	var uri = "tasks/upload/"+idLink+tasksFuncs.tabPar();
 	
 	sendFile(file, uri, function(responseText) {
+		tasksFuncs.refresh();
 //		alert("Server Response: "+responseText);
+	});
+}
+
+function deleteFile(idLink) {
+	var dir = allVars["selectedTaskFile"].attr('rel');
+	if(dir === undefined || dir === "") {
+		return;
+	}
+	$.post("tasks/deleteFile/"+idLink+tasksFuncs.tabPar(), { dir: dir }, function() {
+		tasksFuncs.refresh();
 	});
 }

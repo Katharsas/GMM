@@ -118,10 +118,14 @@
 				    			<div class="center">Newest</div>
 				    		</div>
 				    		<div class="subElementPreview left">
-				    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
+					    		<a href="/GMM/tasks/preview?small=false&amp;ver=original&amp;id=${task.getIdLink()}">
+					    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
+					    		</a>
 				    		</div>
 				    		<div class="subElementPreview right">
-				    			<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
+				    			<a href="/GMM/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
+				    				<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
+				    			</a>
 				    		</div>
 				    		<div class="clear"></div>
 				    	</div>
@@ -144,7 +148,7 @@
 								<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="handleFileUpload(this,'${task.getIdLink()}')"/>
 								<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">Upload</div>
 								<div class="button subElementButton left">Download</div>
-								<div class="button subElementButton right">Delete</div>
+								<div class="button subElementButton right" onclick="deleteFile('${task.getIdLink()}')">Delete</div>
 								<div class="clear"></div>
 							</div>
 						</div>

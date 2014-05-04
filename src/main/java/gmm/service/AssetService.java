@@ -59,7 +59,6 @@ public class AssetService {
 		
 		//Add file
 		String assetPath = task.getNewAssetFolderPath()+"/"+subDir+"/"+name;
-		System.out.println("Path: "+assetPath);
 		fileService.createFile(assetPath, texture.getBytes());
 		
 		//Add texture preview files

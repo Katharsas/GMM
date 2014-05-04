@@ -8,8 +8,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.StandardOpenOption;
 
 import org.springframework.stereotype.Service;
 
@@ -37,11 +35,11 @@ public class FileService {
 				dirCanonical = new File(dir).getCanonicalPath();
 			}
 			if (!dirCanonical.startsWith(baseCanonical)) {
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Wrong path input! Path is not valid! Try to make the path relative.");
 			}
 		}
 		catch(Exception e) {
-			throw new IllegalArgumentException("Wrong path input! Path is not valid! Try to make the path relative.");
+			e.printStackTrace();
 		}
 		return dir;
 	}

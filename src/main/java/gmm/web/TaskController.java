@@ -130,7 +130,7 @@ public class TaskController {
 		
 		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
 		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
-		String base = task.getNewAssetFolderPath()+"/"+subDir;
+		String base = task.getNewAssetFolderPath()+"/"+subDir+"/";
 		
 		dir = fileService.restrictAccess(dir, base);
 		model.addAttribute("dir", dir);
@@ -151,6 +151,17 @@ public class TaskController {
 		
 		return file.isEmpty()? "Upload failed!" : "Upload successfull!";
 	}
+	
+	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
+	public @ResponseBody void deleteFile(
+			@PathVariable String idLink,
+			@RequestParam("tab") String tab,
+			@RequestParam("dir") String dir) throws IOException {
+		
+		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
+		fileService.delete(fileService.restrictAccess(dir, task.getNewAssetFolderPath()));
+	}
+	
 	
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
