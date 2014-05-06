@@ -6,6 +6,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -58,7 +60,9 @@ public class AssetService {
 		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
 		
 		//Add file
-		String assetPath = task.getNewAssetFolderPath()+"/"+subDir+"/"+name;
+		Path assetPath = Paths.get(task.getNewAssetFolderPath())
+				.resolve(subDir)
+				.resolve(name);
 		fileService.createFile(assetPath, texture.getBytes());
 		
 		//Add texture preview files

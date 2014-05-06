@@ -23,13 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/** Logging */
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
-
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 /** java */
 import java.security.Principal;
 import java.text.SimpleDateFormat;
@@ -69,7 +65,6 @@ import gmm.util.*;
 @Scope("session")
 @Controller
 public class TaskController {
-	private final Log logger = LogFactory.getLog(getClass());
 	
 	private Collection<? extends Task> filteredTasks;
 	private Collection<? extends Task> tasks;
@@ -122,19 +117,18 @@ public class TaskController {
 	}
 	
 	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
-	public String showAssetFiles(ModelMap model,
+	public @ResponseBody String showAssetFiles(ModelMap model,
 			@PathVariable String idLink,
 			@PathVariable String subDir,
-			@RequestParam("dir") String dir,
+			@RequestParam("dir") Path dir,
 			@RequestParam("tab") String tab) {
 		
 		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
 		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
-		String base = task.getNewAssetFolderPath()+"/"+subDir+"/";
 		
-		dir = fileService.restrictAccess(dir, base);
-		model.addAttribute("dir", dir);
-		return "jqueryFileTree";
+		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
+		dir = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dir, visible);
 	}
 	
 	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
@@ -156,10 +150,14 @@ public class TaskController {
 	public @ResponseBody void deleteFile(
 			@PathVariable String idLink,
 			@RequestParam("tab") String tab,
-			@RequestParam("dir") String dir) throws IOException {
+			@RequestParam("asset") Boolean asset,
+			@RequestParam("dir") Path dir) throws IOException {
 		
 		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
-		fileService.delete(fileService.restrictAccess(dir, task.getNewAssetFolderPath()));
+		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
+		dir = visible.resolve(fileService.restrictAccess(dir, visible));
+		fileService.delete(dir);
 	}
 	
 	

@@ -1,13 +1,14 @@
 package gmm.service;
 
+import gmm.util.Collection;
 import gmm.util.LinkedList;
 import gmm.util.List;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.springframework.stereotype.Service;
 
@@ -19,29 +20,40 @@ import org.springframework.stereotype.Service;
 public class FileService {
 	
 	/**
-	 * Restricts dir path access to public directory or below.
-	 * If the dir variable does not point below the public directory,
-	 * it will be treated as relative path below the public directory
+	 * Restricts dir path access to visisble directory or below.
+	 * 
+	 * @param dir - Relative or absolute path that needs to be restricted.
+	 * @param visible - Relative or absolute path that represents the restriction.
+	 * @return Path relative to visible directory that points below the visible directory.
 	 */
-	public String restrictAccess(String dir, String publicDir){
-		try {dir = java.net.URLDecoder.decode(dir, "UTF-8");}
-		catch (UnsupportedEncodingException e1) {e1.printStackTrace();}	
+	public Path restrictAccess(Path dir, Path visible) {
 		
-		try {
-			String baseCanonical = new File(publicDir).getCanonicalPath();
-			String dirCanonical = new File(dir).getCanonicalPath();
-			if (!dirCanonical.startsWith(baseCanonical)) {
-				dir = publicDir+dir;
-				dirCanonical = new File(dir).getCanonicalPath();
+//		System.out.println("restrictAccess() - dir:  "+dir);
+//		System.out.println("restrictAccess() - vis:  "+visible);
+		
+		if (!isChild(dir, visible)) {
+			//If dir is relative, check for back-paths
+			if (!isChild(visible.resolve(dir), visible)) {
+				throw new IllegalArgumentException("Path restriction error: Path could not be resolved.");
 			}
-			if (!dirCanonical.startsWith(baseCanonical)) {
-				throw new IllegalArgumentException("Wrong path input! Path is not valid! Try to make the path relative.");
-			}
+			return dir;
 		}
-		catch(Exception e) {
-			e.printStackTrace();
+		else {
+			//If dir is absolute, make it relative
+			return visible.relativize(dir);
 		}
-		return dir;
+	}
+	
+	private boolean isChild(Path child, Path parent) {
+		return child.normalize().startsWith(parent.normalize());
+	}
+	
+	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
+		List<String> relPaths = new LinkedList<>();
+		for (Path path : paths) {
+			relPaths.add(visible.relativize(path).toString());
+		}
+		return relPaths;
 	}
 	
 	/**
@@ -50,15 +62,14 @@ public class FileService {
 	 * 
 	 * @param fileExtensions - Filters the files by file extension.
 	 */
-	public List<String> getFilePaths(String dir, String[] fileExtensions) {
-		List<String> filePaths = new LinkedList<>();
-		File root = new File(dir);
+	public List<Path> getFilePaths(Path path, String[] fileExtensions) {
+		List<Path> filePaths = new LinkedList<>();
+		File root = path.toFile();
 		if (root.exists()) {
 			List<File> files = getFilesRecursive(root, fileExtensions == null ? 
 					null :new FileExtensionFilter(fileExtensions));
 			for (File f : files) {
-				try { filePaths.add(f.getCanonicalPath());}
-				catch (IOException e) { e.printStackTrace();}
+				filePaths.add(f.toPath());
 			}
 		}
 		return filePaths;
@@ -101,34 +112,22 @@ public class FileService {
 	}
 	
 	/**
-	 * @see {@link gmm.service.FileService#delete(File)}
-	 */
-	public void delete(String file) throws IOException {
-		delete(new File(file));
-	}
-	/**
 	 * Deletes the given file and all empty parent directories.
 	 * So if a file is the only file in a folder, the folder will be deleted too.
 	 */
-	public synchronized void delete(File file) throws IOException {
-		File parent = file.getParentFile();
-		Files.delete(file.toPath());
-		if(parent.list().length == 0) {
+	public synchronized void delete(Path path) throws IOException {
+		Path parent = path.getParent();
+		Files.delete(path);
+		if(parent.toFile().list().length == 0) {
 			delete(parent);
 		}
 	}
 	
 	/**
-	 * @see {@link gmm.service.FileService#prepareFileCreation(File)}
-	 */
-	public void prepareFileCreation(String path) throws IOException {
-		prepareFileCreation(new File(path));
-	}
-	/**
 	 * Creates necessary parent directories for this file.
 	 */
-	public void prepareFileCreation(File file) throws IOException {
-		File parent = file.getParentFile();
+	public void prepareFileCreation(Path path) throws IOException {
+		File parent = path.toFile().getParentFile();
 		if(!parent.exists()) {
 			createDirectory(parent);
 		}
@@ -150,8 +149,8 @@ public class FileService {
 	/**
 	 * Creates a directory and any necessary parent directories.
 	 */
-	public synchronized void createFile(String path, byte[] data) throws IOException {
+	public synchronized void createFile(Path path, byte[] data) throws IOException {
 		prepareFileCreation(path);
-		Files.write(new File(path).toPath(), data);
+		Files.write(path, data);
 	}
 }

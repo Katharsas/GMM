@@ -59,7 +59,7 @@
         
         <div class="groupDescriptor">Import Assets (WIP)</div>
         <div class="adminElementGroup">
-			<div id="fileTreeContainer" class="adminElement"></div>
+			<div id="originalAssetsContainer" class="adminElement"></div>
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)">Add Textures</div>
 			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)">Add 3D Meshes</div>
 			<div class="clear"></div>

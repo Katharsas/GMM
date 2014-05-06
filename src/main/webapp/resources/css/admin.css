@@ -29,7 +29,7 @@
 	font-weight: bold;
 
 }
-#taskBackupsContainer, #fileTreeContainer {
+#taskBackupsContainer, #originalAssetsContainer {
 	max-width:500px;
 }
 #loadTasks {

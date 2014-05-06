@@ -80,7 +80,7 @@ function importAssets(textures) {
 }
 
 function refreshTaskImportTree() {
-	$('#fileTreeContainer').fileTree(
+	$('#originalAssetsContainer').fileTree(
 		allFuncs.treePluginOptions("admin/originalAssets", true),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedAssetFile");

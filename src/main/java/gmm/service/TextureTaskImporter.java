@@ -41,10 +41,10 @@ public class TextureTaskImporter {
 		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
 	}
 	
-	public void importTasks(Iterable<String> texturePaths, TaskFacade form, User user) throws IOException {
+	public void importTasks(String root, Iterable<String> texturePaths, TaskFacade form, User user) throws IOException {
 		Set<TextureTask> result = new HashSet<>();
 		for(String path : texturePaths) {
-			result.add(importTask(Paths.get(path), user));
+			result.add(importTask(Paths.get(root).resolve(path), user));
 		}
 		data.addAll(TextureTask.class, result);
 	}
@@ -74,7 +74,7 @@ public class TextureTaskImporter {
 		previewPath = newFolder.resolve(config.NEW_TEX_PREVIEW).resolve("original_full.png");
 		previewFile = previewPath.toFile();
 		if(!previewFile.exists()) {
-			fileService.prepareFileCreation(previewFile);
+			fileService.prepareFileCreation(previewFile.toPath());
 			ImageIO.write(image, "png", previewFile);
 		}
 		//small preview
@@ -84,7 +84,7 @@ public class TextureTaskImporter {
 			if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 				image = Scalr.resize(image, SMALL_SIZE);
 			}
-			fileService.prepareFileCreation(previewFile);
+			fileService.prepareFileCreation(previewFile.toPath());
 			ImageIO.write(image, "png", previewFile);
 		}
 		

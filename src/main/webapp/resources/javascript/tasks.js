@@ -7,7 +7,8 @@ $.expr[':'].blank = function(obj){
 
 var tasksVars = {
 	"tab":"",
-	"edit":""
+	"edit":"",
+	"selectedTaskFileIsAsset":""
 };
 
 var tasksFuncs = {
@@ -124,12 +125,14 @@ function addTaskFileTrees($element) {
 	$element.find('#assetFilesContainer').fileTree(
 		allFuncs.treePluginOptions("tasks/files/assets/"+url, false),
 		function($file) {
+			tasksVars.selectedTaskFileIsAsset = true;
 			allFuncs.selectTreeElement($file, "selectedTaskFile");
 		}
 	);
 	$element.find('#wipFilesContainer').fileTree(
 		allFuncs.treePluginOptions("tasks/files/other/"+url, false),
 		function($file) {
+			tasksVars.selectedTaskFileIsAsset = false;
 			allFuncs.selectTreeElement($file, "selectedTaskFile");
 		}
 	);
@@ -257,7 +260,8 @@ function deleteFile(idLink) {
 	if(dir === undefined || dir === "") {
 		return;
 	}
-	$.post("tasks/deleteFile/"+idLink+tasksFuncs.tabPar(), { dir: dir }, function() {
+	var assetPar = "&asset="+tasksVars.selectedTaskFileIsAsset.toString();
+	$.post("tasks/deleteFile/"+idLink+tasksFuncs.tabPar()+assetPar, { dir: dir }, function() {
 		tasksFuncs.refresh();
 	});
 }

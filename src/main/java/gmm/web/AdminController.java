@@ -1,6 +1,8 @@
 package gmm.web;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Arrays;
 
@@ -56,7 +58,7 @@ public class AdminController {
 	
 	private TaskLoader taskLoader;
 	
-	private Set<String> filePaths = new HashSet<>();
+	private final Set<String> filePaths = new HashSet<>();
 	boolean areTexturePaths = true;
 	
 	@ModelAttribute("task")
@@ -69,7 +71,7 @@ public class AdminController {
 	
 	@RequestMapping(method = RequestMethod.GET)
     public String send(ModelMap model) {
-		filePaths = new HashSet<>();
+		filePaths.clear();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("taskStatuses", TaskStatus.values());
@@ -78,18 +80,22 @@ public class AdminController {
     }
 	
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
-	public String saveTasks(@RequestParam("name") String name) throws IOException {
-		String path = fileService.restrictAccess(config.DATA+name, config.DATA);
+	public String saveTasks(@RequestParam("name") String pathString) throws IOException {
+		
+		Path visible = Paths.get(config.DATA);
+		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		fileService.prepareFileCreation(path);
-		xmlService.serialize(data.getList(Task.class), path+".xml");
+		xmlService.serialize(data.getList(Task.class), path.toString());
 		return "redirect:/admin";
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") String dir) {
-		String path = fileService.restrictAccess(dir, config.DATA);
+	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir) {
+		
+		Path visible = Paths.get(config.DATA);
+		dir = fileService.restrictAccess(dir, visible);
 		try {
-			taskLoader = new TaskLoader(path);
+			taskLoader = new TaskLoader(visible.resolve(dir).toString());
 		}
 		catch(Exception e) {
 			TaskLoaderResult result = new TaskLoaderResult();
@@ -103,43 +109,49 @@ public class AdminController {
 	public @ResponseBody TaskLoaderResult loadNextTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
+		
 		return taskLoader.loadNext(operation, doForAll);
 	}
 	
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(@RequestParam("dir") String dir) throws IOException {
-		fileService.delete(fileService.restrictAccess(dir, config.DATA));
+	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws IOException {
+		
+		Path visible = Paths.get(config.DATA);
+		dir = visible.resolve(fileService.restrictAccess(dir, visible));
+		fileService.delete(dir);
 	}
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
 	public void deleteTasks() {
+		
 		data.removeAll(Task.class);
 	}
 	
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
-	public String showBackups(ModelMap model,
-			@RequestParam("dir") String dir) throws Exception {
+	public @ResponseBody String showBackups(ModelMap model,
+			@RequestParam("dir") Path dir) throws Exception {
 		
-		dir = fileService.restrictAccess(dir, config.DATA);
-		model.addAttribute("dir", dir);
-		return "jqueryFileTree";
+		Path visible = Paths.get(config.DATA);
+		Path dirPath = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirPath, visible);
 	}
 	
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
-	public String showOriginalAssets(ModelMap model,
-			@RequestParam("dir") String dir) throws Exception {
+	public @ResponseBody String showOriginalAssets(ModelMap model,
+			@RequestParam("dir") Path dir) throws Exception {
 		
-		dir = fileService.restrictAccess(dir, config.ASSETS_ORIGINAL);
-		model.addAttribute("dir", dir);
-		return "jqueryFileTree";
+		Path visible = Paths.get(config.ASSETS_ORIGINAL);
+		dir = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dir, visible);
 	}
 	
 	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
 	public @ResponseBody String[] getAssetPaths(ModelMap model,
-			@RequestParam("dir") String dir,
+			@RequestParam("dir") Path dir,
 			@RequestParam("textures") boolean textures) {
 		
-		dir = fileService.restrictAccess(dir, config.ASSETS_ORIGINAL);
+		Path visible = Paths.get(config.ASSETS_ORIGINAL);
+		dir = fileService.restrictAccess(dir, visible);
 		if(this.areTexturePaths!=textures) {
 			this.filePaths.clear();
 			this.areTexturePaths = textures;
@@ -151,7 +163,8 @@ public class AdminController {
 		else {
 			extensions = new String[]{"3ds","3DS"};
 		}
-		this.filePaths.addAll(fileService.getFilePaths(dir, extensions));
+		this.filePaths.addAll(fileService.getRelativeNames(
+				fileService.getFilePaths(visible.resolve(dir), extensions), visible));
 		String[] result = this.filePaths.toArray(new String[filePaths.size()]);
 		Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
 		return result;
@@ -161,8 +174,9 @@ public class AdminController {
 	public @ResponseBody void importAssets (ModelMap model,
 			@RequestParam("textures") boolean textures,
 			Principal principal) throws IOException {
+		
 		if(textures) {
-			textureImporter.importTasks(filePaths, null, users.get(principal));
+			textureImporter.importTasks(config.ASSETS_ORIGINAL, filePaths, null, users.get(principal));
 		}
 	}
 }
