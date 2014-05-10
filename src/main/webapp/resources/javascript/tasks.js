@@ -42,7 +42,7 @@ $(document).ready(function() {
 	//get subTab and set as active tab / others as inactivetabs
 	tasksVars.tab = getURLParameter("tab");
 	tasksVars.edit = getURLParameter("edit");
-	var $activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tasksVars.tab+"&edit="+tasksVars.edit+"\"]").parent();
+	var $activeTab = $(".subTabmenu .tab a[href=\"tasks/reset?tab="+tasksVars.tab+"\"]").parent();
 	$activeTab.addClass("activeSubpage");
 	
 	//show

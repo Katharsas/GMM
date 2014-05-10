@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -33,28 +34,26 @@ import gmm.service.data.DataConfigService;
 import gmm.util.HashSet;
 import gmm.util.Set;
 import gmm.web.forms.TaskForm;
+import gmm.web.sessions.TaskSession;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 
 @Controller
+@Scope("session")
 @RequestMapping("admin")
 public class AdminController {
 	protected final Log logger = LogFactory.getLog(getClass());
 	
-	@Autowired
-	DataAccess data;
-	@Autowired
-	DataConfigService config;
-	@Autowired
-	FileService fileService;
-	@Autowired
-	XMLService xmlService;
-	@Autowired
-	TextureTaskImporter textureImporter;
-	@Autowired
-	UserService users;
+	@Autowired TaskSession session;
+	
+	@Autowired DataAccess data;
+	@Autowired DataConfigService config;
+	@Autowired FileService fileService;
+	@Autowired XMLService xmlService;
+	@Autowired TextureTaskImporter textureImporter;
+	@Autowired UserService users;
 	
 	private TaskLoader taskLoader;
 	
@@ -92,6 +91,7 @@ public class AdminController {
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
 	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir) {
 		
+		session.notifyDataChange();
 		Path visible = Paths.get(config.DATA);
 		dir = fileService.restrictAccess(dir, visible);
 		try {
@@ -123,7 +123,7 @@ public class AdminController {
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
 	public void deleteTasks() {
-		
+		session.notifyDataChange();
 		data.removeAll(Task.class);
 	}
 	
@@ -175,6 +175,7 @@ public class AdminController {
 			@RequestParam("textures") boolean textures,
 			Principal principal) throws IOException {
 		
+		session.notifyDataChange();
 		if(textures) {
 			textureImporter.importTasks(config.ASSETS_ORIGINAL, filePaths, null, users.get(principal));
 		}

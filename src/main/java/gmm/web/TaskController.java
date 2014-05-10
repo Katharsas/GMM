@@ -49,16 +49,14 @@ import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.TaskForm;
+import gmm.web.sessions.TaskSession;
 
 /**
  * Controller class which handles all GET & POST requests with root "tasks".
- * This class is responsible for most CRUD operations on tasks and task comments.
+ * This class is responsible for most CRUD operations on tasks.
  * 
- * 
- * 
- * Nice to have:
- * - Highlight text caught by search filter
- * 
+ * The inpersistent logic (session flow) is managed by the TaskSession object.
+ * @see {@link gmm.web.sessions.TaskSession}
  * 
  * @author Jan Mothes aka Kellendil
  */
@@ -68,21 +66,14 @@ import gmm.web.forms.TaskForm;
 @Controller
 public class TaskController {
 	
-	private Collection<? extends Task> filteredTasks;
-	private Collection<? extends Task> tasks;
+	@Autowired TaskSession session;
 	
-	@Autowired
-	DataAccess data;
-	@Autowired
-	TaskFilterService filter;
-	@Autowired
-	UserService users;
-	@Autowired
-	AssetService assetService;
-	@Autowired
-	DataConfigService config;
-	@Autowired
-	FileService fileService;
+	@Autowired DataAccess data;
+	@Autowired TaskFilterService filter;
+	@Autowired UserService users;
+	@Autowired AssetService assetService;
+	@Autowired DataConfigService config;
+	@Autowired FileService fileService;
 
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {return new TaskForm();}
@@ -144,7 +135,7 @@ public class TaskController {
 			@PathVariable String subDir,
 			@RequestParam("dir") Path dir) {
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
 		
 		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
@@ -167,7 +158,7 @@ public class TaskController {
 		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
 		MultipartFile file = (MultipartFile) map.getFirst("myFile");
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		assetService.addTextureFile(file, task);
 		
 		return file.isEmpty()? "Upload failed!" : "Upload successfull!";
@@ -189,7 +180,7 @@ public class TaskController {
 			@PathVariable String subDir,
 			@PathVariable Path dir) throws IOException {
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		subDir = subDir.equals("asset") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
 		
 		Path filePath = Paths.get(task.getNewAssetFolderPath()).resolve(subDir).resolve(dir);
@@ -211,7 +202,7 @@ public class TaskController {
 			@RequestParam("asset") Boolean asset,
 			@RequestParam("dir") Path dir) throws IOException {
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		assetService.deleteTextureFile(dir, asset, task);
 	}
 	
@@ -225,12 +216,10 @@ public class TaskController {
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
 				Principal principal,
-		 		@ModelAttribute("generalFilter") FilterForm filterForm,
-		 		@RequestParam("tab") String tab) {
-		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
-		filteredTasks = filter.filter(getTaskList(tab), filterForm, users.get(principal));
-		tasks = filteredTasks;
-		return "redirect:/tasks?tab="+tab;
+		 		@ModelAttribute("generalFilter") FilterForm filterForm) {
+
+		session.updateFilter(filterForm);
+		return "redirect:/tasks?tab="+session.getTab();
 	}
 	
 	
@@ -238,33 +227,29 @@ public class TaskController {
 	 * Search
 	 * -----------------------------------------------------------------
 	 * Search is always applied the tasks found by the last filter operation.
-	 * @param tab - see send method
 	 * @param searchForm - object containing all search information
 	 */
 	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
 	public String handleTasksSearch(
-		 		@ModelAttribute("search") SearchForm searchForm,
-		 		@RequestParam("tab") String tab) {
+		 		@ModelAttribute("search") SearchForm searchForm) {
 		
-		tasks = filter.search(filteredTasks, searchForm);
-		return "redirect:/tasks?tab="+tab;
+		session.updateSearch(searchForm);
+		return "redirect:/tasks?tab="+session.getTab();
 	}
 	
 	/**
 	 * Delete Task
 	 * -----------------------------------------------------------------
-	 * @param tab - see send method
 	 * @param idLink - identifies the task which will be deleted
 	 */
 	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.GET)
 	public String handleTasksDelete(
-				@PathVariable String idLink,
-				@RequestParam("tab") String tab) {
+				@PathVariable String idLink) {
 		
- 		data.remove(UniqueObject.getFromId(tasks, idLink));
- 		tasks.remove(UniqueObject.getFromId(tasks, idLink));
+ 		data.remove(UniqueObject.getFromId(session.getTasks(), idLink));
+ 		session.remove(UniqueObject.getFromId(session.getTasks(), idLink));
  		
-		return "redirect:/tasks?tab="+tab;
+		return "redirect:/tasks?tab="+session.getTab();
 	}
 
 	/**
@@ -279,13 +264,12 @@ public class TaskController {
 	public String handleTasksComment(
 				Principal principal,
 				@PathVariable String idLink,
-				@ModelAttribute("comment") CommentForm form,
-				@RequestParam("tab") String tab) {
+				@ModelAttribute("comment") CommentForm form) {
 		
 		Comment comment = new Comment(users.get(principal), form.getText());
-		UniqueObject.getFromId(tasks, idLink).getComments().add(comment);
+		UniqueObject.getFromId(session.getTasks(), idLink).getComments().add(comment);
 		
-		return "redirect:/tasks?tab="+tab;
+		return "redirect:/tasks?tab="+session.getTab();
 	}
 
 	/**
@@ -294,6 +278,9 @@ public class TaskController {
 	 * If a task is edited, the current task list is sent again.
 	 * If a new task is added, the currents tab default view is sent,
 	 * because its unknown whether the new task should be added to current task list or not.
+	 * TODO: Make selection a mask that cna be applied multiple times.
+	 * TODO: Save this mask to session when changed, an apply it to the new element.
+	 * 
 	 * @param principal - User sending the request
 	 * @param form - object containing all task information
 	 * @param tab - see send method
@@ -301,20 +288,20 @@ public class TaskController {
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
 	public String handleTasksCreateEdit(
-			HttpSession session,
 			SessionStatus status,
 			Principal principal,
 			@ModelAttribute("task") TaskForm form,
-			@RequestParam("tab") String tab,
 			@RequestParam(value="edit", defaultValue="") String idLink) {
 		User user = users.get(principal);
 		Task task;
-		if (validateId(idLink)) {
-			task = UniqueObject.getFromId(getTaskList(tab), idLink);
-			task.setName(form.getIdName());
+		boolean isNew = !validateId(idLink);
+
+		if(isNew) {
+			task = new GeneralTask(form.getIdName(), user);
 		}
 		else {
-			task = new GeneralTask(form.getIdName(), user);
+			task = UniqueObject.getFromId(session.getTasks(), idLink);
+			task.setName(form.getIdName());
 		}
 		task.setPriority(form.getPriority());
 		task.setTaskStatus(form.getStatus());
@@ -326,35 +313,26 @@ public class TaskController {
 		if(!label.equals("")) {
 			data.add(new Label(label));
 		}
-		form.setDefaultState();
-		if (validateId(idLink)) {
-			return "redirect:/tasks?tab="+tab;
-		}
-		else {
-			data.add(task);
-			return "redirect:/tasks/reset?tab="+tab;
-		}
-		
+		if (isNew) data.add(task);
+		return "redirect:/tasks?tab="+session.getTab();
 	}
 
 	/**
-	 * Standard controller method for handling GET requests.
-	 * Refreshes global task list depending on tab parameter and sends this list to the user.
-	 * 
-	 * @param tab - type of task list which will be retrieved from DataBase and sent to client
+	 * Redirects to default mapping. Does nothing else.
+	 * @deprecated Use default controller mapping/handler instead.
 	 */
 	@RequestMapping(value="/reset", method = RequestMethod.GET)
+	@Deprecated
 	public String handleTasks(@RequestParam("tab") String tab) {
-		filteredTasks = getTaskList(tab);
-		tasks = filteredTasks;
 		return "redirect:/tasks?tab="+tab;
 	}
 	
 	/**
-	 * Used internally by other controller methods.
-	 * Other controller methods put their data into the global map "model" and Task Objects into global list "tasks".
-	 * They then call this method to send everything to the client.
-	 * There is no other method sending a real jsp file to the client.
+	 * Default Handler
+	 * -----------------------------------------------------------------
+	 * Used internally by other controller methods, which only modify the session object.
+	 * They then call this method which sends all necessary data to the lient.
+	 * 
 	 * @param tab - determines which tab will be selected on client page.
 	 * @param edit - Task ID to be made editable in task form
 	 */
@@ -364,10 +342,13 @@ public class TaskController {
 			@ModelAttribute("task") TaskForm form,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		if(tasks==null||!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
+		
+		if(!validateTab(tab)) {
+			return "redirect:/tasks?tab="+session.getTab();
+		}
 		
 		if (validateId(edit)) {
-			Task task = UniqueObject.getFromId(getTaskList(tab), edit);
+			Task task = UniqueObject.getFromId(session.getTasks(), edit);
 			form.setIdName(task.getName());
 			form.setDetails(task.getDetails());
 			form.setStatus(task.getTaskStatus());
@@ -375,7 +356,9 @@ public class TaskController {
 			form.setAssigned(task.getAssigned());
 			model.addAttribute("label", task.getLabel());
 		}
-	    model.addAttribute("taskList", tasks);
+		session.updateTab(tab);
+		
+	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("taskStatuses", TaskStatus.values());
@@ -391,18 +374,5 @@ public class TaskController {
 	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");
-	}
-	
-	private Collection<? extends Task> getTaskList (String tab) {
-		switch(tab) {
-		case "textures":
-			return data.<TextureTask>getList(TextureTask.class);
-		case "models":
-			return data.<ModelTask>getList(ModelTask.class);
-		case "general":
-			return data.<GeneralTask>getList(GeneralTask.class);
-		default:
-			throw new UnsupportedOperationException("TaskController Error: Wrong tab name!");
-		}
 	}
 }
