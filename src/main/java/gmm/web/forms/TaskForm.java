@@ -1,11 +1,11 @@
-package gmm.service.forms;
+package gmm.web.forms;
 
 import gmm.domain.Priority;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
 
 
-public class TaskFacade {
+public class TaskForm {
 	
 	private String idName;
 	private String label;
@@ -14,7 +14,7 @@ public class TaskFacade {
 	private Priority priority;
 	private TaskStatus status;
 	
-	public TaskFacade() {
+	public TaskForm() {
 		setDefaultState();
 	}
 	public void setDefaultState() {

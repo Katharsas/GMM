@@ -64,6 +64,7 @@ public class AssetService {
 				.resolve(subDir)
 				.resolve(name);
 		fileService.createFile(assetPath, texture.getBytes());
+		if(asset) task.setNewestAssetName(name);
 		
 		//Add texture preview files
 		if(asset) {
@@ -83,5 +84,33 @@ public class AssetService {
 			}
 			ImageIO.write(image, "png", new File(dir+imageName));
 		}
+	}
+	
+	public void deleteTextureFile(Path dir, boolean asset, TextureTask task) throws IOException {
+		
+		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		
+		//Restrict access
+		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
+		dir = visible.resolve(fileService.restrictAccess(dir, visible));
+		
+		//Delete previews
+		if(asset && task.getNewestAssetName()!=null) {
+			if(dir.getFileName().toString().equals(task.getNewestAssetName())) {
+				Path preview = Paths.get(task.getNewAssetFolderPath()).resolve(config.NEW_TEX_PREVIEW);
+				Path previewFile;
+				previewFile = preview.resolve("newest_full.png");
+				if(previewFile.toFile().exists()) {
+					fileService.delete(previewFile);
+				}
+				previewFile = preview.resolve("newest_small.png");
+				if(previewFile.toFile().exists()) {
+					fileService.delete(previewFile);
+				}
+				task.setNewestAssetName(null);
+			}
+		}
+		//Delete file
+		fileService.delete(dir);
 	}
 }

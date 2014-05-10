@@ -21,6 +21,10 @@
 	<!-- map links starting with res (used for css/js files) to appropriate folder-->
 	<mvc:resources mapping="/res/**" location="/resources/"/>
 
+	<!-- activate java annotations -->
+	<mvc:annotation-driven>
+	</mvc:annotation-driven>
+	
 	<!-- provide property-files for fmt:message keys from jsps -->
     <bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
@@ -28,9 +32,6 @@
 			<value>messages</value>
 		</property>
 	</bean>
-	
-	<!-- activate java annotations-->
-	<mvc:annotation-driven />
 	
 	<!-- activate scan for annotations in given packages-->
 	<context:component-scan base-package="gmm" />

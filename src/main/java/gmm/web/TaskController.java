@@ -5,6 +5,8 @@ import org.springframework.ui.ModelMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
 /** Annotations */
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -42,11 +44,11 @@ import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.forms.CommentFacade;
-import gmm.service.forms.GeneralFilterFacade;
-import gmm.service.forms.SearchFacade;
-import gmm.service.forms.TaskFacade;
 import gmm.util.*;
+import gmm.web.forms.CommentForm;
+import gmm.web.forms.FilterForm;
+import gmm.web.forms.SearchForm;
+import gmm.web.forms.TaskForm;
 
 /**
  * Controller class which handles all GET & POST requests with root "tasks".
@@ -61,7 +63,7 @@ import gmm.util.*;
  * @author Jan Mothes aka Kellendil
  */
 @RequestMapping("tasks")
-@SessionAttributes({"task","search","generalFilter"})
+@SessionAttributes({"search","generalFilter"})
 @Scope("session")
 @Controller
 public class TaskController {
@@ -83,47 +85,66 @@ public class TaskController {
 	FileService fileService;
 
 	@ModelAttribute("task")
-	public TaskFacade getTaskFacade() {return new TaskFacade();}
+	public TaskForm getTaskFacade() {return new TaskForm();}
 	@ModelAttribute("comment")
-	public CommentFacade getCommentFacade() {return new CommentFacade();}
+	public CommentForm getCommentFacade() {return new CommentForm();}
 	@ModelAttribute("search")
-	public SearchFacade getSearchFacade() {return new SearchFacade();}
+	public SearchForm getSearchFacade() {return new SearchForm();}
 	@ModelAttribute("generalFilter")
-	public GeneralFilterFacade getGeneralFilter() {return new GeneralFilterFacade();}
+	public FilterForm getGeneralFilter() {return new FilterForm();}
 	
 	
-	public void setHeaderCaching(HttpServletResponse response) {
-		Calendar date = new GregorianCalendar(3000, 1, 1);
-		SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyy hh:mm:ss z", Locale.US);
-		
+	private void setHeaderCaching(HttpServletResponse response) {
+//		Calendar date = new GregorianCalendar(3000, 1, 1);
+//		SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyy hh:mm:ss z", Locale.US);
+//		
 		response.setHeader("Cache-Control", "Public");
-		response.setHeader("Max-Age", "2629000");
-		response.setHeader("Pragma", "");
-		response.setHeader("Expires", formatter.format(date.getTime()));
+//		response.setHeader("Max-Age", "2629000");
+//		response.setHeader("Pragma", "");
+//		response.setHeader("Expires", formatter.format(date.getTime()));
 	}
 	
-	
+	/**
+	 * Texture Preview Image
+	 * -----------------------------------------------------------------
+	 * @param small - true for small preview, false for full size
+	 * @param version - "original" for original texture preview, newest for the most current new texture
+	 * @param idLink - identifies the corresponding task
+	 */
 	@RequestMapping(value="/preview", method = RequestMethod.GET, produces="image/png")
 	public @ResponseBody byte[] sendPreview(
 			HttpServletResponse response,
 			@RequestParam(value="small", defaultValue="false") boolean small,
 			@RequestParam(value="ver") String version,
-			@RequestParam(value="id") String id) throws IOException {
+			@RequestParam(value="id") String idLink) throws IOException {
 
-//		setHeaderCaching(response);
+		setHeaderCaching(response);
 		//TODO enable reasonable caching
-		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), id);
+		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
 		return assetService.getPreview(task.getNewAssetFolderPath(),small,version);
 	}
 	
+	/**
+	 * Files
+	 * -----------------------------------------------------------------
+	 * This method is the serverside counterpart to the JQuery plugin used to display all files of
+	 * a task as a file tree (jqueryFileTree.js). The server side logic mostly resides in the class
+	 * {@link gmm.web.FileTreeScript}, which originally was a jsp scriptlet converted to a java class.
+	 * 
+	 * This method is called whenever the user expands a folder in the tree (recursion).
+	 * 
+	 * @param idLink - identifies the corresponding task
+	 * @param subDir - "assets" if the files are assets
+	 * @param dir - relative path to the requested directory/file
+	 */
 	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
-	public @ResponseBody String showAssetFiles(ModelMap model,
+	@ResponseBody
+	public String showAssetFiles(
 			@PathVariable String idLink,
 			@PathVariable String subDir,
-			@RequestParam("dir") Path dir,
-			@RequestParam("tab") String tab) {
+			@RequestParam("dir") Path dir) {
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
 		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
 		
 		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
@@ -131,156 +152,182 @@ public class TaskController {
 		return new FileTreeScript().html(dir, visible);
 	}
 	
+	/**
+	 * Upload File
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 */
 	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
-	public @ResponseBody String handleUpload(HttpServletRequest request,
-			@PathVariable String idLink,
-			@RequestParam("tab") String tab) throws IOException {
+	@ResponseBody
+	public String handleUpload(
+			HttpServletRequest request,
+			@PathVariable String idLink) throws IOException {
 		
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
 		MultipartFile file = (MultipartFile) map.getFirst("myFile");
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
 		assetService.addTextureFile(file, task);
 		
 		return file.isEmpty()? "Upload failed!" : "Upload successfull!";
 	}
 	
-	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(
+	/**
+	 * Download File
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 * @param subDir - "asset" if the file is an asset
+	 * @param dir - relative path to the downloaded file
+	 */
+	@RequestMapping(value = {"/download/{idLink}/{subDir}/{dir}/"},
+			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseBody
+	public FileSystemResource handleDownload(
+			HttpServletResponse response,
 			@PathVariable String idLink,
-			@RequestParam("tab") String tab,
+			@PathVariable String subDir,
+			@PathVariable Path dir) throws IOException {
+		
+		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		subDir = subDir.equals("asset") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		
+		Path filePath = Paths.get(task.getNewAssetFolderPath()).resolve(subDir).resolve(dir);
+		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
+		return new FileSystemResource(filePath.toFile());
+	}
+	
+	/**
+	 * Delete File
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 * @param asset - true if file is an asset
+	 * @param dir - relative path to the deleted file
+	 */
+	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
+	@ResponseBody
+	public void handleDeleteFile(
+			@PathVariable String idLink,
 			@RequestParam("asset") Boolean asset,
 			@RequestParam("dir") Path dir) throws IOException {
 		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(getTaskList(tab), idLink);
-		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
-		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
-		dir = visible.resolve(fileService.restrictAccess(dir, visible));
-		fileService.delete(dir);
+		TextureTask task = (TextureTask) UniqueObject.getFromId(tasks, idLink);
+		assetService.deleteTextureFile(dir, asset, task);
 	}
 	
-	
+	/**
+	 * Filter
+	 * -----------------------------------------------------------------
+	 * Filter is always applied to all tasks of a kind
+	 * @param filterForm - object containing all filter information
+	 * @param tab - see send method
+	 */
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
 				Principal principal,
-		 		@ModelAttribute("generalFilter") GeneralFilterFacade generalFacade,
-		 		@RequestParam(value="tab", defaultValue="") String tab,
-		 		@RequestParam(value="edit", defaultValue="") String edit) {
+		 		@ModelAttribute("generalFilter") FilterForm filterForm,
+		 		@RequestParam("tab") String tab) {
 		if (!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
-		filteredTasks = filter.filter(getTaskList(tab), generalFacade, users.get(principal));
+		filteredTasks = filter.filter(getTaskList(tab), filterForm, users.get(principal));
 		tasks = filteredTasks;
-		return "redirect:/tasks?tab="+tab+"&edit="+edit;
+		return "redirect:/tasks?tab="+tab;
 	}
 	
 	
 	/**
-	 * Controller method for handling a search POST request.
-	 * Passes all task edit information to avoid interrupting current editing process.
-	 * Applies the search to the latest sent task list.
+	 * Search
+	 * -----------------------------------------------------------------
+	 * Search is always applied the tasks found by the last filter operation.
 	 * @param tab - see send method
-	 * @param edit - see send method
-	 * @param taskFacade - object containing task information about task currently being edited.
-	 * @param facade - object containing all search information
+	 * @param searchForm - object containing all search information
 	 */
 	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
 	public String handleTasksSearch(
-		 		@ModelAttribute("search") SearchFacade facade,
-		 		@RequestParam(value="tab", defaultValue="") String tab,
-		 		@RequestParam(value="edit", defaultValue="") String edit) {
+		 		@ModelAttribute("search") SearchForm searchForm,
+		 		@RequestParam("tab") String tab) {
 		
-		tasks = filter.search(filteredTasks, facade);
-		return "redirect:/tasks?tab="+tab+"&edit="+edit;
+		tasks = filter.search(filteredTasks, searchForm);
+		return "redirect:/tasks?tab="+tab;
 	}
 	
 	/**
-	 * Controller method for handling delete GET request.
-	 * Deletes task by id and sends remaining tasks.
-	 * If the currently edited task is the deleted task, the edit form will be cleared.
+	 * Delete Task
+	 * -----------------------------------------------------------------
 	 * @param tab - see send method
-	 * @param delete - id of task which will be deleted
-	 * @return No edit/facade, because edit id could be the id of the deleted task.
+	 * @param idLink - identifies the task which will be deleted
 	 */
-	@RequestMapping(value="/deleteTask", method = RequestMethod.GET)
+	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.GET)
 	public String handleTasksDelete(
-				SessionStatus status,
-				@RequestParam(value="tab", defaultValue="") String tab,
-				@RequestParam(value="tab", defaultValue="") String edit,
-				@RequestParam(value="delete", defaultValue="") String delete) {
-		boolean resetFacade = false;
-		if (validateId(delete)){
-			if(validateId(edit)&&edit.equals(delete)){
-				edit="";
-				resetFacade = true;
-			}
-	 		data.remove(UniqueObject.getFromId(tasks, delete));
-	 		tasks.remove(UniqueObject.getFromId(tasks, delete));
-	 	}
-		return "redirect:/tasks?tab="+tab+"&edit="+edit+"&resetFacade="+resetFacade;
+				@PathVariable String idLink,
+				@RequestParam("tab") String tab) {
+		
+ 		data.remove(UniqueObject.getFromId(tasks, idLink));
+ 		tasks.remove(UniqueObject.getFromId(tasks, idLink));
+ 		
+		return "redirect:/tasks?tab="+tab;
 	}
 
 	/**
-	 * Controller method for handling add comment POST request.
-	 * Passes all task edit information to avoid interrupting current editing process.
-	 * @param principal - User sending the request
-	 * @param facade - object containing all comment information
+	 * Create Comment
+	 * -----------------------------------------------------------------
+	 * @param principal - user sending the request
+	 * @param idLink - identifies the task to which the comment will be added
+	 * @param form - object containing all comment information
 	 * @param tab - see send method
-	 * @param editComment - id of task to which the comment will be added
-	 * @param edit - id of task currently being edited
 	 */
-	@RequestMapping(value="/submitComment", method = RequestMethod.POST)
+	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
 	public String handleTasksComment(
 				Principal principal,
-				@ModelAttribute("comment") CommentFacade facade,
-				@RequestParam(value="tab", defaultValue="") String tab,
-				@RequestParam(value="editComment", defaultValue="") String editComment,
-				@RequestParam(value="edit", defaultValue="") String edit) {
-		if (validateId(editComment)) {
-			Comment comment = new Comment(users.get(principal), facade.getText());
-			UniqueObject.getFromId(tasks, editComment).getComments().add(comment);
-		}
-		return "redirect:/tasks?tab="+tab+"&edit="+edit;
+				@PathVariable String idLink,
+				@ModelAttribute("comment") CommentForm form,
+				@RequestParam("tab") String tab) {
+		
+		Comment comment = new Comment(users.get(principal), form.getText());
+		UniqueObject.getFromId(tasks, idLink).getComments().add(comment);
+		
+		return "redirect:/tasks?tab="+tab;
 	}
 
 	/**
-	 * Controller method for handling create/edit task POST request.
+	 * Create / Edit Task
+	 * -----------------------------------------------------------------
 	 * If a task is edited, the current task list is sent again.
 	 * If a new task is added, the currents tab default view is sent,
 	 * because its unknown whether the new task should be added to current task list or not.
 	 * @param principal - User sending the request
-	 * @param facade - object containing all task information
+	 * @param form - object containing all task information
 	 * @param tab - see send method
-	 * @param edit - id of task to be edited or null/"" if the task should be added as new task
+	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
 	public String handleTasksCreateEdit(
 			HttpSession session,
 			SessionStatus status,
 			Principal principal,
-			@ModelAttribute("task") TaskFacade facade,
-			@RequestParam(value="tab", defaultValue="") String tab,
-			@RequestParam(value="edit", defaultValue="") String edit) {
+			@ModelAttribute("task") TaskForm form,
+			@RequestParam("tab") String tab,
+			@RequestParam(value="edit", defaultValue="") String idLink) {
 		User user = users.get(principal);
 		Task task;
-		if (validateId(edit)) {
-			task = UniqueObject.getFromId(getTaskList(tab), edit);
-			task.setName(facade.getIdName());
+		if (validateId(idLink)) {
+			task = UniqueObject.getFromId(getTaskList(tab), idLink);
+			task.setName(form.getIdName());
 		}
 		else {
-			task = new GeneralTask(facade.getIdName(), user);
+			task = new GeneralTask(form.getIdName(), user);
 		}
-		task.setPriority(facade.getPriority());
-		task.setTaskStatus(facade.getStatus());
-		task.setDetails(facade.getDetails());
-		task.setLabel(facade.getLabel());
-		User assigned = facade.getAssigned().equals("") ? null : users.get(facade.getAssigned());
+		task.setPriority(form.getPriority());
+		task.setTaskStatus(form.getStatus());
+		task.setDetails(form.getDetails());
+		task.setLabel(form.getLabel());
+		User assigned = form.getAssigned().equals("") ? null : users.get(form.getAssigned());
 		task.setAssigned(assigned);
-		String label = facade.getLabel();
+		String label = form.getLabel();
 		if(!label.equals("")) {
 			data.add(new Label(label));
 		}
-		facade.setDefaultState();
-		if (validateId(edit)) {
+		form.setDefaultState();
+		if (validateId(idLink)) {
 			return "redirect:/tasks?tab="+tab;
 		}
 		else {
@@ -293,48 +340,39 @@ public class TaskController {
 	/**
 	 * Standard controller method for handling GET requests.
 	 * Refreshes global task list depending on tab parameter and sends this list to the user.
-	 * If no tab is given, sets default tab "general".
-	 * Does not interrupt edit process.
-	 * @param taskFacade - object containing all information about task currently being edited
+	 * 
 	 * @param tab - type of task list which will be retrieved from DataBase and sent to client
-	 * @param edit - see send method
 	 */
 	@RequestMapping(value="/reset", method = RequestMethod.GET)
-	public String handleTasks(
-			@RequestParam(value="tab", defaultValue="") String tab,
-			@RequestParam(value="edit", defaultValue="") String edit) {
-		if (!validateTab(tab)) {return "redirect:/tasks/reset?tab=general";}
+	public String handleTasks(@RequestParam("tab") String tab) {
 		filteredTasks = getTaskList(tab);
 		tasks = filteredTasks;
-		return "redirect:/tasks?tab="+tab+"&edit="+edit;
+		return "redirect:/tasks?tab="+tab;
 	}
 	
 	/**
 	 * Used internally by other controller methods.
 	 * Other controller methods put their data into the global map "model" and Task Objects into global list "tasks".
 	 * They then call this method to send everything to the client.
-	 * There is no other method sending a real ModelAndView map to the client.
+	 * There is no other method sending a real jsp file to the client.
 	 * @param tab - determines which tab will be selected on client page.
 	 * @param edit - Task ID to be made editable in task form
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-	public String send(HttpSession session, ModelMap model,
+	public String send(
+			ModelMap model,
+			@ModelAttribute("task") TaskForm form,
 			@RequestParam(value="tab", defaultValue="") String tab,
-			@RequestParam(value="edit", defaultValue="") String edit,
-			@RequestParam(value="resetFacade", defaultValue="false") boolean resetFacade) {
-		if(tasks==null||!validateTab(tab)) return "redirect:/tasks/reset";
+			@RequestParam(value="edit", defaultValue="") String edit) {
+		if(tasks==null||!validateTab(tab)) return "redirect:/tasks/reset?tab=general";
 		
-		TaskFacade facade = (TaskFacade) session.getAttribute("task");
-		if (resetFacade) {
-			facade.setDefaultState();
-		}
-		else if (validateId(edit)) {
+		if (validateId(edit)) {
 			Task task = UniqueObject.getFromId(getTaskList(tab), edit);
-			facade.setIdName(task.getName());
-			facade.setDetails(task.getDetails());
-			facade.setStatus(task.getTaskStatus());
-			facade.setPriority(task.getPriority());
-			facade.setAssigned(task.getAssigned());
+			form.setIdName(task.getName());
+			form.setDetails(task.getDetails());
+			form.setStatus(task.getTaskStatus());
+			form.setPriority(task.getPriority());
+			form.setAssigned(task.getAssigned());
 			model.addAttribute("label", task.getLabel());
 		}
 	    model.addAttribute("taskList", tasks);
@@ -351,8 +389,8 @@ public class TaskController {
 		return tab.equals("general") || tab.equals("textures") || tab.equals("models");
 	}
 	
-	private boolean validateId(String idNumber){
-		return idNumber.matches(".*[0-9]+");
+	private boolean validateId(String idLink){
+		return idLink != null && idLink.matches(".*[0-9]+");
 	}
 	
 	private Collection<? extends Task> getTaskList (String tab) {
@@ -364,8 +402,7 @@ public class TaskController {
 		case "general":
 			return data.<GeneralTask>getList(GeneralTask.class);
 		default:
-			System.err.println("TaskController Error: Wrong tab name!");
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("TaskController Error: Wrong tab name!");
 		}
 	}
 }

@@ -7,14 +7,14 @@
 
 <div id="lists">
 	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h2">
-		<div class="tab left"><a href="tasks/reset?tab=general&edit=${edit}"><fmt:message key="tasks.menu.general"/><span></span></a></div>
-		<div class="tab left"><a href="tasks/reset?tab=textures&edit=${edit}"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
-		<div class="tab middle"><a href="tasks/reset?tab=models&edit=${edit}"><fmt:message key="tasks.menu.models"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=general"><fmt:message key="tasks.menu.general"/><span></span></a></div>
+		<div class="tab left"><a href="tasks/reset?tab=textures"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
+		<div class="tab middle"><a href="tasks/reset?tab=models"><fmt:message key="tasks.menu.models"/><span></span></a></div>
 		<div class="clear"></div>
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${tab}&edit=${edit}" commandName="search">
+		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${tab}" commandName="search">
 			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
 				<fmt:message key="search.complex"/>
 			</div>
@@ -99,7 +99,7 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
-					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment?tab=${tab}&edit=${edit}&editComment=${task.getIdLink()}" commandName="comment">
+					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment/${task.getIdLink()}?tab=${tab}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
 					    	</div>
@@ -144,28 +144,23 @@
 								<div id="wipFilesContainer" class="subFilesContainer"></div>
 							</div>
 							<div class="clear"></div>
+<%-- File Operations --%>
 							<div class="subElementFileOperations">
-								<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="handleFileUpload(this,'${task.getIdLink()}')"/>
-								<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">Upload</div>
-								<div class="button subElementButton left">Download</div>
-								<div class="button subElementButton right" onclick="deleteFile('${task.getIdLink()}')">Delete</div>
+								<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
+								<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
+									Upload
+								</div>
+<%-- 								<a id="${task.getIdLink()}-download" href="#">Link</a> --%>
+								<div class="button subElementButton left" onclick="downloadFile('${task.getIdLink()}')">
+									Download
+								</div>
+								<div class="button subElementButton right" onclick="confirmDeleteFile('${task.getIdLink()}')">
+									Delete
+								</div>
 								<div class="clear"></div>
 							</div>
 						</div>
 					</c:if>
-<%-- Deletion --%>
-				    <div class="elementDelete">
-				    	<div class="left deleteQuestion">
-				    		<fmt:message key="task.deleteQuestion"/>
-				    	</div>
-						<div class="right button deleteButton">
-							<a href="/GMM/tasks/deleteTask?tab=${tab}&edit=${edit}&delete=${task.getIdLink()}">
-								<fmt:message key="ok"/><span></span>
-							</a>
-						</div>
-						<div class="clear"></div>
-					</div>
-					<div class="clear"></div>
 <%-- Footer --%>
 				    <div class="listElementBodyFooter">
 					    <div class="left commentElement elementButton button" onclick="findSwitchCommentInput(this)">
@@ -181,7 +176,7 @@
 					    		<fmt:message key="tasks.list.created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
-				    	<div class="right deleteElement elementButton button" onclick="switchDeleteQuestion(this)">
+				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()}')">
 				    		<fmt:message key="delete"/>
 				    	</div>
 				    	<div class="right editElement elementButton button">

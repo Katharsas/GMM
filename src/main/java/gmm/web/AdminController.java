@@ -30,9 +30,9 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 
 import gmm.service.data.DataConfigService;
-import gmm.service.forms.TaskFacade;
 import gmm.util.HashSet;
 import gmm.util.Set;
+import gmm.web.forms.TaskForm;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -62,8 +62,8 @@ public class AdminController {
 	boolean areTexturePaths = true;
 	
 	@ModelAttribute("task")
-	public TaskFacade getTaskFacade() {
-		TaskFacade defaultFacade = new TaskFacade();
+	public TaskForm getTaskFacade() {
+		TaskForm defaultFacade = new TaskForm();
 		defaultFacade.setIdName("%filename%");
 		defaultFacade.setDetails("%filepath%");
 		return defaultFacade;

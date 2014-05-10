@@ -10,7 +10,6 @@ public class PathEditor extends PropertyEditorSupport{
 	public void setAsText(String text) throws IllegalArgumentException {
 		try {text = java.net.URLDecoder.decode(text, "UTF-8");}
 		catch (UnsupportedEncodingException e) {e.printStackTrace();}
-		
 		Path p = Paths.get(text);
 		this.setValue(p);
 	}

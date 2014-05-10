@@ -4,9 +4,9 @@ import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.forms.TaskFacade;
 import gmm.util.HashSet;
 import gmm.util.Set;
+import gmm.web.forms.TaskForm;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -41,7 +41,7 @@ public class TextureTaskImporter {
 		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
 	}
 	
-	public void importTasks(String root, Iterable<String> texturePaths, TaskFacade form, User user) throws IOException {
+	public void importTasks(String root, Iterable<String> texturePaths, TaskForm form, User user) throws IOException {
 		Set<TextureTask> result = new HashSet<>();
 		for(String path : texturePaths) {
 			result.add(importTask(Paths.get(root).resolve(path), user));

@@ -13,7 +13,16 @@ var tasksVars = {
 
 var tasksFuncs = {
 	"tabPar" : function () {
-		return "?tab="+tasksVars.tab;
+		return "?tab="+(tasksVars.tab === undefined || tasksVars.tab === null ? "" : tasksVars.tab);
+	},
+	"editPar" : function () {
+		return "&edit="+ (tasksVars.edit === undefined || tasksVars.edit === null ? "" :  tasksVars.edit);
+	},
+	"subDir" : function() {
+		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
+	},
+	"filePath" : function() {
+		return allVars.selectedTaskFile.attr("rel");
 	},
 	"refresh" : function () {
 		window.location.href = "tasks"+tasksFuncs.tabPar()+"&edit="+tasksVars.edit;
@@ -121,7 +130,7 @@ function switchListElement(element) {
 
 function addTaskFileTrees($element) {
 	var idLink = $element.attr('id');
-	var url = idLink+"?tab="+tasksVars.tab;
+	var url = idLink+tasksFuncs.tabPar();
 	$element.find('#assetFilesContainer').fileTree(
 		allFuncs.treePluginOptions("tasks/files/assets/"+url, false),
 		function($file) {
@@ -245,7 +254,7 @@ function submitGeneralFilters(){
 	$(".generalFilters").submit();
 }
 
-function handleFileUpload(input, idLink) {
+function uploadFile(input, idLink) {
 	var file = input.files[0];
 	var uri = "tasks/upload/"+idLink+tasksFuncs.tabPar();
 	
@@ -255,13 +264,28 @@ function handleFileUpload(input, idLink) {
 	});
 }
 
-function deleteFile(idLink) {
-	var dir = allVars["selectedTaskFile"].attr('rel');
-	if(dir === undefined || dir === "") {
-		return;
-	}
-	var assetPar = "&asset="+tasksVars.selectedTaskFileIsAsset.toString();
-	$.post("tasks/deleteFile/"+idLink+tasksFuncs.tabPar()+assetPar, { dir: dir }, function() {
-		tasksFuncs.refresh();
-	});
+function downloadFile(idLink) {
+	var dir = tasksFuncs.filePath();
+	if(dir === undefined || dir === "") {return;}
+	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/" + tasksFuncs.tabPar();
+	window.open(uri);
+}
+
+function confirmDeleteFile(idLink) {
+	var dir = tasksFuncs.filePath();
+	if(dir === undefined || dir === "") {return;}
+	confirm(function() {
+				var assetPar = "&asset="+tasksVars.selectedTaskFileIsAsset.toString();
+				$.post("tasks/deleteFile/"+idLink+tasksFuncs.tabPar()+assetPar, { dir: dir }, function() {
+					tasksFuncs.refresh();
+				});
+			},
+			"Delete "+tasksFuncs.filePath()+" ?");
+}
+
+function confirmDeleteTask(idLink, name) {
+	confirm(function() {
+				window.location = "tasks/deleteTask/"+idLink+tasksFuncs.tabPar();
+			},
+			"Delete task \'"+name+"\' ?");
 }

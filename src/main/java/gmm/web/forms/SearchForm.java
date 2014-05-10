@@ -1,6 +1,6 @@
-package gmm.service.forms;
+package gmm.web.forms;
 
-public class SearchFacade {
+public class SearchForm {
 	private boolean isEasySearch;
 	private String easy;
 	private String name;
@@ -9,7 +9,7 @@ public class SearchFacade {
 	private String label;
 	private String assigned;
 	
-	public SearchFacade() {
+	public SearchForm() {
 		setDefaultState();
 	}
 	public void setDefaultState() {

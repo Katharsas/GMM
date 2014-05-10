@@ -1,5 +1,5 @@
 /* //////////////////////////////////////////////////
- * Additional "HTML tags" as CSS classes (mostly !important)
+ * Additional "HTML tags" as CSS classes
  * //////////////////////////////////////////////////*/
 /*Input*/
 .button {
@@ -179,5 +179,3 @@ body {
 #top .tab.activeTab{
 	/*padding-bottom:5px;*/
 }
-
-

@@ -94,7 +94,7 @@
 			Submit Task
 		</div>
 		<div id="cancelTaskButton" class="button pageButton left">
-			<a href="?tab=${tab}&resetFacade=true">
+			<a href="?tab=${tab}">
 				<fmt:message key="tasks.new.cancel"/><span></span>
 			</a>
 		</div>

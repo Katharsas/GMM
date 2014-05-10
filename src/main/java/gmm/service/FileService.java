@@ -27,10 +27,6 @@ public class FileService {
 	 * @return Path relative to visible directory that points below the visible directory.
 	 */
 	public Path restrictAccess(Path dir, Path visible) {
-		
-//		System.out.println("restrictAccess() - dir:  "+dir);
-//		System.out.println("restrictAccess() - vis:  "+visible);
-		
 		if (!isChild(dir, visible)) {
 			//If dir is relative, check for back-paths
 			if (!isChild(visible.resolve(dir), visible)) {

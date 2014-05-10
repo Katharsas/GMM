@@ -1,11 +1,11 @@
-package gmm.service.forms;
+package gmm.web.forms;
 
 import gmm.domain.Priority;
 import gmm.domain.TaskStatus;
 import gmm.util.ListUtil;
 
 
-public class GeneralFilterFacade {
+public class FilterForm {
 	private boolean createdByMe;
 	private boolean assignedToMe;
 	private boolean all;
@@ -13,7 +13,7 @@ public class GeneralFilterFacade {
 	private Boolean[] priority;
 	private Boolean[] taskStatus;
 
-	public GeneralFilterFacade() {
+	public FilterForm() {
 		setDefaultState();
 	}
 	public void setDefaultState() {

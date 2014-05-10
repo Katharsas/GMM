@@ -6,9 +6,9 @@ import gmm.domain.TaskStatus;
 import gmm.domain.User;
 import gmm.service.filter.Selection;
 import gmm.service.filter.SimpleSelection;
-import gmm.service.forms.GeneralFilterFacade;
-import gmm.service.forms.SearchFacade;
 import gmm.util.Collection;
+import gmm.web.forms.FilterForm;
+import gmm.web.forms.SearchForm;
 
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class TaskFilterService {
 	 * @return the result of the applied search
 	 */
 	public synchronized <T extends Task> Collection<T> search(
-			Collection<T> tasks, SearchFacade search) {
+			Collection<T> tasks, SearchForm search) {
 		
 		Selection<T> selection;
 		if(search.isEasySearch()) {
@@ -59,7 +59,7 @@ public class TaskFilterService {
 	 * @return the result of the applied filter
 	 */
 	public synchronized <T extends Task> Collection<T> filter(
-			Collection<T> tasks, GeneralFilterFacade filterData, User currentUser) {
+			Collection<T> tasks, FilterForm filterData, User currentUser) {
 		
 		Selection<T> selection = new SimpleSelection<>(tasks, true);
 		selection.setOnlyMatchEqual(true);

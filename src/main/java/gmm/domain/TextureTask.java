@@ -13,9 +13,7 @@ public class TextureTask extends Task {
 	private String originalAssetPath = null;
 	private String newAssetFolderPath = null;
 	
-	//not persisted (needs to be updated on load)
-//	private File originalAsset;
-//	private File newAssetFolder;
+	private String newestAssetName = null;
 	
 	public TextureTask(String idName, User author) {
 		super(idName, author);
@@ -39,5 +37,11 @@ public class TextureTask extends Task {
 	
 	public String getOriginalAssetPath() {
 		return originalAssetPath;
+	}
+	public String getNewestAssetName() {
+		return newestAssetName;
+	}
+	public void setNewestAssetName(String newestAssetName) {
+		this.newestAssetName = newestAssetName;
 	}
 }

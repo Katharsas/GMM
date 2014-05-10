@@ -90,6 +90,18 @@ function sendFile(file, uri, callback) {
     xhr.send(fd);
 }
 
+function confirm(onConfirm, message) {
+	allVars.onConfirmCallback = onConfirm;
+	$confirmDialog = $("#confirmDialog");
+	$confirmDialog.find("#confirmDialogMessage").text(message);
+	$("#overlay").show();
+	$confirmDialog.show();
+}
+
+function confirmOk() {
+	allVars.onConfirmCallback();
+}
+
 /**
  * Don't worry about this one.
  */

@@ -35,3 +35,17 @@
 	color:#36A2D7;
 	font-size: 0.85em;
 }
+
+#confirmDialog {
+	margin-top: -100px;
+	margin-left: -100px;
+	padding:10px;
+	min-width:200px;
+	min-height:60px;
+	position:fixed;
+	top:50%;
+	left:50%;
+}
+#confirmDialog * {
+	margin:10px;
+}

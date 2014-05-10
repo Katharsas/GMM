@@ -23,6 +23,12 @@
 	</head>
 	
 	<div id="overlay"></div>
+	<div id="confirmDialog" class="dialogContainer">
+		<p id="confirmDialogMessage" class="center"></p>
+		<div class="dialogButton Button left" onclick="confirmOk()">Delete</div>
+		<div class="dialogButton Button right" onclick="hideDialogue()">Cancel</div>
+		<div class="clear"></div>
+	</div>
 	
 	<body class="noPage">
 		<div id="wrap">

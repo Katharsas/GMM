@@ -1,6 +1,6 @@
-package gmm.service.forms;
+package gmm.web.forms;
 
-public class CommentFacade {
+public class CommentForm {
 	private String text;
 
 	//Setters, Getters-------------------------------------------
