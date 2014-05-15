@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.Comment;
-import gmm.domain.FileTask;
+import gmm.domain.AssetTask;
 import gmm.domain.GeneralTask;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
@@ -34,7 +34,7 @@ public class XMLService {
 		Class<?>[] clazzes = {
 							Task.class,
 							GeneralTask.class,
-							FileTask.class,
+							AssetTask.class,
 							ModelTask.class,
 							ModelTask.class,
 							TextureTask.class,

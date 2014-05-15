@@ -3,15 +3,15 @@ package gmm.domain;
 import gmm.util.LinkedList;
 import gmm.util.List;
 
-public class ModelTask extends FileTask {
+public class ModelTask extends AssetTask {
 
 	final private List<TextureTask> textures = new LinkedList<TextureTask>();
 	final private List<ModelSite> sites = new LinkedList<ModelSite>();
 	private int originalFaceCount;
 	private int newFaceCount;
 	
-	public ModelTask(String idName, User author, MyFile oldFile) {
-		super(idName, author, oldFile);
+	public ModelTask(String idName, User author) {
+		super(idName, author);
 	}
 
 	public int getOriginalFaceCount() {

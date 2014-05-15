@@ -17,6 +17,7 @@ import gmm.web.forms.SearchForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Component;
  * @author Jan
  */
 @Component
-@Scope("session")
+@Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class TaskSession {
 
 	@Autowired DataAccess data;
