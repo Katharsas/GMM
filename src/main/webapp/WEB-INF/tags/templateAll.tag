@@ -25,7 +25,12 @@
 	<div id="overlay"></div>
 	<div id="confirmDialog" class="dialogContainer">
 		<p id="confirmDialogMessage" class="center"></p>
-		<div class="dialogButton Button left" onclick="confirmOk()">Delete</div>
+		<div id="confirmDialogTextInputWrapper">
+			<input id="confirmDialogTextInput" class="center"/>
+		</div>
+		
+<!-- 		<div class="clear"></div> -->
+		<div class="dialogButton Button left" onclick="confirmOk()">Confirm</div>
 		<div class="dialogButton Button right" onclick="hideDialogue()">Cancel</div>
 		<div class="clear"></div>
 	</div>
@@ -50,7 +55,6 @@
 				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>
 <%-- 				<div class="tab right"><a href="options"><fmt:message key="menu.options"/><span></span></a></div> --%>
 				<div class="tab right"><a href="admin"><fmt:message key="menu.admin"/><span></span></a></div>
-				<div class="tab middle noPage"></div>
 				<div class="clear"></div>
 			</div>
 			<!-- End of Top Tab-Menu -->

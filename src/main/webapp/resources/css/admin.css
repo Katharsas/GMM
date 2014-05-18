@@ -13,6 +13,9 @@
 .adminElement, .pageButton{
 	margin:12px 10px;
 }
+.listButton {
+	
+}
 
 .groupDescriptor {
 	margin-top:30px;
@@ -64,7 +67,12 @@
 	margin:7px 10px;
 }
 #conflictMessage {
-/* 	font-size: large; */
 	font-weight: bold;
 	color:#A82709;
 }
+
+.elementUser {
+	background-color:#164054;
+	margin:10px;
+}
+

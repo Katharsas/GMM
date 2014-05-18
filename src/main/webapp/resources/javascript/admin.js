@@ -122,3 +122,34 @@ function cancelImport() {
 	$('#addMeshesButton').show();
 	$('#addTexturesButton').show();
 }
+
+function editUserRole(idLink, userRole) {
+	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	confirm(function () {
+		var role = $textField.attr("value");
+		$.post("admin/users/"+idLink,
+				{"role": role}, function() {
+					window.location.reload();
+				});
+	}, "Valid roles: ROLE_USER, ROLE_ADMIN", userRole);
+}
+
+function editUserName(idLink, userName) {
+	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	confirm(function () {
+		var name = $textField.attr("value");
+		$.post("admin/users/"+idLink,
+				{"name": name}, function() {
+					window.location.reload();
+				});
+	}, "Enter user name here:", userName);
+}
+
+function resetPassword(idLink) {
+	confirm(function() {
+		$.post("admin/users/reset/"+idLink, function(data) {
+			hideDialogue();
+			alert(data);
+		});
+	}, "Generate New Random Password?");
+}

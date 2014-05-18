@@ -1,5 +1,8 @@
 package gmm.service.data;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.GeneralTask;
@@ -9,6 +12,7 @@ import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
+import gmm.service.UserService;
 import gmm.util.LinkedList;
 import gmm.util.List;
 import gmm.util.HashSet;
@@ -18,6 +22,8 @@ import gmm.util.Collection;
 @Service
 public class DataBase implements DataAccess {
 
+	@Autowired UserService userService;
+	
 	final private List<User> users = new LinkedList<User>();
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
 	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
@@ -27,29 +33,24 @@ public class DataBase implements DataAccess {
 //	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
 	
 	public DataBase(){
-		//add somehow users, usually from xml
-		users.add(new User("Fracer","123456"));
-		users.add(new User("Rolf", "123456"));
-		users.add(new User("Kellendil", "123456"));
-		users.add(new User("ThielHater", "123456"));
-		users.add(new User("EvilTwin", "123456"));
-		users.add(new User("BlackBat", "123456"));
-		users.add(new User("Gnox", "123456"));
-		users.add(new User("AmProsius", "123456"));
-		users.add(new User("anselm", "123456"));
-		users.add(new User("NaikJoy", "123456"));
-		
-		//add users to userDetailsManager bean to provide login/session functionality
-		//not working, users need to be configured in xml too
-//		ApplicationContext context = ContextLoader.getCurrentWebApplicationContext();
-//		InMemoryUserDetailsManager manager = (InMemoryUserDetailsManager) context.getBean(UserDetailsManager.class);
-//		List<SimpleGrantedAuthority> authorities = new LinkedList<SimpleGrantedAuthority>();
-//		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-//		for(User u : users){
-//			manager.createUser(new org.springframework.security.core.userdetails.User(
-//					u.getName(), u.getPasswordHash(), authorities));
-//		}
-//		
+		//TODO remove, load users from xml.
+		users.add(new User("Fracer"));
+		users.add(new User("Rolf"));
+		users.add(new User("Kellendil"));
+		users.add(new User("ThielHater"));
+		users.add(new User("EvilTwin"));
+		users.add(new User("BlackBat"));
+		users.add(new User("Gnox"));
+		users.add(new User("AmProsius"));
+		users.add(new User("anselm"));
+		users.add(new User("NaikJoy"));
+	}
+	
+	@PostConstruct
+	private void init() {
+		User defaultUser = new User("admin");
+		defaultUser.setPasswordHash(userService.encode("admin"));
+		users.add(defaultUser);
 	}
 	
 	@Override

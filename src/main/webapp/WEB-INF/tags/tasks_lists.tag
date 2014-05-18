@@ -9,7 +9,7 @@
 	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h2">
 		<div class="tab left"><a href="tasks/reset?tab=general"><fmt:message key="tasks.menu.general"/><span></span></a></div>
 		<div class="tab left"><a href="tasks/reset?tab=textures"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
-		<div class="tab middle"><a href="tasks/reset?tab=models"><fmt:message key="tasks.menu.models"/><span></span></a></div>
+		<div class="tab right"><a href="tasks/reset?tab=models"><fmt:message key="tasks.menu.models"/><span></span></a></div>
 		<div class="clear"></div>
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">

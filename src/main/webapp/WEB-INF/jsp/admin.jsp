@@ -75,12 +75,37 @@
 				
 				<div class="clear"></div>
 				<div id="importButtons">
-				<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')">Import Textures</div>
-				<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')">Import 3D Meshes</div>
-				<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
-				<div class="clear"></div>
-			</div>
+					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')">Import Textures</div>
+					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')">Import 3D Meshes</div>
+					<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
+					<div class="clear"></div>
+				</div>
 			</div>
 		</div>
+		
+		<div class="groupDescriptor">
+			User Accounts
+		</div>
+		<div class="adminElementGroup">
+			<c:forEach items="${userList}" var="user">
+				<div class="elementUser">
+					<div class="subElementUserName left">
+						<c:out value="${user.getName()}"/>
+					</div>
+					<div class="button listButton right"  onclick="editUserRole('${user.getIdLink()}','${user.getRole()}')">
+						Change Role
+					</div>
+					<div class="button listButton right" onclick="resetPassword('${user.getIdLink()}')">
+						Reset Password
+					</div>
+					<div class="button listButton right" onclick="editUserName('${user.getIdLink()}','${user.getName()}')">
+						Edit Name
+					</div>
+					<div class="clear"></div>
+				</div>
+			</c:forEach>
+			<div class="button pageButton" onclick="editUser('new','')">New User</div>
+		</div>
+			
 	</jsp:body>
 </t:templateAll>

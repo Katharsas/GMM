@@ -13,20 +13,6 @@
 	text-align:center;
 	position:relative;
 }
-.tabmenu .tab.activeTab{
-	border-bottom-width:0px	!important;
-}
-.tabmenu .tab:not(:first-child){
-	border-left-width:0px	!important;
-}
-.tabmenu .middle{
-	width:auto 				!important;
-	overflow:hidden			!important;
-	border-top-width: 0px	!important;
-}
-.tabbody{
-	border-top-width: 0px	!important;
-}
 
 /*Floating elements & Size/Positioning*/
 .left{float:left}
@@ -65,7 +51,7 @@ submit {
 a {text-decoration: none;}
 a:link{color:inherit;}
 a:visited{color:inherit;}
-a:active{color:inherit;}/*orange*/
+a:active{color:inherit;}
 a:hover{}
 .warning {
 	text-align: center;
@@ -77,9 +63,9 @@ a:hover{}
 }
 
 /*Text Size*/
-h1, .h1{font-size:x-large 	!important;}
-h2, .h2{font-size:1.33rem;	!important;}
-h3, .h3{font-size:1.14rem;	!important;}
+h1, .h1{font-size:x-large;}
+h2, .h2{font-size:1.33rem;}
+h3, .h3{font-size:1.14rem;}
 
 /*Inherited & font types*/
 html, body {
@@ -101,7 +87,6 @@ body {
 }
 .inactivePage, .noPage {
 	color:#FFFFFF;
-/* 	background-color:#999999; */
 	background-color:#B4B7BF;
 }
 .pageButton {
@@ -111,22 +96,17 @@ body {
 	border:1px solid #A82709;
 }
 .pageButton:hover {
-/* 	background-color:#382F2D; */
 	background-color:#292929;
 }
 
 /*Colours Sub Page*/
 .activeSubpage{
 	color:#F6F6F6;
-/* 	background-color:#145959; */
-/* 	background-color:#29477F; */
 	background-color:#164054;
 	
 }
 .inactiveSubpage{
 	color:#DDDDDD;
-/* 	background-color:#1E3636; */
-/* 	background-color:#1D3052; */
 	background-color:#072737;
 }
 .noSubpage{
@@ -144,21 +124,16 @@ body {
 
 /*Site position and size on screen*/
 #wrap {
-/* 	display: table; */
 	background-color:#151515;
 	width:100%;
 	height:100%;
 }
 
 #main {
-/* 	margin-bottom:20px; */
 	padding-bottom:100px;
-/* 	display: table-row; */
-/* 	min-height:100%; */
 	overflow:hidden;
 }
 #top {
-/* 	display: table-row; */
 }
 /*Sites main menu at the top: tabs and empty middle/in-between tab*/
 #top .tab{
@@ -168,14 +143,4 @@ body {
 	height:30px;
 	padding:5px;
 	padding-top:7px;
-}
-
-#top .tab.middle{
-	/*padding-top:5px;/*padding from #top .tab + border-top-width*/
-	min-width:0em;
-	max-width:none;
-}
-
-#top .tab.activeTab{
-	/*padding-bottom:5px;*/
 }

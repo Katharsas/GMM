@@ -9,9 +9,9 @@ import java.util.Arrays;
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,8 +29,8 @@ import gmm.service.TaskLoader.TaskLoaderResult;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
-
 import gmm.service.data.DataConfigService;
+import gmm.util.Collection;
 import gmm.util.HashSet;
 import gmm.util.Set;
 import gmm.web.forms.TaskForm;
@@ -59,6 +59,11 @@ public class AdminController {
 	
 	private final Set<String> filePaths = new HashSet<>();
 	boolean areTexturePaths = true;
+	
+	@ModelAttribute("userList")
+	public Collection<User> getUserList() {
+		return users.get();
+	}
 	
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {
@@ -179,5 +184,30 @@ public class AdminController {
 		if(textures) {
 			textureImporter.importTasks(config.ASSETS_ORIGINAL, filePaths, null, users.get(principal));
 		}
+	}
+	
+	@RequestMapping(value = {"/users/{idLink}"}, method = RequestMethod.POST)
+	public @ResponseBody void editUser(
+			@PathVariable("idLink") String idLink,
+			@RequestParam(value="name", required=false) String name,
+			@RequestParam(value="role", required=false) String role) {
+		if(idLink.equals("new")) {
+			User user = new User(name);
+			data.add(user);
+		}
+		else {
+			User user = users.getByIdLink(idLink);
+			if(name != null) user.setName(name);
+			if(role != null) user.setRole(role);
+		}
+	}
+	
+	@RequestMapping(value = "/users/reset/{idLink}")
+	public @ResponseBody String resetPassword(
+			@PathVariable("idLink") String idLink) {
+		User user = users.getByIdLink(idLink);
+		String password = users.generatePassword();
+		user.setPasswordHash(users.encode(password));
+		return password;
 	}
 }

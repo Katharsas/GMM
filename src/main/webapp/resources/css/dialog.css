@@ -46,6 +46,11 @@
 	top:50%;
 	left:50%;
 }
-#confirmDialog * {
+
+#confirmDialog > * {
 	margin:10px;
+}
+
+#confirmDialog #confirmDialogTextInput{
+	width:100%;
 }

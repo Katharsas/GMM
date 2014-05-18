@@ -22,9 +22,11 @@
 	
 	
 	<beans:bean id="customUserDetailsService" class="gmm.service.CustomUserDetailsService"/>
+	<beans:bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
 	
 	<authentication-manager>
 		<authentication-provider user-service-ref="customUserDetailsService">
+			<password-encoder ref="encoder" />
 		</authentication-provider>
 	</authentication-manager>
 	

@@ -25,16 +25,15 @@ public class User extends NamedObject {
 	public int maximumSavedNotifications = 100;
 	
 	//Constants
-	public final static User NULL = new User("EMPTY", "");
+	public final static User NULL = new User("EMPTY");
 	
 	//Methods--------------------------------------------
 	/**
 	 * @param idName - Identificator (name) of the user.
 	 * @param passwordHash - The users password hash.
 	 */
-	public User(String name, String passwordHash) {
+	public User(String name) {
 		super(name);
-		setPasswordHash(passwordHash);
 	}
 	
 	//Setters, Getters---------------------------------------
