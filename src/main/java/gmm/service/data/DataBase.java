@@ -28,23 +28,7 @@ public class DataBase implements DataAccess {
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
 	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
 	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
-	
 	final private Set<Label> taskLabels = new HashSet<Label>();
-//	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
-	
-	public DataBase(){
-		//TODO remove, load users from xml.
-		users.add(new User("Fracer"));
-		users.add(new User("Rolf"));
-		users.add(new User("Kellendil"));
-		users.add(new User("ThielHater"));
-		users.add(new User("EvilTwin"));
-		users.add(new User("BlackBat"));
-		users.add(new User("Gnox"));
-		users.add(new User("AmProsius"));
-		users.add(new User("anselm"));
-		users.add(new User("NaikJoy"));
-	}
 	
 	@PostConstruct
 	private void init() {

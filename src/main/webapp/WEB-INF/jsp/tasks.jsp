@@ -1,7 +1,8 @@
-<%@ include file="/WEB-INF/tags/include.tagf" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
 <% pageContext.setAttribute("newLine", "\n"); %>
 
-<t:templateAll>
+<t:all_template>
 
 	<jsp:attribute name="js">
     	<script src="res/javascript/tasks.js" type="text/javascript"></script>
@@ -19,20 +20,42 @@
 				<div class="td">
 				</div>
 				<div class="td">
-					<t:tasks_generalArea>
-					</t:tasks_generalArea>
+<!-- New Task Area -->
+					<div id="generalArea">
+						<div id="newTaskButton" class="button pageButton" onclick="newTask()">
+							<fmt:message key="tasks.new"/>
+						</div>
+						<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}" commandName="task">
+							<t:all_taskForm>
+							</t:all_taskForm>
+						</form:form>
+						<div class="clear"></div>
+						<div class="taskButtons">
+							<div id="submitTaskButton" class="button pageButton left">
+								Submit Task
+							</div>
+							<div id="cancelTaskButton" class="button pageButton left">
+								<a href="?tab=${tab}">
+									<fmt:message key="tasks.new.cancel"/><span></span>
+								</a>
+							</div>
+							<div class="clear"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="tr">
 				<div class="td">
+<!-- Side Filter Area -->
 					<t:tasks_filters>
 					</t:tasks_filters>
 				</div>
 				<div class="td">
+<!-- Task List Area -->
 					<t:tasks_lists newLine="${newLine}">
 					</t:tasks_lists>
 				</div>
 			</div>
 		</div>
     </jsp:body>
-</t:templateAll>
+</t:all_template>

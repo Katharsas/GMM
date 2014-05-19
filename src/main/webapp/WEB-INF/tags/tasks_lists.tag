@@ -1,4 +1,4 @@
-<%@ include file="/WEB-INF/tags/include.tagf" %>
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
 <%-- Tag Description --%>
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
@@ -75,7 +75,7 @@
 				    </div>
 <%-- Assigned --%>
 				    <div class="right elementAssigned elementContent">
-				    	<c:if test="${!(task.getAssigned()==null)}">
+				    	<c:if test="${task.getAssigned()!=null}">
 				    		<c:out value="${task.getAssigned().getName()}"/>&#160;&#160;-&#160;&#160;
 						</c:if>
 					</div>

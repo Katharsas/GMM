@@ -1,7 +1,8 @@
-<%@ include file="/WEB-INF/tags/include.tagf" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
 <% pageContext.setAttribute("newLine", "\n"); %>
 
-<t:templateAll>
+<t:all_template>
 
 	<jsp:attribute name="js">
     	<script src="res/javascript/admin.js" type="text/javascript"></script>
@@ -127,4 +128,4 @@
 		</div>
 			
 	</jsp:body>
-</t:templateAll>
+</t:all_template>

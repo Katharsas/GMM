@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	cancelImport();
+	hideImport();
 	refreshTaskBackups();
 	refreshTaskImportTree();
 });
@@ -115,12 +115,18 @@ function addAssetPaths(textures) {
 	$('#taskForm').show();
 }
 
-function cancelImport() {
+function hideImport() {
 	$("#selectedPaths ul").empty();
 	$('#importButtons .button').hide();
 	$('#taskForm').hide();
 	$('#addMeshesButton').show();
 	$('#addTexturesButton').show();
+}
+
+function cancelImport() {
+	$.post("admin/import/cancel", function() {
+		hideImport();
+	});
 }
 
 function editUserRole(idLink, userRole) {

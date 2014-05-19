@@ -1,4 +1,4 @@
-<%@ include file="/WEB-INF/tags/include.tagf" %>
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
 <%-- Tag Description --%>
 <%@tag description="template page" pageEncoding="UTF-8"%>
 

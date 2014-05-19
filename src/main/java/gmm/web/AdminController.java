@@ -83,6 +83,11 @@ public class AdminController {
         return "admin";
     }
 	
+	@RequestMapping(value = {"/import/cancel"} , method = RequestMethod.POST)
+	public @ResponseBody void cancelAssetImport() {
+		filePaths.clear();
+	}
+	
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	public String saveTasks(@RequestParam("name") String pathString) throws IOException {
 		

@@ -21,7 +21,7 @@ public class TestTask {
 	
 	@Before
 	public void setUp() throws Exception {
-		user = new User("Ralf", "123456");
+		user = new User("Ralf");
 		objectUnderTest = new GeneralTask("testTask", user);
 	}
 	

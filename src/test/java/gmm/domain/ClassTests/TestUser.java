@@ -16,7 +16,8 @@ public class TestUser {
 	
 	@Before
 	public void setUp() throws Exception {
-		objectUnderTest = new User("Ralf", "123456");
+		objectUnderTest = new User("Ralf");
+		objectUnderTest.setPasswordHash("123456");
 	}
 	
 	@Test
@@ -26,10 +27,6 @@ public class TestUser {
 		assertEquals("", objectUnderTest.getEmail());
 		assertEquals(new LinkedList<Notification>(), objectUnderTest.getOldNotifications());
 		assertEquals(new LinkedList<Notification>(), objectUnderTest.getNewNotifications());
-		
-		assertFalse(objectUnderTest.sentNotificationsToMail);
-		assertEquals(30, objectUnderTest.daysToSaveNotifiations);
-		assertEquals(100, objectUnderTest.maximumSavedNotifications);
 	}
 	
 	@Test
@@ -46,10 +43,7 @@ public class TestUser {
 	@Test
 	public void testNullPointerExceptions() {
 		boolean thrown = true;
-	    try {objectUnderTest = new User("Ralf", null);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    try {objectUnderTest = new User(null, "");
+	    try {objectUnderTest = new User(null);
 	    	thrown = false;}
 	    catch(NullPointerException e){}
 	    try {objectUnderTest.setEmail(null);
