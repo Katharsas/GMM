@@ -90,13 +90,18 @@ body {
 	background-color:#B4B7BF;
 }
 .pageButton {
-	color:#000000;
-	background-color:#333333;
-	color:#FFFFFF;
 	border:1px solid #A82709;
+	color:#FFFFFF;
 }
-.pageButton:hover {
+.listButton {
+	color:#999;
+}
+.pageButton, .listButton {
+	background-color:#333333;
+}
+.pageButton:hover, .listButton:hover {
 	background-color:#292929;
+	color:#FFFFFF;
 }
 
 /*Colours Sub Page*/

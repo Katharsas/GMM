@@ -24,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 			throws UsernameNotFoundException {
 		
 		gmm.domain.User user = NamedObject.getFromName(users.get(), name);
-		if(user == null || user.getPasswordHash() == null) {
+		if(user == null || user.getPasswordHash() == null || !user.isEnabled()) {
 			throw new UsernameNotFoundException("Could not find User with name "+name);
 		}
 		

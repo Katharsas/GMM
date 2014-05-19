@@ -77,7 +77,6 @@ public class TaskController {
 	 */
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
-				Principal principal,
 		 		@ModelAttribute("generalFilter") FilterForm filterForm) {
 
 		session.updateFilter(filterForm);

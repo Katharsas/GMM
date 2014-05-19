@@ -4,8 +4,8 @@ import gmm.domain.Task;
 import gmm.domain.UniqueObject;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
-import gmm.util.Collection;
 
+import java.nio.file.Path;
 import java.util.Iterator;
 
 public class TaskLoader {
@@ -22,11 +22,9 @@ public class TaskLoader {
 	private static String overwriteOp = "overwrite";
 	private static String bothOp = "both";
 	
-	@SuppressWarnings("unchecked")
-	public TaskLoader(String path) {
-		taskLoader = ((Collection<? extends Task>) xmlService.deserialize(path)).iterator();
+	public TaskLoader(Path path) {
+		taskLoader = xmlService.deserialize(path, Task.class).iterator();
 	}
-	
 	
 	public TaskLoaderResult loadNext(String operation, boolean doForAllFlag) {
 		validate(operation);

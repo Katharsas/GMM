@@ -21,6 +21,7 @@ public class DataConfigService {
 	private ServletContext context;
 	private String basePath;
 	
+	public String DATA_USERS;
 	public String DATA;
 	public String DATA_AUTO;
 	public String ASSETS_ORIGINAL;
@@ -56,5 +57,7 @@ public class DataConfigService {
 		ASSETS_ORIGINAL = basePath+property.getProperty("assets_original_path");
 		ASSETS_NEW = basePath+property.getProperty("assets_new_path");
 		UPLOAD = basePath+property.getProperty("upload_path");
+		
+		DATA_USERS = basePath;
 	}
 }

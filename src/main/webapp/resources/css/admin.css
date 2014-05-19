@@ -1,5 +1,11 @@
 .pageButton {
-	width:9em;
+	min-width:9em;
+}
+.listButton {
+	min-width:5em;
+	border:1px solid #555;
+	margin:3px 5px;
+	height:1.2em;
 }
 .adminElementGroup, .groupDescriptor {
 	margin:0 auto;
@@ -12,9 +18,6 @@
 }
 .adminElement, .pageButton{
 	margin:12px 10px;
-}
-.listButton {
-	
 }
 
 .groupDescriptor {
@@ -73,6 +76,35 @@
 
 .elementUser {
 	background-color:#164054;
-	margin:10px;
+/* 	margin:10px; */
 }
-
+.elementUser:hover {
+	background-color:#072737;
+}
+.elementUser:hover .listButton {
+	border-color: #999;
+	color:#BBB;
+}
+.elementUser:hover .listButton:hover {
+	color:#FFF;
+}
+.subElementUserName {
+	padding:6px 10px;
+	font-weight: bold;
+}
+.subElementUserRole.button {
+	padding:0px;
+	min-width:3.6em;
+	padding:7px 10px;
+	color:#999;
+}
+.subElementUserEnabled.button {
+	padding:0px;
+	margin-left:5px;
+	padding-top:2px;
+	font-size:1.4em;
+}
+.subElementUserPassword {
+	padding-top:5px;
+	color:#A82709;
+}

@@ -13,19 +13,24 @@ public class User extends NamedObject {
 	private String passwordHash;
 	//Domain - Default
 	@XStreamAsAttribute
-	private String role = "ROLE_USER";
+	private String role = ROLE_USER;
+	private boolean enabled = false;
 	@XStreamAsAttribute
 	private String email="";
-	final private List<Notification> oldNotifications = new LinkedList<Notification>();;
+	
+	final private List<Notification> oldNotifications = new LinkedList<Notification>();
 	final private List<Notification> newNotifications = new LinkedList<Notification>();
 	
 	//Options
-	public boolean sentNotificationsToMail = false;
-	public int daysToSaveNotifiations = 30;
-	public int maximumSavedNotifications = 100;
+//	public boolean sentNotificationsToMail = false;
+//	public int daysToSaveNotifiations = 30;
+//	public int maximumSavedNotifications = 100;
 	
 	//Constants
 	public final static User NULL = new User("EMPTY");
+	public final static String ROLE_ADMIN = "ROLE_ADMIN";
+	public final static String ROLE_USER = "ROLE_USER";
+	public final static String ROLE_GUEST = "ROLE_GUEST";
 	
 	//Methods--------------------------------------------
 	/**
@@ -46,7 +51,12 @@ public class User extends NamedObject {
 	}
 
 	public void setRole(String role) {
-		this.role = role;
+		if(role.equals(ROLE_GUEST) || role.equals(ROLE_USER) || role.equals(ROLE_ADMIN)) {
+			this.role = role;
+		}
+		else {
+			throw new IllegalArgumentException("Role parameter is not valid.");
+		}
 	}
 	
 	public String getRole() {
@@ -60,6 +70,14 @@ public class User extends NamedObject {
 	
 	public String getEmail() {
 		return email;
+	}
+	
+	public boolean isEnabled() {
+		return enabled;
+	}
+	
+	public void enable(boolean enabled) {
+		this.enabled = enabled;
 	}
 	
 	public List<Notification> getOldNotifications() {

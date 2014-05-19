@@ -1,0 +1,74 @@
+<gmm.util.LinkedList serialization="custom">
+  <unserializable-parents/>
+  <linked-list>
+    <default/>
+    <int>11</int>
+    <User id="2" name="Fracer" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="3" name="Rolf" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="4" name="Kellendil" role="ROLE_ADMIN" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="5" name="ThielHater" role="ROLE_ADMIN" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="6" name="EvilTwin" role="ROLE_ADMIN" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="7" name="BlackBat" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="8" name="Gnox" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="9" name="AmProsius" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="10" name="anselm" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="11" name="NaikJoy" role="ROLE_USER" email="">
+      <created>2014-05-19 12:23:23.191 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="12" name="admin" role="ROLE_ADMIN" email="">
+      <created>2014-05-19 12:23:23.193 UTC</created>
+      <passwordHash>$2a$10$1ACSOPLcQDpDlufsIdZfLOqG..xG0S4r0qrQJgSqsnE1YTRWie/4O</passwordHash>
+      <enabled>true</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+  </linked-list>
+</gmm.util.LinkedList>

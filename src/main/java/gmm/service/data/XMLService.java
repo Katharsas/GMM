@@ -1,8 +1,8 @@
 package gmm.service.data;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +14,7 @@ import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
+import gmm.util.Collection;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -45,18 +46,18 @@ public class XMLService {
 		}
 	}
 	
-	public synchronized void serialize(Object object, String path) {
-		String xml= xstream.toXML(object);
+	public synchronized void serialize(Collection<?> objects, Path path) {
+		String xml= xstream.toXML(objects);
 		writeToFile(xml, path);
 	}
 
-	public synchronized Object deserialize(String path) {
-		return xstream.fromXML(new File(path));
+	@SuppressWarnings("unchecked")
+	public synchronized <T> Collection<? extends T> deserialize(Path path, Class<T> clazz) {
+		return (Collection<? extends T>) xstream.fromXML(path.toFile());
 	}
         
-    private void writeToFile(String content, String filePath) {
-		File file = new File(filePath);
-        try(PrintWriter writer = new PrintWriter(file)){
+    private void writeToFile(String content, Path filePath) {
+        try(PrintWriter writer = new PrintWriter(filePath.toFile())){
         	writer.println(content);
         }
         catch(IOException e){

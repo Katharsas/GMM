@@ -89,7 +89,7 @@ public class AdminController {
 		Path visible = Paths.get(config.DATA);
 		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		fileService.prepareFileCreation(path);
-		xmlService.serialize(data.getList(Task.class), path.toString());
+		xmlService.serialize(data.getList(Task.class), path);
 		return "redirect:/admin";
 	}
 	
@@ -100,7 +100,7 @@ public class AdminController {
 		Path visible = Paths.get(config.DATA);
 		dir = fileService.restrictAccess(dir, visible);
 		try {
-			taskLoader = new TaskLoader(visible.resolve(dir).toString());
+			taskLoader = new TaskLoader(visible.resolve(dir));
 		}
 		catch(Exception e) {
 			TaskLoaderResult result = new TaskLoaderResult();
@@ -186,7 +186,7 @@ public class AdminController {
 		}
 	}
 	
-	@RequestMapping(value = {"/users/{idLink}"}, method = RequestMethod.POST)
+	@RequestMapping(value = {"/users/edit/{idLink}"}, method = RequestMethod.POST)
 	public @ResponseBody void editUser(
 			@PathVariable("idLink") String idLink,
 			@RequestParam(value="name", required=false) String name,
@@ -202,6 +202,14 @@ public class AdminController {
 		}
 	}
 	
+	@RequestMapping(value = {"/users/admin/{idLink}"}, method = RequestMethod.POST)
+	public @ResponseBody void switchAdmin(
+			@PathVariable("idLink") String idLink) {
+		User user = users.getByIdLink(idLink);
+		user.setRole(user.getRole().equals(User.ROLE_ADMIN) ? 
+				User.ROLE_USER : User.ROLE_ADMIN);
+	}
+	
 	@RequestMapping(value = "/users/reset/{idLink}")
 	public @ResponseBody String resetPassword(
 			@PathVariable("idLink") String idLink) {
@@ -209,5 +217,28 @@ public class AdminController {
 		String password = users.generatePassword();
 		user.setPasswordHash(users.encode(password));
 		return password;
+	}
+	
+	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
+	public @ResponseBody void saveUsers() throws IOException {
+		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+		fileService.prepareFileCreation(path);
+		xmlService.serialize(users.get(), path);
+	}
+	
+	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
+	public @ResponseBody void loadUsers() throws IOException {
+		
+		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+		data.removeAll(User.class);
+		data.addAll(User.class, xmlService.deserialize(path, User.class));
+	}
+	
+	@RequestMapping(value = {"/users/switch/{idLink}"}, method = RequestMethod.POST)
+	public @ResponseBody void switchUser(
+			@PathVariable("idLink") String idLink) {
+		
+		User user = users.getByIdLink(idLink);
+		user.enable(!user.isEnabled());
 	}
 }

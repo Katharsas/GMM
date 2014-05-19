@@ -34,7 +34,7 @@
 	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="loadTasksNext('both');">Keep Both</div>
 	        			<div class="clear"></div>
 	        			<label id="doForAllCheckbox">
-	        				<input type="checkbox" name="doForAll" value="doForAll">Für alle aktuellen Elemente wiederholen<br>
+	        				<input type="checkbox" name="doForAll" value="doForAll">FÃ¼r alle aktuellen Elemente wiederholen<br>
         				</label>
         			</div>
         			<div id="finishLoadingButton" class="dialogButton button" onclick="finishTaskLoading()">Finish</div>
@@ -87,14 +87,30 @@
 			User Accounts
 		</div>
 		<div class="adminElementGroup">
+			<br/>
 			<c:forEach items="${userList}" var="user">
-				<div class="elementUser">
+				<div id="${user.getIdLink()}" class="elementUser">
+					<div class="subElementUserEnabled button left" onclick="switchUser('${user.getIdLink()}','${user.getName()}')">
+						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
+					</div>
+					<div class="subElementUserRole button left"  onclick="switchAdmin('${user.getIdLink()}')">
+<%-- 						<c:if test="${user.getRole().equals('ROLE_ADMIN')}"> --%>
+<!-- 							[ADMIN] -->
+<%-- 						</c:if> --%>
+						${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
+					</div>
 					<div class="subElementUserName left">
 						<c:out value="${user.getName()}"/>
 					</div>
-					<div class="button listButton right"  onclick="editUserRole('${user.getIdLink()}','${user.getRole()}')">
-						Change Role
+					<div class="subElementUserPassword left">
+						${user.getPasswordHash()==null ? '(Disabled - Needs Password)' : '&nbsp;'}
 					</div>
+<%-- 					<div class="button listButton right" onclick="switchUser('${user.getIdLink()}','${user.getName()}')"> --%>
+<%-- 						${user.isEnabled() ? 'Disable' : 'Enable'} --%>
+<!-- 					</div> -->
+<%-- 					<div class="button listButton right" onclick="editUserRole('${user.getIdLink()}','${user.getRole()}')"> --%>
+<!-- 						Change Role -->
+<!-- 					</div> -->
 					<div class="button listButton right" onclick="resetPassword('${user.getIdLink()}')">
 						Reset Password
 					</div>
@@ -104,7 +120,10 @@
 					<div class="clear"></div>
 				</div>
 			</c:forEach>
-			<div class="button pageButton" onclick="editUser('new','')">New User</div>
+			<br/>
+			<div class="button pageButton left" onclick="editUserName('new','')">New User</div>
+			<div class="button pageButton right" onclick="saveUsers()">Save Users</div>
+			<div class="button pageButton right" onclick="loadUsers()">Load Users</div>
 		</div>
 			
 	</jsp:body>

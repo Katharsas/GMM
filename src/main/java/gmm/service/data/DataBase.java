@@ -50,6 +50,8 @@ public class DataBase implements DataAccess {
 	private void init() {
 		User defaultUser = new User("admin");
 		defaultUser.setPasswordHash(userService.encode("admin"));
+		defaultUser.setRole(User.ROLE_ADMIN);
+		defaultUser.enable(true);
 		users.add(defaultUser);
 	}
 	

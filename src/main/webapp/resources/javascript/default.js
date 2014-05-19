@@ -41,6 +41,13 @@ $(document).ready(function() {
 	//find page tab by URL and set as active tab
 	var activeTab = $(".pageTabmenu .tab a[href=\""+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
+	
+	//setup enter keys
+	$(".dialogContainer").bind("keypress", function(event) {
+		if(event.which === 13) {
+			confirmOk();
+		}
+	});
 });
 
 
@@ -97,14 +104,17 @@ function confirm(onConfirm, message, textInputDefault) {
 	$textInputField = $confirmDialog.find("#confirmDialogTextInput");
 	if(textInputDefault !== undefined) {
 		console.log("Showing stuff");
-		$textInputField.show();
 		$textInputField.attr("value", textInputDefault);
+		$textInputField.show();
 	}
 	else {
 		$textInputField.hide();
 	}
 	$("#overlay").show();
 	$confirmDialog.show();
+	if(textInputDefault !== undefined) {
+		$textInputField.select();
+	}
 }
 
 function confirmOk() {
