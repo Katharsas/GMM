@@ -23,12 +23,13 @@ import gmm.domain.Label;
 import gmm.domain.Priority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
+import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.TaskLoader;
-import gmm.service.TextureTaskImporter;
 import gmm.service.TaskLoader.TaskLoaderResult;
 import gmm.service.UserService;
+import gmm.service.assets.AssetImporter;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
@@ -52,7 +53,7 @@ public class AdminController {
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	@Autowired XMLService xmlService;
-	@Autowired TextureTaskImporter textureImporter;
+	@Autowired AssetImporter importer;
 	@Autowired UserService users;
 	@Autowired PasswordEncoder encoder;
 	
@@ -188,7 +189,7 @@ public class AdminController {
 		
 		session.notifyDataChange();
 		if(textures) {
-			textureImporter.importTasks(config.ASSETS_ORIGINAL, filePaths, null, users.get(principal));
+			importer.importTasks(filePaths, null, TextureTask.class);
 		}
 	}
 	

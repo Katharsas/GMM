@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import gmm.domain.AssetTask;
 import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
-import gmm.service.AssetService;
 import gmm.service.FileService;
+import gmm.service.assets.TextureService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.web.sessions.TaskSession;
@@ -34,11 +34,11 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 @RequestMapping("tasks")
 @PreAuthorize("hasRole('ROLE_USER')")
 
-public class AssetController {
+public class TaskAssetController {
 
 	@Autowired TaskSession session;
 	@Autowired DataAccess data;
-	@Autowired AssetService assetService;
+	@Autowired TextureService assetService;
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
@@ -93,7 +93,7 @@ public class AssetController {
 			@RequestParam("dir") Path dir) {
 		
 		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		subDir = subDir.equals("assets") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		subDir = subDir.equals("assets") ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
 		dir = fileService.restrictAccess(dir, visible);
@@ -138,7 +138,7 @@ public class AssetController {
 			@PathVariable Path dir) throws IOException {
 		
 		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		subDir = subDir.equals("asset") ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		subDir = subDir.equals("asset") ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		Path filePath = Paths.get(task.getNewAssetFolderPath()).resolve(subDir).resolve(dir);
 		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");

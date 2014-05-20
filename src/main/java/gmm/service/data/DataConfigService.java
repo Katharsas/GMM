@@ -28,9 +28,9 @@ public class DataConfigService {
 	public String ASSETS_NEW;
 	public String UPLOAD;
 	
-	public final String NEW_TEX_ASSETS = "assets";
-	public final String NEW_TEX_PREVIEW = "preview";
-	public final String NEW_TEX_OTHER = "wip";
+	public final String SUB_ASSETS = "assets";
+	public final String SUB_PREVIEW = "preview";
+	public final String SUB_OTHER = "wip";
 	
 	@PostConstruct
 	private void setUpConfigService() {
