@@ -15,8 +15,6 @@
 	
 	
 	
-	
-	
 	<!-- 	Application Context Configuration 
 	
 			This is the configuration for root/parent container for all servlets.
@@ -25,17 +23,38 @@
 			
 			Holds all data that is shared by the servlets or that must be accessible
 			to Spring Security. So this context holds DAOs and Services.-->
-	
+
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	
 	
 	
+	<!--	Encoding Filter
+	
+			Force UTF-8 encoding. If not used, the server will not decode received data correctly.-->
+			
+	<filter>
+	    <filter-name>characterEncodingFilter</filter-name>
+	    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	    <init-param>
+	        <param-name>encoding</param-name>
+	        <param-value>UTF-8</param-value>
+	    </init-param>
+	    <init-param>
+	        <param-name>forceEncoding</param-name>
+	        <param-value>true</param-value>
+	    </init-param>
+	</filter>
+	
+	<filter-mapping>
+	    <filter-name>characterEncodingFilter</filter-name>
+	    <url-pattern>*</url-pattern>
+	</filter-mapping>
 	
 	
 	
-	<!--	Security Filters
+	<!--	Security Filter
 	
 			This is the Spring Security filter configuration.
 			It requires more configuration in the application context configuration to work.
@@ -51,8 +70,6 @@
 		<filter-name>springSecurityFilterChain</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	
-	
 	
 	
 	

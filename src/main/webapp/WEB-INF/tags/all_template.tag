@@ -47,11 +47,13 @@
 			<!-- Top Tab-Menu -->
 			<div id="top" class="pageTabmenu tabmenu inactivePage h2">
 				<div class="tab left"><a href="tasks"><fmt:message key="menu.tasks"/><span></span></a></div>
-<%-- 				<div class="tab left"><a href="notifications"><fmt:message key="menu.notifications"/><span></span></a></div> --%>
-<%-- 				<div class="tab left"><a href="files"><fmt:message key="menu.files"/><span></span></a></div> --%>
 				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>
-<%-- 				<div class="tab right"><a href="options"><fmt:message key="menu.options"/><span></span></a></div> --%>
-				<div class="tab right"><a href="admin"><fmt:message key="menu.admin"/><span></span></a></div>
+				<div class="tab right"><a href="profile"><fmt:message key="menu.profile"/><span></span></a></div>
+				
+				<sec:authorize access="hasRole('ROLE_ADMIN')">
+					<div class="tab right"><a href="admin"><fmt:message key="menu.admin"/><span></span></a></div>
+				</sec:authorize>
+				
 				<div class="clear"></div>
 			</div>
 			<!-- End of Top Tab-Menu -->

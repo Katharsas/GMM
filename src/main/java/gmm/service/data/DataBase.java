@@ -3,6 +3,7 @@ package gmm.service.data;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.GeneralTask;
@@ -23,6 +24,7 @@ import gmm.util.Collection;
 public class DataBase implements DataAccess {
 
 	@Autowired UserService userService;
+	@Autowired PasswordEncoder encoder;
 	
 	final private List<User> users = new LinkedList<User>();
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
@@ -33,7 +35,7 @@ public class DataBase implements DataAccess {
 	@PostConstruct
 	private void init() {
 		User defaultUser = new User("admin");
-		defaultUser.setPasswordHash(userService.encode("admin"));
+		defaultUser.setPasswordHash(encoder.encode("admin"));
 		defaultUser.setRole(User.ROLE_ADMIN);
 		defaultUser.enable(true);
 		users.add(defaultUser);

@@ -3,6 +3,7 @@ package gmm.web;
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 /** Annotations */
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -10,12 +11,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 
+
+
 /** java */
 import java.security.Principal;
+
+
 
 
 import gmm.domain.Comment;
@@ -45,9 +49,11 @@ import gmm.web.sessions.TaskSession;
  * 
  * @author Jan Mothes aka Kellendil
  */
+@Controller
 @RequestMapping("tasks")
 @SessionAttributes({"search","generalFilter"})
-@Controller
+@PreAuthorize("hasRole('ROLE_USER')")
+
 public class TaskController {
 	
 	@Autowired TaskSession session;

@@ -9,6 +9,8 @@ import java.util.Arrays;
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,16 +38,14 @@ import gmm.util.Set;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
 
 @Controller
 @Scope("session")
 @RequestMapping("admin")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
+
 public class AdminController {
-	protected final Log logger = LogFactory.getLog(getClass());
-	
+
 	@Autowired TaskSession session;
 	
 	@Autowired DataAccess data;
@@ -54,6 +54,7 @@ public class AdminController {
 	@Autowired XMLService xmlService;
 	@Autowired TextureTaskImporter textureImporter;
 	@Autowired UserService users;
+	@Autowired PasswordEncoder encoder;
 	
 	private TaskLoader taskLoader;
 	
@@ -220,7 +221,7 @@ public class AdminController {
 			@PathVariable("idLink") String idLink) {
 		User user = users.getByIdLink(idLink);
 		String password = users.generatePassword();
-		user.setPasswordHash(users.encode(password));
+		user.setPasswordHash(encoder.encode(password));
 		return password;
 	}
 	

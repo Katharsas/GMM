@@ -95,9 +95,6 @@
 						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
 					</div>
 					<div class="subElementUserRole button left"  onclick="switchAdmin('${user.getIdLink()}')">
-<%-- 						<c:if test="${user.getRole().equals('ROLE_ADMIN')}"> --%>
-<!-- 							[ADMIN] -->
-<%-- 						</c:if> --%>
 						${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
 					</div>
 					<div class="subElementUserName left">

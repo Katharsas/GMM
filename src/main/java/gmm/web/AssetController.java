@@ -19,6 +19,7 @@ import gmm.web.sessions.TaskSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,6 +32,8 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 @Controller
 @RequestMapping("tasks")
+@PreAuthorize("hasRole('ROLE_USER')")
+
 public class AssetController {
 
 	@Autowired TaskSession session;
