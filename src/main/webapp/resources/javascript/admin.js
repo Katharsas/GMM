@@ -130,7 +130,7 @@ function cancelImport() {
 }
 
 function editUserRole(idLink, userRole) {
-	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var role = $textField.attr("value");
 		$.post("admin/users/edit/"+idLink,
@@ -153,7 +153,7 @@ function switchAdmin(idLink) {
 }
 
 function editUserName(idLink, userName) {
-	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var name = $textField.attr("value");
 		$.post("admin/users/edit/"+idLink,

@@ -238,7 +238,11 @@ public class AdminController {
 		
 		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
 		data.removeAll(User.class);
-		data.addAll(User.class, xmlService.deserialize(path, User.class));
+		Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
+		for(User user : loadedUsers) {
+			user.makeUnique();
+		}
+		data.addAll(User.class, loadedUsers);
 	}
 	
 	@RequestMapping(value = {"/users/switch/{idLink}"}, method = RequestMethod.POST)
