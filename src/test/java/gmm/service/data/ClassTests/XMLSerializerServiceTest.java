@@ -2,6 +2,7 @@ package gmm.service.data.ClassTests;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -41,7 +42,7 @@ public class XMLSerializerServiceTest {
 	}
 	
 	@Test
-	public void testUserSerialisation() {		
+	public void testUserSerialisation() throws IOException {		
 		//add test user
 		User testUser = new User("testUser");
 		testUser.setPasswordHash("testPasswordHash");

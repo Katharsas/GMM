@@ -41,7 +41,7 @@ public class FileService {
 	}
 	
 	private boolean isChild(Path child, Path parent) {
-		return child.normalize().startsWith(parent.normalize());
+		return normalize(child).startsWith(normalize(parent));
 	}
 	
 	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
@@ -148,5 +148,20 @@ public class FileService {
 	public synchronized void createFile(Path path, byte[] data) throws IOException {
 		prepareFileCreation(path);
 		Files.write(path, data);
+	}
+	
+	/**
+	 * Wrapper for {@link java.nio.file.Path#normalize()} because of OpenJDK bug:
+	 * <a href="https://bugs.openjdk.java.net/browse/JDK-8037945">https://bugs.openjdk.java.net/browse/JDK-8037945</a>
+	 * 
+	 * @see {@link java.nio.file.Path#normalize()}
+	 */
+	private Path normalize(Path path) {
+		if (path.toString().equals("")) {
+			return path;
+		}
+		else {
+			return path.normalize();
+		}
 	}
 }
