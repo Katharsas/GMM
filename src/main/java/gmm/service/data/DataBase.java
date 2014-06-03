@@ -3,6 +3,7 @@ package gmm.service.data;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.GeneralTask;
@@ -23,33 +24,18 @@ import gmm.util.Collection;
 public class DataBase implements DataAccess {
 
 	@Autowired UserService userService;
+	@Autowired PasswordEncoder encoder;
 	
 	final private List<User> users = new LinkedList<User>();
 	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
 	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
 	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
-	
 	final private Set<Label> taskLabels = new HashSet<Label>();
-//	final private List<ModelSite> modelSites = new LinkedList<ModelSite>();
-	
-	public DataBase(){
-		//TODO remove, load users from xml.
-		users.add(new User("Fracer"));
-		users.add(new User("Rolf"));
-		users.add(new User("Kellendil"));
-		users.add(new User("ThielHater"));
-		users.add(new User("EvilTwin"));
-		users.add(new User("BlackBat"));
-		users.add(new User("Gnox"));
-		users.add(new User("AmProsius"));
-		users.add(new User("anselm"));
-		users.add(new User("NaikJoy"));
-	}
 	
 	@PostConstruct
 	private void init() {
 		User defaultUser = new User("admin");
-		defaultUser.setPasswordHash(userService.encode("admin"));
+		defaultUser.setPasswordHash(encoder.encode("admin"));
 		defaultUser.setRole(User.ROLE_ADMIN);
 		defaultUser.enable(true);
 		users.add(defaultUser);

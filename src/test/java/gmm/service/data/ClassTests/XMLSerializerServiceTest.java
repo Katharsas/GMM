@@ -1,6 +1,11 @@
 package gmm.service.data.ClassTests;
 
 import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import gmm.domain.Notification;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
@@ -37,20 +42,20 @@ public class XMLSerializerServiceTest {
 	}
 	
 	@Test
-	public void testUserSerialisation() {		
+	public void testUserSerialisation() throws IOException {		
 		//add test user
-		User testUser = new User("testUser", "testPasswordHash");
+		User testUser = new User("testUser");
+		testUser.setPasswordHash("testPasswordHash");
 		testUser.setEmail("testEmail");
 		testUser.getNewNotifications().add(new Notification("testNotification1"));
 		testUser.getOldNotifications().add(new Notification("testNotification2"));
 		data.add(testUser);
 		
 		//serialize and deserialize
-		String filename = "user_test_file";
+		Path filename = Paths.get("user_test_file");
 		Collection<User> users = data.<User>getList(User.class);
 		xmlService.serialize(users, filename);
-		@SuppressWarnings("unchecked")
-		Collection<User> resultUsers = (Collection<User>) xmlService.deserialize(filename);
+		Collection<? extends User> resultUsers = xmlService.deserialize(filename, User.class);
 		
 		//compare
 		for (User u : users) {

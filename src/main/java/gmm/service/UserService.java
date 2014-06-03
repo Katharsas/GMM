@@ -11,8 +11,6 @@ import java.security.Principal;
 import java.security.SecureRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,11 +35,6 @@ public class UserService {
 	
 	public User getByIdLink(String idLink) {
 		return UniqueObject.getFromId(data.<User>getList(User.class), idLink);
-	}
-	
-	public String encode(String password) {
-		PasswordEncoder encoder = new BCryptPasswordEncoder();
-		return encoder.encode(password);
 	}
 	
 	public String generatePassword() {

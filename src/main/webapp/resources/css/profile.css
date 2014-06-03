@@ -1,0 +1,23 @@
+#changePassword {
+	margin:10px auto;
+	margin-top:100px;
+	width:300px;
+}
+#changePasswordDialog {
+	width:280px;
+}
+#changePasswordDialog > *{
+	margin:10px;
+}
+#changePasswordDialog > .pageButton {
+	margin-top:20px;
+	min-width:100px;
+}
+.inputWrapper *{
+	width:100%;
+	left:0px;
+}
+#passwordError {
+    font-weight: bold;
+    color: #A82709;
+}

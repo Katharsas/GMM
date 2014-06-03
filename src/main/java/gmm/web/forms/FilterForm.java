@@ -1,6 +1,6 @@
 package gmm.web.forms;
 
-import gmm.domain.Priority;
+import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
 import gmm.util.ListUtil;
 
@@ -21,7 +21,7 @@ public class FilterForm {
 		assignedToMe = false;
 		all = true;
 		hidden = true;
-		priority = ListUtil.inflateToArray(true, Priority.values().length);
+		priority = ListUtil.inflateToArray(true, TaskPriority.values().length);
 		taskStatus = ListUtil.inflateToArray(true, TaskStatus.values().length);
 	}
 	

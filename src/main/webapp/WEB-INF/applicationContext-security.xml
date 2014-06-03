@@ -16,10 +16,17 @@
 	http://www.springframework.org/schema/context/spring-context-3.2.xsd
 	">
 	
+<!-- 	<http auto-config="true" use-expressions="true"> -->
+<!-- 		<intercept-url pattern="/*" access="ROLE_USER" /> -->
+<!-- 	</http> -->
+	
 	<http auto-config="true">
-		<intercept-url pattern="/*" access="ROLE_USER" />
+<!-- 		<intercept-url pattern="/*" access="ROLE_USER" /> -->
 	</http>
 	
+	<beans:bean id="webexpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler" />
+	
+	<global-method-security pre-post-annotations="enabled"/>
 	
 	<beans:bean id="customUserDetailsService" class="gmm.service.CustomUserDetailsService"/>
 	<beans:bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>

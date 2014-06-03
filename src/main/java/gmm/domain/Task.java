@@ -20,7 +20,7 @@ public abstract class Task extends NamedObject{
 	private String details = "";
 	private String label="";
 	@XStreamAsAttribute
-	private Priority priority = Priority.MID;
+	private TaskPriority priority = TaskPriority.MID;
 	@XStreamAsAttribute
 	private TaskStatus taskStatus = TaskStatus.TODO;
 	
@@ -54,11 +54,11 @@ public abstract class Task extends NamedObject{
 	public String getLabel() {
 		return label;
 	}
-	public void setPriority(Priority priority) {
+	public void setPriority(TaskPriority priority) {
 		if (priority==null) throw new NullPointerException();
 		this.priority = priority;
 	}
-	public Priority getPriority() {
+	public TaskPriority getPriority() {
 		return priority;
 	}
 	public void setTaskStatus(TaskStatus taskStatus) {

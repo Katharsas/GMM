@@ -1,40 +1,37 @@
-package gmm.service;
+package gmm.service.assets;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
 import gmm.domain.TextureTask;
+import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
-import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Should be used for asset operations like asset loading/asset conversion.
- * TODO: Move tga to png conversion here.
+ * TODO: When MeshService is done, maybe a partly common Interface with this class is possible.
+ * 
+ * IF so, this class could be joined with TexturePreviewCreator
+ * (as MeshService should be joined with MeshPreviewCreator).
  * 
  * @author Jan
  */
 @Service
-public class AssetService {
+public class TextureService {
 
-	@Autowired
-	FileService fileService;
-	
-	@Autowired
-	DataConfigService config;
-	
-	private static final int SMALL_SIZE = 420;
+	@Autowired FileService fileService;
+	@Autowired DataConfigService config;
+	@Autowired TexturePreviewCreator creator;
 	
 	/**
 	 * Returns a texture preview image (png) as byte array.
@@ -42,7 +39,7 @@ public class AssetService {
 	public byte[] getPreview(String newAssetFolder, boolean small, String version) throws IOException {
 		
 		String imageName = version + "_" + (small ? "small" : "full") + ".png";
-		File imageFile = new File(newAssetFolder+"/"+config.NEW_TEX_PREVIEW, imageName);
+		File imageFile = new File(newAssetFolder+"/"+config.SUB_PREVIEW, imageName);
 		if(!imageFile.exists()) {
 			return null;
 		}
@@ -57,7 +54,7 @@ public class AssetService {
 		
 		String name = texture.getOriginalFilename();
 		boolean asset = name.endsWith(".tga") || name.endsWith(".TGA");
-		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		String subDir = asset ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		//Add file
 		Path assetPath = Paths.get(task.getNewAssetFolderPath())
@@ -68,27 +65,13 @@ public class AssetService {
 		
 		//Add texture preview files
 		if(asset) {
-			String imageName;
-			String dir = task.getNewAssetFolderPath()+"/"+config.NEW_TEX_PREVIEW+"/";
-			
-			//Full preview
-			imageName = "newest_full.png";
-			InputStream in = new ByteArrayInputStream(texture.getBytes());
-			BufferedImage image = ImageIO.read(in);
-			ImageIO.write(image, "png", new File(dir+imageName));
-			
-			//Small preview
-			imageName = "newest_small.png";
-			if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
-				image = Scalr.resize(image, SMALL_SIZE);
-			}
-			ImageIO.write(image, "png", new File(dir+imageName));
+			creator.createPreview(assetPath, Paths.get(task.getNewAssetFolderPath()), false);
 		}
 	}
 	
 	public void deleteTextureFile(Path dir, boolean asset, TextureTask task) throws IOException {
 		
-		String subDir = asset ? config.NEW_TEX_ASSETS : config.NEW_TEX_OTHER;
+		String subDir = asset ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		//Restrict access
 		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
@@ -97,7 +80,7 @@ public class AssetService {
 		//Delete previews
 		if(asset && task.getNewestAssetName()!=null) {
 			if(dir.getFileName().toString().equals(task.getNewestAssetName())) {
-				Path preview = Paths.get(task.getNewAssetFolderPath()).resolve(config.NEW_TEX_PREVIEW);
+				Path preview = Paths.get(task.getNewAssetFolderPath()).resolve(config.SUB_PREVIEW);
 				Path previewFile;
 				previewFile = preview.resolve("newest_full.png");
 				if(previewFile.toFile().exists()) {

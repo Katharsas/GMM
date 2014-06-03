@@ -9,6 +9,8 @@ import java.util.Arrays;
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,15 +20,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.Label;
-import gmm.domain.Priority;
 import gmm.domain.Task;
-import gmm.domain.TaskStatus;
+import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.TaskLoader;
-import gmm.service.TextureTaskImporter;
 import gmm.service.TaskLoader.TaskLoaderResult;
 import gmm.service.UserService;
+import gmm.service.assets.AssetImporter;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
@@ -36,24 +37,23 @@ import gmm.util.Set;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-
 
 @Controller
 @Scope("session")
 @RequestMapping("admin")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
+
 public class AdminController {
-	protected final Log logger = LogFactory.getLog(getClass());
-	
+
 	@Autowired TaskSession session;
 	
 	@Autowired DataAccess data;
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	@Autowired XMLService xmlService;
-	@Autowired TextureTaskImporter textureImporter;
+	@Autowired AssetImporter importer;
 	@Autowired UserService users;
+	@Autowired PasswordEncoder encoder;
 	
 	private TaskLoader taskLoader;
 	
@@ -78,10 +78,13 @@ public class AdminController {
 		filePaths.clear();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("taskStatuses", TaskStatus.values());
-	    model.addAttribute("priorities", Priority.values());
         return "admin";
     }
+	
+	@RequestMapping(value = {"/import/cancel"} , method = RequestMethod.POST)
+	public @ResponseBody void cancelAssetImport() {
+		filePaths.clear();
+	}
 	
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	public String saveTasks(@RequestParam("name") String pathString) throws IOException {
@@ -182,7 +185,7 @@ public class AdminController {
 		
 		session.notifyDataChange();
 		if(textures) {
-			textureImporter.importTasks(config.ASSETS_ORIGINAL, filePaths, null, users.get(principal));
+			importer.importTasks(filePaths, null, TextureTask.class);
 		}
 	}
 	
@@ -215,7 +218,7 @@ public class AdminController {
 			@PathVariable("idLink") String idLink) {
 		User user = users.getByIdLink(idLink);
 		String password = users.generatePassword();
-		user.setPasswordHash(users.encode(password));
+		user.setPasswordHash(encoder.encode(password));
 		return password;
 	}
 	
@@ -231,7 +234,11 @@ public class AdminController {
 		
 		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
 		data.removeAll(User.class);
-		data.addAll(User.class, xmlService.deserialize(path, User.class));
+		Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
+		for(User user : loadedUsers) {
+			user.makeUnique();
+		}
+		data.addAll(User.class, loadedUsers);
 	}
 	
 	@RequestMapping(value = {"/users/switch/{idLink}"}, method = RequestMethod.POST)

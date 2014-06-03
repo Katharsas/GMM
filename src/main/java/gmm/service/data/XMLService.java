@@ -46,7 +46,7 @@ public class XMLService {
 		}
 	}
 	
-	public synchronized void serialize(Collection<?> objects, Path path) {
+	public synchronized void serialize(Collection<?> objects, Path path) throws IOException {
 		String xml= xstream.toXML(objects);
 		writeToFile(xml, path);
 	}
@@ -56,13 +56,13 @@ public class XMLService {
 		return (Collection<? extends T>) xstream.fromXML(path.toFile());
 	}
         
-    private void writeToFile(String content, Path filePath) {
+    private void writeToFile(String content, Path filePath) throws IOException {
         try(PrintWriter writer = new PrintWriter(filePath.toFile())){
+//        	System.out.println("Writing file to "+filePath.toString());
         	writer.println(content);
         }
         catch(IOException e){
-            System.err.println("XMLSerialzer Error: Could not create PrintWriter!");
-            e.printStackTrace();
+        	throw new IOException("XMLSerialzer Error: Could not create PrintWriter!", e);
         }
     }
 }

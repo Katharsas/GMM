@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
-import gmm.domain.Priority;
+import gmm.domain.TaskPriority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
@@ -21,7 +21,7 @@ public class TestTask {
 	
 	@Before
 	public void setUp() throws Exception {
-		user = new User("Ralf", "123456");
+		user = new User("Ralf");
 		objectUnderTest = new GeneralTask("testTask", user);
 	}
 	
@@ -29,7 +29,7 @@ public class TestTask {
 	public void testMemberValues() {
 		assertEquals("testTask", objectUnderTest.getName());
 		assertEquals(user, objectUnderTest.getAuthor());
-		assertEquals(Priority.MID, objectUnderTest.getPriority());
+		assertEquals(TaskPriority.MID, objectUnderTest.getPriority());
 		assertEquals(TaskStatus.TODO, objectUnderTest.getTaskStatus());
 		assertEquals("", objectUnderTest.getDetails());
 		assertEquals(new LinkedList<Comment>(), objectUnderTest.getComments());
@@ -39,12 +39,12 @@ public class TestTask {
 	public void testSettersAndGetters() {
 		objectUnderTest.setName("otherTask");
 		objectUnderTest.setDetails("testDetails");
-		objectUnderTest.setPriority(Priority.LOW);
+		objectUnderTest.setPriority(TaskPriority.LOW);
 		objectUnderTest.setTaskStatus(TaskStatus.DONE);
 		
 		assertEquals("otherTask", objectUnderTest.getName());
 		assertEquals("testDetails", objectUnderTest.getDetails());
-		assertEquals(Priority.LOW, objectUnderTest.getPriority());
+		assertEquals(TaskPriority.LOW, objectUnderTest.getPriority());
 		assertEquals(TaskStatus.DONE, objectUnderTest.getTaskStatus());
 	}
 	

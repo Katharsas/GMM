@@ -79,6 +79,10 @@ public class TaskSession {
 		return currentTab;
 	}
 	
+	public User getUser() {
+		return user;
+	}
+	
 	/*--------------------------------------------------
 	 * Update session information
 	 * ---------------------------------------------------*/

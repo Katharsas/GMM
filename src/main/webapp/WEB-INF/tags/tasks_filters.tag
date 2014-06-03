@@ -1,4 +1,4 @@
-<%@ include file="/WEB-INF/tags/include.tagf" %>
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
 <%-- Tag Description --%>
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
@@ -36,7 +36,7 @@
 				<c:forEach items="${generalFilter.getTaskStatus()}" var="taskStatus" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="taskStatus[${count.index}]" />
-						<fmt:message key="${taskStatuses[count.index].getMessageKey()}"/>
+						<fmt:message key="${taskStatuses[count.index].nameKey}"/>
 					</label><br>
 				</c:forEach>
 			</div>
@@ -45,7 +45,7 @@
 				<c:forEach items="${generalFilter.getPriority()}" var="priority" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="priority[${count.index}]" />
-						<fmt:message key="${priorities[count.index].getMessageKey()}"/>
+						<fmt:message key="${priorities[count.index].nameKey}"/>
 					</label><br>
 				</c:forEach>
 			</div>

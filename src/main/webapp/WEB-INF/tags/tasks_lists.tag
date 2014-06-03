@@ -1,4 +1,6 @@
-<%@ include file="/WEB-INF/tags/include.tagf"%>
+
+<%@ include file="/WEB-INF/tags/all_include.tagf" %>
+
 <%-- Tag Description --%>
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
@@ -105,16 +107,18 @@
 					</c:if>
 					<%-- Title --%>
 					<div class="left elementName elementContent h3">
-						<c:out value="${task.getName()}" />
-					</div>
-					<%-- Status --%>
-					<div class="right elementStatus elementContent">
-						<fmt:message key="${task.getTaskStatus().getMessageKey()}" />
-					</div>
-					<%-- Assigned --%>
-					<div class="right elementAssigned elementContent">
-						<c:if test="${!(task.getAssigned()==null)}">
-							<c:out value="${task.getAssigned().getName()}" />&#160;&#160;-&#160;&#160;
+
+						<c:out value="${task.getName()}"/>
+				    </div>
+<%-- Status --%>
+				    <div class="right elementStatus elementContent">
+				    	<fmt:message key="${task.getTaskStatus().getNameKey()}"/>
+				    </div>
+<%-- Assigned --%>
+				    <div class="right elementAssigned elementContent">
+				    	<c:if test="${task.getAssigned()!=null}">
+				    		<c:out value="${task.getAssigned().getName()}"/>&#160;&#160;-&#160;&#160;
+
 						</c:if>
 					</div>
 					<div class="clear"></div>
@@ -213,36 +217,32 @@
 							</div>
 						</div>
 					</c:if>
-					<%-- Footer --%>
-					<div class="listElementBodyFooter">
-						<div class="left commentElement elementButton button"
-							onclick="findSwitchCommentInput(this)">
-							<fmt:message key="to.comment" />
-						</div>
-						<div class="elementAuthorDate right">
-							<div class=" elementContent right">
-								<c:out value="${task.getAuthor().getName()}" />
-								<br />
-								<c:out value="${task.getFormattedCreationDate()}" />
-							</div>
-							<div class="elementContent right">
-								<fmt:message key="author" />
-								:&#160;&#160;<br />
-								<fmt:message key="tasks.list.created" />
-								:&#160;&#160;
-							</div>
-						</div>
-						<div class="right deleteElement elementButton button"
-							onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()}')">
-							<fmt:message key="delete" />
-						</div>
-						<div class="right editElement elementButton button">
-							<a href="?tab=${tab}&edit=${task.getIdLink()}"><fmt:message
-									key="edit" /><span></span></a>
-						</div>
-						<div class="clear"></div>
-					</div>
-				</div>
+
+<%-- Footer --%>
+				    <div class="listElementBodyFooter">
+					    <div class="left commentElement elementButton button" onclick="findSwitchCommentInput(this)">
+				    		<fmt:message key="to.comment"/>
+				    	</div>
+					    <div class="elementAuthorDate right">
+				    		<div class=" elementContent right">
+				    			<c:out value="${task.getAuthor().getName()}"/><br/>
+					    		<c:out value="${task.getFormattedCreationDate()}"/>
+				    		</div>
+				    		<div class="elementContent right">
+				    			<fmt:message key="author"/>:&#160;&#160;<br/>
+					    		<fmt:message key="created"/>:&#160;&#160;
+				    		</div>
+				    	</div>
+				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()}')">
+				    		<fmt:message key="delete"/>
+				    	</div>
+				    	<div class="right editElement elementButton button">
+				    		<a href="?tab=${tab}&edit=${task.getIdLink()}"><fmt:message key="edit"/><span></span></a>
+				    	</div>
+				    	<div class="clear"></div>
+			    	</div>
+			    </div>
+
 			</div>
 		</c:forEach>
 	</div>

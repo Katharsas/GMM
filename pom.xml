@@ -11,6 +11,7 @@
 	<properties>
 		<org.springframework.version>4.0.4.RELEASE</org.springframework.version>
 		<org.springframework.security.version>3.2.0.RELEASE</org.springframework.security.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
 
@@ -94,6 +95,11 @@
 			<artifactId>spring-security-web</artifactId>
 			<version>${org.springframework.security.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-taglibs</artifactId>
+			<version>${org.springframework.security.version}</version>
+		</dependency>
 		<!-- Apache Commons Upload --> 
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -113,6 +119,7 @@
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.2</version>
 				<configuration>
 <!-- 					<url>http://localhost:8080/manager/text</url> -->
 <!-- 					<server>TomcatServer</server> -->
@@ -122,23 +129,22 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 				
-				 <executions>
-		        <execution>
-		            <id>tomcat-run</id>
-		            <goals>
-		                <goal>exec-war-only</goal>
-		            </goals>
-		            <phase>package</phase>
-		            <configuration>
-<!-- 		                <path>/gmm</path> -->
-<!-- 		                <enableNaming>false</enableNaming> -->
-<!-- 		                <finalName>gmm.jar</finalName> -->
-		                <charset>utf-8</charset>
-		            </configuration>
-		        </execution>
-		    </executions>
-		    
-			</plugin>
+<!-- 				<executions> -->
+<!-- 		        	<execution> -->
+<!-- 		            	<id>tomcat-run</id> -->
+<!-- 			            <goals> -->
+<!-- 			                <goal>exec-war-only</goal> -->
+<!-- 			            </goals> -->
+<!-- 			            <phase>package</phase> -->
+<!-- 		            	<configuration> -->
+<!-- 			                <path>/gmm</path> -->
+<!-- 			                <enableNaming>false</enableNaming> -->
+<!-- 			                <finalName>gmm.jar</finalName> -->
+<!-- 							<charset>utf-8</charset> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+		    </plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -147,6 +153,7 @@
 				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
+					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
 		</plugins>

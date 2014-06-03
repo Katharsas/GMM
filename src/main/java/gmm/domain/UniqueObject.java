@@ -43,7 +43,6 @@ public abstract class UniqueObject implements Linkable{
 	}
 	
 	public <U extends UniqueObject> void makeUnique() {
-		System.out.println("Made unique "+this.getIdLink());
 		id = ++idCount;
 	}
 	

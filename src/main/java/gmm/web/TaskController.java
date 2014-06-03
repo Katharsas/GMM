@@ -3,6 +3,7 @@ package gmm.web;
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 /** Annotations */
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -10,20 +11,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+
+
 
 /** java */
 import java.security.Principal;
 
 
+
+
 import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
-import gmm.domain.Priority;
 import gmm.domain.Task;
-import gmm.domain.TaskStatus;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 /* project */
@@ -45,9 +47,11 @@ import gmm.web.sessions.TaskSession;
  * 
  * @author Jan Mothes aka Kellendil
  */
+@Controller
 @RequestMapping("tasks")
 @SessionAttributes({"search","generalFilter"})
-@Controller
+@PreAuthorize("hasRole('ROLE_USER')")
+
 public class TaskController {
 	
 	@Autowired TaskSession session;
@@ -227,8 +231,6 @@ public class TaskController {
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("taskStatuses", TaskStatus.values());
-	    model.addAttribute("priorities", Priority.values());
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
 	    return "tasks";

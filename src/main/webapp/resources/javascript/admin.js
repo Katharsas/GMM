@@ -1,5 +1,5 @@
 $(document).ready( function() {
-	cancelImport();
+	hideImport();
 	refreshTaskBackups();
 	refreshTaskImportTree();
 });
@@ -115,7 +115,7 @@ function addAssetPaths(textures) {
 	$('#taskForm').show();
 }
 
-function cancelImport() {
+function hideImport() {
 	$("#selectedPaths ul").empty();
 	$('#importButtons .button').hide();
 	$('#taskForm').hide();
@@ -123,8 +123,14 @@ function cancelImport() {
 	$('#addTexturesButton').show();
 }
 
+function cancelImport() {
+	$.post("admin/import/cancel", function() {
+		hideImport();
+	});
+}
+
 function editUserRole(idLink, userRole) {
-	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var role = $textField.attr("value");
 		$.post("admin/users/edit/"+idLink,
@@ -147,7 +153,7 @@ function switchAdmin(idLink) {
 }
 
 function editUserName(idLink, userName) {
-	$textField = $("#confirmDialog").find("#confirmDialogTextInput");
+	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var name = $textField.attr("value");
 		$.post("admin/users/edit/"+idLink,

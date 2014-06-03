@@ -1,7 +1,8 @@
 package gmm.web.forms;
 
-import gmm.domain.Priority;
+import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
+import gmm.domain.TaskType;
 import gmm.domain.User;
 
 
@@ -11,19 +12,23 @@ public class TaskForm {
 	private String label;
 	private String details;
 	private String assigned;
-	private Priority priority;
+	private TaskPriority priority;
 	private TaskStatus status;
+	private TaskType type;
+	private String assetPath;
 	
 	public TaskForm() {
 		setDefaultState();
 	}
 	public void setDefaultState() {
-		idName="";
-		label="";
-		details="";
-		assigned="";
-		priority=Priority.MID;
-		status=TaskStatus.TODO;
+		idName = "";
+		label = "";
+		details = "";
+		assigned = "";
+		priority = TaskPriority.MID;
+		status = TaskStatus.TODO;
+		type = TaskType.GENERAL;
+		assetPath = "";
 	}
 	
 	//Setters, Getters-------------------------------------------
@@ -39,10 +44,10 @@ public class TaskForm {
 	public void setDetails(String details) {
 		this.details = details;
 	}
-	public Priority getPriority() {
+	public TaskPriority getPriority() {
 		return priority;
 	}
-	public void setPriority(Priority priority) {
+	public void setPriority(TaskPriority priority) {
 		this.priority = priority;
 	}
 	public String getLabel() {
@@ -71,5 +76,17 @@ public class TaskForm {
 	}
 	public void setAssigned(User user) {
 		this.assigned = user==null ? "" : user.getName();
+	}
+	public TaskType getType() {
+		return type;
+	}
+	public void setType(TaskType type) {
+		this.type = type;
+	}
+	public String getAssetPath() {
+		return assetPath;
+	}
+	public void setAssetPath(String assetPath) {
+		this.assetPath = assetPath;
 	}
 }
