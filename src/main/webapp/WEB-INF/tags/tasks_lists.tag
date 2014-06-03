@@ -95,6 +95,9 @@
 <%-- Comments & Comment Form--%>
 				    <div class="elementComments">
 					    <c:forEach items="${task.getComments()}" var="comment">
+							<div class="right elementButton button" onclick="confirmchange('${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}','${task.getIdLink()}','${comment.getIdLink()}')">
+								Kommentar ändern
+							</div>
 					    <div id="comment_${comment.getIdLink()}" class="subListElement">
 					    	<div class="left subElementAuthor elementContent">
 					    		<c:out value="${comment.getAuthor().getName()}"/>
