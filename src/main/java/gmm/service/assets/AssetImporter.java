@@ -56,14 +56,14 @@ public class AssetImporter {
 		//get relative path and new folder path
 		Path base = Paths.get(config.ASSETS_ORIGINAL).toAbsolutePath();
 		Path relPath = base.relativize(path.toAbsolutePath());
-		Path newFolder = Paths.get(config.ASSETS_NEW).resolve(relPath).toAbsolutePath();
 		
 		//create Task
 		result = new TextureTask(""+path.getFileName(), user);
-		result.setAssetFolderPaths(""+path, ""+newFolder);
+		result.setOriginalAsset(relPath);
+		result.setNewAssetFolder(relPath);
 		
 		//create previews
-		creator.createPreview(path, newFolder, true);
+		creator.createPreview(path, result, true);
 		return result;
 	}
 }

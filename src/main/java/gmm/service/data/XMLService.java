@@ -14,6 +14,7 @@ import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
+import gmm.service.converters.PathConverter;
 import gmm.util.Collection;
 
 import com.thoughtworks.xstream.XStream;
@@ -44,6 +45,7 @@ public class XMLService {
 		for (Class<?> c : clazzes) {
 			xstream.alias(c.getSimpleName(), c);
 		}
+		xstream.registerConverter(new PathConverter());
 	}
 	
 	public synchronized void serialize(Collection<?> objects, Path path) throws IOException {
@@ -58,7 +60,6 @@ public class XMLService {
         
     private void writeToFile(String content, Path filePath) throws IOException {
         try(PrintWriter writer = new PrintWriter(filePath.toFile())){
-//        	System.out.println("Writing file to "+filePath.toString());
         	writer.println(content);
         }
         catch(IOException e){

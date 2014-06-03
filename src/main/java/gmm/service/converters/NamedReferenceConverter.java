@@ -25,9 +25,9 @@ abstract class NamedReferenceConverter implements Converter{
 	}
 
 	@Override
-	public void marshal(Object value, HierarchicalStreamWriter writer,
+	public void marshal(Object source, HierarchicalStreamWriter writer,
 			MarshallingContext context) {
-		NamedObject named = (NamedObject) value;
+		NamedObject named = (NamedObject) source;
 		writer.addAttribute("id", named.getIdLink());
 		writer.addAttribute("name", named.getName());
 	}

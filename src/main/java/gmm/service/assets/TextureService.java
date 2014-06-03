@@ -2,14 +2,13 @@ package gmm.service.assets;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
-import gmm.domain.TextureTask;
+import gmm.domain.AssetTask;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
@@ -36,51 +35,59 @@ public class TextureService {
 	/**
 	 * Returns a texture preview image (png) as byte array.
 	 */
-	public byte[] getPreview(String newAssetFolder, boolean small, String version) throws IOException {
+	public byte[] getPreview(AssetTask task, boolean small, String version) throws IOException {
 		
 		String imageName = version + "_" + (small ? "small" : "full") + ".png";
-		File imageFile = new File(newAssetFolder+"/"+config.SUB_PREVIEW, imageName);
-		if(!imageFile.exists()) {
+		Path imagePath = Paths.get(config.ASSETS_NEW)
+				.resolve(task.getNewAssetFolder())
+				.resolve(config.SUB_PREVIEW)
+				.resolve(imageName);
+		if(!imagePath.toFile().exists()) {
 			return null;
 		}
-		BufferedImage image = ImageIO.read(imageFile);
+		BufferedImage image = ImageIO.read(imagePath.toFile());
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", out);
 		byte[] bytes = out.toByteArray();
 		return bytes;
 	}
 	
-	public void addTextureFile(MultipartFile texture, TextureTask task) throws IOException {
+	/**
+	 * Called when new task file is uploaded.
+	 */
+	public void addTextureFile(MultipartFile file, AssetTask task) throws IOException {
 		
-		String name = texture.getOriginalFilename();
-		boolean asset = name.endsWith(".tga") || name.endsWith(".TGA");
-		String subDir = asset ? config.SUB_ASSETS : config.SUB_OTHER;
+		String relativeFile = file.getOriginalFilename();
+		boolean isAsset = relativeFile.endsWith(".tga") || relativeFile.endsWith(".TGA");
+		String subDir = isAsset ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		//Add file
-		Path assetPath = Paths.get(task.getNewAssetFolderPath())
+		Path assetPath = Paths.get(config.ASSETS_NEW)
+				.resolve(task.getNewAssetFolder())
 				.resolve(subDir)
-				.resolve(name);
-		fileService.createFile(assetPath, texture.getBytes());
-		if(asset) task.setNewestAssetName(name);
+				.resolve(relativeFile);
+		fileService.createFile(assetPath, file.getBytes());
+		if(isAsset) task.setNewestAssetName(relativeFile);
 		
 		//Add texture preview files
-		if(asset) {
-			creator.createPreview(assetPath, Paths.get(task.getNewAssetFolderPath()), false);
+		if(isAsset) {
+			creator.createPreview(assetPath, task, false);
 		}
 	}
 	
-	public void deleteTextureFile(Path dir, boolean asset, TextureTask task) throws IOException {
+	public void deleteTextureFile(Path relativeFile, boolean isAsset, AssetTask task) throws IOException {
 		
-		String subDir = asset ? config.SUB_ASSETS : config.SUB_OTHER;
+		String subDir = isAsset ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		//Restrict access
-		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
-		dir = visible.resolve(fileService.restrictAccess(dir, visible));
+		Path taskFolder = Paths.get(config.ASSETS_NEW).resolve(task.getNewAssetFolder());
+		Path visible = taskFolder.resolve(subDir);
+		Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		
 		//Delete previews
-		if(asset && task.getNewestAssetName()!=null) {
-			if(dir.getFileName().toString().equals(task.getNewestAssetName())) {
-				Path preview = Paths.get(task.getNewAssetFolderPath()).resolve(config.SUB_PREVIEW);
+		if(isAsset && task.getNewestAssetName()!=null) {
+			if(assetPath.getFileName().toString().equals(task.getNewestAssetName())) {
+				Path preview = taskFolder.resolve(config.SUB_PREVIEW);
 				Path previewFile;
 				previewFile = preview.resolve("newest_full.png");
 				if(previewFile.toFile().exists()) {
@@ -94,6 +101,6 @@ public class TextureService {
 			}
 		}
 		//Delete file
-		fileService.delete(dir);
+		fileService.delete(assetPath);
 	}
 }

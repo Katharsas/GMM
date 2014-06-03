@@ -1,11 +1,13 @@
 package gmm.service.assets;
 
+import gmm.domain.AssetTask;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -40,24 +42,24 @@ public class TexturePreviewCreator implements PreviewCreator {
 	 * For more texture operations see {@link gmm.service.assets.TextureService}
 	 */
 	@Override
-	public void createPreview(Path sourceFile, Path targetFolder, boolean isOriginal) throws IOException {
+	public void createPreview(Path sourceFile, AssetTask task, boolean isOriginal) throws IOException {
 		
+		Path taskFolder = Paths.get(config.ASSETS_NEW).resolve(task.getNewAssetFolder());
 		Path targetFile;
 		String version = isOriginal ? "original" : "newest";
 		BufferedImage image = ImageIO.read(sourceFile.toFile());
 		
 		//full preview 
-		targetFile = targetFolder.resolve(config.SUB_PREVIEW).resolve(version+"_full.png");
+		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_full.png");
 		fileService.prepareFileCreation(targetFile);
 		ImageIO.write(image, "png", targetFile.toFile());
 		
 		//small preview
-		targetFile = targetFolder.resolve(config.SUB_PREVIEW).resolve(version+"_small.png");
+		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_small.png");
 		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 			image = Scalr.resize(image, SMALL_SIZE);
 		}
 		fileService.prepareFileCreation(targetFile);
 		ImageIO.write(image, "png", targetFile.toFile());
 	}
-
 }

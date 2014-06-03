@@ -82,6 +82,12 @@
 			    	<div class="clear"></div>
 			    </div>
 			    <div class="listElementBody">
+<%-- AssetPath --%>
+			    <c:if test="${tab.equals('textures')}">
+			    	<div class="elementContent">
+			    		Path: ${task.getNewAssetFolder().getParent()}
+		    		</div>
+			    </c:if>
 <%-- Details --%>
 				    <div class="elementDetails elementContent">
 				    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}

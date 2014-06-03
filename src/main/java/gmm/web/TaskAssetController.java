@@ -69,7 +69,7 @@ public class TaskAssetController {
 		setHeaderCaching(response);
 		//TODO enable reasonable caching
 		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
-		return assetService.getPreview(task.getNewAssetFolderPath(),small,version);
+		return assetService.getPreview(task, small, version);
 	}
 	
 	/**
@@ -95,7 +95,9 @@ public class TaskAssetController {
 		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		subDir = subDir.equals("assets") ? config.SUB_ASSETS : config.SUB_OTHER;
 		
-		Path visible = Paths.get(task.getNewAssetFolderPath()).resolve(subDir);
+		Path visible = Paths.get(config.ASSETS_NEW)
+				.resolve(task.getNewAssetFolder())
+				.resolve(subDir);
 		dir = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dir, visible);
 	}
@@ -140,7 +142,10 @@ public class TaskAssetController {
 		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
 		subDir = subDir.equals("asset") ? config.SUB_ASSETS : config.SUB_OTHER;
 		
-		Path filePath = Paths.get(task.getNewAssetFolderPath()).resolve(subDir).resolve(dir);
+		Path filePath = Paths.get(config.ASSETS_NEW)
+				.resolve(task.getNewAssetFolder())
+				.resolve(subDir)
+				.resolve(dir);
 		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
 		return new FileSystemResource(filePath.toFile());
 	}
