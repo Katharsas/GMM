@@ -1,6 +1,6 @@
 package gmm.service;
 
-import gmm.domain.Priority;
+import gmm.domain.TaskPriority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
@@ -70,9 +70,9 @@ public class TaskFilterService {
 		if (filterData.isAssignedToMe()) {
 			selection.intersectWith().matching("getAssigned", currentUser);
 		}
-		for(int i = 0; i<Priority.values().length; i++) {
+		for(int i = 0; i<TaskPriority.values().length; i++) {
 			if (!filterData.getPriority()[i]) {
-				selection.remove().matching("getPriority", Priority.values()[i]);
+				selection.remove().matching("getPriority", TaskPriority.values()[i]);
 			}
 		}
 		for(int i = 0; i<TaskStatus.values().length; i++) {

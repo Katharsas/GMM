@@ -20,9 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.Label;
-import gmm.domain.Priority;
 import gmm.domain.Task;
-import gmm.domain.TaskStatus;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
@@ -80,8 +78,6 @@ public class AdminController {
 		filePaths.clear();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("taskStatuses", TaskStatus.values());
-	    model.addAttribute("priorities", Priority.values());
         return "admin";
     }
 	

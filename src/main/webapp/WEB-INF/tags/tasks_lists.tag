@@ -71,7 +71,7 @@
 				    </div>
 <%-- Status --%>
 				    <div class="right elementStatus elementContent">
-				    	<fmt:message key="${task.getTaskStatus().getMessageKey()}"/>
+				    	<fmt:message key="${task.getTaskStatus().getNameKey()}"/>
 				    </div>
 <%-- Assigned --%>
 				    <div class="right elementAssigned elementContent">
@@ -173,7 +173,7 @@
 				    		</div>
 				    		<div class="elementContent right">
 				    			<fmt:message key="author"/>:&#160;&#160;<br/>
-					    		<fmt:message key="tasks.list.created"/>:&#160;&#160;
+					    		<fmt:message key="created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
 				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()}')">

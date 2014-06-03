@@ -25,9 +25,7 @@ import java.security.Principal;
 import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
-import gmm.domain.Priority;
 import gmm.domain.Task;
-import gmm.domain.TaskStatus;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 /* project */
@@ -233,8 +231,6 @@ public class TaskController {
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("taskStatuses", TaskStatus.values());
-	    model.addAttribute("priorities", Priority.values());
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
 	    return "tasks";
