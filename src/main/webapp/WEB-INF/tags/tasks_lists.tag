@@ -89,15 +89,15 @@
 		    		</div>
 			    </c:if>
 <%-- Details --%>
-				    <div class="elementDetails elementContent">
-				    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
-				    </div>
+			    <div class="elementDetails elementContent">
+			    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
+			    </div>
 <%-- Comments & Comment Form--%>
-				    <div class="elementComments">
-					    <c:forEach items="${task.getComments()}" var="comment">
-							<div class="right elementButton button" onclick="confirmchange('${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}','${task.getIdLink()}','${comment.getIdLink()}')">
-								Kommentar ändern
-							</div>
+				<div class="elementComments">
+					<c:forEach items="${task.getComments()}" var="comment">
+						<div class="right elementButton button" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
+							Kommentar ändern
+						</div>
 					    <div id="comment_${comment.getIdLink()}" class="subListElement">
 					    	<div class="left subElementAuthor elementContent">
 					    		<c:out value="${comment.getAuthor().getName()}"/>
@@ -177,7 +177,7 @@
 				    	</div>
 					    <div class="elementAuthorDate right">
 				    		<div class=" elementContent right">
-				    			<c:out value="${task.getAuthor().getName()}"/><br/>
+				    			<c:out value="${fn:escapeXml(task.getAuthor().getName())}"/><br/>
 					    		<c:out value="${task.getFormattedCreationDate()}"/>
 				    		</div>
 				    		<div class="elementContent right">
@@ -185,7 +185,7 @@
 					    		<fmt:message key="created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
-				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()}')">
+				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${cfn:escapeJS(task.getName())}')">
 				    		<fmt:message key="delete"/>
 				    	</div>
 				    	<div class="right editElement elementButton button">

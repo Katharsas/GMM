@@ -91,14 +91,14 @@
 			<br/>
 			<c:forEach items="${userList}" var="user">
 				<div id="${user.getIdLink()}" class="elementUser">
-					<div class="subElementUserEnabled button left" onclick="switchUser('${user.getIdLink()}','${user.getName()}')">
+					<div class="subElementUserEnabled button left" onclick="switchUser('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
 						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
 					</div>
 					<div class="subElementUserRole button left"  onclick="switchAdmin('${user.getIdLink()}')">
 						${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
 					</div>
 					<div class="subElementUserName left">
-						<c:out value="${user.getName()}"/>
+						${fn:escapeXml(user.getName())}
 					</div>
 					<div class="subElementUserPassword left">
 						${user.getPasswordHash()==null ? '(Disabled - Needs Password)' : '&nbsp;'}
@@ -112,7 +112,7 @@
 					<div class="button listButton right" onclick="resetPassword('${user.getIdLink()}')">
 						Reset Password
 					</div>
-					<div class="button listButton right" onclick="editUserName('${user.getIdLink()}','${user.getName()}')">
+					<div class="button listButton right" onclick="editUserName('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
 						Edit Name
 					</div>
 					<div class="clear"></div>

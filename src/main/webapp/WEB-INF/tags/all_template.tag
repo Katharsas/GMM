@@ -27,6 +27,8 @@
 		<div id="confirmDialogTextInputWrapper">
 			<input id="confirmDialogTextInput" class="center"/>
 		</div>
+		<textarea id="confirmDialogTextArea">
+		</textarea>
 		<div class="dialogButton keyEnter Button left" onclick="confirmOk()">Confirm</div>
 		<div class="dialogButton Button right" onclick="hideDialogue()">Cancel</div>
 		<div class="clear"></div>

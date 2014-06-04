@@ -97,18 +97,25 @@ function sendFile(file, uri, callback) {
     xhr.send(fd);
 }
 
-function confirm(onConfirm, message, textInputDefault) {
+function confirm(onConfirm, message, textInputDefault, textAreaDefault) {
 	allVars.onConfirmCallback = onConfirm;
 	$confirmDialog = $("#confirmDialog");
 	$confirmDialog.find("#confirmDialogMessage").text(message);
 	$textInputField = $confirmDialog.find("#confirmDialogTextInput");
+	$textArea = $confirmDialog.find("#confirmDialogTextArea");
 	if(textInputDefault !== undefined) {
-		console.log("Showing stuff");
 		$textInputField.attr("value", textInputDefault);
 		$textInputField.show();
 	}
 	else {
 		$textInputField.hide();
+	}
+	if(textAreaDefault !== undefined) {
+		$textArea.attr("value", textAreaDefault);
+		$textArea.show();
+	}
+	else {
+		$textArea.hide();
 	}
 	$("#overlay").show();
 	$confirmDialog.show();

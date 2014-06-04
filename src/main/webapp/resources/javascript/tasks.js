@@ -198,17 +198,19 @@ function showCommentInput($commentInput) {
 	$commentInput.show();
 }
 
-function confirmchange(comment) {
-	confirm(confirmCommentChange, "Bitte Kommentar ändern",undefined,comment);
+function changeComment(comment, taskId, commentId) {
+	confirm(function() {confirmCommentChange(taskId, commentId);},
+			"Bitte Kommentar Ã¤ndern",
+			undefined,
+			comment);
 }
 
-function confirmCommentChange() {
-//	var comment = $("#confirmDialogTextArea").attr("value");
-	var comment = "hallo"
-	$.post("tasks/comment/new/" +idtask +idcomment, 
-			{"comment" : comment}, 
+function confirmCommentChange(taskId, commentId) {
+	var comment = $("#confirmDialogTextArea").attr("value");
+	var url = "tasks/comment/new/" + taskId + "/" + commentId;
+	$.post(url, {"comment" : comment}, 
 			function() {window.location.reload();}
-		);
+	);
 }
 
 /**
