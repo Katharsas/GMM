@@ -69,7 +69,7 @@ public class TaskController {
 	public SearchForm getSearchFacade() {return new SearchForm();}
 	
 	@ModelAttribute("generalFilter")
-	public FilterForm getGeneralFilter() {return new FilterForm();}
+	public FilterForm getGeneralFilter() {return session.getFilterForm();}
 
 	
 	/**
@@ -181,7 +181,10 @@ public class TaskController {
 		if(!label.equals("")) {
 			data.add(new Label(label));
 		}
-		if (isNew) data.add(task);
+		if (isNew) {
+			data.add(task);
+			session.add(task);
+		}
 		return "redirect:/tasks?tab="+session.getTab();
 	}
 

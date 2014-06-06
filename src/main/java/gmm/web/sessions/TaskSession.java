@@ -60,6 +60,7 @@ public class TaskSession {
 		currentTab = "general";
 		user = users.get(((org.springframework.security.core.userdetails.User)
 				SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+		generalFilter = new FilterForm();
 		updateAndFilterTasks(currentTab);
 	}
 	
@@ -81,6 +82,10 @@ public class TaskSession {
 	
 	public User getUser() {
 		return user;
+	}
+	
+	public FilterForm getFilterForm() {
+		return generalFilter;
 	}
 	
 	/*--------------------------------------------------
@@ -109,7 +114,7 @@ public class TaskSession {
 	 * Apply/update filtering
 	 */
 	public void updateFilter(FilterForm filter) {
-		this.generalFilter = filter;
+		generalFilter = filter;
 		updateAndFilterTasks(currentTab);
 	}
 	
@@ -117,7 +122,7 @@ public class TaskSession {
 	 * Apply/update search filtering
 	 */
 	public void updateSearch(SearchForm search) {
-		this.tasks = filterService.search(this.filteredTasks, search);
+		tasks = filterService.search(filteredTasks, search);
 	}
 	
 	/**
@@ -135,7 +140,7 @@ public class TaskSession {
 		Collection<T> single = new HashSet<>();
 		single.add(task);
 		filteredTasks.addAll(filterService.filter(single, generalFilter, user));
-		this.tasks = filteredTasks.clone();
+		tasks = filteredTasks.clone();
 	}
 	
 	/*--------------------------------------------------
@@ -144,14 +149,8 @@ public class TaskSession {
 	
 	@SuppressWarnings("unchecked")
 	private void updateAndFilterTasks(String tab) {
-		if(generalFilter != null) {
-			this.filteredTasks = (Collection<Task>) filterService.filter(getTaskList(tab), generalFilter, user);
-			this.tasks = filteredTasks.clone();
-		}
-		else {
-			filteredTasks = (Collection<Task>) getTaskList(tab);
-			tasks = filteredTasks.clone();
-		}
+		filteredTasks = (Collection<Task>) filterService.filter(getTaskList(tab), generalFilter, user);
+		tasks = filteredTasks.clone();
 	}
 	
 	private Collection<? extends Task> getTaskList (String tab) {
