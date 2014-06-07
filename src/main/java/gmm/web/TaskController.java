@@ -48,7 +48,7 @@ import gmm.web.sessions.TaskSession;
  * @author Jan Mothes aka Kellendil
  */
 @Controller
-@RequestMapping("tasks")
+@RequestMapping(value={"tasks","/"})
 @SessionAttributes({"search","generalFilter"})
 @PreAuthorize("hasRole('ROLE_USER')")
 

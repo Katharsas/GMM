@@ -53,6 +53,25 @@
     </bean>
     <bean id="applicationContextProvider" class="gmm.service.Spring"></bean>
     
+	<!-- Expose property file with meta information -->
+	<!-- Expose to @Value annotation in java -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:meta.properties</value>
+			</list>
+		</property>
+	</bean>
+	<!-- Expose to <spring:eval expression="@meta.getProperty(...)"  in jsps/> -->
+	<bean id="meta" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="singleton" value="true" />
+			<property name="locations">
+				<list>
+					<value>classpath:meta.properties</value>
+				</list>
+			</property>
+	</bean>
+    
 	<!-- Spring Security -->
 	<import resource="applicationContext-security.xml"/>
 </beans>

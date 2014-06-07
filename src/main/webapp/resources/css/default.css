@@ -162,7 +162,7 @@ body {
 }
 /*Sites main menu at the top: tabs and empty middle/in-between tab*/
 #top .tab{
-	width:17%;
+	width:15%;
 	min-width:5em;
 	max-width:10em;
 	height:40px;
@@ -184,4 +184,12 @@ body {
 .activeTab {
 	background-color:#4F1000;
 	background-color:#222;
+}
+
+.meta {
+	text-shadow:none;
+	padding-left:15px;
+	padding-top:8px;
+	font-size:0.5em;
+	color:#BBB;
 }
