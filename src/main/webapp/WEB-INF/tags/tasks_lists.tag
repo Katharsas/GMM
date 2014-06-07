@@ -6,7 +6,7 @@
 <%@ attribute name="newLine" required="true" %>
 
 <div id="lists">
-	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h2">
+	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h3">
 		<div class="tab left"><a href="tasks/reset?tab=general"><fmt:message key="tasks.menu.general"/><span></span></a></div>
 		<div class="tab left"><a href="tasks/reset?tab=textures"><fmt:message key="tasks.menu.textures"/><span></span></a></div>
 		<div class="tab right"><a href="tasks/reset?tab=models"><fmt:message key="tasks.menu.models"/><span></span></a></div>

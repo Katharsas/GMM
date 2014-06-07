@@ -47,7 +47,7 @@
 			<!-- End of No Javascript Warning -->
 		
 			<!-- Top Tab-Menu -->
-			<div id="top" class="pageTabmenu tabmenu inactivePage h2">
+			<div id="top" class="pageTabmenu tabmenu inactivePage h3">
 				<div class="tab left"><a href="tasks"><fmt:message key="menu.tasks"/><span></span></a></div>
 				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>
 				<div class="tab right"><a href="profile"><fmt:message key="menu.profile"/><span></span></a></div>

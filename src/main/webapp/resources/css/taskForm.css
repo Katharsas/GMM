@@ -1,13 +1,34 @@
-.taskDescription, .taskInput {
-	margin-bottom:5px;
-}
-.taskDescription {
-	width:5em;
+.taskGroup {
 	float:left;
+	margin-right:20px;
+	margin-bottom:20px;
+	resize:horizontal;
+	overflow:hidden;
+/* 	box-sizing:content-box; */
+	width:24em;
+}
+
+.taskElement {
+	margin:8px 15px;
+}
+.taskGroup.textArea{
+	resize:both;
+	width:50em;
+}
+.taskGroup.textArea .taskElement textarea{
+	resize:none;
+}
+
+.taskDescription {
+	position:absolute;
+	width:4em;
 }
 .taskInput {
-	min-width:20em;
+	margin-left:5em;
 }
 .taskInput *{
-	min-width:75% !important;
+	width:100%;
+	height:100%;
+	font-size:15px;
+	font-family:Calibri, Verdana, Arial, sans-serif;
 }

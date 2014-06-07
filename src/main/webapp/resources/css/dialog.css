@@ -7,11 +7,11 @@
 	
 	background-color: #FFF;
     opacity: 0.3;
-    z-index: 999;
+    z-index: 200;
 }
 
 .dialogContainer {	
-  	z-index: 1000;
+  	z-index: 250;
   	position: absolute;
   	background-color:#111;
   	border:5px solid #333;

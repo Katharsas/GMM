@@ -36,7 +36,7 @@
 				<c:forEach items="${generalFilter.getTaskStatus()}" var="taskStatus" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="taskStatus[${count.index}]" />
-						<fmt:message key="${taskStatuses[count.index].nameKey}"/>
+						<fmt:message key="${cfn:values('TaskStatus')[count.index].nameKey}"/>
 					</label><br>
 				</c:forEach>
 			</div>
@@ -45,7 +45,7 @@
 				<c:forEach items="${generalFilter.getPriority()}" var="priority" varStatus="count">
 					<label>
 						<form:checkbox class="generalFiltersFormElement generalFiltersAllCheckBoxTarget" path="priority[${count.index}]" />
-						<fmt:message key="${priorities[count.index].nameKey}"/>
+						<fmt:message key="${cfn:values('TaskPriority')[count.index].nameKey}"/>
 					</label><br>
 				</c:forEach>
 			</div>

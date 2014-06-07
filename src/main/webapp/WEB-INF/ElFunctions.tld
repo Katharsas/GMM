@@ -10,4 +10,14 @@
         <function-class>gmm.util.ElFunctions</function-class>
         <function-signature>java.lang.String escape(java.lang.String)</function-signature>
     </function>
+    <function>
+        <name>values</name>
+        <function-class>gmm.util.ElFunctions</function-class>
+        <function-signature>java.lang.Enum values(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>inst</name>
+        <function-class>gmm.util.ElFunctions</function-class>
+        <function-signature>java.lang.Object instanceOfClass(java.lang.String)</function-signature>
+    </function>
 </taglib>

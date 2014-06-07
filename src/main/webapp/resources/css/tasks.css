@@ -19,11 +19,8 @@
 	margin:1em 0em;
 }
 
-.taskElement {
+.taskGroup {
 	background-color:#333333;
-	padding:5px;
-	margin-right:20px;
-	margin-bottom:10px;
 }
 
 .taskButtons {
@@ -34,7 +31,7 @@
 }
 
 .filterGroup {
-	border-bottom:5px solid #151515;
+	border-bottom:2px solid #151515;
 }
 .filterBorder {
 }
@@ -46,7 +43,7 @@
 	margin-bottom:13%;
 }
 .generalFilters .filterGroup{
-	background-color:#072737;
+	background-color:#164054;
 }
 .generalFilters .filterBorder{
 	border-color:#151515;
@@ -83,8 +80,12 @@
 }
 
 #listsMain {
-	min-height:600px;
+/* 	Min height interpreted as height by chrome */
+/* 	min-height:600px; */
+
+	border-top:2px solid #151515;
 	padding:10px;
+	
 	column-count:10;
 	column-width:460px;
 	column-gap:10px;
@@ -100,21 +101,20 @@
 #listsMain .listElement{
 	margin-top:7px;
 	padding:4px 8px;
-/* 	border-left:0px solid #AAAAAA; */
-/* 	border-left:0px solid #A82709; */
+	box-shadow: -1px -1px 0px #444, 1px 1px 1px #111;
 	border-left:0px solid #D35A3D;
-	/*Using following only because avoid column-break-inside not working yet*/
-	/*Can be removed when avoid is working*/
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-webkit-box-sizing: border-box;
-	width:100%;
-	display: inline-block;
-	/*Not working yet
-	column-break-inside: avoid;*/
+	
+	column-break-inside: avoid;
+	-moz-column-break-inside: avoid;
+	-webkit-column-break-inside: avoid;
+	
+	/* 	Mozilla fix for column break */
+	overflow:hidden;
+	break-inside: avoid-column;
 }
 .submitSearchButton, .switchSearchButton {
-	padding:0px 0px;
+	padding-top:1px;
+	padding-bottom:2px;
 }
 .searchInputField, .submitSearchButton {
 	width:33%;
@@ -133,7 +133,7 @@
 	font-size:0.9em;
 	margin-top:3px;
 	font-weight:bold;
-	color:#000510;
+	color:#000000;
 }
 .elementContent {
 	 word-wrap:break-word;
