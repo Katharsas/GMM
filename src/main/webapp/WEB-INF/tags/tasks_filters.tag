@@ -56,28 +56,28 @@
 		</div>
 	</form:form>
 
-	<div class="specificFilters right">
-		<div id="switchSpecificFilterBody" class="filterGroup clickable" onclick="switchSpecificFilters()">
-				&#60;&#60;
-		</div>
-		<div id="specificFilterBody">
-			<div class="filterBorder"></div>
-			<div class="filterGroup center h3">
-				Specific
-			</div>
-			<div class="filterBorder"></div>
-			<div class="filterGroup">
-				<label><input type="checkbox" name="status">Done</label><br>
-				<label><input type="checkbox" name="status">Spacered</label><br>
-				<label><input type="checkbox" name="status">Rigged</label><br>
-				<label><input type="checkbox" name="status">Textured</label><br>
-				<label><input type="checkbox" name="status">Modelled</label><br>
-				<label><input type="checkbox" name="status">Unworked</label><br>
-			</div>
-			<div class="filterBorder"></div>
-			<div class="filterGroup">
-				...<br>
-			</div>
-		</div>
-	</div>
+<!-- 	<div class="specificFilters right"> -->
+<!-- 		<div id="switchSpecificFilterBody" class="filterGroup clickable" onclick="switchSpecificFilters()"> -->
+<!-- 				&#60;&#60; -->
+<!-- 		</div> -->
+<!-- 		<div id="specificFilterBody"> -->
+<!-- 			<div class="filterBorder"></div> -->
+<!-- 			<div class="filterGroup center h3"> -->
+<!-- 				Specific -->
+<!-- 			</div> -->
+<!-- 			<div class="filterBorder"></div> -->
+<!-- 			<div class="filterGroup"> -->
+<!-- 				<label><input type="checkbox" name="status">Done</label><br> -->
+<!-- 				<label><input type="checkbox" name="status">Spacered</label><br> -->
+<!-- 				<label><input type="checkbox" name="status">Rigged</label><br> -->
+<!-- 				<label><input type="checkbox" name="status">Textured</label><br> -->
+<!-- 				<label><input type="checkbox" name="status">Modelled</label><br> -->
+<!-- 				<label><input type="checkbox" name="status">Unworked</label><br> -->
+<!-- 			</div> -->
+<!-- 			<div class="filterBorder"></div> -->
+<!-- 			<div class="filterGroup"> -->
+<!-- 				...<br> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
+<!-- 	</div> -->
 </div>
