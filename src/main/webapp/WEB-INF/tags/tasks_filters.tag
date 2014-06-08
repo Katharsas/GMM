@@ -4,7 +4,7 @@
 
 <%-- Template Start --%>
 <div id="filters">
-	<form:form class="generalFilters" method="POST" action="/GMM/tasks/submitFilter?tab=${tab}" commandName="generalFilter">
+	<form:form class="generalFilters" method="POST" action="tasks/submitFilter?tab=${tab}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">
 			&#160;&#62;&#62;
 		</div>

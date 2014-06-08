@@ -28,7 +28,7 @@
 							<fmt:message key="tasks.new"/>
 						</div>
 						<form:form id="taskForm" method="POST"
-								action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}"
+								action="tasks/submitTask?tab=${tab}&edit=${edit}"
 								commandName="task"
 								style="display: none;">
 							<t:all_taskForm>

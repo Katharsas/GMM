@@ -14,7 +14,7 @@
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form id="searchForm" method="POST" action="/GMM/tasks/submitSearch?tab=${tab}" commandName="search">
+		<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
 			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
 				<fmt:message key="search.complex"/>
 			</div>
@@ -108,7 +108,7 @@
 					    	<div class="clear"></div>
 					    </div>
 					    </c:forEach>
-					    <form:form class="commentInput input" method="POST" action="/GMM/tasks/submitComment/${task.getIdLink()}?tab=${tab}" commandName="comment">
+					    <form:form class="commentInput input" method="POST" action="tasks/submitComment/${task.getIdLink()}?tab=${tab}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">
 					    	</div>
@@ -127,13 +127,13 @@
 				    			<div class="center">Newest</div>
 				    		</div>
 				    		<div class="subElementPreview left">
-					    		<a href="/GMM/tasks/preview?small=false&amp;ver=original&amp;id=${task.getIdLink()}">
-					    			<img src="/GMM/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
+					    		<a href="tasks/preview?small=false&amp;ver=original&amp;id=${task.getIdLink()}">
+					    			<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
 					    		</a>
 				    		</div>
 				    		<div class="subElementPreview right">
-				    			<a href="/GMM/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
-				    				<img src="/GMM/tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
+				    			<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
+				    				<img src="tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
 				    			</a>
 				    		</div>
 				    		<div class="clear"></div>

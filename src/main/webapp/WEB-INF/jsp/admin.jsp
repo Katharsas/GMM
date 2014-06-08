@@ -44,7 +44,7 @@
         	<div id="saveDeleteTasks" class="adminElement left">
         		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue('#saveAllTasksDialog')"><fmt:message key="admin.database.saveall"/></div>
         		<div id="saveAllTasksDialog" class="dialogContainer">
-        			<form id="saveAllTasksForm" method="POST" action="/GMM/admin/save">
+        			<form id="saveAllTasksForm" method="POST" action="admin/save">
         				Enter a name for the save file:<br/><br/>
         				<input name="name" value="manual/example"/>.xml
         			</form><br/>
@@ -68,7 +68,7 @@
 
 			<div id="importTaskForm">
 				<form:form id="taskForm" method="POST"
-						action="/GMM/admin/importAssets"
+						action="admin/importAssets"
 						commandName="task">
 					<div style="width:100%;">
 						<t:all_taskForm>
