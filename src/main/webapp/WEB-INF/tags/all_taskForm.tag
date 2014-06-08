@@ -94,9 +94,9 @@
 		</div>
 	</div>
 </div>
-<div class="taskGroup">
+<div id="taskGroupType" class="taskGroup">
 <!--TYPE-------------------------------------------- -->
-	<div class="taskElement">
+	<div id="taskElementType" class="taskElement">
 		<div class="taskDescription"><fmt:message key="${task.type.typeKey}"/>:</div>
 		<div class="taskInput">
 			<form:select path="type">
@@ -107,8 +107,13 @@
 			</form:select>
 		</div>
 	</div>
-<!--TYPE-------------------------------------------- -->
-	<div class="taskElement">
+<!--PATH-------------------------------------------- -->
+	<div id="taskElementPath" class="taskElement">
+		<div class="taskHint">
+			Please enter a path for the new asset file.<br/>
+			The path should include the name of the asset.<br/><br/>
+			Example: Textures/foo/bar/MyTexture.tga
+		</div>
 		<div class="taskDescription">Path:</div>
 		<div class="taskInput">
 			<form:input path="assetPath" value=""/>

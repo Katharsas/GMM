@@ -10,8 +10,8 @@ public class ModelTask extends AssetTask {
 	private int originalFaceCount;
 	private int newFaceCount;
 	
-	public ModelTask(String idName, User author) {
-		super(idName, author);
+	public ModelTask(User author) {
+		super(author);
 	}
 
 	public int getOriginalFaceCount() {

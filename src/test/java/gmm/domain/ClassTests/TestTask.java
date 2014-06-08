@@ -22,12 +22,12 @@ public class TestTask {
 	@Before
 	public void setUp() throws Exception {
 		user = new User("Ralf");
-		objectUnderTest = new GeneralTask("testTask", user);
+		objectUnderTest = new GeneralTask(user);
 	}
 	
 	@Test
 	public void testMemberValues() {
-		assertEquals("testTask", objectUnderTest.getName());
+		assertEquals("", objectUnderTest.getName());
 		assertEquals(user, objectUnderTest.getAuthor());
 		assertEquals(TaskPriority.MID, objectUnderTest.getPriority());
 		assertEquals(TaskStatus.TODO, objectUnderTest.getTaskStatus());
@@ -51,10 +51,7 @@ public class TestTask {
 	@Test
 	public void testNullPointerExceptions() {
 		boolean thrown = true;
-	    try {objectUnderTest = new GeneralTask(null, user);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    try {objectUnderTest = new GeneralTask("testTask", null);
+	    try {objectUnderTest = new GeneralTask(null);
 	    	thrown = false;}
 	    catch(NullPointerException e){}
 	    try {objectUnderTest.setName(null);

@@ -2,10 +2,8 @@ package gmm.web.sessions;
 
 import javax.annotation.PostConstruct;
 
-import gmm.domain.GeneralTask;
-import gmm.domain.ModelTask;
 import gmm.domain.Task;
-import gmm.domain.TextureTask;
+import gmm.domain.TaskType;
 import gmm.domain.User;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
@@ -50,34 +48,38 @@ public class TaskSession {
 	private FilterForm generalFilter;
 	
 	//the last tab the user selected
-	private String currentTab;
+	private TaskType currentTaskType;
 	
 	//triggers a data reload when set to true
 	private boolean dirtyTasksFlag = false;
 	
 	@PostConstruct
 	private void init() {
-		currentTab = "general";
+		currentTaskType = TaskType.GENERAL;
 		user = users.get(((org.springframework.security.core.userdetails.User)
 				SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
 		generalFilter = new FilterForm();
-		updateAndFilterTasks(currentTab);
+		updateAndFilterTasks(currentTaskType);
 	}
 	
 	/*--------------------------------------------------
 	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
-	public Collection<Task> getTasks() {
+	public Collection<? extends Task> getTasks() {
 		if (dirtyTasksFlag) {
-			updateAndFilterTasks(currentTab);
+			updateAndFilterTasks(currentTaskType);
 			dirtyTasksFlag = false;
 		}
 		return tasks.clone();
 	}
 	
+	public TaskType getCurrentTaskType() {
+		return currentTaskType;
+	}
+	
 	public String getTab() {
-		return currentTab;
+		return currentTaskType.getTab();
 	}
 	
 	public User getUser() {
@@ -103,11 +105,11 @@ public class TaskSession {
 	/**
 	 * Apply/notify tab change
 	 */
-	public void updateTab(String tab) {
-		if (!tab.equals(currentTab)) {
+	public void updateTab(TaskType tab) {
+		if (!tab.equals(currentTaskType)) {
 			updateAndFilterTasks(tab);
 		}
-		currentTab = tab;
+		currentTaskType = tab;
 	}
 	
 	/**
@@ -115,7 +117,7 @@ public class TaskSession {
 	 */
 	public void updateFilter(FilterForm filter) {
 		generalFilter = filter;
-		updateAndFilterTasks(currentTab);
+		updateAndFilterTasks(currentTaskType);
 	}
 	
 	/**
@@ -148,21 +150,12 @@ public class TaskSession {
 	 * ---------------------------------------------------*/
 	
 	@SuppressWarnings("unchecked")
-	private void updateAndFilterTasks(String tab) {
+	private void updateAndFilterTasks(TaskType tab) {
 		filteredTasks = (Collection<Task>) filterService.filter(getTaskList(tab), generalFilter, user);
 		tasks = filteredTasks.clone();
 	}
 	
-	private Collection<? extends Task> getTaskList (String tab) {
-		switch(tab) {
-		case "textures":
-			return data.<TextureTask>getList(TextureTask.class);
-		case "models":
-			return data.<ModelTask>getList(ModelTask.class);
-		case "general":
-			return data.<GeneralTask>getList(GeneralTask.class);
-		default:
-			throw new UnsupportedOperationException("TaskController Error: Wrong tab name!");
-		}
+	private Collection<? extends Task> getTaskList (TaskType tab) {
+		return data.getList(tab.toClass());
 	}
 }

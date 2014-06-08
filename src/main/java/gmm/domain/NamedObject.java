@@ -9,7 +9,11 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 public abstract class NamedObject extends UniqueObject{
 
 	@XStreamAsAttribute
-	private String name;
+	private String name = "";
+	
+	public NamedObject() {
+		super();
+	}
 	
 	public NamedObject(String name) {
 		super();

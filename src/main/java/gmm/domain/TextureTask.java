@@ -10,7 +10,7 @@ public class TextureTask extends AssetTask {
 	
 	final public Set<ModelTask> models = new HashSet<ModelTask>();
 	
-	public TextureTask(String idName, User author) {
-		super(idName, author);
+	public TextureTask(User author) {
+		super(author);
 	}
 }

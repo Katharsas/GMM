@@ -1,5 +1,6 @@
 $(document).ready( function() {
 	hideImport();
+	hideTaskFormType();
 	refreshTaskBackups();
 	refreshTaskImportTree();
 });
@@ -11,6 +12,10 @@ function refreshTaskBackups() {
 			allFuncs.selectTreeElement($file, "selectedBackupFile");
 		}
 	);
+}
+
+function hideTaskFormType() {
+	$("#taskForm").find("#taskGroupType").hide();
 }
 
 function loadTasks() {
@@ -74,9 +79,9 @@ function saveAllTasks() {
 
 function importAssets(textures) {
 	$("#overlay").show();
-	$.post("admin/importAssets", { textures: textures }, function() {
-		$("#overlay").hide();
-	});
+	$("#taskForm").ajaxSubmit({
+			data: { textures: textures },
+			success: function() {$("#overlay").hide();}});
 }
 
 function refreshTaskImportTree() {

@@ -1,4 +1,4 @@
-package gmm.service.assets;
+package gmm.service.tasks;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -37,11 +37,14 @@ public class TextureService {
 	 */
 	public byte[] getPreview(AssetTask task, boolean small, String version) throws IOException {
 		
-		String imageName = version + "_" + (small ? "small" : "full") + ".png";
+		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
+		
 		Path imagePath = Paths.get(config.ASSETS_NEW)
 				.resolve(task.getNewAssetFolder())
 				.resolve(config.SUB_PREVIEW)
 				.resolve(imageName);
+		
+
 		if(!imagePath.toFile().exists()) {
 			return null;
 		}

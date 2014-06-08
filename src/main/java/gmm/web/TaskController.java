@@ -12,26 +12,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
-import org.springframework.web.bind.support.SessionStatus;
 
 
 
+
+
+
+import java.io.IOException;
 /** java */
 import java.security.Principal;
 
 
 
 
+
+
+
 import gmm.domain.Comment;
-import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Task;
+import gmm.domain.TaskType;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 /* project */
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
+import gmm.service.tasks.TaskCreator;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
@@ -54,6 +61,7 @@ import gmm.web.sessions.TaskSession;
 
 public class TaskController {
 	
+	@Autowired TaskCreator taskCreator;
 	@Autowired TaskSession session;
 	@Autowired DataAccess data;
 	@Autowired TaskFilterService filter;
@@ -153,52 +161,31 @@ public class TaskController {
 	 * @param form - object containing all task information
 	 * @param tab - see send method
 	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
+	 * @throws IOException 
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
 	public String handleTasksCreateEdit(
-			SessionStatus status,
-			Principal principal,
 			@ModelAttribute("task") TaskForm form,
-			@RequestParam(value="edit", defaultValue="") String idLink) {
-		User user = users.get(principal);
+			@RequestParam(value="edit", defaultValue="") String idLink) throws IOException {
+		
 		Task task;
 		boolean isNew = !validateId(idLink);
+		Class<? extends Task> type = form.getType().toClass();
 
 		if(isNew) {
-			task = new GeneralTask(form.getIdName(), user);
+			task = taskCreator.createTask(type, form);
+			task = type.cast(task);
+			data.add(task);
+			if(session.getCurrentTaskType().toClass().equals(type)) {
+				session.add(task);
+			}
 		}
 		else {
 			task = UniqueObject.getFromId(session.getTasks(), idLink);
-			task.setName(form.getIdName());
-		}
-		task.setPriority(form.getPriority());
-		task.setTaskStatus(form.getStatus());
-		task.setDetails(form.getDetails());
-		task.setLabel(form.getLabel());
-		User assigned = form.getAssigned().equals("") ? null : users.get(form.getAssigned());
-		task.setAssigned(assigned);
-		String label = form.getLabel();
-		if(!label.equals("")) {
-			data.add(new Label(label));
-		}
-		if (isNew) {
-			data.add(task);
-			session.add(task);
+			task = taskCreator.editTask(task, form);
 		}
 		return "redirect:/tasks?tab="+session.getTab();
 	}
-
-	
-	/**
-	 * Redirects to default mapping. Does nothing else.
-	 * @deprecated Use default controller mapping/handler instead.
-	 */
-	@RequestMapping(value="/reset", method = RequestMethod.GET)
-	@Deprecated
-	public String handleTasks(@RequestParam("tab") String tab) {
-		return "redirect:/tasks?tab="+tab;
-	}
-	
 	
 	/**
 	 * Default Handler
@@ -216,20 +203,15 @@ public class TaskController {
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
 		
-		if(!validateTab(tab)) {
-			return "redirect:/tasks?tab="+session.getTab();
-		}
+		if(tab.equals("")) {return "redirect:/tasks?tab="+session.getTab();}
 		
 		if (validateId(edit)) {
 			Task task = UniqueObject.getFromId(session.getTasks(), edit);
-			form.setIdName(task.getName());
-			form.setDetails(task.getDetails());
-			form.setStatus(task.getTaskStatus());
-			form.setPriority(task.getPriority());
-			form.setAssigned(task.getAssigned());
+			form = taskCreator.prepareForm(task);
 			model.addAttribute("label", task.getLabel());
+			model.addAttribute("task", form);
 		}
-		session.updateTab(tab);
+		session.updateTab(TaskType.fromTab(tab));
 		
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
@@ -238,12 +220,6 @@ public class TaskController {
 	    model.addAttribute("edit", edit);
 	    return "tasks";
 	}
-	
-	
-	private boolean validateTab(String tab){
-		return tab.equals("general") || tab.equals("textures") || tab.equals("models");
-	}
-	
 	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");

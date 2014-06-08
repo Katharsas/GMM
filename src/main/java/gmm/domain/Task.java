@@ -29,8 +29,8 @@ public abstract class Task extends NamedObject{
 	final private List<Task> dependencyFor = new LinkedList<Task>();
 	
 	//Methods--------------------------------------------------------
-	public Task(String name, User author) {
-		super(name);
+	public Task(User author) {
+		super();
 		Objects.requireNonNull(author);
 		this.author = author;
 	}

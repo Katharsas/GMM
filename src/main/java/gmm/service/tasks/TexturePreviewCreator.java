@@ -1,4 +1,4 @@
-package gmm.service.assets;
+package gmm.service.tasks;
 
 import gmm.domain.AssetTask;
 import gmm.service.FileService;
@@ -39,11 +39,13 @@ public class TexturePreviewCreator implements PreviewCreator {
 	
 	/**
 	 * Create Preview files from texture file.
-	 * For more texture operations see {@link gmm.service.assets.TextureService}
+	 * For more texture operations see {@link gmm.service.tasks.TextureService}
 	 */
 	@Override
 	public void createPreview(Path sourceFile, AssetTask task, boolean isOriginal) throws IOException {
-		
+		if(!sourceFile.toFile().exists()) {
+			return;
+		}
 		Path taskFolder = Paths.get(config.ASSETS_NEW).resolve(task.getNewAssetFolder());
 		Path targetFile;
 		String version = isOriginal ? "original" : "newest";

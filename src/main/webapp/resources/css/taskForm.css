@@ -32,3 +32,8 @@
 	font-size:15px;
 	font-family:Calibri, Verdana, Arial, sans-serif;
 }
+.taskHint {
+	margin-top:20px;
+	margin-bottom:15px;
+	font-size:0.8em;
+}

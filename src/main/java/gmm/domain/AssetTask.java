@@ -10,8 +10,8 @@ public class AssetTask extends Task {
 	private String newestAssetName = null;
 	
 	//Methods--------------------------------------------
-	public AssetTask(String idName, User author) {
-		super(idName, author);
+	public AssetTask(User author) {
+		super(author);
 	}
 	
 	//Setters, Getters---------------------------------

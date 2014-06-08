@@ -24,19 +24,22 @@
 				<div class="td">
 <!-- New Task Area -->
 					<div id="generalArea">
-						<div id="newTaskButton" class="button pageButton" onclick="newTask()">
+						<div id="newTaskButton" class="button pageButton">
 							<fmt:message key="tasks.new"/>
 						</div>
-						<form:form id="taskForm" method="POST" action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}" commandName="task">
+						<form:form id="taskForm" method="POST"
+								action="/GMM/tasks/submitTask?tab=${tab}&edit=${edit}"
+								commandName="task"
+								style="display: none;">
 							<t:all_taskForm>
 							</t:all_taskForm>
 						</form:form>
 						<div class="clear"></div>
 						<div class="taskButtons">
-							<div id="submitTaskButton" class="button pageButton left">
+							<div id="submitTaskButton" class="button pageButton left" style="display: none;">
 								Submit Task
 							</div>
-							<div id="cancelTaskButton" class="button pageButton left">
+							<div id="cancelTaskButton" class="button pageButton left" style="display: none;">
 								<a href="?tab=${tab}">
 									<fmt:message key="tasks.new.cancel"/><span></span>
 								</a>

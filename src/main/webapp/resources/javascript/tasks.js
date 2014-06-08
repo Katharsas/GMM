@@ -12,14 +12,10 @@ var tasksVars = {
 
 var tasksFuncs = {
 	"tabPar" : function() {
-		return "?tab="
-				+ (tasksVars.tab === undefined || tasksVars.tab === null ? ""
-						: tasksVars.tab);
+		return "?tab=" + (tasksVars.tab === undefined || tasksVars.tab === null ? "" : tasksVars.tab);
 	},
 	"editPar" : function() {
-		return "&edit="
-				+ (tasksVars.edit === undefined || tasksVars.edit === null ? ""
-						: tasksVars.edit);
+		return "&edit=" + (tasksVars.edit === undefined || tasksVars.edit === null ? "" : tasksVars.edit);
 	},
 	"subDir" : function() {
 		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
@@ -28,8 +24,7 @@ var tasksFuncs = {
 		return allVars.selectedTaskFile.attr("rel");
 	},
 	"refresh" : function() {
-		window.location.href = "tasks" + tasksFuncs.tabPar() + "&edit="
-				+ tasksVars.edit;
+		window.location.href = "tasks" + tasksFuncs.tabPar() + "&edit=" + tasksVars.edit;
 	}
 };
 
@@ -47,21 +42,11 @@ $(document).ready(
 			// get subTab and set as active tab / others as inactivetabs
 			tasksVars.tab = getURLParameter("tab");
 			tasksVars.edit = getURLParameter("edit");
-			var $activeTab = $(
-					".subTabmenu .tab a[href=\"tasks/reset?tab="
-							+ tasksVars.tab + "\"]").parent();
+			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
 			$activeTab.addClass("activeSubpage");
-
-			// show
-			$("#cancelTaskButton").show();
-			// hide #taskForm
-			if (getURLParameter("edit") === "") {
-				$("#taskForm").hide();
-				$("#submitTaskButton").hide();
-				$("#cancelTaskButton").hide();
-				$("#newTaskButton").show();
-			} else
-				newTask();
+			
+			new TaskForm();
+			
 			// hide .listElementBody
 			collapseListElements();
 			// hide comment and details when empty
@@ -80,11 +65,8 @@ $(document).ready(
 			if ($("#generalFiltersHidden").is(":checked"))
 				toggleGeneralFilters();
 			toggleSpecificFilters();// TODO
-
+		
 			// listener
-			$("#submitTaskButton").click(function() {
-				submitTaskForm();
-			});
 			$(".submitSearchButton").click(function() {
 				submitSearchForm();
 			});
@@ -94,14 +76,52 @@ $(document).ready(
 			$(".generalFiltersFormElement").change(function() {
 				submitGeneralFilters();
 			});
-		});
+			
+});
 
-function newTask() {
-	$("#taskForm").show();
-	$("#submitTaskButton").show();
-	$("#cancelTaskButton").show();
-	$("#newTaskButton").hide();
+/**
+ * Handles taskForm behaviour.
+ */
+function TaskForm() {
+	var $form = $("#taskForm");
+	var $submit = $("#submitTaskButton");
+	var $cancel = $("#cancelTaskButton");
+	var $new = $("#newTaskButton");
+	init();
+	
+	function init() {
+		if (tasksVars.edit !== "") {
+			show();
+			$form.find("#taskGroupType").hide();
+		}
+		var $type = $form.find("#taskElementType select");
+		switchPath($type);
+		
+		$type.change(function() {switchPath($type);});
+		$new.click(function() {show();});
+		$submit.click(function() {$form.submit();});
+	}
+	
+	function switchPath($taskElementType) {
+		var selected = $taskElementType.find(":selected").val();
+		var $path = $form.find("#taskElementPath");
+		switch(selected) {
+			case "GENERAL":	$path.hide();break;
+			default:		$path.show();break;
+		}
+	}
+	
+	function show() {
+		$form.show();
+		$submit.show();
+		$cancel.show();
+		$new.hide();
+	}
 }
+
+
+
+
 
 function collapseListElements() {
 	$(".listElementBody").hide();
@@ -282,9 +302,6 @@ function submitSearchForm() {
 	$("#searchForm").submit();
 }
 
-function submitTaskForm() {
-	$("#taskForm").submit();
-}
 
 function submitGeneralFilters() {
 	$(".generalFilters").submit();
@@ -305,8 +322,7 @@ function downloadFile(idLink) {
 	if (dir === undefined || dir === "") {
 		return;
 	}
-	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/"
-			+ dir + "/" + tasksFuncs.tabPar();
+	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/" + tasksFuncs.tabPar();
 	window.open(uri);
 }
 
@@ -317,10 +333,8 @@ function confirmDeleteFile(idLink) {
 	}
 	confirm(
 			function() {
-				var assetPar = "&asset="
-						+ tasksVars.selectedTaskFileIsAsset.toString();
-				$.post("tasks/deleteFile/" + idLink + tasksFuncs.tabPar()
-						+ assetPar, {
+				var assetPar = "&asset=" + tasksVars.selectedTaskFileIsAsset.toString();
+				$.post("tasks/deleteFile/" + idLink + tasksFuncs.tabPar() + assetPar, {
 					dir : dir
 				}, function() {
 					tasksFuncs.refresh();

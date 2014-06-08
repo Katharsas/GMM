@@ -67,7 +67,9 @@
 			<div id="selectedPaths" class="adminElement"><ul></ul></div>
 
 			<div id="importTaskForm">
-				<form:form id="taskForm" method="POST" action="/GMM/admin/import/submit" commandName="task">
+				<form:form id="taskForm" method="POST"
+						action="/GMM/admin/importAssets"
+						commandName="task">
 					<div style="width:100%;">
 						<t:all_taskForm>
 						</t:all_taskForm>

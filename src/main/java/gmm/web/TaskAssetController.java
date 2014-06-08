@@ -11,9 +11,9 @@ import gmm.domain.AssetTask;
 import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
 import gmm.service.FileService;
-import gmm.service.assets.TextureService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
+import gmm.service.tasks.TextureService;
 import gmm.web.sessions.TaskSession;
 
 import org.springframework.beans.factory.annotation.Autowired;

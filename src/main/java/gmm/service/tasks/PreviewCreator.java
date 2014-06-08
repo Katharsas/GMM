@@ -1,4 +1,4 @@
-package gmm.service.assets;
+package gmm.service.tasks;
 
 import gmm.domain.AssetTask;
 
