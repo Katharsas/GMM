@@ -39,11 +39,6 @@ public class AdminUserController {
 	@Autowired UserService users;
 	@Autowired PasswordEncoder encoder;
 	
-	@ModelAttribute("userList")
-	public Collection<User> getUserList() {
-		return users.get();
-	}
-	
 	/**
 	 * Edit User
 	 * -----------------------------------------------------------------

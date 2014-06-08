@@ -91,7 +91,7 @@
 		</div>
 		<div class="adminElementGroup">
 			<br/>
-			<c:forEach items="${userList}" var="user">
+			<c:forEach items="${users}" var="user">
 				<div id="${user.getIdLink()}" class="elementUser">
 					<div class="subElementUserEnabled button left" onclick="switchUser('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
 						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
