@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -14,6 +14,8 @@ import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TextureService;
+import gmm.web.AjaxResponseException;
+import gmm.web.FileTreeScript;
 import gmm.web.sessions.TaskSession;
 
 import org.springframework.beans.factory.annotation.Autowired;

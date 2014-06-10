@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,6 +29,8 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TaskCreator;
+import gmm.web.AjaxResponseException;
+import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 

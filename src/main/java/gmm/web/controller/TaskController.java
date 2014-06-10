@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 /** Controller class & ModelAndView */
 import org.springframework.ui.ModelMap;

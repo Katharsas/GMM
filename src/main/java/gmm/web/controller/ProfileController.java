@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 import gmm.service.UserService;
 import gmm.web.sessions.TaskSession;

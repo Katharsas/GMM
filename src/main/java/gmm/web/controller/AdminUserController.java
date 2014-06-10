@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 import gmm.collections.Collection;
 import gmm.domain.User;
@@ -7,6 +7,7 @@ import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
+import gmm.web.AjaxResponseException;
 import gmm.web.sessions.TaskSession;
 
 import java.io.IOException;
