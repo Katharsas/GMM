@@ -1,8 +1,8 @@
 package gmm.web.forms;
 
+import gmm.collections.ListUtil;
 import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
-import gmm.util.ListUtil;
 
 
 public class FilterForm {

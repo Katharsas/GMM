@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.Collection;
+import gmm.collections.HashSet;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
+import gmm.collections.Set;
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Linkable;
@@ -14,11 +19,6 @@ import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.UserService;
-import gmm.util.LinkedList;
-import gmm.util.List;
-import gmm.util.HashSet;
-import gmm.util.Set;
-import gmm.util.Collection;
 
 @Service
 public class DataBase implements DataAccess {

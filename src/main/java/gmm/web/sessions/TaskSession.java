@@ -2,14 +2,14 @@ package gmm.web.sessions;
 
 import javax.annotation.PostConstruct;
 
+import gmm.collections.Collection;
+import gmm.collections.HashSet;
 import gmm.domain.Task;
 import gmm.domain.TaskType;
 import gmm.domain.User;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
-import gmm.util.Collection;
-import gmm.util.HashSet;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 

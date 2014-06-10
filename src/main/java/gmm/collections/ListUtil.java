@@ -1,4 +1,4 @@
-package gmm.util;
+package gmm.collections;
 
 import java.lang.reflect.Array;
 

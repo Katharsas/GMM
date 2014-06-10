@@ -1,7 +1,7 @@
 package gmm.domain;
 
-import gmm.util.LinkedList;
-import gmm.util.List;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 
 public class ModelTask extends AssetTask {
 

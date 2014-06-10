@@ -3,8 +3,8 @@ package gmm.domain;
 //import java.io.IOException;
 
 //import gmm.service.AssetService;
-import gmm.util.HashSet;
-import gmm.util.Set;
+import gmm.collections.HashSet;
+import gmm.collections.Set;
 
 public class TextureTask extends AssetTask {
 	

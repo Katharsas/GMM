@@ -1,4 +1,4 @@
-package gmm.util;
+package gmm.collections;
 
 public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	private static final long serialVersionUID = -857844793375508167L;

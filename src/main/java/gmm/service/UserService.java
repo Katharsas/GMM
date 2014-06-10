@@ -1,10 +1,10 @@
 package gmm.service;
 
+import gmm.collections.Collection;
 import gmm.domain.NamedObject;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
-import gmm.util.Collection;
 
 import java.math.BigInteger;
 import java.security.Principal;

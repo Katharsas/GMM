@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import gmm.util.Collection;
+import gmm.collections.Collection;
 import gmm.util.StringUtil;
 
 /**

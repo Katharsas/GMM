@@ -1,12 +1,12 @@
 package gmm.service;
 
+import gmm.collections.Collection;
 import gmm.domain.TaskPriority;
 import gmm.domain.Task;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
 import gmm.service.filter.Selection;
 import gmm.service.filter.SimpleSelection;
-import gmm.util.Collection;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 

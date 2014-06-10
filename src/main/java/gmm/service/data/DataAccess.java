@@ -1,7 +1,7 @@
 package gmm.service.data;
 
+import gmm.collections.Collection;
 import gmm.domain.Linkable;
-import gmm.util.Collection;
 
 public interface DataAccess {
 

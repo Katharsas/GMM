@@ -1,4 +1,4 @@
-package gmm.util;
+package gmm.collections;
 
 public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 	private static final long serialVersionUID = 895544914638784256L;

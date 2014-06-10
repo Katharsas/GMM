@@ -1,10 +1,11 @@
 package gmm.service.converters;
 
+import gmm.collections.Collection;
 import gmm.domain.NamedObject;
 import gmm.domain.UniqueObject;
-import gmm.util.Collection;
 
 import org.springframework.stereotype.Service;
+
 
 
 

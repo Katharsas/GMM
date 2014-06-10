@@ -1,11 +1,11 @@
 package gmm.service.converters;
 import org.springframework.context.ApplicationContext;
 
+import gmm.collections.Collection;
 import gmm.domain.NamedObject;
 import gmm.domain.User;
 import gmm.service.Spring;
 import gmm.service.data.DataAccess;
-import gmm.util.Collection;
 
 
 public class UserReferenceConverter extends NamedReferenceConverter{

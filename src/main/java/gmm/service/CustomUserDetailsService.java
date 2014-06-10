@@ -1,8 +1,8 @@
 package gmm.service;
 
+import gmm.collections.HashSet;
+import gmm.collections.Set;
 import gmm.domain.NamedObject;
-import gmm.util.HashSet;
-import gmm.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

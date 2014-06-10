@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import gmm.collections.HashSet;
+import gmm.collections.Set;
 import gmm.domain.AssetTask;
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
@@ -14,8 +16,6 @@ import gmm.domain.User;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.util.HashSet;
-import gmm.util.Set;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 

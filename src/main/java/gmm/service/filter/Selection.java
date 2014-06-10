@@ -1,6 +1,6 @@
 package gmm.service.filter;
 
-import gmm.util.Collection;
+import gmm.collections.Collection;
 /**
  * Represents a selection (a subset) of a given set of elements of type T and provides methods to manipulate this
  * selection. In particular, selections can be defined using the elements attributes to filter elements.
