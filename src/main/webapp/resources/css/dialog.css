@@ -51,6 +51,41 @@
 	margin:10px;
 }
 
-#confirmDialog #confirmDialogTextInput{
+#confirmDialog #confirmDialogTextInput{ 
 	width:100%;
+}
+
+
+#exceptionDialog.dialogContainer {
+	left: 0;
+  	right: 0;
+	margin:20px auto;
+	max-width:90%;
+}
+#exceptionDialog {
+	padding:20px;
+}
+#exceptionDialog #exceptionHeading {
+	font-size:1.7em;
+	color:#D35A3D;
+}
+#exceptionDialog #exceptionMessage {
+	color:#D35A3D;
+	padding-bottom: 15px;
+}
+#exceptionDialog #exceptionInstructions {
+	padding-bottom: 10px;
+}
+#exceptionDialog #exceptionStackTraceWrapper {
+	height:500px;
+	overflow:auto;
+	padding: 20px;
+	color:#BBB;
+	background-color: #333;
+}
+#exceptionDialog .dialogButton {
+	width:200px;
+	padding:5px;
+	margin:20px auto;
+	margin-bottom:0px;
 }

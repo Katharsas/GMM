@@ -1,12 +1,12 @@
 package gmm.web;
 
+import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
-import gmm.util.Collection;
 import gmm.web.sessions.TaskSession;
 
 import java.io.IOException;
@@ -88,29 +88,35 @@ public class AdminUserController {
 	/**
 	 * Save Users
 	 * -----------------------------------------------------------------
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
-	public @ResponseBody void saveUsers() throws IOException
-	{
-		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
-		fileService.prepareFileCreation(path);
-		xmlService.serialize(users.get(), path);
+	public @ResponseBody void saveUsers() throws AjaxResponseException {
+		try {
+			Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+			fileService.prepareFileCreation(path);
+			xmlService.serialize(users.get(), path);
+		}
+		catch (IOException e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
 	 * Load Users
 	 * -----------------------------------------------------------------
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
-	public @ResponseBody void loadUsers() throws IOException
-	{	
-		Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
-		data.removeAll(User.class);
-		Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
-		for(User user : loadedUsers) {
-			user.makeUnique();
+	public @ResponseBody void loadUsers() throws AjaxResponseException {	
+		try {
+			Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+			Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
+			for(User user : loadedUsers) {
+				user.makeUnique();
+			}
+			data.removeAll(User.class);
+			data.addAll(User.class, loadedUsers);
 		}
-		data.addAll(User.class, loadedUsers);
+		catch (IOException e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**

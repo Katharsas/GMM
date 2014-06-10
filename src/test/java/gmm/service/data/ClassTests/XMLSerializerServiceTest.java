@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import gmm.collections.Collection;
 import gmm.domain.Notification;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
-import gmm.util.Collection;
 
 import org.junit.After;
 import org.junit.Before;

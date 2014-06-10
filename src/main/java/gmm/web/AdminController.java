@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import gmm.collections.HashSet;
+import gmm.collections.Set;
 import gmm.domain.Label;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
@@ -27,8 +29,6 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TaskCreator;
-import gmm.util.HashSet;
-import gmm.util.Set;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
@@ -115,21 +115,23 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws IOException
-	{	
-		Path visible = Paths.get(config.DATA);
-		dir = visible.resolve(fileService.restrictAccess(dir, visible));
-		fileService.delete(dir);
+	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws AjaxResponseException {	
+		try {
+			Path visible = Paths.get(config.DATA);
+			dir = visible.resolve(fileService.restrictAccess(dir, visible));
+			fileService.delete(dir);
+		}
+		catch (IOException e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
-	public void deleteTasks() {
+	public @ResponseBody void deleteTasks() {
 		session.notifyDataChange();
 		data.removeAll(Task.class);
 	}
 	
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
-	public @ResponseBody String showBackups(@RequestParam("dir") Path dir) throws Exception
+	public @ResponseBody String showBackups(@RequestParam("dir") Path dir)
 	{
 		
 		Path visible = Paths.get(config.DATA);
@@ -138,7 +140,7 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
-	public @ResponseBody String showOriginalAssets(@RequestParam("dir") Path dir) throws Exception
+	public @ResponseBody String showOriginalAssets(@RequestParam("dir") Path dir)
 	{	
 		Path visible = Paths.get(config.ASSETS_ORIGINAL);
 		dir = fileService.restrictAccess(dir, visible);
@@ -173,9 +175,11 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody void importAssets (
 			@RequestParam("textures") boolean textures,
-			@ModelAttribute("task") TaskForm form) throws IOException
-	{
-		session.notifyDataChange();
-		taskCreator.importTasks(filePaths, form, TextureTask.class);
+			@ModelAttribute("task") TaskForm form) throws AjaxResponseException {
+		try {
+			session.notifyDataChange();
+			taskCreator.importTasks(filePaths, form, TextureTask.class);
+		}
+		catch (IOException e) {throw new AjaxResponseException(e);}
 	}
 }

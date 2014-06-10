@@ -1,8 +1,8 @@
 package gmm.service;
 
-import gmm.util.Collection;
-import gmm.util.LinkedList;
-import gmm.util.List;
+import gmm.collections.Collection;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -138,7 +138,11 @@ public class FileService {
 			if(!parent.exists()) {
 				createDirectory(parent);
 			}
-			Files.createDirectory(file.toPath());
+			try {
+				Files.createDirectory(file.toPath());
+			} catch (IOException e) {
+				throw new IOException("Could not create directory at " + file.toPath(), e);
+			}
 		}
 	}
 	
@@ -147,7 +151,11 @@ public class FileService {
 	 */
 	public synchronized void createFile(Path path, byte[] data) throws IOException {
 		prepareFileCreation(path);
-		Files.write(path, data);
+		try {
+			Files.write(path, data);
+		} catch (IOException e) {
+			throw new IOException("Could not write data to file at " + path.toString(), e);
+		}
 	}
 	
 	/**

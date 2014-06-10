@@ -26,7 +26,9 @@ function loadTasks() {
 	$("#conflictOptions").hide();
 	$("#finishLoadingButton").hide();
 	showDialogue("#loadTasksDialog");
-	$.getJSON("admin/load", { dir: dir }, handleLoadAnswer);
+	$.getJSON("admin/load", { dir: dir })
+		.done(handleLoadAnswer)
+		.fail(showException);
 }
 
 function loadTasksNext(answer) {
@@ -37,7 +39,9 @@ function loadTasksNext(answer) {
 }
 
 function loadTasksNextElement(answer, doForAll) {
-	$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll }, handleLoadAnswer);
+	$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll })
+		.done(handleLoadAnswer)
+		.fail(showException);
 }
 
 function handleLoadAnswer(data) {
@@ -66,11 +70,13 @@ function deleteFile() {
 	if(dir === undefined || dir === "") {
 		return;
 	}
-	$.post("admin/deleteFile", { dir: dir }, refreshTaskBackups);
+	$.post("admin/deleteFile", { dir: dir })
+		.done(refreshTaskBackups)
+		.fail(showException);
 }
 
 function deleteAllTasks() {
-	$.post("admin/deleteTasks");
+	$.post("admin/deleteTasks").fail(showException);
 }
 
 function saveAllTasks() {
@@ -81,7 +87,8 @@ function importAssets(textures) {
 	$("#overlay").show();
 	$("#taskForm").ajaxSubmit({
 			data: { textures: textures },
-			success: function() {$("#overlay").hide();}});
+			success: function() {$("#overlay").hide();},
+			error: showException});
 }
 
 function refreshTaskImportTree() {
@@ -129,78 +136,88 @@ function hideImport() {
 }
 
 function cancelImport() {
-	$.post("admin/import/cancel", function() {
-		hideImport();
-	});
+	$.post("admin/import/cancel")
+		.done(function() {hideImport();})
+		.fail(showException);
 }
 
 function editUserRole(idLink, userRole) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var role = $textField.attr("value");
-		$.post("admin/users/edit/"+idLink,
-				{"role": role}, function() {
-					window.location.reload();
-				});
+		$.post("admin/users/edit/"+idLink, {"role": role})
+			.done(function() {
+				window.location.reload();
+			})
+			.fail(showException);
 	}, "Valid roles: ROLE_USER, ROLE_ADMIN", userRole);
 }
 
 function switchAdmin(idLink) {
-	$.post("admin/users/admin/"+idLink, function() {
-		var $role = $("#"+idLink+" .subElementUserRole");
-		if($.trim($role.html())==="[ADMIN]") {
-			$role.html("&nbsp;");
-		}
-		else {
-			$role.html("[ADMIN]");
-		}
-	});
+	$.post("admin/users/admin/"+idLink)
+		.done(function() {
+			var $role = $("#"+idLink+" .subElementUserRole");
+			if($.trim($role.html())==="[ADMIN]") {
+				$role.html("&nbsp;");
+			}
+			else {
+				$role.html("[ADMIN]");
+			}
+		})
+		.fail(showException);
 }
 
 function editUserName(idLink, userName) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var name = $textField.attr("value");
-		$.post("admin/users/edit/"+idLink,
-				{"name": name}, function() {
-					window.location.reload();
-				});
+		$.post("admin/users/edit/"+idLink, {"name": name})
+			.done(function() {
+				window.location.reload();
+			})
+			.fail(showException);
 	}, "Enter user name here:", userName);
 }
 
 function resetPassword(idLink) {
 	confirm(function() {
-		$.post("admin/users/reset/"+idLink, function(data) {
-			hideDialogue();
-			confirm(function() {
+		$.post("admin/users/reset/"+idLink)
+			.done(function(data) {
 				hideDialogue();
-				window.location.reload();
-			}, "New Password:", data);
-		});
+				confirm(function() {
+					hideDialogue();
+					window.location.reload();},
+					"New Password:",data);
+				})
+			.fail(showException);
 	}, "Generate New Random Password?");
 }
 
 function switchUser(idLink, userName) {
-	$.post("admin/users/switch/"+idLink, function() {
-		var $enabled = $("#"+idLink+" .subElementUserEnabled");
-		console.log($.trim($enabled.html()));
-		if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
-			$enabled.html("&#x2610;");
-		}
-		else {
-			$enabled.html("&#x2611;");
-		}
-	});
+	$.post("admin/users/switch/"+idLink)
+		.done(function() {
+			var $enabled = $("#"+idLink+" .subElementUserEnabled");
+			console.log($.trim($enabled.html()));
+			if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
+				$enabled.html("&#x2610;");
+			}
+			else {
+				$enabled.html("&#x2611;");
+			}
+		})
+		.fail(showException);
 }
 
 function saveUsers() {
-	$.post("admin/users/save");
+	$.post("admin/users/save").fail(showException);
 }
 
 function loadUsers() {
 	confirm(function() {
-		$.post("admin/users/load", function() {
-			window.location.reload();
-		});
+		$.post("admin/users/load")
+			.done(function() {
+				window.location.reload();
+			})
+			.fail(showException);
 	}, "Delete all unsaved user data?");
 }

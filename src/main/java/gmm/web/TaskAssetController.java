@@ -64,12 +64,14 @@ public class TaskAssetController {
 			HttpServletResponse response,
 			@RequestParam(value="small", defaultValue="false") boolean small,
 			@RequestParam(value="ver") String version,
-			@RequestParam(value="id") String idLink) throws IOException {
-
-		setHeaderCaching(response);
-		//TODO enable reasonable caching
-		TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
-		return assetService.getPreview(task, small, version);
+			@RequestParam(value="id") String idLink) throws AjaxResponseException {
+		try {
+			setHeaderCaching(response);
+			//TODO enable reasonable caching
+			TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
+			return assetService.getPreview(task, small, version);
+		}
+		catch (IOException e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**

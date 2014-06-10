@@ -22,21 +22,40 @@
 			<jsp:invoke fragment="css"/>
 	</head>
 	
-	<div id="overlay"></div>
-	<div id="confirmDialog" class="dialogContainer">
-		<p id="confirmDialogMessage" class="center"></p>
-		<div id="confirmDialogTextInputWrapper">
-			<input id="confirmDialogTextInput" class="center"/>
-		</div>
-		<textarea id="confirmDialogTextArea">
-		</textarea>
-		<div class="dialogButton keyEnter Button left" onclick="confirmOk()">Confirm</div>
-		<div class="dialogButton Button right" onclick="hideDialogue()">Cancel</div>
-		<div class="clear"></div>
-	</div>
-	
 	<body class="noPage">
 		<div id="wrap">
+	
+			<div id="overlay"></div>
+			<div id="confirmDialog" class="dialogContainer">
+				<p id="confirmDialogMessage" class="center"></p>
+				<div id="confirmDialogTextInputWrapper">
+					<input id="confirmDialogTextInput" class="center"/>
+				</div>
+				<textarea id="confirmDialogTextArea">
+				</textarea>
+				<div class="dialogButton keyEnter button left" onclick="confirmOk()">Confirm</div>
+				<div class="dialogButton button right" onclick="hideDialogue()">Cancel</div>
+				<div class="clear"></div>
+			</div>
+			<div id="exceptionDialog" class="dialogContainer">
+				<div id="exceptionHeading">
+					Internal Server Error 500
+				</div>
+				<div id="exceptionMessage"></div>
+				<div id="exceptionInstructions">
+					Please copy text below and send it to somebody reponsible for this app.<br>
+					Please also add an description of what you did before receiving this error.<br>
+					<br>
+					Error Message:
+				</div>
+				<div id="exceptionStackTraceWrapper">
+					<pre id="exceptionStackTrace"></pre>
+				</div>
+				<div class="dialogButton button" onclick="window.location.reload()">
+					Reload Page
+				</div>
+			</div>
+		
 		
 			<!-- No Javascript Warning -->
 			<!-- TODO: Test -->

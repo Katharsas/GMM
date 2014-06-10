@@ -27,6 +27,11 @@ var allFuncs = {
 		}
 };
 
+String.prototype.nl2br = function(is_xhtml) {   
+    var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
+    return (this + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+};
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -122,6 +127,17 @@ function confirm(onConfirm, message, textInputDefault, textAreaDefault) {
 	if(textInputDefault !== undefined) {
 		$textInputField.select();
 	}
+}
+
+function showException(jqXHR) {
+	$(".dialogContainer").hide();
+	$("#overlay").show();
+	
+	var exception = jQuery.parseJSON(jqXHR.responseText);
+	var $exceptionDialog = $("#exceptionDialog");
+	$exceptionDialog.find("#exceptionMessage").text(exception.message);
+	$exceptionDialog.find("#exceptionStackTrace").text(exception.stackTrace);
+	$exceptionDialog.show();
 }
 
 function confirmOk() {

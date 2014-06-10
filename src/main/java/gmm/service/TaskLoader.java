@@ -5,6 +5,7 @@ import gmm.domain.UniqueObject;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
@@ -22,7 +23,7 @@ public class TaskLoader {
 	private static String overwriteOp = "overwrite";
 	private static String bothOp = "both";
 	
-	public TaskLoader(Path path) {
+	public TaskLoader(Path path) throws IOException {
 		taskLoader = xmlService.deserialize(path, Task.class).iterator();
 	}
 	
