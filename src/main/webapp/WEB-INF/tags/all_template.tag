@@ -33,8 +33,8 @@
 				</div>
 				<textarea id="confirmDialogTextArea">
 				</textarea>
-				<div class="dialogButton keyEnter button left" onclick="confirmOk()">Confirm</div>
-				<div class="dialogButton button right" onclick="hideDialogue()">Cancel</div>
+				<div class="dialogButton confirmOk button left" onclick="confirmOk()">Confirm</div>
+				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()">Cancel</div>
 				<div class="clear"></div>
 			</div>
 			<div id="exceptionDialog" class="dialogContainer">

@@ -102,12 +102,39 @@ function sendFile(file, uri, callback) {
     xhr.send(fd);
 }
 
+/**
+ * Show a confirmation dialog to the user.
+ * @see showConfirmMessage
+ */
 function confirm(onConfirm, message, textInputDefault, textAreaDefault) {
+	showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault);
+}
+
+/**
+ * Show confirmation dialog without cancel button.
+ * @see showConfirmMessage
+ */
+function alert (onConfirm, message, textInputDefault, textAreaDefault) {
+	showConfirmDialog(onConfirm, message, false, textInputDefault, textAreaDefault);
+}
+
+/**
+ * Show a confirmation dialog to the user.
+ * 
+ * @param onConfirm - Function: callback executes when user hits confirm button (ok).
+ * @param message - String: message to show in the dialog.
+ * @param hasCancel - boolean: if true, a cancel button will be shown, which closes the dialog.
+ * @param textInputDefault - String: If defined, a form input tag will be shown. Default text value of the input.
+ * @param textAreaDefault - String: If defined, a form textarea tag will be shown. Default text value of the textarea.
+ */
+function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, textAreaDefault) {
 	allVars.onConfirmCallback = onConfirm;
-	$confirmDialog = $("#confirmDialog");
+	var $confirmDialog = $("#confirmDialog");
 	$confirmDialog.find("#confirmDialogMessage").text(message);
-	$textInputField = $confirmDialog.find("#confirmDialogTextInput");
-	$textArea = $confirmDialog.find("#confirmDialogTextArea");
+	var $textInputField = $confirmDialog.find("#confirmDialogTextInput");
+	var $textArea = $confirmDialog.find("#confirmDialogTextArea");
+	var $cancelButton = $confirmDialog.find(".dialogButton.confirmCancel");
+//	var $okButton = $confirmDialog.find(".dialogButton.confirmOk");
 	if(textInputDefault !== undefined) {
 		$textInputField.attr("value", textInputDefault);
 		$textInputField.show();
@@ -121,6 +148,12 @@ function confirm(onConfirm, message, textInputDefault, textAreaDefault) {
 	}
 	else {
 		$textArea.hide();
+	}
+	if(hasCancel) {
+		$cancelButton.show();
+	}
+	else {
+		$cancelButton.hide();
 	}
 	$("#overlay").show();
 	$confirmDialog.show();

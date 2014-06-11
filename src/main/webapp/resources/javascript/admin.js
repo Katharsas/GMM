@@ -184,7 +184,7 @@ function resetPassword(idLink) {
 		$.post("admin/users/reset/"+idLink)
 			.done(function(data) {
 				hideDialogue();
-				confirm(function() {
+				alert(function() {
 					hideDialogue();
 					window.location.reload();},
 					"New Password:",data);

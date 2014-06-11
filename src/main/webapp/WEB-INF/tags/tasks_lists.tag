@@ -28,18 +28,18 @@
 			</div>
 			<div class="complexSearch">
 				<div class="clear"></div>
-				<div class="searchDescription left"><fmt:message key="tasks.label"/>:</div>
-				<form:input class="searchInputField left" path="label" value=""/>
-				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.title"/>:</div>
+				<div class="searchDescription left"><fmt:message key="tasks.title"/>:</div>
 				<form:input class="searchInputField left" path="name" value=""/>
+				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.label"/>:</div>
+				<form:input class="searchInputField left" path="label" value=""/>
 				<div class="clear"></div>
 				<div class="searchDescription left"><fmt:message key="tasks.details"/>:</div>
 				<form:input class="searchInputField left" path="details" value=""/>
-				<div class="searchDescription left">&#160;&#160;<fmt:message key="author"/>:</div>
-				<form:input class="searchInputField left" path="author" value=""/>
-				<div class="clear"></div>
-				<div class="searchDescription left"><fmt:message key="tasks.assigned"/>:</div>
+				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.assigned"/>:</div>
 				<form:input class="searchInputField left" path="assigned" value=""/>
+				<div class="clear"></div>
+				<div class="searchDescription left"><fmt:message key="author"/>:</div>
+				<form:input class="searchInputField left" path="author" value=""/>
 				<div class="searchDescription left">&#160;</div>
 			</div>
 			<div class="submitSearchButton button pageButton left"><fmt:message key="search.start"/>!</div>

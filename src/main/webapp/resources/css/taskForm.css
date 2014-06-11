@@ -5,7 +5,7 @@
 	resize:horizontal;
 	overflow:hidden;
 /* 	box-sizing:content-box; */
-	width:24em;
+	width:25em;
 }
 
 .taskElement {
@@ -13,7 +13,6 @@
 }
 .taskGroup.textArea{
 	resize:both;
-	width:50em;
 }
 .taskGroup.textArea .taskElement textarea{
 	resize:none;
@@ -21,7 +20,7 @@
 
 .taskDescription {
 	position:absolute;
-	width:4em;
+	min-width:5em;
 }
 .taskInput {
 	margin-left:5em;
