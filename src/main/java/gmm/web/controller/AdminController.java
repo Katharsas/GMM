@@ -84,7 +84,7 @@ public class AdminController {
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	public String saveTasks(@RequestParam("name") String pathString) throws IOException
 	{
-		Path visible = Paths.get(config.DATA);
+		Path visible = Paths.get(config.TASKS);
 		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		fileService.prepareFileCreation(path);
 		xmlService.serialize(data.getList(Task.class), path);
@@ -95,7 +95,7 @@ public class AdminController {
 	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir)
 	{	
 		session.notifyDataChange();
-		Path visible = Paths.get(config.DATA);
+		Path visible = Paths.get(config.TASKS);
 		dir = fileService.restrictAccess(dir, visible);
 		try {
 			taskLoader = new TaskLoader(visible.resolve(dir));
@@ -119,7 +119,7 @@ public class AdminController {
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws AjaxResponseException {	
 		try {
-			Path visible = Paths.get(config.DATA);
+			Path visible = Paths.get(config.TASKS);
 			dir = visible.resolve(fileService.restrictAccess(dir, visible));
 			fileService.delete(dir);
 		}
@@ -136,7 +136,7 @@ public class AdminController {
 	public @ResponseBody String showBackups(@RequestParam("dir") Path dir)
 	{
 		
-		Path visible = Paths.get(config.DATA);
+		Path visible = Paths.get(config.TASKS);
 		Path dirPath = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dirPath, visible);
 	}

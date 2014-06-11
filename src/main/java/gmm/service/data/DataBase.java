@@ -39,6 +39,12 @@ public class DataBase implements DataAccess {
 		defaultUser.setRole(User.ROLE_ADMIN);
 		defaultUser.enable(true);
 		users.add(defaultUser);
+		
+		System.out.println("##########################################################\n");
+		System.out.println("  Created default user: ");
+		System.out.println("  Username: " + defaultUser.getName());
+		System.out.println("  Password: " + "admin");
+		System.out.println("\n##########################################################");
 	}
 	
 	@Override

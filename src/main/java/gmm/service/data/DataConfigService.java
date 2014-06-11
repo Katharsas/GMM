@@ -1,31 +1,44 @@
 package gmm.service.data;
 
-import java.io.FileInputStream;
-import java.util.Properties;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 
 
 
+
+
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class DataConfigService {
 	
-	@Autowired
-	private String dataLocation;
-	@Autowired
-	private ServletContext context;
-	private String basePath;
+	@Autowired private ServletContext context;
 	
-	public String DATA_USERS;
-	public String DATA;
-	public String DATA_AUTO;
+	@Value("${path.workspace}")
+	private String workspace;
+	
+	public String USERS;
+	
+	@Value("${path.assets.original}")
 	public String ASSETS_ORIGINAL;
+	
+	@Value("${path.assets.new}")
 	public String ASSETS_NEW;
+	
+	@Value("${path.tasks}")
+	public String TASKS;
+	
+	@Value("${path.tasks.autobackup}")
+	public String TASKS_AUTO;
+	
+	@Value("${path.upload}")
 	public String UPLOAD;
 	
 	public final String SUB_ASSETS = "assets";
@@ -34,30 +47,20 @@ public class DataConfigService {
 	
 	@PostConstruct
 	private void setUpConfigService() {
-		/**
-		 * for Unit test environment
-		 */
-//		basePath = context.getRealPath("")+"/../../"+dataLocation;
-		/**
-		 * for server environment
-		 */
-		basePath = context.getRealPath("")+"/"+dataLocation;
+		Path base = Paths.get(context.getRealPath(""));
+		Path w = base.resolve(workspace);
+		workspace = w.toString();
 		
-		basePath = basePath.replace('\\', '/');
-		Properties property = new Properties();
-		try {
-			property.load(new FileInputStream(basePath+"config.properties"));
-
-		} catch (Exception/*IOException*/ e) {
-			System.err.println("DataConfigService Error: Could not load config.properties file!");
-			e.printStackTrace();
-		}
-		DATA = basePath+property.getProperty("data_backup_path");
-		DATA_AUTO = basePath+property.getProperty("data_backup_automatic_path");
-		ASSETS_ORIGINAL = basePath+property.getProperty("assets_original_path");
-		ASSETS_NEW = basePath+property.getProperty("assets_new_path");
-		UPLOAD = basePath+property.getProperty("upload_path");
+		System.out.println("##########################################################\n");
+		System.out.println("  Registered workspace folder at: ");
+		System.out.println("  " + workspace);
+		System.out.println("\n##########################################################");
 		
-		DATA_USERS = basePath;
+		TASKS = w.resolve(TASKS).toString();
+		TASKS_AUTO = w.resolve(TASKS_AUTO).toString();
+		ASSETS_ORIGINAL = w.resolve(ASSETS_ORIGINAL).toString();
+		ASSETS_NEW = w.resolve(ASSETS_NEW).toString();
+		UPLOAD = w.resolve(UPLOAD).toString();
+		USERS = w.resolve(workspace).toString();
 	}
 }

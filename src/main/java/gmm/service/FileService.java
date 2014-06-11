@@ -124,8 +124,12 @@ public class FileService {
 	 */
 	public void prepareFileCreation(Path path) throws IOException {
 		File parent = path.toFile().getParentFile();
-		if(!parent.exists()) {
-			createDirectory(parent);
+		try {
+			if(!parent.exists()) {
+				createDirectory(parent);
+			}
+		} catch (Exception e) {
+			throw new IOException("Could not prepare directories for " + path, e);
 		}
 	}
 	

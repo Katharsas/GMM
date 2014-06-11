@@ -94,7 +94,7 @@ public class AdminUserController {
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
 	public @ResponseBody void saveUsers() throws AjaxResponseException {
 		try {
-			Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+			Path path = Paths.get(config.USERS).resolve("users.xml");
 			fileService.prepareFileCreation(path);
 			xmlService.serialize(users.get(), path);
 		}
@@ -109,7 +109,7 @@ public class AdminUserController {
 	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
 	public @ResponseBody void loadUsers() throws AjaxResponseException {	
 		try {
-			Path path = Paths.get(config.DATA_USERS).resolve("users.xml");
+			Path path = Paths.get(config.USERS).resolve("users.xml");
 			Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
 			for(User user : loadedUsers) {
 				user.makeUnique();

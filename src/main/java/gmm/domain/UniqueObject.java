@@ -18,7 +18,7 @@ public abstract class UniqueObject implements Linkable{
 	public UniqueObject() {
 		id = ++idCount;
 		this.created = new Date();
-		System.out.println("Created "+this.getIdLink());
+//		System.out.println("Created "+this.getIdLink());
 	}
 	
 	@Override

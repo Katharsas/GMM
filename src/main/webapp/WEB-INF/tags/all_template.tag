@@ -71,8 +71,8 @@
 				<div class="tab left"><a href="tasks"><fmt:message key="menu.tasks"/><span></span></a></div>
 				
 				<div class="meta left">
-					<spring:eval expression="@meta.getProperty('app.name')" /><br/>
-					<spring:eval expression="@meta.getProperty('app.version')" />
+					<spring:eval expression="@config.getProperty('app.name')" /><br/>
+					<spring:eval expression="@config.getProperty('app.version')" />
 				</div>
 				
 				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>

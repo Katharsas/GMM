@@ -48,26 +48,22 @@
 	</bean>
 	
 	<!-- Custom Beans -->
-	<bean id="dataLocation" class="java.lang.String">
-        <constructor-arg value="WEB-INF/data/"/>
-    </bean>
-    <bean id="applicationContextProvider" class="gmm.service.Spring"></bean>
     
 	<!-- Expose property file with meta information -->
 	<!-- Expose to @Value annotation in java -->
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
 			<list>
-				<value>classpath:meta.properties</value>
+				<value>classpath:config.properties</value>
 			</list>
 		</property>
 	</bean>
-	<!-- Expose to <spring:eval expression="@meta.getProperty(...)"  in jsps/> -->
-	<bean id="meta" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+	<!-- Expose to <spring:eval expression="@config.getProperty(...)"  in jsps/> -->
+	<bean id="config" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="singleton" value="true" />
 			<property name="locations">
 				<list>
-					<value>classpath:meta.properties</value>
+					<value>classpath:config.properties</value>
 				</list>
 			</property>
 	</bean>
