@@ -110,11 +110,11 @@
 <!--PATH-------------------------------------------- -->
 	<div id="taskElementPath" class="taskElement">
 		<div class="taskHint">
-			Please enter a path for the new asset file.<br/>
-			The path should include the name of the asset.<br/><br/>
-			Example: Textures/foo/bar/MyTexture.tga
+			Please enter a name for the new asset file.<br/>
+			The name must include the path to the asset.<br/><br/>
+			Example: "textures/foo/bar/MyTexture.tga"
 		</div>
-		<div class="taskDescription">Path:</div>
+		<div class="taskDescription">File name:</div>
 		<div class="taskInput">
 			<form:input path="assetPath" value=""/>
 		</div>

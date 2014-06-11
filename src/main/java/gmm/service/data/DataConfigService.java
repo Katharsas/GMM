@@ -22,45 +22,45 @@ public class DataConfigService {
 	@Autowired private ServletContext context;
 	
 	@Value("${path.workspace}")
-	private String workspace;
+	private Path workspace;
 	
-	public String USERS;
+	public Path USERS;
 	
 	@Value("${path.assets.original}")
-	public String ASSETS_ORIGINAL;
+	public Path ASSETS_ORIGINAL;
 	
 	@Value("${path.assets.new}")
-	public String ASSETS_NEW;
+	public Path ASSETS_NEW;
 	
 	@Value("${path.tasks}")
-	public String TASKS;
+	public Path TASKS;
 	
 	@Value("${path.tasks.autobackup}")
-	public String TASKS_AUTO;
+	public Path TASKS_AUTO;
 	
 	@Value("${path.upload}")
-	public String UPLOAD;
+	public Path UPLOAD;
 	
-	public final String SUB_ASSETS = "assets";
-	public final String SUB_PREVIEW = "preview";
-	public final String SUB_OTHER = "wip";
+	public final Path SUB_ASSETS = Paths.get("assets");
+	public final Path SUB_PREVIEW = Paths.get("preview");
+	public final Path SUB_OTHER = Paths.get("wip");
 	
 	@PostConstruct
 	private void setUpConfigService() {
 		Path base = Paths.get(context.getRealPath(""));
-		Path w = base.resolve(workspace);
-		workspace = w.toString();
+		Path wsAbsolute = base.resolve(workspace);
+		workspace = wsAbsolute;
 		
 		System.out.println("##########################################################\n");
 		System.out.println("  Registered workspace folder at: ");
 		System.out.println("  " + workspace);
 		System.out.println("\n##########################################################");
 		
-		TASKS = w.resolve(TASKS).toString();
-		TASKS_AUTO = w.resolve(TASKS_AUTO).toString();
-		ASSETS_ORIGINAL = w.resolve(ASSETS_ORIGINAL).toString();
-		ASSETS_NEW = w.resolve(ASSETS_NEW).toString();
-		UPLOAD = w.resolve(UPLOAD).toString();
-		USERS = w.resolve(workspace).toString();
+		TASKS = 			wsAbsolute.resolve(TASKS);
+		TASKS_AUTO = 		wsAbsolute.resolve(TASKS_AUTO);
+		ASSETS_ORIGINAL = 	wsAbsolute.resolve(ASSETS_ORIGINAL);
+		ASSETS_NEW = 		wsAbsolute.resolve(ASSETS_NEW);
+		UPLOAD = 			wsAbsolute.resolve(UPLOAD);
+		USERS = 			wsAbsolute;
 	}
 }

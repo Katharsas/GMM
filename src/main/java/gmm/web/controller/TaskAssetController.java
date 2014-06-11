@@ -1,8 +1,6 @@
 package gmm.web.controller;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,7 +71,7 @@ public class TaskAssetController {
 			TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
 			return assetService.getPreview(task, small, version);
 		}
-		catch (IOException e) {throw new AjaxResponseException(e);}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -88,43 +86,48 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param subDir - "assets" if the files are assets
 	 * @param dir - relative path to the requested directory/file
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
-	@ResponseBody
-	public String showAssetFiles(
+	public @ResponseBody String showAssetFiles(
 			@PathVariable String idLink,
 			@PathVariable String subDir,
-			@RequestParam("dir") Path dir) {
-		
-		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		subDir = subDir.equals("assets") ? config.SUB_ASSETS : config.SUB_OTHER;
-		
-		Path visible = Paths.get(config.ASSETS_NEW)
-				.resolve(task.getNewAssetFolder())
-				.resolve(subDir);
-		dir = fileService.restrictAccess(dir, visible);
-		return new FileTreeScript().html(dir, visible);
+			@RequestParam("dir") Path dir) throws AjaxResponseException {
+		try {
+			AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			boolean isAssets = subDir.equals("assets");
+			
+			Path visible = config.ASSETS_NEW
+					.resolve(task.getNewAssetFolder())
+					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
+			dir = fileService.restrictAccess(dir, visible);
+			return new FileTreeScript().html(dir, visible);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
 	 * Upload File
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
 	public String handleUpload(
 			HttpServletRequest request,
-			@PathVariable String idLink) throws IOException {
-		
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
-		MultipartFile file = (MultipartFile) map.getFirst("myFile");
-		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		assetService.addTextureFile(file, task);
-		
-		return file.isEmpty()? "Upload failed!" : "Upload successfull!";
+			@PathVariable String idLink) throws AjaxResponseException {
+		try {
+			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+			MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+			MultipartFile file = (MultipartFile) map.getFirst("myFile");
+			
+			TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			assetService.addTextureFile(file, task);
+			
+			return file.isEmpty()? "Upload failed!" : "Upload successfull!";
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -133,6 +136,7 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param subDir - "asset" if the file is an asset
 	 * @param dir - relative path to the downloaded file
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/download/{idLink}/{subDir}/{dir}/"},
 			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -141,17 +145,19 @@ public class TaskAssetController {
 			HttpServletResponse response,
 			@PathVariable String idLink,
 			@PathVariable String subDir,
-			@PathVariable Path dir) throws IOException {
-		
-		AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		subDir = subDir.equals("asset") ? config.SUB_ASSETS : config.SUB_OTHER;
-		
-		Path filePath = Paths.get(config.ASSETS_NEW)
-				.resolve(task.getNewAssetFolder())
-				.resolve(subDir)
-				.resolve(dir);
-		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
-		return new FileSystemResource(filePath.toFile());
+			@PathVariable Path dir) throws AjaxResponseException {
+		try {
+			AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			boolean isAssets = subDir.equals("assets");
+			
+			Path filePath = config.ASSETS_NEW
+					.resolve(task.getNewAssetFolder())
+					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER)
+					.resolve(dir);
+			response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
+			return new FileSystemResource(filePath.toFile());
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -160,16 +166,19 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param asset - true if file is an asset
 	 * @param dir - relative path to the deleted file
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
 	public void handleDeleteFile(
 			@PathVariable String idLink,
 			@RequestParam("asset") Boolean asset,
-			@RequestParam("dir") Path dir) throws IOException {
-		
-		TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
-		assetService.deleteTextureFile(dir, asset, task);
+			@RequestParam("dir") Path dir) throws AjaxResponseException {
+		try {
+			TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			assetService.deleteTextureFile(dir, asset, task);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 
 }

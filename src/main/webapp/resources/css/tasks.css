@@ -139,11 +139,15 @@
 	 word-wrap:break-word;
 	 max-width:100%;
 }
-
+.elementStatus {
+	color:#E8E8E8;
+}
+.elementAssigned {
+	margin-right:10px;
+}
 .elementStatus, .elementAssigned {
 	margin-top:4px;
 	font-size:0.96em;
-	color:#E8E8E8;
 }
 
 .elementPriority, .elementLabel {
@@ -244,11 +248,16 @@ background-color: #333;
 }
 .elementDetails{
 }
-.elementDetails, .elementComments, .elementPreview, .elementFiles {
+.elementDetails, .elementComments, .elementPreview, .elementFiles, .elementPath {
 	margin:10px 5px;
 }
+.elementPath {
+	color:#AAA;
+	margin-top:5px;
+	font-size: 0.8em;
+}
 .elementPreview {
-/* 	margin-bottom:0px; */
+	margin-top:20px;
 }
 .elementFiles {
 /* 	margin-top:0px; */
@@ -305,10 +314,10 @@ background-color: #333;
 	margin-top:3px;
 }
 .subElementAuthor {
-	color:#AAAAAA;
+/* 	color:#AAAAAA; */
 	margin-right:2px;
 	min-width:4.7em;
-	font-style:italic;
+/* 	font-style:italic; */
 }
 .subElementText {
 	padding-left:4px;

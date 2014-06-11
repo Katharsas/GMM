@@ -74,40 +74,42 @@
 				    	<fmt:message key="${task.getTaskStatus().getNameKey()}"/>
 				    </div>
 <%-- Assigned --%>
-				    <div class="right elementAssigned elementContent">
+				    <div class="right elementAssigned elementContent userTag">
 				    	<c:if test="${task.getAssigned()!=null}">
-				    		<c:out value="${task.getAssigned().getName()}"/>&#160;&#160;-&#160;&#160;
+				    		<c:out value="${task.getAssigned().getName()}"/>
 						</c:if>
 					</div>
 			    	<div class="clear"></div>
 			    </div>
 			    <div class="listElementBody">
 <%-- AssetPath --%>
-			    <c:if test="${tab.equals('textures')}">
-			    	<div class="elementContent">
-			    		Path: ${task.getNewAssetFolder().getParent()}
-		    		</div>
-			    </c:if>
+				    <c:if test="${tab.equals('textures') || tab.equals('models')}">
+				    	<div class="elementPath elementContent">
+				    		File Path: &#160; &#160; ${task.getNewAssetFolder()}
+			    		</div>
+				    </c:if>
 <%-- Details --%>
-			    <div class="elementDetails elementContent">
-			    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
-			    </div>
+				    <div class="elementDetails elementContent">
+				    	${fn:replace(fn:escapeXml(task.getDetails()), newLine, "<br>")}
+				    </div>
 <%-- Comments & Comment Form--%>
-				<div class="elementComments">
-					<c:forEach items="${task.getComments()}" var="comment">
-						<div class="right elementButton button" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
-							Kommentar ändern
-						</div>
-					    <div id="comment_${comment.getIdLink()}" class="subListElement">
-					    	<div class="left subElementAuthor elementContent">
-					    		<c:out value="${comment.getAuthor().getName()}"/>
-					    	</div>
-					    	<div class="left subElementText elementContent">
-					    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
-					    	</div>
-					    	<div class="clear"></div>
-					    </div>
-					    </c:forEach>
+					<div class="elementComments">
+						<c:forEach items="${task.getComments()}" var="comment">
+							<div class="right elementButton button" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
+								Editieren
+							</div>
+					    	<div id="comment_${comment.getIdLink()}" class="subListElement">
+						    	<div class="left subElementAuthor elementContent">
+						    		<div class="userTag left">
+						    			<c:out value="${comment.getAuthor().getName()}"/>
+					    			</div>
+						    	</div>
+						    	<div class="left subElementText elementContent">
+						    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
+						    	</div>
+						    	<div class="clear"></div>
+						    </div>
+						</c:forEach>
 					    <form:form class="commentInput input" method="POST" action="tasks/submitComment/${task.getIdLink()}?tab=${tab}" commandName="comment">
 					    	<div class="left subElementAuthor">
 					    		<input type="submit" value="Submit">

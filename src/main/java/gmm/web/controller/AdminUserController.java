@@ -10,9 +10,7 @@ import gmm.service.data.XMLService;
 import gmm.web.AjaxResponseException;
 import gmm.web.sessions.TaskSession;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,17 +45,19 @@ public class AdminUserController {
 	public @ResponseBody void editUser(
 			@PathVariable("idLink") String idLink,
 			@RequestParam(value="name", required=false) String name,
-			@RequestParam(value="role", required=false) String role)
-	{
-		if(idLink.equals("new")) {
-			User user = new User(name);
-			data.add(user);
+			@RequestParam(value="role", required=false) String role) throws AjaxResponseException {
+		try {
+			if(idLink.equals("new")) {
+				User user = new User(name);
+				data.add(user);
+			}
+			else {
+				User user = users.getByIdLink(idLink);
+				if(name != null) user.setName(name);
+				if(role != null) user.setRole(role);
+			}
 		}
-		else {
-			User user = users.getByIdLink(idLink);
-			if(name != null) user.setName(name);
-			if(role != null) user.setRole(role);
-		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -65,25 +65,30 @@ public class AdminUserController {
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = {"/users/admin/{idLink}"}, method = RequestMethod.POST)
-	public @ResponseBody void switchAdmin(@PathVariable("idLink") String idLink)
-	{
-		User user = users.getByIdLink(idLink);
-		user.setRole(user.getRole().equals(User.ROLE_ADMIN) ? 
-				User.ROLE_USER : User.ROLE_ADMIN);
+	public @ResponseBody void switchAdmin(@PathVariable("idLink") String idLink) throws AjaxResponseException {
+		try {
+			User user = users.getByIdLink(idLink);
+			user.setRole(user.getRole().equals(User.ROLE_ADMIN) ? 
+					User.ROLE_USER : User.ROLE_ADMIN);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
 	 * Generate User Password
 	 * -----------------------------------------------------------------
 	 * This resets the users password to a new randomly generated password.
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = "/users/reset/{idLink}")
-	public @ResponseBody String resetPassword(@PathVariable("idLink") String idLink)
-	{
-		User user = users.getByIdLink(idLink);
-		String password = users.generatePassword();
-		user.setPasswordHash(encoder.encode(password));
-		return password;
+	public @ResponseBody String resetPassword(@PathVariable("idLink") String idLink) throws AjaxResponseException {
+		try {
+			User user = users.getByIdLink(idLink);
+			String password = users.generatePassword();
+			user.setPasswordHash(encoder.encode(password));
+			return password;
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -94,11 +99,11 @@ public class AdminUserController {
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
 	public @ResponseBody void saveUsers() throws AjaxResponseException {
 		try {
-			Path path = Paths.get(config.USERS).resolve("users.xml");
+			Path path = config.USERS.resolve("users.xml");
 			fileService.prepareFileCreation(path);
 			xmlService.serialize(users.get(), path);
 		}
-		catch (IOException e) {throw new AjaxResponseException(e);}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
@@ -109,7 +114,7 @@ public class AdminUserController {
 	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
 	public @ResponseBody void loadUsers() throws AjaxResponseException {	
 		try {
-			Path path = Paths.get(config.USERS).resolve("users.xml");
+			Path path = config.USERS.resolve("users.xml");
 			Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
 			for(User user : loadedUsers) {
 				user.makeUnique();
@@ -117,17 +122,20 @@ public class AdminUserController {
 			data.removeAll(User.class);
 			data.addAll(User.class, loadedUsers);
 		}
-		catch (IOException e) {throw new AjaxResponseException(e);}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	/**
 	 * Enable/Disable User
 	 * -----------------------------------------------------------------
+	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/users/switch/{idLink}"}, method = RequestMethod.POST)
-	public @ResponseBody void switchUser(@PathVariable("idLink") String idLink)
-	{	
-		User user = users.getByIdLink(idLink);
-		user.enable(!user.isEnabled());
+	public @ResponseBody void switchUser(@PathVariable("idLink") String idLink) throws AjaxResponseException {
+		try {
+			User user = users.getByIdLink(idLink);
+			user.enable(!user.isEnabled());
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 }

@@ -182,7 +182,7 @@ public class TaskController {
 		}
 		else {
 			task = UniqueObject.getFromId(session.getTasks(), idLink);
-			task = taskCreator.editTask(task, form);
+			taskCreator.editTask(task, form);
 		}
 		return "redirect:/tasks?tab="+session.getTab();
 	}

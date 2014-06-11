@@ -77,14 +77,17 @@ public class AdminController {
     }
 	
 	@RequestMapping(value = {"/import/cancel"} , method = RequestMethod.POST)
-	public @ResponseBody void cancelAssetImport() {
-		filePaths.clear();
+	public @ResponseBody void cancelAssetImport() throws AjaxResponseException {
+		try {
+			filePaths.clear();
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	public String saveTasks(@RequestParam("name") String pathString) throws IOException
 	{
-		Path visible = Paths.get(config.TASKS);
+		Path visible = config.TASKS;
 		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		fileService.prepareFileCreation(path);
 		xmlService.serialize(data.getList(Task.class), path);
@@ -92,38 +95,42 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir)
-	{	
-		session.notifyDataChange();
-		Path visible = Paths.get(config.TASKS);
-		dir = fileService.restrictAccess(dir, visible);
+	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-			taskLoader = new TaskLoader(visible.resolve(dir));
+			session.notifyDataChange();
+			Path visible = config.TASKS;
+			dir = fileService.restrictAccess(dir, visible);
+			try {
+				taskLoader = new TaskLoader(visible.resolve(dir));
+			}
+			catch(Exception e) {
+				TaskLoaderResult result = new TaskLoaderResult();
+				result.status = "finished";
+				return result;
+			}
+			return taskLoader.loadNext("default",false);
 		}
-		catch(Exception e) {
-			TaskLoaderResult result = new TaskLoaderResult();
-			result.status = "finished";
-			return result;
-		}
-		return taskLoader.loadNext("default",false);
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = "/load/next", method = RequestMethod.GET)
 	public @ResponseBody TaskLoaderResult loadNextTask (
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll)
-	{	
-		return taskLoader.loadNext(operation, doForAll);
+			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
+		try {
+			return taskLoader.loadNext(operation, doForAll);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws AjaxResponseException {	
 		try {
-			Path visible = Paths.get(config.TASKS);
+			Path visible = config.TASKS;
 			dir = visible.resolve(fileService.restrictAccess(dir, visible));
 			fileService.delete(dir);
 		}
-		catch (IOException e) {throw new AjaxResponseException(e);}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
@@ -133,45 +140,51 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
-	public @ResponseBody String showBackups(@RequestParam("dir") Path dir)
-	{
+	public @ResponseBody String showBackups(@RequestParam("dir") Path dir) throws AjaxResponseException {
+		try {
 		
-		Path visible = Paths.get(config.TASKS);
-		Path dirPath = fileService.restrictAccess(dir, visible);
-		return new FileTreeScript().html(dirPath, visible);
+			Path visible = config.TASKS;
+			Path dirPath = fileService.restrictAccess(dir, visible);
+			return new FileTreeScript().html(dirPath, visible);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
-	public @ResponseBody String showOriginalAssets(@RequestParam("dir") Path dir)
-	{	
-		Path visible = Paths.get(config.ASSETS_ORIGINAL);
-		dir = fileService.restrictAccess(dir, visible);
-		return new FileTreeScript().html(dir, visible);
+	public @ResponseBody String showOriginalAssets(@RequestParam("dir") Path dir) throws AjaxResponseException {
+		try {
+			Path visible = config.ASSETS_ORIGINAL;
+			dir = fileService.restrictAccess(dir, visible);
+			return new FileTreeScript().html(dir, visible);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
 	public @ResponseBody String[] getAssetPaths(
 			@RequestParam("dir") Path dir,
-			@RequestParam("textures") boolean textures)
-	{	
-		Path visible = Paths.get(config.ASSETS_ORIGINAL);
-		dir = fileService.restrictAccess(dir, visible);
-		if(this.areTexturePaths!=textures) {
-			this.filePaths.clear();
-			this.areTexturePaths = textures;
+			@RequestParam("textures") boolean textures) throws AjaxResponseException {
+		try {
+			Path visible = config.ASSETS_ORIGINAL;
+			dir = fileService.restrictAccess(dir, visible);
+			if(this.areTexturePaths!=textures) {
+				this.filePaths.clear();
+				this.areTexturePaths = textures;
+			}
+			String[] extensions;
+			if(textures) {
+				extensions = new String[]{"tga","TGA"};
+			}
+			else {
+				extensions = new String[]{"3ds","3DS"};
+			}
+			this.filePaths.addAll(fileService.getRelativeNames(
+					fileService.getFilePaths(visible.resolve(dir), extensions), visible));
+			String[] result = this.filePaths.toArray(new String[filePaths.size()]);
+			Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
+			return result;
 		}
-		String[] extensions;
-		if(textures) {
-			extensions = new String[]{"tga","TGA"};
-		}
-		else {
-			extensions = new String[]{"3ds","3DS"};
-		}
-		this.filePaths.addAll(fileService.getRelativeNames(
-				fileService.getFilePaths(visible.resolve(dir), extensions), visible));
-		String[] result = this.filePaths.toArray(new String[filePaths.size()]);
-		Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
-		return result;
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
@@ -182,6 +195,6 @@ public class AdminController {
 			session.notifyDataChange();
 			taskCreator.importTasks(filePaths, form, TextureTask.class);
 		}
-		catch (IOException e) {throw new AjaxResponseException(e);}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 }

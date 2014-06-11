@@ -7,7 +7,6 @@ import gmm.service.data.DataConfigService;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -46,7 +45,7 @@ public class TexturePreviewCreator implements PreviewCreator {
 		if(!sourceFile.toFile().exists()) {
 			return;
 		}
-		Path taskFolder = Paths.get(config.ASSETS_NEW).resolve(task.getNewAssetFolder());
+		Path taskFolder = config.ASSETS_NEW.resolve(task.getNewAssetFolder());
 		Path targetFile;
 		String version = isOriginal ? "original" : "newest";
 		BufferedImage image = ImageIO.read(sourceFile.toFile());

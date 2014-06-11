@@ -29,7 +29,7 @@ public class ControllerSettings {
 	public ExceptionWrapper handleExceptions(AjaxResponseException ex, HttpServletRequest request)
 	{
 	    ExceptionWrapper exceptionVO = new ExceptionWrapper(ex.getCause());
-	    ex.printStackTrace();
+	    ex.getCause().printStackTrace();
 	    return exceptionVO;
 	}
 	

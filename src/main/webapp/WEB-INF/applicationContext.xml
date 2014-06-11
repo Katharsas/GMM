@@ -67,6 +67,14 @@
 				</list>
 			</property>
 	</bean>
+	<!-- @Value converter -->
+	<bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+		<property name="customEditors">
+			<map>
+				<entry key="java.nio.file.Path" value="gmm.web.binding.PathEditor" />
+			</map>
+		</property>
+	</bean>
     
 	<!-- Spring Security -->
 	<import resource="applicationContext-security.xml"/>

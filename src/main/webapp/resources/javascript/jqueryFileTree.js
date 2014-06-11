@@ -57,12 +57,14 @@ if(jQuery) (function($){
 				function showTree(c, root) {
 					$(c).addClass('wait');
 					$(".jqueryFileTree.start").remove();
-					$.post(options.script, { dir: root }, function(data) {
-						$(c).find('.start').html('');
-						$(c).removeClass('wait').append(data);
-						if( options.root == root ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: options.expandSpeed, easing: options.expandEasing });
-						bindTree(c);
-					});
+					$.post(options.script, { dir: root })
+						.done(function(data) {
+							$(c).find('.start').html('');
+							$(c).removeClass('wait').append(data);
+							if( options.root == root ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: options.expandSpeed, easing: options.expandEasing });
+							bindTree(c);
+						})
+						.fail(showException);
 				}
 				
 				function bindTree(t) {

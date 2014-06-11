@@ -4,7 +4,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -39,7 +38,7 @@ public class TextureService {
 		
 		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
 		
-		Path imagePath = Paths.get(config.ASSETS_NEW)
+		Path imagePath = config.ASSETS_NEW
 				.resolve(task.getNewAssetFolder())
 				.resolve(config.SUB_PREVIEW)
 				.resolve(imageName);
@@ -62,12 +61,11 @@ public class TextureService {
 		
 		String relativeFile = file.getOriginalFilename();
 		boolean isAsset = relativeFile.endsWith(".tga") || relativeFile.endsWith(".TGA");
-		String subDir = isAsset ? config.SUB_ASSETS : config.SUB_OTHER;
 		
 		//Add file
-		Path assetPath = Paths.get(config.ASSETS_NEW)
+		Path assetPath = config.ASSETS_NEW
 				.resolve(task.getNewAssetFolder())
-				.resolve(subDir)
+				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
 				.resolve(relativeFile);
 		fileService.createFile(assetPath, file.getBytes());
 		if(isAsset) task.setNewestAssetName(relativeFile);
@@ -80,11 +78,9 @@ public class TextureService {
 	
 	public void deleteTextureFile(Path relativeFile, boolean isAsset, AssetTask task) throws IOException {
 		
-		String subDir = isAsset ? config.SUB_ASSETS : config.SUB_OTHER;
-		
 		//Restrict access
-		Path taskFolder = Paths.get(config.ASSETS_NEW).resolve(task.getNewAssetFolder());
-		Path visible = taskFolder.resolve(subDir);
+		Path taskFolder = config.ASSETS_NEW.resolve(task.getNewAssetFolder());
+		Path visible = taskFolder.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER);
 		Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		
 		//Delete previews
