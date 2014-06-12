@@ -14,36 +14,59 @@
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
 		<div class="search listElement">
-		<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
-			<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
-				<fmt:message key="search.complex"/>
-			</div>
-			<form:select id="searchTypeSelect" path="easySearch">
-				<form:option value="true" label="easySearch"/>
-				<form:option value="false" label="complexSearch"/>
-			</form:select>
-			<div class="easySearch">
-				<form:input class="searchInputField left" path="easy" value=""/>
-				<div class="left">&#160;&#160;</div>
-			</div>
-			<div class="complexSearch">
-				<div class="clear"></div>
-				<div class="searchDescription left"><fmt:message key="tasks.title"/>:</div>
-				<form:input class="searchInputField left" path="name" value=""/>
-				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.label"/>:</div>
-				<form:input class="searchInputField left" path="label" value=""/>
-				<div class="clear"></div>
-				<div class="searchDescription left"><fmt:message key="tasks.details"/>:</div>
-				<form:input class="searchInputField left" path="details" value=""/>
-				<div class="searchDescription left">&#160;&#160;<fmt:message key="tasks.assigned"/>:</div>
-				<form:input class="searchInputField left" path="assigned" value=""/>
-				<div class="clear"></div>
-				<div class="searchDescription left"><fmt:message key="author"/>:</div>
-				<form:input class="searchInputField left" path="author" value=""/>
-				<div class="searchDescription left">&#160;</div>
-			</div>
-			<div class="submitSearchButton button pageButton left"><fmt:message key="search.start"/>!</div>
-			<div class="clear"></div>
+			<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
+				
+				<form:select id="searchTypeSelect" path="easySearch">
+					<form:option value="true" label="easySearch"/>
+					<form:option value="false" label="complexSearch"/>
+				</form:select>
+				<div class="easySearch">
+					<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
+						<fmt:message key="search.complex"/>
+					</div>
+					<form:input class="searchInputField left" path="easy" value=""/>
+<!-- 					<div class="left">&#160;&#160;</div> -->
+					<div class="submitSearchButton button pageButton left"><fmt:message key="search.start"/>!</div>
+				</div>
+				
+				<div class="complexSearch">
+					<div class="clear"></div>
+					<div class="right switchSearchButton button pageButton" onclick="switchSearchType()">
+						<fmt:message key="search.easy"/>
+					</div>
+					<div class="clear"></div>
+					<div class="complexSearchLeft">
+					
+<!-- 					Title -->
+						<div class="searchDescription"><fmt:message key="tasks.title"/>:</div>
+						<form:input class="searchInputField" path="name" value=""/>
+						
+<!-- 					Details -->
+						<div class="searchDescription"><fmt:message key="tasks.details"/>:</div>
+						<form:input class="searchInputField" path="details" value=""/>
+						
+<!-- 					Author -->
+						<div class="searchDescription left"><fmt:message key="author"/>:</div>
+						<form:input class="searchInputField" path="author" value=""/>
+					</div>
+<!-- 					<div class="clear"></div> -->
+					<div class="complexSearchRight">
+					
+<!-- 					Description -->
+						<div class="searchDescription"><fmt:message key="tasks.label"/>:</div>
+						<form:input class="searchInputField" path="label" value=""/>
+						<div class="clear"></div>
+
+<!-- 					Assigned -->
+						<div class="searchDescription"><fmt:message key="tasks.assigned"/>:</div>
+						<form:input class="searchInputField" path="assigned" value=""/>
+						<div class="clear"></div>
+	
+						<div class="submitSearchButton button pageButton right">
+							<fmt:message key="search.start"/>!
+						</div>
+					</div>
+				</div>
 			</form:form>
 		</div>
 		<div class="elementCount center">---------------------------------------- 
@@ -57,12 +80,12 @@
 				    </div>
 <%-- ID --%>
 					<div class="left elementId elementContent">
-						<c:out value="${task.getId()}"/>:
+						<c:out value="${task.getId()}"/>
 				    </div>
 <%-- Label --%>
 				    <c:if test="${!task.getLabel().equals(\"\")}">
-					    <div class="left elementLabel elementContent">
-							[<c:out value="${task.getLabel()}"/>]&#160;&#160;
+					    <div class="left elementLabel elementContent labelTag">
+							<c:out value="${task.getLabel()}"/>
 					    </div>
 					</c:if>
 <%-- Title --%>
@@ -95,27 +118,31 @@
 <%-- Comments & Comment Form--%>
 					<div class="elementComments">
 						<c:forEach items="${task.getComments()}" var="comment">
-							<div class="right elementButton button" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
-								Editieren
-							</div>
 					    	<div id="comment_${comment.getIdLink()}" class="subListElement">
 						    	<div class="left subElementAuthor elementContent">
 						    		<div class="userTag left">
 						    			<c:out value="${comment.getAuthor().getName()}"/>
 					    			</div>
 						    	</div>
+						    	<div class="right commentButton elementContent button commentEditButton" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
+									Editieren
+								</div>
 						    	<div class="left subElementText elementContent">
 						    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
 						    	</div>
 						    	<div class="clear"></div>
 						    </div>
 						</c:forEach>
-					    <form:form class="commentInput input" method="POST" action="tasks/submitComment/${task.getIdLink()}?tab=${tab}" commandName="comment">
+					    <form:form class="subListElement commentForm"
+					    		method="POST"
+					    		action="tasks/submitComment/${task.getIdLink()}?tab=${tab}"
+					    		commandName="comment">
 					    	<div class="left subElementAuthor">
-					    		<input type="submit" value="Submit">
+					    		<div class="button commentButton commentSubmitButton"
+					    				onclick="$(this).parents('form.commentForm').submit()">Submit</div>
 					    	</div>
-					    	<div class="subElementText">
-					    		<form:textarea rows="2" cols="1" path="text"></form:textarea>
+					    	<div class="subElementText input">
+					    		<textarea class="commentTextArea" rows="2" cols="1" name="text"></textarea>
 					    	</div>
 					    </form:form>
 				    </div>
@@ -174,7 +201,7 @@
 					</c:if>
 <%-- Footer --%>
 				    <div class="listElementBodyFooter">
-					    <div class="left commentElement elementButton button" onclick="findSwitchCommentInput(this)">
+					    <div class="left commentElement elementButton button" onclick="findSwitchCommentForm(this)">
 				    		<fmt:message key="to.comment"/>
 				    	</div>
 					    <div class="elementAuthorDate right">

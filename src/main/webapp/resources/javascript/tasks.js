@@ -52,7 +52,7 @@ $(document).ready(
 			// hide comment and details when empty
 			$(".elementComments:blank, .elementDetails:blank").hide();
 			// hide comment input field & delete question
-			$(".commentInput").hide();
+			$(".commentForm").hide();
 			// hide delete question
 			$(".elementDelete").hide();
 			// set Search according to selected search type (easy or complex)
@@ -138,7 +138,7 @@ function switchListElement(element) {
 	if ($newElement[0] != $oldElement[0]) {
 		// hide elements that need to be hidden without Focus, hide comment
 		// input
-		hideCommentInput($oldElement.find(".commentInput"));
+		hideCommentForm($oldElement.find(".commentForm"));
 		$oldElement.find(
 				".listElementBodyFooter, .elementFiles, .elementPreview")
 				.slideUp(slideTime);
@@ -161,8 +161,7 @@ function switchListElement(element) {
 		$(element).parent().children(".listElementBody").slideDown(slideTime);
 	} else if ($newElement[0] == $oldElement[0]) {
 		$(element).parent().children(".listElementBody").slideUp(slideTime);
-		$newElement.css("border-width", "0px");
-		$newElement.css("padding-left", "6px");
+		$newElement.removeAttr( 'style' );
 		$newElement = $();
 	}
 	$oldElement = $newElement;
@@ -195,27 +194,27 @@ function switchDeleteQuestion(element) {
 	$delete.toggle();
 }
 
-function findSwitchCommentInput(element) {
-	switchCommentInput($(element).parents(".listElementBody").find(
-			".commentInput"));
+function findSwitchCommentForm(element) {
+	switchCommentForm($(element).parents(".listElementBody").find(
+			".commentForm"));
 }
-function switchCommentInput($commentInput) {
-	if ($commentInput.is(":visible")) {
-		hideCommentInput($commentInput);
+function switchCommentForm($commentForm) {
+	if ($commentForm.is(":visible")) {
+		hideCommentForm($commentForm);
 	} else {
-		showCommentInput($commentInput);
+		showCommentForm($commentForm);
 	}
 }
-function hideCommentInput($commentInput) {
-	var $elementComments = $commentInput.parent();
+function hideCommentForm($commentForm) {
+	var $elementComments = $commentForm.parent();
 	if ($elementComments.is(":visible:blank")) {
 		$elementComments.hide();
 	}
-	$commentInput.hide();
+	$commentForm.hide();
 }
-function showCommentInput($commentInput) {
-	$commentInput.parent().show();
-	$commentInput.show();
+function showCommentForm($commentForm) {
+	$commentForm.parent().show();
+	$commentForm.show();
 }
 
 function changeComment(comment, taskId, commentId) {
@@ -238,18 +237,13 @@ function confirmCommentChange(taskId, commentId) {
  *            String or boolean
  */
 function setSearchVisibility(isEasySearch) {
-	// var slideTime = 300;
-	if (isEasySearch.toString() == "true") {
-		$(".complexSearch").hide();
-		$(".easySearch").show();
-		// $(".complexSearch").slideUp(slideTime,
-		// function(){$(".easySearch").show();});
+	var $search = $(".search");
+	if (isEasySearch.toString() === "true") {
+		$search.find(".complexSearch").hide();
+		$search.find(".easySearch").show();
 	} else {
-		$(".complexSearch").show();
-		$(".easySearch").hide();
-		// $(".complexSearch").slideDown(slideTime,
-		// function(){$(".easySearch").hide();});
-
+		$search.find(".complexSearch").show();
+		$search.find(".easySearch").hide();
 	}
 }
 

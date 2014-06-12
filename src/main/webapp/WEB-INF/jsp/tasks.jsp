@@ -13,6 +13,8 @@
 	<jsp:attribute name="css">
 		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/tasks.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link id="css_link" href="res/css/tasks_filters.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link id="css_link" href="res/css/tasks_search.css" media="screen" rel="stylesheet" type="text/css" />
     	<link id="css_link" href="res/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 

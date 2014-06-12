@@ -14,17 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 
-
-
-
-
 import java.io.IOException;
 /** java */
-import java.security.Principal;
-
-
-
-
 
 
 
@@ -137,11 +128,9 @@ public class TaskController {
 	 */
 	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
 	public String handleTasksComment(
-				Principal principal,
 				@PathVariable String idLink,
 				@ModelAttribute("comment") CommentForm form) {
-		
-		Comment comment = new Comment(users.get(principal), form.getText());
+		Comment comment = new Comment(session.getUser(), form.getText());
 		UniqueObject.getFromId(session.getTasks(), idLink).getComments().add(comment);
 		
 		return "redirect:/tasks?tab="+session.getTab();

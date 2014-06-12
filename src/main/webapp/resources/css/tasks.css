@@ -1,11 +1,6 @@
 .pageButton {
 	width:9em;
 }
-
-#filters {
-	overflow: hidden;
-}
-
 .filterGroup {
 	padding:5px;
 }
@@ -29,45 +24,6 @@
 #submitTaskButton {
 	margin-right:2em;
 }
-
-.filterGroup {
-	border-bottom:2px solid #151515;
-}
-.filterBorder {
-}
-
-.generalFilters{
-	width:9em;
-	margin-left:2px;
-	margin-right:13px;
-	margin-bottom:13%;
-}
-.generalFilters .filterGroup{
-	background-color:#164054;
-}
-.generalFilters .filterBorder{
-	border-color:#151515;
-
-}
-
-.specificFilters{
-	width:9em;
-	margin-right:2px;
-	margin-left:13px;
-}
-
-
-.specificFilters .filterGroup{
-/* 	background-color:#145959; */
-/* 	background-color:#29477F; */
-	background-color:#164054;
-}
-.specificFilters .filterBorder{
-/* 	border-color:#1E3636; */
-/* 	border-color:#222222; */
-	border-color:#151515;
-}
-
 
 #lists{
 	overflow:hidden;
@@ -112,185 +68,162 @@
 	overflow:hidden;
 	break-inside: avoid-column;
 }
-.submitSearchButton, .switchSearchButton {
-	padding-top:1px;
-	padding-bottom:2px;
-}
-.searchInputField, .submitSearchButton {
-	width:33%;
-}
-.searchDescription, .searchInputField, .submitSearchButton, .switchSearchButton {
-	margin-top:5px;
-}
-.switchSearchButton {
-	width:28%;
-	margin-right:5px;
-}
-.searchDescription {
-	width:16.5%;
-}
-.elementCount {
+#listsMain .elementCount {
 	font-size:0.9em;
 	margin-top:3px;
 	font-weight:bold;
 	color:#000000;
 }
-.elementContent {
+#listsMain .elementContent {
 	 word-wrap:break-word;
 	 max-width:100%;
 }
-.elementStatus {
+#listsMain .elementId{
+	padding-right:7px;
+	margin-top:5px;
+	color:#6D6D6D;
+	font-size:0.8em;
+}
+#listsMain .elementStatus {
 	color:#E8E8E8;
 }
-.elementAssigned {
+#listsMain .elementAssigned {
+	font-weight:bold;
+/* 	font-style:italic; */
 	margin-right:10px;
 }
-.elementStatus, .elementAssigned {
+#listsMain .elementStatus, #listsMain .elementAssigned, #listsMain .elementLabel {
 	margin-top:4px;
 	font-size:0.96em;
 }
 
-.elementPriority, .elementLabel {
+#listsMain .elementPriority {
 	margin-top:5px;
 }
 
-.elementPriority{
+#listsMain .elementPriority{
 	margin-left:10px;
 	height:1em;
 	width:0.5em;
 }
-
-.elementId, .elementLabel{
-	padding-right:3px;
-
+#listsMain .elementLabel{
+	margin-right:5px;
 }
-.elementId{
-	margin-top:6px;
-	color:#6D6D6D;
-	font-size:0.8em;
-}
-.elementLabel{
-	font-weight:600;
-	color:#DDDDDD;
-	font-size:0.9em;
-}
-.elementName{
+#listsMain .elementName{
 	padding-left:5px;
 	padding-bottom:3px;
 }
-.listElementBodyFooter {
+#listsMain .listElementBodyFooter {
 	margin: 25px 0px 2px 0px;
 }
-.elementAuthorDate{
+#listsMain .elementAuthorDate{
 	bottom:0px;
 	color:#999999;
 	font-size:0.7em;
 }
-.elementButton{
-	padding:3px 7px;
+#listsMain .elementButton, #listsMain .commentButton {
 	font-size:0.87em;
-	margin:2px 10px 0px 0px;
-	min-width:5.5em;
 	color:#CCCCCC;
 	background-color: #3A3A3A;
 }
-.elementButton:hover{
+#listsMain .elementButton{
+	padding:3px 7px;
+	margin:2px 10px 0px 0px;
+	min-width:5.5em;
+}
+#listsMain .elementButton:hover{
 	background-color:292929;
 }
-.elementButton.commentElement {
+#listsMain .elementButton.commentElement {
 	margin-left:3px;
 }
 
-.elementPriority.ULTRA{
+#listsMain .elementPriority.ULTRA{
 	width:0.9em;
 	background-color:#F30021;
 }
-.elementPriority.HIGH{
+#listsMain .elementPriority.HIGH{
 	width:0.7em;
 	background-color:#FF4F00;
 }
-.elementPriority.MID{
+#listsMain .elementPriority.MID{
 	background-color:#FFB400;
 }
-.elementPriority.LOW{
+#listsMain .elementPriority.LOW{
 	width:0.3em;
 	background-color:#DDDDDD;
 }
-.elementPreview {
-/* 	border-left: 1px solid #777; */
-/* 	background:#2D2D2D; */
+#listsMain .elementPreview {
 	overflow:hidden;
 }
-.subPreviewDescriptor {
-/* 	border-top: 1px solid #777; */
+#listsMain .subPreviewDescriptor {
 	width:50%;
-/* 	background-color: #414141; */
-background-color: #333;
+	background-color: #333;
 }
-.subPreviewDescriptor > *{
+#listsMain .subPreviewDescriptor > *{
 	padding:4px;
 	padding-left:10px;
 }
-.subElementPreview {
+#listsMain .subElementPreview {
 	text-align: center;
 	width:49%;
 	min-height:10px;
 	overflow:hidden;
 }
-.subElementPreview img{
+#listsMain .subElementPreview img{
 	margin:1px;
 	max-width: 99%;
 	vertical-align: bottom;
 }
-.subElementPreview:hover img {
+#listsMain .subElementPreview:hover img {
 	margin:0px;
 	border:1px dashed #999;
 }
-.elementDetails{
+#listsMain .elementDetails{
 }
-.elementDetails, .elementComments, .elementPreview, .elementFiles, .elementPath {
+#listsMain .elementDetails, #listsMain .elementComments, #listsMain .elementPreview, #listsMain .elementFiles, #listsMain .elementPath {
 	margin:10px 5px;
 }
-.elementPath {
+#listsMain .elementPath {
 	color:#AAA;
 	margin-top:5px;
 	font-size: 0.8em;
 }
-.elementPreview {
+#listsMain .elementPreview {
 	margin-top:20px;
 }
-.elementFiles {
+#listsMain .elementFiles {
 /* 	margin-top:0px; */
 /* 	border-left: 1px solid #777; */
 /* 	border-right: 1px solid #777; */
 /* 	background-color:#2D2D2D; */
 }
-.subElementAssets {
+#listsMain .subElementAssets {
 }
-.subElementWip {
+#listsMain .subElementWip {
 }
-.subElementAssets, .subElementWip {
+#listsMain .subElementAssets, #listsMain .subElementWip {
 	width: 50%;
 }
-.subFilesDescriptor {
+#listsMain .subFilesDescriptor {
 	padding:4px;
 	padding-left:10px;
 /* 	border-top: 1px solid #777; */
 /* 	border-bottom: 1px solid #555; */
 	background-color: #333;
 }
-.subElementFileOperations {
+#listsMain .subElementFileOperations {
 	background-color: #333;
 /* 	border-top: 1px solid #555; */
 /* 	border-bottom: 1px solid #555; */
 	margin-top:10px;
 	padding:4px 2px;
 }
-.subFilesContainer {
+#listsMain .subFilesContainer {
 	padding:5px;
 	padding-left:10px;
 }
-.subElementButton {
+#listsMain .subElementButton {
 	border: 1px solid #555;
 	min-width:5em;
 	font-size: 0.85em;
@@ -298,51 +231,56 @@ background-color: #333;
 	padding:2px 8px;
 	background-color: #666;
 }
-.selectedTaskFile {
+#listsMain .selectedTaskFile {
 	background-color:#A82709;
 	font-weight: bold;
 }
-.elementComments {
-	margin-top:10px;
+#listsMain commentButton {
+	height:30px;
 }
-.elementDetails, .subListElement {
+#listsMain .elementComments {
+	margin-top:10px;
+	margin-left:20px;
+}
+#listsMain .elementDetails{
 	color:#DDDDDD;
 	padding:0px 5px;
 }
-.subListElement{
-	border-top: 1px solid #555555;
+#listsMain .subListElement{
+	color:#DDDDDD;
+	border-top: 1px dotted #666;
 	margin-top:3px;
+	padding-top:3px;
 }
-.subElementAuthor {
-/* 	color:#AAAAAA; */
+#listsMain .subElementAuthor, #listsMain .commentForm .commentSubmitButton {
+	margin-top: 2px;
 	margin-right:2px;
-	min-width:4.7em;
-/* 	font-style:italic; */
+	min-width:6em;
 }
-.subElementText {
-	padding-left:4px;
+#listsMain .commentEditButton {
+	padding-left:5px;
+	padding-right:5px;
 }
-.commentInput {
-	margin-top:5px;
+#listsMain .subElementText {
+	padding-left:5px;
 }
-.commentInput .subElementText{
+#listsMain .commentForm .subElementText{
 	width:auto;
 	overflow:hidden;
 }
-#text {
-	background-color:#333333;
-	color:#D5D5D5;
-	width:100%				!important;
+#listsMain .commentForm .commentTextArea {
+	width:auto;
+	width:100%;
+	resize:vertical;
 }
-
-.elementDelete {
+#listsMain .elementDelete {
 	background-color:#000000;
 	border:3px solid red;
 }
-.elementDelete .deleteQuestion{
+#listsMain .elementDelete .deleteQuestion{
 	margin:6px;
 }
-.elementDelete .deleteButton{
+#listsMain .elementDelete .deleteButton{
 	margin:3px;
 	width:5em;
 	color:#000000;
