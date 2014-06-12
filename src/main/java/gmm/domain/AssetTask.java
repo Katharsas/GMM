@@ -2,7 +2,7 @@ package gmm.domain;
 
 import java.nio.file.Path;
 
-public class AssetTask extends Task {
+public class AssetTask<A extends Asset> extends Task {
 
 	private Path originalAsset = null;
 	private Path newAssetFolder = null;

@@ -149,25 +149,47 @@
 <%-- TexturePreview --%>
 				    <c:if test="${tab.equals('textures')}">
 				    	<div class="elementPreview elementContent">
-				    		<div class="subPreviewDescriptor left">
-				    			<div class="center">Original</div>
-				    		</div>
-				    		<div class="subPreviewDescriptor right">
-				    			<div class="center">Newest</div>
-				    		</div>
-				    		<div class="subElementPreview left">
-					    		<a href="tasks/preview?small=false&amp;ver=original&amp;id=${task.getIdLink()}">
-					    			<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}" alt="Original Texture Not Avaliable">
-					    		</a>
-				    		</div>
-				    		<div class="subElementPreview right">
-				    			<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
-				    				<img src="tasks/preview?small=true&amp;ver=newest&id=${task.getIdLink()}" alt="New Texture Not Avaliable">
-				    			</a>
-				    		</div>
-				    		<div class="clear"></div>
-				    	</div>
+					    	<table>
+				    			<colgroup>
+							       <col span="1" style="width: 49%;">
+							       <col span="1" style="width: 2%;">
+							       <col span="1" style="width: 49%;">
+							    </colgroup>
+								<tr class="subPreviewDescriptor">
+							    	<td class="subPreviewHalf leftHalf elementButton button">
+							    		<div class="subPreviewName left">ItArRunes.tga</div>
+							    		<div class="subPreviewDownload right">Download</div>
+							    		<div class="clear"></div>
+							    		<div class="subPreviewSize left">3 MB</div>
+							    		<div class="subPreviewDimensions right">512x512 px</div>
+							    	</td><td></td>
+							    	<td class="subPreviewHalf rightHalf elementButton button">
+						    			<div class="subPreviewName left">ItArRunes.tga</div>
+							    		<div class="subPreviewDownload right">Download</div>
+							    		<div class="clear"></div>
+							    		<div class="subPreviewSize left">3 MB</div>
+							    		<div class="subPreviewDimensions right">512x512 px</div>
+							    	</td>
+						    	</tr>
+						    	<tr class="subPreviewImage center">
+						    		<td class="subPreviewHalf leftHalf">
+						    			<a href="tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
+						    				<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}"
+							    					onerror="$(this).parents('.elementPreview').find('.leftHalf').hide()">
+							    		</a>
+							    	</td><td></td>
+							    	<td class="subPreviewHalf rightHalf clickable">
+							    		<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
+							    			<img src="tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}"
+								    				onerror="$(this).parents('.elementPreview').find('.rightHalf').hide()">
+							    		</a>
+							    	</td>
+						    	</tr>
+							</table>
+						</div>
+				    </c:if>
 <%-- Files --%>
+					<c:if test="${tab.equals('textures') || tab.equals('models')}">
 						<div class="elementFiles elementContent">
 							<div class="subElementAssets left">
 								<div class="subFilesDescriptor">

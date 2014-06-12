@@ -27,7 +27,7 @@ public class TexturePreviewCreator implements PreviewCreator {
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
-	private static final int SMALL_SIZE = 420;
+	private static final int SMALL_SIZE = 300;
 	
 	@PostConstruct
 	private void init() {

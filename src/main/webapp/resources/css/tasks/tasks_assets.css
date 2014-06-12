@@ -1,0 +1,78 @@
+/* //////////////////////////////////////////////////
+ * Preview
+ * //////////////////////////////////////////////////*/
+.elementPreview table {
+	width: 100%;
+	table-layout:fixed;
+	border-spacing: 5px;
+}
+.subPreviewDescriptor {
+}
+.subPreviewImage {
+	width:100%;
+}
+.subPreviewHalf {
+	background-color: #333;
+}
+.subPreviewImage .subPreviewHalf {
+	box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
+	padding:10px 0;
+}
+.subPreviewImage .subPreviewHalf:hover {
+	background-color: #393939;
+}
+.subPreviewImage .subPreviewHalf a {
+	display:block;
+}
+.subPreviewImage .subPreviewHalf img {
+	 max-width:100%;
+}
+
+
+
+/* //////////////////////////////////////////////////
+ * Asset file manager
+ * //////////////////////////////////////////////////*/
+ 
+.elementDetails, .elementComments, .elementPreview, .elementFiles, .elementPath {
+	margin:15px 5px;
+}
+.elementPath {
+	color:#AAA;
+	margin-top:5px;
+	font-size: 0.8em;
+}
+
+.subElementAssets {
+}
+.subElementWip {
+}
+.subElementAssets, .subElementWip {
+	width: 50%;
+}
+.subFilesDescriptor {
+	padding:4px;
+	padding-left:10px;
+	background-color: #333;
+}
+.subElementFileOperations {
+	background-color: #333;
+	margin-top:10px;
+	padding:4px 2px;
+}
+.subFilesContainer {
+	padding:5px;
+	padding-left:10px;
+}
+.subElementButton {
+	border: 1px solid #555;
+	min-width:5em;
+	font-size: 0.85em;
+	margin:0px 5px;
+	padding:2px 8px;
+	background-color: #666;
+}
+.selectedTaskFile {
+	background-color:#A82709;
+	font-weight: bold;
+}
