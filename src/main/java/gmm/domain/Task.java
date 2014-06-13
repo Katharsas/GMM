@@ -88,4 +88,7 @@ public abstract class Task extends NamedObject{
 	public List<Task> getDependencyFor() {
 		return dependencyFor;
 	}
+
+	public void onLoad() {
+	}
 }

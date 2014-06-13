@@ -85,7 +85,7 @@ public class TaskCreator {
 	public <T extends AssetTask<?>> void importTasks(Iterable<String> assetPaths, TaskForm form, Class<T> type) throws IOException {
 		Set<T> result = new HashSet<>();
 		for(String path : assetPaths) {
-			form.setAssetPath(path);
+			form.setOriginalAssetPath(path);
 			result.add(createTask(type, form));
 		}
 		data.addAll(type, result);

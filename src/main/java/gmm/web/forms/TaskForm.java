@@ -15,7 +15,8 @@ public class TaskForm {
 	private TaskPriority priority;
 	private TaskStatus status;
 	private TaskType type;
-	private String assetPath;
+	private String originalAssetPath;
+	private String newAssetFolderPath;
 	
 	public TaskForm() {
 		setDefaultState();
@@ -28,7 +29,8 @@ public class TaskForm {
 		priority = TaskPriority.MID;
 		status = TaskStatus.TODO;
 		type = TaskType.GENERAL;
-		assetPath = "";
+		originalAssetPath = "";
+		newAssetFolderPath = "";
 	}
 	
 	//Setters, Getters-------------------------------------------
@@ -83,10 +85,16 @@ public class TaskForm {
 	public void setType(TaskType type) {
 		this.type = type;
 	}
-	public String getAssetPath() {
-		return assetPath;
+	public String getOriginalAssetPath() {
+		return originalAssetPath;
 	}
-	public void setAssetPath(String assetPath) {
-		this.assetPath = assetPath;
+	public void setOriginalAssetPath(String assetPath) {
+		this.originalAssetPath = assetPath;
+	}
+	public String getNewAssetFolderPath() {
+		return newAssetFolderPath;
+	}
+	public void setNewAssetFolderPath(String newAssetFolderPath) {
+		this.newAssetFolderPath = newAssetFolderPath;
 	}
 }

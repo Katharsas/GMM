@@ -6,9 +6,13 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
-public class Texture extends Asset {
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+public class Texture extends Asset {
+	
+	@XStreamAsAttribute
 	private int height;
+	@XStreamAsAttribute
 	private int width;
 	
 	public Texture(Path base, Path relative) throws IOException {

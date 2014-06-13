@@ -1,8 +1,11 @@
 package gmm.service.data;
 
+import org.springframework.stereotype.Service;
+
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
 
+@Service
 public interface DataAccess {
 
 	public <T extends Linkable> Collection<T> getList(Class<?> clazz);

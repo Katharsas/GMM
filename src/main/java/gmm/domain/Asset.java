@@ -4,9 +4,14 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
 public abstract class Asset {
 	
+	@XStreamAsAttribute
 	protected Path relative;
+	@XStreamOmitField
 	protected Path absolute;
 	
 	public Asset(Path base, Path relative) {

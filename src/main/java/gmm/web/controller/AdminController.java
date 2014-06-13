@@ -100,15 +100,8 @@ public class AdminController {
 			session.notifyDataChange();
 			Path visible = config.TASKS;
 			dir = fileService.restrictAccess(dir, visible);
-			try {
-				taskLoader = new TaskLoader(visible.resolve(dir));
-			}
-			catch(Exception e) {
-				TaskLoaderResult result = new TaskLoaderResult();
-				result.status = "finished";
-				return result;
-			}
-			return taskLoader.loadNext("default",false);
+			taskLoader = new TaskLoader(visible.resolve(dir));
+			return taskLoader.loadNext("default", false);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}

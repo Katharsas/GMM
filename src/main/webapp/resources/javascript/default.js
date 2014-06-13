@@ -42,6 +42,8 @@ String.prototype.nl2br = function(is_xhtml) {
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(function() {
+	allVars.$overlay = $("#overlay");
+	
 	hideDialogue();
 	//find page tab by URL and set as active tab
 	var activeTab = $(".pageTabmenu .tab a[href=\""+fileName+"\"]").parent();
@@ -74,13 +76,13 @@ function getURLParameter(sParam)
 }
 
 function showDialogue(selector) {
-	$("#overlay").show();
+	allVars.$overlay.show();
 	$(selector).show();
 }
 
 function hideDialogue() {
 	$(".dialogContainer").hide();
-	$("#overlay").hide();
+	allVars.$overlay.hide();
 }
 
 /**
@@ -164,7 +166,7 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 
 function showException(jqXHR) {
 	$(".dialogContainer").hide();
-	$("#overlay").show();
+	allVars.$overlay.show();
 	
 	var exception = jQuery.parseJSON(jqXHR.responseText);
 	var $exceptionDialog = $("#exceptionDialog");

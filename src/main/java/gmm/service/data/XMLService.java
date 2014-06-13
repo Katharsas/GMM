@@ -7,11 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
+import gmm.domain.Asset;
 import gmm.domain.AssetTask;
 import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
+import gmm.domain.Model;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
+import gmm.domain.Texture;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
@@ -38,10 +41,12 @@ public class XMLService {
 							GeneralTask.class,
 							AssetTask.class,
 							ModelTask.class,
-							ModelTask.class,
 							TextureTask.class,
 							User.class,
-							Comment.class};
+							Comment.class,
+							Asset.class,
+							Texture.class,
+							Model.class};
 		for (Class<?> c : clazzes) {
 			xstream.alias(c.getSimpleName(), c);
 		}

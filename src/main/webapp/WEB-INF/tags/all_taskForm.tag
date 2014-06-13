@@ -116,7 +116,7 @@
 		</div>
 		<div class="taskDescription">File name:</div>
 		<div class="taskInput">
-			<form:input path="assetPath" value=""/>
+			<form:input path="newAssetFolderPath" value=""/>
 		</div>
 	</div>
 </div>

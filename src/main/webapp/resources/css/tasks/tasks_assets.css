@@ -25,7 +25,8 @@
 	display:block;
 }
 .subPreviewImage .subPreviewHalf img {
-	 max-width:90%;
+	border:1px dotted #666;
+	max-width:90%;
 }
 
 

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
+import gmm.domain.Texture;
 import gmm.domain.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
@@ -59,19 +60,18 @@ public class TextureService {
 	 */
 	public void addTextureFile(MultipartFile file, TextureTask task) throws IOException {
 		
-		String relativeFile = file.getOriginalFilename();
-		boolean isAsset = relativeFile.endsWith(".tga") || relativeFile.endsWith(".TGA");
+		String fileName = file.getOriginalFilename();
+		boolean isAsset = fileName.endsWith(".tga") || fileName.endsWith(".TGA");
 		
 		//Add file
-		Path assetPath = config.ASSETS_NEW
-				.resolve(task.getNewAssetFolder())
+		Path relative = task.getNewAssetFolder()
 				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
-				.resolve(relativeFile);
+				.resolve(fileName);
+		Path assetPath = config.ASSETS_NEW.resolve(relative);
 		fileService.createFile(assetPath, file.getBytes());
-		if(isAsset) task.setNewestAssetName(relativeFile);
 		
-		//Add texture preview files
 		if(isAsset) {
+			task.setNewestAsset(creator.createAsset(config.ASSETS_NEW, relative));
 			creator.createPreview(assetPath, task, false);
 		}
 	}
@@ -84,8 +84,9 @@ public class TextureService {
 		Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		
 		//Delete previews
-		if(isAsset && task.getNewestAssetName()!=null) {
-			if(assetPath.getFileName().toString().equals(task.getNewestAssetName())) {
+		Texture tex = task.getNewestAsset();
+		if(isAsset && tex!=null) {
+			if(assetPath.getFileName().toString().equals(tex.getPath().getFileName().toString())) {
 				Path preview = taskFolder.resolve(config.SUB_PREVIEW);
 				Path previewFile;
 				previewFile = preview.resolve("newest_full.png");
@@ -96,7 +97,7 @@ public class TextureService {
 				if(previewFile.toFile().exists()) {
 					fileService.delete(previewFile);
 				}
-				task.setNewestAssetName(null);
+				task.setNewestAsset(null);
 			}
 		}
 		//Delete file

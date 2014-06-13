@@ -132,32 +132,50 @@ public class TaskAssetController {
 	
 	/**
 	 * Download File
+	 * 
+	 * Downloads file from an asset task shown in view. Can be used to download the files
+	 * shown in the preview or to download files shown in the task file manager.
+	 * To download from preview, subDir argument must equal "preview".
+	 * To download from manager, subDir argument must euqla "asset" or "other",
+	 * depending on to which of the two file managers of this task the file belongs.
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
-	 * @param subDir - "asset" if the file is an asset
-	 * @param dir - relative path to the downloaded file
+	 * @param subDir - "preview", "asset" or "other"
+	 * @param dir - relative path to the downloaded file (if preview: "original" or "newest")
 	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/download/{idLink}/{subDir}/{dir}/"},
 			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
-	public FileSystemResource handleDownload(
-			HttpServletResponse response,
-			@PathVariable String idLink,
-			@PathVariable String subDir,
-			@PathVariable Path dir) throws AjaxResponseException {
-		try {
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
-			boolean isAssets = subDir.equals("assets");
-			
-			Path filePath = config.ASSETS_NEW
-					.resolve(task.getNewAssetFolder())
+	public FileSystemResource handleDownload(final HttpServletResponse response,
+			@PathVariable final String idLink,
+			@PathVariable final String subDir,
+			@PathVariable final String dir) {
+		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
+		Path filePath;
+		Path base;
+		if(subDir.equals("preview")) {
+			if(dir.equals("original")) {
+				base = config.ASSETS_ORIGINAL;
+				filePath = task.getOriginalAsset().getPath();
+			}
+			else if(dir.equals("newest")) {
+				base = config.ASSETS_NEW;
+				filePath = task.getNewestAsset().getPath();
+			}
+			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
+		}
+		else if (subDir.equals("asset") || subDir.equals("other") ){
+			boolean isAssets = subDir.equals("asset");
+			base = config.ASSETS_NEW;
+			filePath = task.getNewAssetFolder()
 					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER)
 					.resolve(dir);
-			response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
-			return new FileSystemResource(filePath.toFile());
 		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+		else throw new IllegalArgumentException("Sub directory '"+subDir+"' is invalid. Valid values are 'preview', 'asset' and 'other'");
+		filePath = base.resolve(fileService.restrictAccess(filePath, base));
+		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
+		return new FileSystemResource(filePath.toFile());
 	}
 	
 	/**

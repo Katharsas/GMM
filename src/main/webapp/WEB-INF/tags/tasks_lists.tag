@@ -155,37 +155,55 @@
 							       <col span="1" style="width: 2%;">
 							       <col span="1" style="width: 49%;">
 							    </colgroup>
+							    <c:set value="${task.originalAsset}" var="asset"/>
 								<tr class="subPreviewDescriptor">
-							    	<td class="subPreviewHalf leftHalf elementButton button">
-							    		<div class="subPreviewName left">${task.originalAsset.path.fileName}</div>
-							    		<div class="subPreviewDownload right">Download</div>
-							    		<div class="clear"></div>
-							    		<div class="subPreviewSize left">${task.originalAsset.sizeInKB} KB</div>
-							    		<div class="subPreviewDimensions right">
-							    			${task.originalAsset.width} x ${task.originalAsset.height}
-							    		</div>
-							    	</td><td></td>
-							    	<td class="subPreviewHalf rightHalf elementButton button">
-						    			<div class="subPreviewName left">ItArRunes.tga</div>
-							    		<div class="subPreviewDownload right">Download</div>
-							    		<div class="clear"></div>
-							    		<div class="subPreviewSize left">3 MB</div>
-							    		<div class="subPreviewDimensions right">512x512 px</div>
-							    	</td>
+							    	<c:if test="${!(empty asset)}">
+								    	<td class="subPreviewHalf leftHalf elementButton button"
+								    			onclick="downloadFromPreview('${task.getIdLink()}', 'original')">
+								    		<span class="left" style="font-weight:bold">Original:</span>
+								    		<span class="right">
+								    			${asset.width} x ${asset.height}
+								    		</span>
+								    		<div class="clear"></div>
+								    		<span class="left">${asset.path.fileName}</span>
+								    		<span class="right">${asset.sizeInKB} KB</span>
+								    	</td>
+							    	</c:if>
+							    	<c:if test="${empty asset}"><td></td></c:if>
+							    	<td></td>
+							    	<c:set value="${task.newestAsset}" var="asset"/>
+							    	<c:if test="${!(empty asset)}">
+								    	<td class="subPreviewHalf leftHalf elementButton button"
+								    			onclick="downloadFromPreview('${task.getIdLink()}', 'newest')">
+								    		<span class="left" style="font-weight:bold">Newest:</span>
+								    		<span class="right">
+								    			${asset.width} x ${asset.height}
+								    		</span>
+								    		<div class="clear"></div>
+								    		<span class="left">${asset.path.fileName}</span>
+								    		<span class="right">${asset.sizeInKB} KB</span>
+								    	</td>
+							    	</c:if>
+							    	<c:if test="${empty asset}"><td></td></c:if>
 						    	</tr>
 						    	<tr class="subPreviewImage center">
-						    		<td class="subPreviewHalf leftHalf">
-						    			<a href="tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
-						    				<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}"
-							    					onerror="$(this).parents('.elementPreview').find('.leftHalf').hide()">
-							    		</a>
-							    	</td><td></td>
-							    	<td class="subPreviewHalf rightHalf clickable">
-							    		<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
-							    			<img src="tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}"
-								    				onerror="$(this).parents('.elementPreview').find('.rightHalf').hide()">
-							    		</a>
-							    	</td>
+						    		<c:if test="${!(empty task.originalAsset)}">
+							    		<td class="subPreviewHalf leftHalf">
+							    			<a href="tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
+							    				<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
+								    		</a>
+								    	</td>
+								    </c:if>
+								    <c:if test="${empty task.originalAsset}"><td></td></c:if>
+							    	<td></td>
+							    	<c:if test="${!(empty task.newestAsset)}">
+								    	<td class="subPreviewHalf rightHalf clickable">
+								    		<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
+								    			<img src="tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}">
+								    		</a>
+								    	</td>
+								    </c:if>
+								    <c:if test="${empty task.newestAsset}"><td></td></c:if>
 						    	</tr>
 							</table>
 						</div>

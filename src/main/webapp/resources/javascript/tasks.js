@@ -302,13 +302,20 @@ function submitGeneralFilters() {
 }
 
 function uploadFile(input, idLink) {
+	allVars.$overlay.show();
+	
 	var file = input.files[0];
 	var uri = "tasks/upload/" + idLink + tasksFuncs.tabPar();
 
 	sendFile(file, uri, function(responseText) {
 		tasksFuncs.refresh();
-		// alert("Server Response: "+responseText);
+//		alert(allVars.$overlay.show, "Upload successfull!");
 	});
+}
+
+function downloadFromPreview(idLink, version) {
+	var uri = "tasks/download/" + idLink + "/preview/" + version + "/" + tasksFuncs.tabPar();
+	window.open(uri);
 }
 
 function downloadFile(idLink) {

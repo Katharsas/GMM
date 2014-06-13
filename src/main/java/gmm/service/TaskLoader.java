@@ -11,20 +11,19 @@ import java.util.Iterator;
 
 public class TaskLoader {
 	
-	DataAccess data = Spring.get(DataAccess.class);
-	XMLService xmlService = Spring.get(XMLService.class);
+	private final DataAccess data = Spring.get(DataAccess.class);
 	
-	private Iterator<? extends Task> taskLoader;
+	private final Iterator<? extends Task> taskLoader;
 	private Task currentlyLoaded;
 	private String doForAll = "default";
 	
-	private static String defaultOp = "default";
-	private static String skipOp = "skip";
-	private static String overwriteOp = "overwrite";
-	private static String bothOp = "both";
+	private static final String defaultOp = "default";
+	private static final String skipOp = "skip";
+	private static final String overwriteOp = "overwrite";
+	private static final String bothOp = "both";
 	
 	public TaskLoader(Path path) throws IOException {
-		taskLoader = xmlService.deserialize(path, Task.class).iterator();
+		taskLoader = Spring.get(XMLService.class).deserialize(path, Task.class).iterator();
 	}
 	
 	public TaskLoaderResult loadNext(String operation, boolean doForAllFlag) {
@@ -41,6 +40,7 @@ public class TaskLoader {
 			}
 			//We try to add the next element. If a conflict occurs, we may need to ask the user.
 			currentlyLoaded = taskLoader.next();
+			currentlyLoaded.onLoad();
 			UniqueObject.updateCounter(currentlyLoaded);
 			needOperation = !data.add(currentlyLoaded);
 			//we only need a new operation for a conflict, if the user never answered "doForAll".

@@ -48,6 +48,7 @@
 	</bean>
 	
 	<!-- Custom Beans -->
+     <bean id="applicationContextProvider" class="gmm.service.Spring"></bean>
     
 	<!-- Expose property file with meta information -->
 	<!-- Expose to @Value annotation in java -->
