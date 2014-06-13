@@ -6,8 +6,8 @@ import java.util.LinkedList;
 
 import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
-import gmm.domain.TaskPriority;
 import gmm.domain.Task;
+import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
 

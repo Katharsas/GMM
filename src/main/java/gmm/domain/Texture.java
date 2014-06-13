@@ -1,19 +1,27 @@
 package gmm.domain;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Path;
 
-public class Texture implements Asset {
+import javax.imageio.ImageIO;
 
-	@Override
-	public int getSizeInBytes() {
-		// TODO Auto-generated method stub
-		return 0;
+public class Texture extends Asset {
+
+	private int height;
+	private int width;
+	
+	public Texture(Path base, Path relative) throws IOException {
+		super(base, relative);
+		BufferedImage image = ImageIO.read(absolute.toFile());
+		height = image.getHeight();
+		width = image.getWidth();
 	}
-
-	@Override
-	public Path getPath() {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public int getHeight() {
+		return height;
 	}
-
+	public int getWidth() {
+		return width;
+	}
 }

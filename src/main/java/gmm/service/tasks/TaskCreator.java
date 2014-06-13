@@ -1,8 +1,6 @@
 package gmm.service.tasks;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
@@ -13,7 +11,6 @@ import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
-import gmm.service.FileService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
@@ -29,9 +26,10 @@ public class TaskCreator {
 	@Autowired TaskSession session;
 	@Autowired UserService users;
 	@Autowired DataAccess data;
-	@Autowired TexturePreviewCreator creator;
 	@Autowired DataConfigService config;
-	@Autowired FileService fileService;
+	
+	@Autowired TextureAssetCreator textureCreator;
+	@Autowired ModelAssetCreator modelCreator;
 	
 	public <T extends Task> T createTask(Class<T> type, TaskForm form) throws IOException {
 		T task;
@@ -49,27 +47,14 @@ public class TaskCreator {
 		}
 		editTask(task, form);
 		if (task instanceof TextureTask) {
-			AssetTask assetTask = (AssetTask) task;
-			editAssetTask(assetTask, form);
+			TextureTask assetTask = (TextureTask) task;
+			textureCreator.editAssetTask(assetTask, form);
+		}
+		if (task instanceof ModelTask) {
+			ModelTask assetTask = (ModelTask) task;
+			modelCreator.editAssetTask(assetTask, form);
 		}
 		return task;
-	}
-	
-	private <T extends AssetTask> void editAssetTask(T task, TaskForm form) throws IOException {
-		Path assetPath = Paths.get(form.getAssetPath());
-		//check if path is below valid dirs
-		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_ORIGINAL);
-		//check conflict with existing files
-		Path newAssetPathConflict = config.ASSETS_NEW.resolve(assetPath);
-		if(newAssetPathConflict.toFile().exists()) {
-			throw new IllegalArgumentException("Asset path \""+assetPath+"\" is invalid. Path points to an existing file or directory!");
-		}
-		//substitute wildcards
-		task.setName(task.getName().replace("%filename%", assetPath.getFileName().toString()));
-		task.setDetails(task.getDetails().replace("%filename%", assetPath.getFileName().toString()));
-		task.setOriginalAsset(assetPath);
-		task.setNewAssetFolder(assetPath);
-		creator.createPreview(config.ASSETS_ORIGINAL.resolve(assetPath), task, true);
 	}
 	
 	public <T extends Task> void editTask(T task, TaskForm form) {
@@ -97,7 +82,7 @@ public class TaskCreator {
 		return form;
 	}
 	
-	public <T extends AssetTask> void importTasks(Iterable<String> assetPaths, TaskForm form, Class<T> type) throws IOException {
+	public <T extends AssetTask<?>> void importTasks(Iterable<String> assetPaths, TaskForm form, Class<T> type) throws IOException {
 		Set<T> result = new HashSet<>();
 		for(String path : assetPaths) {
 			form.setAssetPath(path);

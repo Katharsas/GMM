@@ -6,8 +6,6 @@ import gmm.service.converters.UserReferenceConverter;
 
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 
-import gmm.domain.UniqueObject;
-
 public class Comment extends UniqueObject {
 	
 	//Variables

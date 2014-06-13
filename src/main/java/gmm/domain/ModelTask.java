@@ -3,7 +3,7 @@ package gmm.domain;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 
-public class ModelTask extends AssetTask {
+public class ModelTask extends AssetTask<Model> {
 
 	final private List<TextureTask> textures = new LinkedList<TextureTask>();
 	final private List<ModelSite> sites = new LinkedList<ModelSite>();

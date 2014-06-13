@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
-import gmm.domain.Comment;
 import gmm.domain.AssetTask;
+import gmm.domain.Comment;
 import gmm.domain.GeneralTask;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;

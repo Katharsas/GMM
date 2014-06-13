@@ -94,7 +94,7 @@ public class TaskAssetController {
 			@PathVariable String subDir,
 			@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-			AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
 			boolean isAssets = subDir.equals("assets");
 			
 			Path visible = config.ASSETS_NEW
@@ -147,7 +147,7 @@ public class TaskAssetController {
 			@PathVariable String subDir,
 			@PathVariable Path dir) throws AjaxResponseException {
 		try {
-			AssetTask task = (AssetTask) UniqueObject.getFromId(session.getTasks(), idLink);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
 			boolean isAssets = subDir.equals("assets");
 			
 			Path filePath = config.ASSETS_NEW

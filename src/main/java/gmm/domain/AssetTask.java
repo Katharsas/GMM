@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 public class AssetTask<A extends Asset> extends Task {
 
-	private Path originalAsset = null;
+	private A originalAsset = null;
 	private Path newAssetFolder = null;
 	
 	private String newestAssetName = null;
@@ -22,10 +22,10 @@ public class AssetTask<A extends Asset> extends Task {
 		this.newAssetFolder = newAssetFolderPath;
 	}
 	
-	public void setOriginalAsset(Path originalAssetPath) {
+	public void setOriginalAsset(A originalAssetPath) {
 		this.originalAsset = originalAssetPath;
 	}
-	public Path getOriginalAsset() {
+	public A getOriginalAsset() {
 		return originalAsset;
 	}
 	

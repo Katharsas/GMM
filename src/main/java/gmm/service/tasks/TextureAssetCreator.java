@@ -1,6 +1,7 @@
 package gmm.service.tasks;
 
-import gmm.domain.AssetTask;
+import gmm.domain.Texture;
+import gmm.domain.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
  * @author Jan
  */
 @Service
-public class TexturePreviewCreator implements PreviewCreator {
+public class TextureAssetCreator extends AssetCreator<Texture, TextureTask> {
 
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
@@ -41,7 +42,7 @@ public class TexturePreviewCreator implements PreviewCreator {
 	 * For more texture operations see {@link gmm.service.tasks.TextureService}
 	 */
 	@Override
-	public void createPreview(Path sourceFile, AssetTask task, boolean isOriginal) throws IOException {
+	protected void createPreview(Path sourceFile, TextureTask task, boolean isOriginal) throws IOException {
 		if(!sourceFile.toFile().exists()) {
 			return;
 		}
@@ -62,5 +63,10 @@ public class TexturePreviewCreator implements PreviewCreator {
 		}
 		fileService.prepareFileCreation(targetFile);
 		ImageIO.write(image, "png", targetFile.toFile());
+	}
+
+	@Override
+	protected Texture createAsset(Path base, Path relative) throws IOException {
+		return new Texture(base, relative);
 	}
 }

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
-import gmm.domain.AssetTask;
+import gmm.domain.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
@@ -29,12 +29,12 @@ public class TextureService {
 
 	@Autowired FileService fileService;
 	@Autowired DataConfigService config;
-	@Autowired TexturePreviewCreator creator;
+	@Autowired TextureAssetCreator creator;
 	
 	/**
 	 * Returns a texture preview image (png) as byte array.
 	 */
-	public byte[] getPreview(AssetTask task, boolean small, String version) throws IOException {
+	public byte[] getPreview(TextureTask task, boolean small, String version) throws IOException {
 		
 		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
 		
@@ -57,7 +57,7 @@ public class TextureService {
 	/**
 	 * Called when new task file is uploaded.
 	 */
-	public void addTextureFile(MultipartFile file, AssetTask task) throws IOException {
+	public void addTextureFile(MultipartFile file, TextureTask task) throws IOException {
 		
 		String relativeFile = file.getOriginalFilename();
 		boolean isAsset = relativeFile.endsWith(".tga") || relativeFile.endsWith(".TGA");
@@ -76,7 +76,7 @@ public class TextureService {
 		}
 	}
 	
-	public void deleteTextureFile(Path relativeFile, boolean isAsset, AssetTask task) throws IOException {
+	public void deleteTextureFile(Path relativeFile, boolean isAsset, TextureTask task) throws IOException {
 		
 		//Restrict access
 		Path taskFolder = config.ASSETS_NEW.resolve(task.getNewAssetFolder());

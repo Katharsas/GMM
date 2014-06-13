@@ -157,11 +157,13 @@
 							    </colgroup>
 								<tr class="subPreviewDescriptor">
 							    	<td class="subPreviewHalf leftHalf elementButton button">
-							    		<div class="subPreviewName left">ItArRunes.tga</div>
+							    		<div class="subPreviewName left">${task.originalAsset.path.fileName}</div>
 							    		<div class="subPreviewDownload right">Download</div>
 							    		<div class="clear"></div>
-							    		<div class="subPreviewSize left">3 MB</div>
-							    		<div class="subPreviewDimensions right">512x512 px</div>
+							    		<div class="subPreviewSize left">${task.originalAsset.sizeInKB} KB</div>
+							    		<div class="subPreviewDimensions right">
+							    			${task.originalAsset.width} x ${task.originalAsset.height}
+							    		</div>
 							    	</td><td></td>
 							    	<td class="subPreviewHalf rightHalf elementButton button">
 						    			<div class="subPreviewName left">ItArRunes.tga</div>
