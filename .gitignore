@@ -225,5 +225,4 @@ pip-log.txt
 ## Custom
 #############
 
-/src/main/resources/config.properties
 /src/main/webapp/WEB-INF/data
