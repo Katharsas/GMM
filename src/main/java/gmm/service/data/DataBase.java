@@ -62,13 +62,24 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> boolean add(T data) {
-		return getDataList(data.getClass()).add(data);
+		boolean result = getDataList(data.getClass()).add(data);
+		if(data instanceof Task) {
+			taskLabels.add(new Label(((Task)data).getLabel()));
+		}
+		return result;
 	}
 	
 	@Override
 	public synchronized <T extends Linkable> boolean addAll(Class<?> clazz, Collection<? extends T> data) {
 		Collection<T> collection = getDataList(clazz);
-		return collection.addAll(data);
+		boolean result =  collection.addAll(data);
+		
+		if(Task.class.isAssignableFrom(clazz)) {
+			for (T task : data) {
+				taskLabels.add(new Label(((Task)task).getLabel()));
+			}
+		}
+		return result;
 	}
 
 	@Override

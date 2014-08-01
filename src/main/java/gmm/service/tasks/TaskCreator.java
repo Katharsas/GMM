@@ -65,10 +65,6 @@ public class TaskCreator {
 		task.setLabel(form.getLabel());
 		User assigned = form.getAssigned().equals("") ? null : users.get(form.getAssigned());
 		task.setAssigned(assigned);
-		String label = form.getLabel();
-		if(!label.equals("")) {
-			data.add(new Label(label));
-		}
 	}
 	
 	public <T extends Task> TaskForm prepareForm(T task) {
