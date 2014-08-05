@@ -1,11 +1,11 @@
 package gmm.service.filter;
 
-import gmm.collections.Collection;
 /**
- * Represents a selection (a subset) of a given set of elements of type T and provides methods to manipulate this
- * selection. In particular, selections can be defined using the elements attributes to filter elements.
- * These attributes are defined and accessed via reflection over the given getter method names, which
- * need to be provided by the element type.
+ * Objects of this class represent a selection (a subset) of a given set of elements of type T and
+ * provide methods to manipulate this selection.
+ * In particular, selections can be defined using the elements attributes to filter elements.
+ * These attributes are defined and accessed via reflection using the getter method names.
+ * 
  * 
  * Operations supported:
  * <ul>
@@ -44,58 +44,59 @@ import gmm.collections.Collection;
  * 
  * @author Jan Mothes aka Kellendil
  * @param <T> - type of elements to be selected & filtered
+ * @param <I> - type of data structure that gives access to the elements
  */
-public interface Selection<T> {
+public interface Selection<T,I extends Iterable<T>> {
 	
 	/**
 	 * Works similar to the method {@link #matching(String, Object)}.
 	 * Matches if their type equals the given type.
 	 */
-	public abstract Selection<T> matchingType(Class<T> filter);
+	public abstract Selection<T,I> matchingType(Class<T> filter);
 
 	/**
 	 * An element matches, if a given method call on the element equals the given filter object.
 	 * It also matches if the objects toString() methods are equals.
 	 */
-	public abstract Selection<T> matching(String getterMethodName, Object filter);
+	public abstract Selection<T,I> matching(String getterMethodName, Object filter);
 	
 	/**
 	 * Calls the method {@link #matching(String, Object)} by using a previously given filter object.
 	 * This filter object must first be specified by calling the method {@link #bufferFilter(Object)}.
 	 */
-	public abstract Selection<T> matchingGetter(String getterMethodName);
+	public abstract Selection<T,I> matchingGetter(String getterMethodName);
 	
 	/**
 	 * Calls the method {@link #matching(String, Object)} by using a previously given getter method name.
 	 * This method name must first be specified by calling the method {@link #bufferGetter(String)}.
 	 */
-	public abstract Selection<T> matchingFilter(Object filter);
+	public abstract Selection<T,I> matchingFilter(Object filter);
 	
 	/**
 	 * See method filterField.
 	 * @return All filtered elements. Every method adds its filtered elements to previous filtered elements.
 	 */
-	public abstract Collection<T> getSelected();
+	public abstract I getSelected();
 	
 	/**
 	 * The filter will unite the selection with the matching elements.
 	 */
-	public abstract Selection<T> uniteWith();
+	public abstract Selection<T,I> uniteWith();
 	
 	/**
 	 * The filter will intersect the selection with the matching elements.
 	 */
-	public abstract Selection<T> intersectWith();
+	public abstract Selection<T,I> intersectWith();
 	
 	/**
 	 * The filter will remove the matching elements from the selection.
 	 */
-	public abstract Selection<T> remove();
+	public abstract Selection<T,I> remove();
 	
 	/**
 	 * The filter will swap selected and unselected elements.
 	 */
-	public abstract Selection<T> negateAll();
+	public abstract Selection<T,I> negateAll();
 	
 	/**
 	 * If true, only completely equal objects match,
@@ -107,10 +108,10 @@ public interface Selection<T> {
 	 /**
 	  * @see {@link #matchingGetter(String)}
 	  */
-	 public abstract Selection<T> bufferFilter(Object filter);
+	 public abstract Selection<T,I> bufferFilter(Object filter);
 	 
 	 /**
 	  * @see {@link #matchingFilter(Object)}
 	  */
-	 public abstract Selection<T> bufferGetter(String getterMethodName);
+	 public abstract Selection<T,I> bufferGetter(String getterMethodName);
 }

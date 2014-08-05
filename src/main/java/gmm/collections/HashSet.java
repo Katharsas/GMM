@@ -11,7 +11,7 @@ public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 		super();
 	}
 	
-	public HashSet<E> clone() {
+	public HashSet<E> copy() {
 		return new HashSet<E>(this);
 	}
 }

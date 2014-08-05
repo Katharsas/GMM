@@ -6,7 +6,6 @@ import gmm.collections.HashSet;
 import gmm.collections.Set;
 import gmm.domain.AssetTask;
 import gmm.domain.GeneralTask;
-import gmm.domain.Label;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;

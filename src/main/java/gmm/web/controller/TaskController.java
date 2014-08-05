@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 
 
+
 import java.io.IOException;
 /** java */
+
 
 
 
@@ -37,6 +39,7 @@ import gmm.service.tasks.TaskCreator;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
+import gmm.web.forms.SortForm;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
@@ -50,8 +53,8 @@ import gmm.web.sessions.TaskSession;
  * @author Jan Mothes aka Kellendil
  */
 @Controller
-@RequestMapping(value={"tasks","/"})
-@SessionAttributes({"search","generalFilter"})
+@RequestMapping(value={"tasks", "/"})
+@SessionAttributes({"search", "sort", "generalFilter"})
 @PreAuthorize("hasRole('ROLE_USER')")
 
 public class TaskController {
@@ -67,6 +70,9 @@ public class TaskController {
 	
 	@ModelAttribute("comment")
 	public CommentForm getCommentFacade() {return new CommentForm();}
+	
+	@ModelAttribute("sort")
+	public SortForm getSortFacade() {return session.getSortForm();}
 	
 	@ModelAttribute("search")
 	public SearchForm getSearchFacade() {return new SearchForm();}

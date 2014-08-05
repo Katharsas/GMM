@@ -20,17 +20,17 @@ import org.springframework.stereotype.Service;
 public class TaskFilterService {
 	
 	/**
-	 * Applies the general search data to a collection of GeneralTasks;
+	 * Applies the general search data to a list of GeneralTasks;
 	 * @param tasks - the tasks that will be searched
 	 * @param search - the search data object
 	 * @return the result of the applied search
 	 */
-	public synchronized <T extends Task> Collection<T> search(
-			Collection<T> tasks, SearchForm search) {
+	public synchronized <T extends Task, I extends Collection<T>> I search(
+			I tasks, SearchForm search) {
 		
-		Selection<T> selection;
+		Selection<T,I> selection;
 		if(search.isEasySearch()) {
-			selection = new SimpleSelection<T>(tasks, false)
+			selection = new SimpleSelection<T,I>(tasks, false)
 					.bufferFilter(search.getEasy())
 					.uniteWith()
 					.matchingGetter("getName")
@@ -40,7 +40,7 @@ public class TaskFilterService {
 					.matchingGetter("getAssigned");
 		}
 		else {
-			selection = new SimpleSelection<T>(tasks, true)
+			selection = new SimpleSelection<T,I>(tasks, true)
 					.intersectWith()
 					.matching("getName", search.getName())
 					.matching("getAuthor", search.getAuthor())
@@ -58,10 +58,10 @@ public class TaskFilterService {
 	 * @param currentUser - the currently logged in user
 	 * @return the result of the applied filter
 	 */
-	public synchronized <T extends Task> Collection<T> filter(
-			Collection<T> tasks, FilterForm filterData, User currentUser) {
+	public synchronized <T extends Task, I extends Collection<T>> I filter(
+			I tasks, FilterForm filterData, User currentUser) {
 		
-		Selection<T> selection = new SimpleSelection<>(tasks, true);
+		Selection<T,I> selection = new SimpleSelection<T,I>(tasks, true);
 		selection.setOnlyMatchEqual(true);
 		
 		if (filterData.isCreatedByMe()) {

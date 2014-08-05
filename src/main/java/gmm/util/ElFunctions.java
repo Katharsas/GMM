@@ -2,6 +2,7 @@ package gmm.util;
 import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
 import gmm.domain.TaskType;
+import gmm.service.sort.TaskSortAttribute;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.objenesis.Objenesis;
@@ -27,6 +28,9 @@ public class ElFunctions {
 		}
 		else if (clazz.equals(TaskType.class.getSimpleName())) {
 			return TaskPriority.values();
+		}
+		else if (clazz.equals(TaskSortAttribute.class.getSimpleName())) {
+			return TaskSortAttribute.values();
 		}
 		else {
 			throw new IllegalArgumentException("Argument String \""+clazz+"\" can not be matched with enum class name.");

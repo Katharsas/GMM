@@ -57,7 +57,7 @@ public class DataBase implements DataAccess {
 			allTasks.addAll((Collection<T>) modelTasks);
 			return allTasks;
 		}
-		return this.<T>getDataList(clazz).clone();
+		return this.<T>getDataList(clazz).copy();
 	}
 
 	@Override

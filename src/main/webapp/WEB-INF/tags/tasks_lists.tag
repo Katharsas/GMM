@@ -25,7 +25,6 @@
 						<fmt:message key="search.complex"/>
 					</div>
 					<form:input class="searchInputField left" path="easy" value=""/>
-<!-- 					<div class="left">&#160;&#160;</div> -->
 					<div class="submitSearchButton button pageButton left"><fmt:message key="search.start"/>!</div>
 				</div>
 				
@@ -69,6 +68,33 @@
 				</div>
 			</form:form>
 		</div>
+		
+		
+		<div class="sort listElement">
+			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
+				<div id="primarySort">
+					Sort by
+					<form:select path="sortByPrimary">
+						<c:forEach items="${cfn:values('TaskSortAttribute')}" var="sort">
+							<c:set var="svalue"><fmt:message key="${sort.nameKey}"/></c:set> 
+							<form:option value="${sort}" label="${svalue}"/>
+						</c:forEach>
+					</form:select>
+					Down: <form:checkbox path="sortDownPrimary"/>
+				</div>
+				<div id="secondarySort">
+					Sort by
+					<form:select path="sortBySecondary">
+						<c:forEach items="${cfn:values('TaskSortAttribute')}" var="sort">
+							<c:set var="svalue"><fmt:message key="${sort.nameKey}"/></c:set> 
+							<form:option value="${sort}" label="${svalue}"/>
+						</c:forEach>
+					</form:select>
+					Down: <form:checkbox path="sortDownSecondary"/>
+				</div>
+			</form:form>
+		</div>
+		
 		<div class="elementCount center">---------------------------------------- 
 		<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
 		----------------------------------------</div>

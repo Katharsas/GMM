@@ -1,9 +1,11 @@
 package gmm.web.sessions;
 
+
 import javax.annotation.PostConstruct;
 
 import gmm.collections.Collection;
-import gmm.collections.HashSet;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 import gmm.domain.Task;
 import gmm.domain.TaskType;
 import gmm.domain.User;
@@ -12,6 +14,7 @@ import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
+import gmm.web.forms.SortForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -39,13 +42,16 @@ public class TaskSession {
 	private User user;
 	
 	//task filtered by general filter (base for search)
-	private Collection<Task> filteredTasks;
+	private List<Task> filteredTasks;
 	
 	//filteredTasks additionally filtered by search
-	private Collection<Task> tasks;
+	private List<Task> tasks;
 	
 	//current settings for general filter
 	private FilterForm generalFilter;
+	
+	//current task sort settings
+	private SortForm sort;
 	
 	//the last tab the user selected
 	private TaskType currentTaskType;
@@ -58,6 +64,7 @@ public class TaskSession {
 		currentTaskType = TaskType.GENERAL;
 		user = users.get(((org.springframework.security.core.userdetails.User)
 				SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+		sort = new SortForm();
 		generalFilter = new FilterForm();
 		updateAndFilterTasks(currentTaskType);
 	}
@@ -66,12 +73,12 @@ public class TaskSession {
 	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
-	public Collection<? extends Task> getTasks() {
+	public List<? extends Task> getTasks() {
 		if (dirtyTasksFlag) {
 			updateAndFilterTasks(currentTaskType);
 			dirtyTasksFlag = false;
 		}
-		return tasks.clone();
+		return tasks.copy();
 	}
 	
 	public TaskType getCurrentTaskType() {
@@ -84,6 +91,10 @@ public class TaskSession {
 	
 	public User getUser() {
 		return user;
+	}
+	
+	public SortForm getSortForm() {
+		return sort;
 	}
 	
 	public FilterForm getFilterForm() {
@@ -125,6 +136,7 @@ public class TaskSession {
 	 */
 	public void updateSearch(SearchForm search) {
 		tasks = filterService.search(filteredTasks, search);
+		//TODO make filter package work with Lists ("sort safe")
 	}
 	
 	/**
@@ -139,20 +151,22 @@ public class TaskSession {
 	 * Add task to session data
 	 */
 	public <T extends Task> void add(T task) {
-		Collection<T> single = new HashSet<>();
+		List<T> single = new LinkedList<>();
 		single.add(task);
 		filteredTasks.addAll(filterService.filter(single, generalFilter, user));
-		tasks = filteredTasks.clone();
+		tasks = filteredTasks.copy();
 	}
 	
 	/*--------------------------------------------------
 	 * Private Helper methods
 	 * ---------------------------------------------------*/
 	
-	@SuppressWarnings("unchecked")
+//	@SuppressWarnings("unchecked")
 	private void updateAndFilterTasks(TaskType tab) {
-		filteredTasks = (Collection<Task>) filterService.filter(getTaskList(tab), generalFilter, user);
-		tasks = filteredTasks.clone();
+		filteredTasks = new LinkedList<Task>();
+		filteredTasks.addAll(filterService.filter(getTaskList(tab), generalFilter, user));
+		//TODO sort
+		tasks = filteredTasks.copy();
 	}
 	
 	private Collection<? extends Task> getTaskList (TaskType tab) {

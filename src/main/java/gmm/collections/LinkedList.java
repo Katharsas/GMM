@@ -11,7 +11,7 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 		super();
 	}
 
-	public LinkedList<E> clone() {
+	public LinkedList<E> copy() {
 		return new LinkedList<E>(this);
 	}
 }

@@ -13,10 +13,10 @@ import gmm.util.StringUtil;
  *
  * @param <T> The type of the elements that will be selected/filtered.
  */
-public class SimpleSelection<T> implements Selection<T> {
+public class SimpleSelection<T,I extends Collection<T>> implements Selection<T,I> {
 	
-	private final Collection<T> selected;
-	private final Collection<T> unselected;
+	private final I selected;
+	private final I unselected;
 	
 	private String getterBuffer;
 	private Object filterBuffer;
@@ -32,9 +32,9 @@ public class SimpleSelection<T> implements Selection<T> {
 	 * @param elements - The elements.
 	 * @param selected - If true, the elements are going to be selected, otherwise unselected.
 	 */
-	public SimpleSelection(final Collection<T> elements, final boolean selected) {
-		this.selected = elements.clone();
-		this.unselected = elements.clone();
+	public SimpleSelection(final I elements, final boolean selected) {
+		this.selected = elements.copy();
+		this.unselected = elements.copy();
 		if(selected) {
 			this.unselected.clear();
 		}
@@ -54,7 +54,7 @@ public class SimpleSelection<T> implements Selection<T> {
 	 * 
 	 * @return The elements on which the matching needs to be applied.
 	 */
-	protected Collection<T> getElements() {
+	protected I getElements() {
 		return !UNION || REMOVE ? selected : unselected;
 	}
 	
@@ -93,8 +93,8 @@ public class SimpleSelection<T> implements Selection<T> {
 	}
 	
 	@Override
-	public Selection<T> matchingType(final Class<T> filter) {
-		final Collection<T> elements = this.getElements().clone();
+	public Selection<T,I> matchingType(final Class<T> filter) {
+		final I elements = this.getElements().copy();
 		for(T t : elements)	{
 			final Class<? extends Object> clazz = t.getClass();
 			this.applyMatching(clazz.equals(filter), t);
@@ -103,8 +103,8 @@ public class SimpleSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public Selection<T> matching(final String getterMethodName, final Object filter) {
-		final Collection<T> elements = this.getElements().clone();
+	public Selection<T,I> matching(final String getterMethodName, final Object filter) {
+		final I elements = this.getElements().copy();
 		if(DEBUG) System.out.println("Matching(): "+elements.size()+" Elements");
 		for (T t : elements) {
 			if(DEBUG) System.out.print("Matching "+getterMethodName+" on "+t.toString()+" vs "+filter.toString());
@@ -146,58 +146,58 @@ public class SimpleSelection<T> implements Selection<T> {
 	}
 
 	@Override
-	public Collection<T> getSelected() {
-		return selected.clone();
+	public I getSelected() {
+		return selected.copy();
 	}
 
 	@Override
-	public Selection<T> uniteWith() {
+	public Selection<T,I> uniteWith() {
 		this.REMOVE = false;
 		this.UNION = true;
 		return this;
 	}
 
 	@Override
-	public Selection<T> intersectWith() {
+	public Selection<T,I> intersectWith() {
 		this.REMOVE = false;
 		this.UNION = false;
 		return this;
 	}
 	
 	@Override
-	public Selection<T> remove() {
+	public Selection<T,I> remove() {
 		this.REMOVE = true;
 		return this;
 	}
 
 	@Override
-	public Selection<T> matchingGetter(String getterMethodName) {
+	public Selection<T,I> matchingGetter(String getterMethodName) {
 		Objects.requireNonNull(filterBuffer);
 		return matching(getterMethodName, filterBuffer);
 	}
 	
 	@Override
-	public Selection<T> matchingFilter(Object filter) {
+	public Selection<T,I> matchingFilter(Object filter) {
 		Objects.requireNonNull(getterBuffer);
 		return matching(getterBuffer, filter);
 	}
 
 	@Override
-	public Selection<T> bufferFilter(Object filter) {
+	public Selection<T,I> bufferFilter(Object filter) {
 		this.filterBuffer = filter;
 		return this;
 	}
 
 
 	@Override
-	public Selection<T> bufferGetter(String getterMethodName) {
+	public Selection<T,I> bufferGetter(String getterMethodName) {
 		this.getterBuffer = getterMethodName;
 		return this;
 	}
 
 	@Override
-	public Selection<T> negateAll() {
-		Collection<T> buffer = this.selected;
+	public Selection<T,I> negateAll() {
+		I buffer = this.selected;
 		this.selected.clear();
 		this.selected.addAll(unselected);
 		this.unselected.clear();
