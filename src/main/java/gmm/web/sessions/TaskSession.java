@@ -12,6 +12,7 @@ import gmm.domain.User;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
+import gmm.service.sort.TaskSortService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
@@ -37,6 +38,7 @@ public class TaskSession {
 	@Autowired DataAccess data;
 	@Autowired UserService users;
 	@Autowired TaskFilterService filterService;
+	@Autowired TaskSortService sortService;
 	
 	//user logged into this session
 	private User user;
@@ -136,7 +138,14 @@ public class TaskSession {
 	 */
 	public void updateSearch(SearchForm search) {
 		tasks = filterService.search(filteredTasks, search);
-		//TODO make filter package work with Lists ("sort safe")
+	}
+	
+	/**
+	 * Apply/update task sorting settings
+	 */
+	public void updateSort(SortForm sort) {
+		this.sort = sort;
+		tasks = sortService.sort(tasks, sort);
 	}
 	
 	/**
@@ -161,11 +170,10 @@ public class TaskSession {
 	 * Private Helper methods
 	 * ---------------------------------------------------*/
 	
-//	@SuppressWarnings("unchecked")
 	private void updateAndFilterTasks(TaskType tab) {
 		filteredTasks = new LinkedList<Task>();
 		filteredTasks.addAll(filterService.filter(getTaskList(tab), generalFilter, user));
-		//TODO sort
+		filteredTasks = sortService.sort(filteredTasks, sort);
 		tasks = filteredTasks.copy();
 	}
 	

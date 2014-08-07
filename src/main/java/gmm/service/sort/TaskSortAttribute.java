@@ -23,18 +23,14 @@ public enum TaskSortAttribute {
 	TITLE(new Comparator<Task>() {
 		@Override
 		public int compare(Task task0, Task task1) {
-			// TODO Auto-generated method stub
-			return 0;
+			return task0.getName().compareTo(task1.getName());
 		}
 		
 	}),
 	CREATED(new Comparator<Task>() {
 		@Override
 		public int compare(Task task0, Task task1) {
-//			Date d0 = task0.getCreationDate();
-//			Date d1 = task1.getCreationDate();
-			// TODO Auto-generated method stub
-			return 0;
+			return task0.getCreationDate().compareTo(task1.getCreationDate());
 		}
 	}),
 	COMMENTCOUNT(new Comparator<Task>() {
@@ -44,9 +40,12 @@ public enum TaskSortAttribute {
 		}
 	});
 			
-	public final Comparator<? extends Task> comparator;
-	private TaskSortAttribute(Comparator<? extends Task> comparator) {
+	private final Comparator<? super Task> comparator;
+	private TaskSortAttribute(Comparator<? super Task> comparator) {
 		this.comparator = comparator;
+	}
+	public Comparator<? super Task> getComparator() {
+		return comparator;
 	}
 	
 	//corresponding message keys
