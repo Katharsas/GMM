@@ -113,6 +113,21 @@ public class TaskController {
 	
 	
 	/**
+	 * Sort
+	 * -----------------------------------------------------------------
+	 * Sort is always applied on currently shown tasks.
+	 * @param searchForm - object containing all search information
+	 */
+	@RequestMapping(value="/submitSort", method = RequestMethod.POST)
+	public String handleSorting(
+		 		@ModelAttribute("sort") SortForm sortForm) {
+		
+		session.updateSort(sortForm);
+		return "redirect:/tasks?tab="+session.getTab();
+	}
+	
+	
+	/**
 	 * Delete Task
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted

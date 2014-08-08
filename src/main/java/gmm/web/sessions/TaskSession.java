@@ -163,6 +163,7 @@ public class TaskSession {
 		List<T> single = new LinkedList<>();
 		single.add(task);
 		filteredTasks.addAll(filterService.filter(single, generalFilter, user));
+		filteredTasks = sortService.sort(filteredTasks, sort);
 		tasks = filteredTasks.copy();
 	}
 	

@@ -36,7 +36,7 @@ public enum TaskSortAttribute {
 	COMMENTCOUNT(new Comparator<Task>() {
 		@Override
 		public int compare(Task task0, Task task1) {
-			return task0.getComments().size() - task1.getComments().size();
+			return task1.getComments().size() - task0.getComments().size();
 		}
 	});
 			

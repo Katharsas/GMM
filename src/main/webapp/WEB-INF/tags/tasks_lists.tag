@@ -74,23 +74,23 @@
 			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
 				<div id="primarySort">
 					Sort by
-					<form:select path="sortByPrimary">
+					<form:select class="sortFormElement" path="sortByPrimary">
 						<c:forEach items="${cfn:values('TaskSortAttribute')}" var="sort">
 							<c:set var="svalue"><fmt:message key="${sort.nameKey}"/></c:set> 
 							<form:option value="${sort}" label="${svalue}"/>
 						</c:forEach>
 					</form:select>
-					Down: <form:checkbox path="sortDownPrimary"/>
+					Down: <form:checkbox class="sortFormElement" path="sortDownPrimary"/>
 				</div>
 				<div id="secondarySort">
 					Sort by
-					<form:select path="sortBySecondary">
+					<form:select class="sortFormElement" path="sortBySecondary">
 						<c:forEach items="${cfn:values('TaskSortAttribute')}" var="sort">
 							<c:set var="svalue"><fmt:message key="${sort.nameKey}"/></c:set> 
 							<form:option value="${sort}" label="${svalue}"/>
 						</c:forEach>
 					</form:select>
-					Down: <form:checkbox path="sortDownSecondary"/>
+					Down: <form:checkbox class="sortFormElement" path="sortDownSecondary"/>
 				</div>
 			</form:form>
 		</div>

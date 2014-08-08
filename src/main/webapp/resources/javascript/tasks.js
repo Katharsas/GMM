@@ -68,13 +68,16 @@ $(document).ready(
 		
 			// listener
 			$(".submitSearchButton").click(function() {
-				submitSearchForm();
+				$("#searchForm").submit();
+			});
+			$(".sortFormElement").change(function() {
+				$("#sortForm").submit();
 			});
 			$("#generalFiltersAllCheckbox").change(function() {
 				switchGeneralFiltersAll($(this));
 			});
 			$(".generalFiltersFormElement").change(function() {
-				submitGeneralFilters();
+				$(".generalFilters").submit();
 			});
 			
 });
@@ -118,10 +121,6 @@ function TaskForm() {
 		$new.hide();
 	}
 }
-
-
-
-
 
 function collapseListElements() {
 	$(".listElementBody").hide();
@@ -290,15 +289,6 @@ function switchGeneralFiltersAll($element) {
 	$(".generalFiltersAllCheckBoxTarget").attr("checked",
 			$element.is(":checked"));
 	submitGeneralFilters();
-}
-
-function submitSearchForm() {
-	$("#searchForm").submit();
-}
-
-
-function submitGeneralFilters() {
-	$(".generalFilters").submit();
 }
 
 function uploadFile(input, idLink) {
