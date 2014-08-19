@@ -5,7 +5,6 @@
 <%-- Template Start --%>
 <%@ attribute name="newLine" required="true" %>
 
-
 <div id="lists">
 	<div id="listsTop" class="subTabmenu tabmenu inactiveSubpage h3">
 		<div class="tab left"><a href="tasks?tab=general"><fmt:message key="tasks.menu.general"/><span></span></a></div>
@@ -150,14 +149,12 @@
 						    		<div class="userTag left">
 						    			<c:out value="${comment.getAuthor().getName()}"/>
 					    			</div>
-						    	</div>	
-						    	<c:choose>
-								<c:when test="${ comment.getAuthor().getName().getIdLink().equals(session.getUser().getIdLink()) }">
+						    	</div>
+				<c:if test="${ comment.getAuthor().getName().getIdLink()==session.getUser().getIdLink() }">
 						    	<div class="right commentButton elementContent button commentEditButton" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
 									Editieren
 								</div>
-								</c:when>
-								</c:choose>	
+								</c:if>
 						    	<div class="left subElementText elementContent">
 						    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}
 						    	</div>
