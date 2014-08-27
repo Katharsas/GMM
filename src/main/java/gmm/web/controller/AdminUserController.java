@@ -49,6 +49,9 @@ public class AdminUserController {
 		try {
 			if(idLink.equals("new")) {
 				User user = new User(name);
+				if(users.get().contains(user)) {
+					throw new UnsupportedOperationException("A user with this name does already exist!");
+				}
 				data.add(user);
 			}
 			else {

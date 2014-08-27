@@ -7,6 +7,9 @@
 	<jsp:attribute name="js">
 		<script src="res/javascript/lib/three.min.js" type="text/javascript"></script>
     	<script src="res/javascript/lib/OrbitControls.js" type="text/javascript"></script>
+    	<script src="res/javascript/lib/TweenLite.min.js" type="text/javascript"></script>
+    	<script src="res/javascript/lib/CSSPlugin.min.js" type="text/javascript"></script>
+    	
     	<script src="res/javascript/tasks.js" type="text/javascript"></script>
     	<script src="res/javascript/jqueryFileTree.js" type="text/javascript"></script>
     </jsp:attribute>
