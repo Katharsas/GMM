@@ -150,10 +150,11 @@
 						    			<c:out value="${comment.getAuthor().getName()}"/>
 					    			</div>
 						    	</div>
-				<c:if test="${ comment.getAuthor().getName().getIdLink()==session.getUser().getIdLink() }">
-						    	<div class="right commentButton elementContent button commentEditButton" onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
-									Editieren
-								</div>
+								<c:if test="${comment.getAuthor().getName().equals(pageContext.request.userPrincipal.name)}">
+							    	<div class="right commentButton elementContent button commentEditButton"
+							    			onclick="changeComment('${cfn:escapeJS(comment.getText())}', '${task.getIdLink()}', '${comment.getIdLink()}')">
+										Editieren
+									</div>
 								</c:if>
 						    	<div class="left subElementText elementContent">
 						    		${fn:replace(fn:escapeXml(comment.getText()), newLine, "<br/>")}

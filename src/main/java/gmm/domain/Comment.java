@@ -1,5 +1,6 @@
 package gmm.domain;
 
+import java.util.Date;
 import java.util.Objects;
 
 import gmm.service.converters.UserReferenceConverter;
@@ -12,6 +13,7 @@ public class Comment extends UniqueObject {
 	@XStreamConverter(UserReferenceConverter.class)
 	private User author;
 	private String text="";
+	private Date edited;
 	
 	//Methods
 	public Comment(User author) {
@@ -29,6 +31,7 @@ public class Comment extends UniqueObject {
 	//Setters, Getters
 	public void setText(String text) {
 		Objects.requireNonNull(text);
+		this.edited = new Date();
 		this.text = text;
 	}
 	public String getText() {
@@ -36,5 +39,8 @@ public class Comment extends UniqueObject {
 	}
 	public User getAuthor() {
 		return author;
+	}
+	public Date getLastEditedDate() {
+		return edited;
 	}
 }

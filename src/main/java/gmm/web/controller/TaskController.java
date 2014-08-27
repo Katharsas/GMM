@@ -141,7 +141,28 @@ public class TaskController {
  		
 		return "redirect:/tasks?tab="+session.getTab();
 	}
-
+	
+	
+	/**
+	 * Edit Comment
+	 * @param taskIdLink - identifies the task which contains the comment
+	 * @param commentIdLink - identifies the comment to be edited
+	 * @param edited - the edited text of the comment
+	 * -----------------------------------------------------------------
+	 */
+	@RequestMapping(value="/editComment/{taskIdLink}/{commentIdLink}", method = RequestMethod.POST)
+	public String editComment(
+				@PathVariable String taskIdLink,
+				@PathVariable String commentIdLink,
+				@ModelAttribute("editedComment") String edited) {
+		Task task = UniqueObject.getFromId(session.getTasks(), taskIdLink);
+		Comment comment = UniqueObject.getFromId(task.getComments(), commentIdLink);
+		if(comment.getAuthor().getId() == session.getUser().getId()) {
+			comment.setText(edited);
+		}
+		return "redirect:/tasks?tab="+session.getTab();
+	}
+	
 	
 	/**
 	 * Create Comment

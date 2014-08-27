@@ -225,8 +225,8 @@ function changeComment(comment, taskId, commentId) {
 
 function confirmCommentChange(taskId, commentId) {
 	var comment = $("#confirmDialogTextArea").attr("value");
-	var url = "tasks/comment/new/" + taskId + "/" + commentId;
-	$.post(url, {"comment" : comment}, 
+	var url = "editComment/" + taskId + "/" + commentId;
+	$.post(url, {"editedComment" : comment}, 
 			function() {window.location.reload();}
 	);
 }
