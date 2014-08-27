@@ -17,6 +17,11 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 
 
+
+
+
+import com.technologicaloddity.capturejsp.util.SwallowingJspRenderer;
+
 import java.io.IOException;
 /** java */
 
@@ -24,6 +29,12 @@ import java.io.IOException;
 
 
 
+
+
+import java.io.StringWriter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import gmm.domain.Comment;
 import gmm.domain.Label;
@@ -64,6 +75,7 @@ public class TaskController {
 	@Autowired DataAccess data;
 	@Autowired TaskFilterService filter;
 	@Autowired UserService users;
+	@Autowired SwallowingJspRenderer jspRenderer;
 
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {return new TaskForm();}
@@ -234,6 +246,8 @@ public class TaskController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String send(
 			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response,
 			@ModelAttribute("task") TaskForm form,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
@@ -253,6 +267,35 @@ public class TaskController {
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
+	    
+	    try {
+//	    	
+//	    	StringWriter sout = new StringWriter();
+//	    	StringBuffer buffer = sout.getBuffer();
+//
+//	    	HttpServletResponse realResponse = response;
+//	    	HttpServletResponse fakeResponse = new SwallowingHttpServletResponse(realResponse, sout, realResponse.getCharacterEncoding());
+//
+//	    	HttpServletRequest realRequest = request;
+//	    	realRequest.setAttribute(WebContext.ATTRIBUTE_DWR, Boolean.TRUE);
+//
+//	    	Spring.getServletContext().getRequestDispatcher("/WEB-INF/jsp/tasks.jsp").forward(realRequest, fakeResponse);
+//
+//	    	String jspOutput = buffer.toString();
+//	    	
+	    	
+	    	
+	    	
+//			String jspOutput = jspRenderer.render("tasks", model, request, response);
+//	    	
+//	    	
+//			System.out.println("========================= JSP Render Start ========================");
+//		    System.out.println(jspOutput);
+//		    System.out.println("=========================  JSP Render End  ========================");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	    
 	    return "tasks";
 	}
 	

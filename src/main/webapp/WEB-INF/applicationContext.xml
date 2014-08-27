@@ -34,6 +34,7 @@
 	</bean>
 	
 	<!-- activate scan for annotations in given packages-->
+<!-- 	<context:component-scan base-package="gmm, com.technologicaloddity" /> -->
 	<context:component-scan base-package="gmm" />
 	
 	<!-- InternalResourceViewResolver resolves the name given from controller to a file by using prefix and suffix -->
