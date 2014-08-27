@@ -113,6 +113,9 @@
 	padding-left:5px;
 	padding-bottom:3px;
 }
+#listsMain .listElementBody {
+	overflow:hidden;
+}
 #listsMain .listElementBodyFooter {
 	margin: 25px 0px 2px 0px;
 }

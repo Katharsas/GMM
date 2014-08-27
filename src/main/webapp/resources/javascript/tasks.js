@@ -1,4 +1,4 @@
-var $oldElement = $();
+var $currentElement = $();
 
 $.expr[':'].blank = function(obj) {
 	return !$.trim($(obj).text()).length;
@@ -80,6 +80,8 @@ $(document).ready(
 				$(".generalFilters").submit();
 			});
 			
+			//default is 60
+			TweenLite.ticker.fps(30);
 });
 
 /**
@@ -130,40 +132,58 @@ function expandListElements() {
 	$(".listElementBody").show();
 }
 
-function switchListElement(element) {
-	var slideTime = 300;
-	var $newElement = $(element).parent().first();
-
-	if ($newElement[0] != $oldElement[0]) {
-		// hide elements that need to be hidden without Focus, hide comment
-		// input
-		hideCommentForm($oldElement.find(".commentForm"));
-		$oldElement.find(
-				".listElementBodyFooter, .elementFiles, .elementPreview")
-				.slideUp(slideTime);
-		// $oldElement.find(".elementPreview").css("height","50px").show();
-		// oldElement.find(".elementPreview").slideDown(slideTime);
-		$oldElement.css("border-width", "0px");
-		$oldElement.css("padding-left", "8px");
-		removeTaskFileTrees($oldElement);
-		// show elements that were hidden without focus
-		addTaskFileTrees($newElement);
-		$newElement.find(".elementPreview").css("height", "");
-		$newElement.find(
-				".listElementBodyFooter, .elementPreview, .elementFiles")
-				.slideDown(slideTime);
-		$newElement.css("border-width", "2px");
-		// $newElement.css("padding-left", "16px");
-		$newElement.css("padding-left", "6px");
+TaskView = function(taskIdLink, taskDetailMap) {
+	
+	function show() {
+		//TODO load task detail dom code
+		//TODO add task detail dom to task head
+		//TODO animate task detail
 	}
-	if (($(element).parent().children(".listElementBody").css("display")) == "none") {
-		$(element).parent().children(".listElementBody").slideDown(slideTime);
-	} else if ($newElement[0] == $oldElement[0]) {
-		$(element).parent().children(".listElementBody").slideUp(slideTime);
-		$newElement.removeAttr( 'style' );
+	function hide() {
+		//TODO animate task detail
+		//TODO remove task detail dom code
+	}
+};
+
+function switchListElement(element) {
+    var slideDownTime = 0.5;
+    var slideUpTime = 0.5;
+    var $oldElement = $currentElement;
+    var $newElement = $(element).parent().first();
+    var isSameElement = $newElement[0] == $oldElement[0];
+    	
+    //hide old body
+	var $oldBody = $oldElement.children(".listElementBody");
+	TweenLite.to($oldBody, slideUpTime, {height: "0px", onComplete: function() {
+			$oldBody.hide();
+			$oldBody.css("height","");
+			$oldElement.css("border-width", "0px");
+	        $oldElement.css("padding-left", "8px");
+	        removeTaskFileTrees($oldElement);
+	        if(!isSameElement) {
+	        	
+	        }
+        }
+    });
+    
+	//show new body
+	if (!isSameElement) {
+		
+		var $newBody = $(element).parent().children(".listElementBody");
+		addTaskFileTrees($newElement);
+        $newElement.css("border-width", "2px");
+        $newElement.css("padding-left", "6px");
+		$newBody.show();
+        TweenLite.from($newBody, slideDownTime, {height: "0px", onComplete: function() {
+        		$newBody.css("height","");
+	        }
+	    });
+        $currentElement = $newElement;
+	}
+	else {
 		$newElement = $();
 	}
-	$oldElement = $newElement;
+    
 }
 
 function addTaskFileTrees($element) {
