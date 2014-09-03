@@ -1,13 +1,15 @@
-var $currentElement = $();
-
+//adds :blank selector to jQuery
 $.expr[':'].blank = function(obj) {
 	return !$.trim($(obj).text()).length;
 };
 
+//TODO use big Tasks object to store these variables and all methods of this js file
+//TODO put all handlers/listener callbaacks into Handler object in Tasks object
 var tasksVars = {
 	"tab" : "",
 	"edit" : "",
-	"selectedTaskFileIsAsset" : ""
+	"selectedTaskFileIsAsset" : "",
+	"expandedTasks" : undefined
 };
 
 var tasksFuncs = {
@@ -82,47 +84,11 @@ $(document).ready(
 			
 			//default is 60
 			TweenLite.ticker.fps(30);
+			
+			tasksVars.expandedTasks = new TaskQueue(3, function($task1, $task2) {
+				return $task1[0] === $task2[0];
+			});
 });
-
-/**
- * Handles taskForm behaviour.
- */
-function TaskForm() {
-	var $form = $("#taskForm");
-	var $submit = $("#submitTaskButton");
-	var $cancel = $("#cancelTaskButton");
-	var $new = $("#newTaskButton");
-	init();
-	
-	function init() {
-		if (tasksVars.edit !== "") {
-			show();
-			$form.find("#taskGroupType").hide();
-		}
-		var $type = $form.find("#taskElementType select");
-		switchPath($type);
-		
-		$type.change(function() {switchPath($type);});
-		$new.click(function() {show();});
-		$submit.click(function() {$form.submit();});
-	}
-	
-	function switchPath($taskElementType) {
-		var selected = $taskElementType.find(":selected").val();
-		var $path = $form.find("#taskElementPath");
-		switch(selected) {
-			case "GENERAL":	$path.hide();break;
-			default:		$path.show();break;
-		}
-	}
-	
-	function show() {
-		$form.show();
-		$submit.show();
-		$cancel.show();
-		$new.hide();
-	}
-}
 
 function collapseListElements() {
 	$(".listElementBody").hide();
@@ -132,80 +98,25 @@ function expandListElements() {
 	$(".listElementBody").show();
 }
 
-TaskView = function(taskIdLink, taskDetailMap) {
-	
-	function show() {
-		//TODO load task detail dom code
-		//TODO add task detail dom to task head
-		//TODO animate task detail
-	}
-	function hide() {
-		//TODO animate task detail
-		//TODO remove task detail dom code
-	}
-};
-
 function switchListElement(element) {
-    var slideDownTime = 0.5;
-    var slideUpTime = 0.5;
-    var $oldElement = $currentElement;
     var $newElement = $(element).parent().first();
-    var isSameElement = $newElement[0] == $oldElement[0];
-    	
-    //hide old body
-	var $oldBody = $oldElement.children(".listElementBody");
-	TweenLite.to($oldBody, slideUpTime, {height: "0px", onComplete: function() {
-			$oldBody.hide();
-			$oldBody.css("height","");
-			$oldElement.css("border-width", "0px");
-	        $oldElement.css("padding-left", "8px");
-	        removeTaskFileTrees($oldElement);
-	        if(!isSameElement) {
-	        	
-	        }
-        }
-    });
+    var isAlreadyExpanded = tasksVars.expandedTasks.contains($newElement);
     
-	//show new body
-	if (!isSameElement) {
-		
-		var $newBody = $(element).parent().children(".listElementBody");
-		addTaskFileTrees($newElement);
-        $newElement.css("border-width", "2px");
-        $newElement.css("padding-left", "6px");
-		$newBody.show();
-        TweenLite.from($newBody, slideDownTime, {height: "0px", onComplete: function() {
-        		$newBody.css("height","");
-	        }
-	    });
-        $currentElement = $newElement;
-	}
-	else {
-		$newElement = $();
-	}
+    var $collapse;
+    var $expand;
     
-}
-
-function addTaskFileTrees($element) {
-	var idLink = $element.attr('id');
-	var url = idLink + tasksFuncs.tabPar();
-	$element.find('#assetFilesContainer').fileTree(
-			allFuncs.treePluginOptions("tasks/files/assets/" + url, false),
-			function($file) {
-				tasksVars.selectedTaskFileIsAsset = true;
-				allFuncs.selectTreeElement($file, "selectedTaskFile");
-			});
-	$element.find('#wipFilesContainer').fileTree(
-			allFuncs.treePluginOptions("tasks/files/other/" + url, false),
-			function($file) {
-				tasksVars.selectedTaskFileIsAsset = false;
-				allFuncs.selectTreeElement($file, "selectedTaskFile");
-			});
-}
-
-function removeTaskFileTrees($element) {
-	$element.find('#assetFilesContainer').empty();
-	$element.find('#wipFilesContainer').empty();
+    //define which element needs to be expanded/collapsed and add/remove them from expandedTasks queue
+    if(isAlreadyExpanded) {
+    	$expand = undefined;
+    	$collapse = $newElement;
+    	tasksVars.expandedTasks.remove($collapse);
+    }
+    else {
+    	$expand = $newElement;
+    	$collapse = tasksVars.expandedTasks.add($expand);
+    }
+    TaskSwitcher.collapse($collapse);
+    TaskSwitcher.expand($expand);
 }
 
 function switchDeleteQuestion(element) {
@@ -357,4 +268,180 @@ function confirmDeleteTask(idLink, name) {
 	confirm(function() {
 		window.location = "tasks/deleteTask/" + idLink + tasksFuncs.tabPar();
 	}, "Delete task \'" + name + "\' ?");
+}
+
+/**
+ * -------------------- TaskForm -----------------------------------------------------------------
+ * Initializes task form and registers behaviour for task form buttons.
+ */
+function TaskForm() {
+	var $form = $("#taskForm");
+	var $submit = $("#submitTaskButton");
+	var $cancel = $("#cancelTaskButton");
+	var $new = $("#newTaskButton");
+	init();
+	
+	function init() {
+		if (tasksVars.edit !== "") {
+			show();
+			$form.find("#taskGroupType").hide();
+		}
+		var $type = $form.find("#taskElementType select");
+		switchPath($type);
+		
+		$type.change(function() {switchPath($type);});
+		$new.click(function() {show();});
+		$submit.click(function() {$form.submit();});
+	}
+	
+	function switchPath($taskElementType) {
+		var selected = $taskElementType.find(":selected").val();
+		var $path = $form.find("#taskElementPath");
+		switch(selected) {
+			case "GENERAL":	$path.hide();break;
+			default:		$path.show();break;
+		}
+	}
+	
+	function show() {
+		$form.show();
+		$submit.show();
+		$cancel.show();
+		$new.hide();
+	}
+}
+
+
+/**
+ * -------------------- TaskSwitcher -------------------------------------------------------------
+ * Provides the two static methods collapse and expand, which load and animate a tasks details.
+ */
+var TaskSwitcher = function() {
+	this.slideDownTime = 0.5;
+    this.slideUpTime = 0.5;
+    
+    var getBody = function($task) {
+    	return $task.children(".listElementBody");
+    };
+    
+    var addTaskFileTrees = function($element) {
+    	var idLink = $element.attr('id');
+    	var url = idLink + tasksFuncs.tabPar();
+    	$element.find('#assetFilesContainer').fileTree(
+    			allFuncs.treePluginOptions("tasks/files/assets/" + url, false),
+    			function($file) {
+    				tasksVars.selectedTaskFileIsAsset = true;
+    				allFuncs.selectTreeElement($file, "selectedTaskFile");
+    			});
+    	$element.find('#wipFilesContainer').fileTree(
+    			allFuncs.treePluginOptions("tasks/files/other/" + url, false),
+    			function($file) {
+    				tasksVars.selectedTaskFileIsAsset = false;
+    				allFuncs.selectTreeElement($file, "selectedTaskFile");
+    			});
+    };
+
+    var removeTaskFileTrees = function($element) {
+    	$element.find('#assetFilesContainer').empty();
+    	$element.find('#wipFilesContainer').empty();
+    };
+    
+    return {
+        /**
+         * Plays a slideUp animation and removes task detail DOM from page.
+         */
+        collapse : function($task) {
+            if($task !== undefined) {
+            	var $body = getBody($task);
+            	TweenLite.to($body, this.slideUpTime, {height: "0px", onComplete: function() {
+            			$body.hide();
+            			$body.css("height","");
+            			$task.css("border-width", "0px");
+            			$task.css("padding-left", "8px");
+            	        removeTaskFileTrees($task);
+            	        //TODO: remove task detail data
+                    }
+                });
+            }
+        },
+        
+        /**
+         * Adds task detail DOM to page and plays a slideDown animation. 
+         */
+        expand : function($task) {
+        	if ($task !== undefined) {
+        		//TODO: add task detail data
+        		var $body = getBody($task);
+        		addTaskFileTrees($task);
+        		$task.css("border-width", "2px");
+        		$task.css("padding-left", "6px");
+        		$body.show();
+                TweenLite.from($body, this.slideDownTime, {height: "0px", onComplete: function() {
+                		$body.css("height","");
+        	        }
+        	    });
+        	}
+        }
+    };
+}();
+
+
+/**
+ * -------------------- TaskQueue ---------------------------------------------------------------
+ * @param maxSize - Maximum number of elements in the queue. If undefined, queue size is unlimited.
+ * Modifiable propety. If the size is reduced, surplus elements will not be removed.
+ * @param taskComparator - Function which takes to tasks as arguments and returns true if they are
+ * considered to be the same task. Used by remove & contains function.
+ */
+function TaskQueue(maxSize, taskComparator) {
+	var queue = [];
+	this.maxSize = maxSize;
+	
+	/**
+	 * Adds an element to the queue. If the queue is full, the oldest element will be removed.
+	 * @returns the removed element or undefined, if no element was removed.
+	 */
+	this.add = function(task) {
+		var result = undefined;
+		if(this.maxSize !== undefined && queue.length >= this.maxSize) {
+			result = queue.pop();
+		}
+		queue.unshift(task);
+		return result;
+	};
+	
+	var containsRemove = function(task, remove) {
+		for (var i = 0; i < queue.length; i++) {
+			if (taskComparator(queue[i], task)) {
+				if(remove) queue.splice(i, 1);
+				return true;
+			}
+		}
+		return false;
+	};
+	
+	/**
+	 * Compares the given element with the queued elements by using it as second parameter with the
+	 * given taskComparator.
+	 * @returns true, if the element was found
+	 */
+	this.contains = function(task) {
+		return containsRemove(task, false);
+	};
+	
+	/**
+	 * Compares the given element with the queued elements by using it as second parameter with the
+	 * given taskComparator and removes it if found.
+	 * @returns true, if the element was found and removed
+	 */
+	this.remove = function(task) {
+		return containsRemove(task, true);
+	};
+	
+	/**
+	 * @return array with all elements ordered by insertion order (latest first, oldest last).
+	 */
+	this.get = function() {
+		return queue.slice();
+	};
 }

@@ -35,7 +35,7 @@
 	
 	<!-- activate scan for annotations in given packages-->
 <!-- 	<context:component-scan base-package="gmm, com.technologicaloddity" /> -->
-	<context:component-scan base-package="gmm" />
+	<context:component-scan base-package="gmm, com.technologicaloddity" />
 	
 	<!-- InternalResourceViewResolver resolves the name given from controller to a file by using prefix and suffix -->
 	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
