@@ -155,7 +155,7 @@ function changeComment(comment, taskId, commentId) {
 }
 
 function confirmCommentChange(taskId, commentId) {
-	var comment = $("#confirmDialogTextArea").attr("value");
+	var comment = $("#confirmDialogTextArea").val();
 	var url = "editComment/" + taskId + "/" + commentId;
 	$.post(url, {"editedComment" : comment}, 
 			function() {window.location.reload();}
@@ -353,11 +353,12 @@ var TaskSwitcher = function() {
         collapse : function($task) {
             if($task !== undefined) {
             	var $body = getBody($task);
-            	TweenLite.to($body, this.slideUpTime, {height: "0px", onComplete: function() {
+            	TweenLite.to($body, slideUpTime, {height: "0px", onComplete: function() {
             			$body.hide();
             			$body.css("height","");
             			$task.css("border-width", "0px");
             			$task.css("padding-left", "8px");
+            			$task.css("background-color", allVars.taskBackgroundColor);
             	        removeTaskFileTrees($task);
             	        //TODO: remove task detail data
                     }
@@ -375,8 +376,10 @@ var TaskSwitcher = function() {
         		addTaskFileTrees($task);
         		$task.css("border-width", "2px");
         		$task.css("padding-left", "6px");
+        		$task.css("background-color", "#000");
+        		$task.css("background-color", "rgba(0, 32, 48, 1)");
         		$body.show();
-                TweenLite.from($body, this.slideDownTime, {height: "0px", onComplete: function() {
+                TweenLite.from($body, slideDownTime, {height: "0px", onComplete: function() {
                 		$body.css("height","");
         	        }
         	    });

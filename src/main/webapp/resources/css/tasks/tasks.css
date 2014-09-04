@@ -57,8 +57,8 @@
 #listsMain .listElement{
 	margin-top:7px;
 	padding:4px 8px;
-	box-shadow: -1px -1px 0px #444, 1px 1px 1px #111;
-	border-left:0px solid #D35A3D;
+	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
+	border-left:0px solid rgba(255, 78, 35, 1);;
 	
 	column-break-inside: avoid;
 	-moz-column-break-inside: avoid;

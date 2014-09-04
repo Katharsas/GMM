@@ -5,7 +5,8 @@ var paramString = window.location.search.substring(1);
 var allVars = {
 	"selectedTaskFile":$(),
 	"selectedAssetFile":$(),
-	"selectedBackupFile":$()
+	"selectedBackupFile":$(),
+	"taskBackgroundColor":"#111"
 };
 var allFuncs = {
 	"selectTreeElement":
@@ -145,7 +146,7 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 		$textInputField.hide();
 	}
 	if(textAreaDefault !== undefined) {
-		$textArea.attr("value", textAreaDefault);
+		$textArea.text(textAreaDefault);
 		$textArea.show();
 	}
 	else {

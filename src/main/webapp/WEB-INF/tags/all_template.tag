@@ -12,7 +12,9 @@
 			<title>GMM - Tasks</title>
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
 		<!-- Javascript -->
-			<script src="res/javascript/lib/jQuery.js" type="text/javascript"></script>
+<!-- 			<script src="res/javascript/lib/jQuery.js" type="text/javascript"></script> -->
+<!-- 			<script src="//code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script> -->
+			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
 			<script src="res/javascript/lib/jquery.form.min.js" type="text/javascript"></script>
 			<script src="res/javascript/default.js" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
