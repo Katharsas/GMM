@@ -13,6 +13,9 @@
 		<div class="clear"></div>
 	</div>
 	<div id="listsMain" class="subTabbody tabbody activeSubpage">
+	
+<%-- ########################## Searching ########################### --%>
+	
 		<div class="search listElement">
 			<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
 				
@@ -48,7 +51,6 @@
 						<div class="searchDescription left"><fmt:message key="author"/>:</div>
 						<form:input class="searchInputField" path="author" value=""/>
 					</div>
-<!-- 					<div class="clear"></div> -->
 					<div class="complexSearchRight">
 					
 <!-- 					Description -->
@@ -69,6 +71,7 @@
 			</form:form>
 		</div>
 		
+<%-- ########################## Sorting ########################### --%>
 		
 		<div class="sort listElement">
 			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
@@ -95,9 +98,14 @@
 			</form:form>
 		</div>
 		
-		<div class="elementCount center">---------------------------------------- 
-		<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
-		----------------------------------------</div>
+<%-- ########################## Task List ########################### --%>
+
+		<div class="elementCount center">
+			---------------------------------------- 
+			<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
+			----------------------------------------
+		</div>
+		
 		<c:forEach items="${taskList}" var="task">
 			<div id="${task.getIdLink()}" class="listElement">
 				<div class="listElementTop clickable" onclick="switchListElement(this)">
@@ -130,6 +138,8 @@
 					</div>
 			    	<div class="clear"></div>
 			    </div>
+			    
+			    
 			    <div class="listElementBody">
 <%-- AssetPath --%>
 				    <c:if test="${tab.equals('textures') || tab.equals('models')}">

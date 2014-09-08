@@ -269,6 +269,12 @@ function confirmDeleteTask(idLink, name) {
 		window.location = "tasks/deleteTask/" + idLink + tasksFuncs.tabPar();
 	}, "Delete task \'" + name + "\' ?");
 }
+/**
+ * -------------------- TaskDetails -----------------------------------------------------------------
+ */
+var TaskDetails = function() {
+	//TODO remove task details from page and store the in a map
+};
 
 /**
  * -------------------- TaskForm -----------------------------------------------------------------
