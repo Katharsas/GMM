@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 
 
+
 import com.technologicaloddity.capturejsp.util.SwallowingJspRenderer;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class TaskController {
 	@Autowired DataAccess data;
 	@Autowired TaskFilterService filter;
 	@Autowired UserService users;
-	@Autowired SwallowingJspRenderer jspRenderer;
+//	@Autowired SwallowingJspRenderer jspRenderer;
 
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {return new TaskForm();}
