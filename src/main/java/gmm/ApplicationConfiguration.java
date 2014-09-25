@@ -10,11 +10,12 @@ import java.util.Map;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartResolver;
@@ -29,7 +30,6 @@ import org.springframework.web.servlet.view.JstlView;
 @Configuration
 @ComponentScan(basePackages = {"gmm", "com.technologicaloddity"})
 @ImportResource({"classpath:applicationContext-security.xml"})
-@Import(I18nConfiguration.class)
 @EnableWebMvc
 public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	
@@ -38,6 +38,16 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	/**
 	 * ----------------------------- Basic Config -----------------------------
 	 */
+	
+	/**
+	 * Provides property-files for fmt:message keys from jsps
+	 */
+	@Bean
+	public MessageSource messageSource() {
+		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		source.setBasename("i18n.messages");
+		return source;
+	}
 	
 	/**
 	 * Map links starting with res (used for css/js files) to appropriate folder
