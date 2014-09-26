@@ -1,4 +1,4 @@
-package gmm.domain.ClassTests;
+package gmm.domain;
 
 import static org.junit.Assert.*;
 
@@ -10,7 +10,7 @@ import gmm.domain.User;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestUser {
+public class UserTest {
 
 	User objectUnderTest;
 	

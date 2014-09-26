@@ -1,11 +1,11 @@
-package gmm.service.ClassTests;
+package gmm.service;
 
 import static org.junit.Assert.*;
 import gmm.util.StringUtil;
 
 import org.junit.Test;
 
-public class TestStringUtil {
+public class StringUtilTest {
 	
 	@Test
 	public void testContains(){

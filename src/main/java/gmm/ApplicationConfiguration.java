@@ -33,7 +33,7 @@ import org.springframework.web.servlet.view.JstlView;
 @EnableWebMvc
 public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	
-	private Resource configFile = new ClassPathResource("config.properties");
+	private static Resource configFile = new ClassPathResource("config.properties");
 
 	/**
 	 * ----------------------------- Basic Config -----------------------------
@@ -90,7 +90,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 * Exposes property file with meta information to @Value annotation.
 	 */
 	@Bean
-	public PropertyPlaceholderConfigurer propertyConfigurer() {
+	public static PropertyPlaceholderConfigurer propertyConfigurer() {
 		PropertyPlaceholderConfigurer conf =  new PropertyPlaceholderConfigurer();
 		conf.setLocation(configFile);
 		return conf;
@@ -110,7 +110,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 * @Value Path converter
 	 */
 	@Bean
-	public CustomEditorConfigurer editorConfigurer() {
+	public static CustomEditorConfigurer editorConfigurer() {
 		CustomEditorConfigurer conf = new CustomEditorConfigurer();
 		Map<Class<?>, Class<? extends PropertyEditor>>  map = new HashMap<>();
 		

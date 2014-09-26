@@ -62,7 +62,8 @@ public class SwallowingJspRenderer implements ServletContextAware {
     	addModelAsRequestAttributes(realRequest, modelMap);
     	
     	try {
-    		Spring.getServletContext().getRequestDispatcher(viewResolver.urlForView(viewName)).forward(realRequest, fakeResponse);
+    		RequestDispatcher dispatcher = Spring.getServletContext().getRequestDispatcher(viewResolver.urlForView(viewName));
+    		dispatcher.forward(realRequest, fakeResponse);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -75,8 +76,8 @@ public class SwallowingJspRenderer implements ServletContextAware {
 		//http://technologicaloddity.com/2011/10/04/render-and-capture-the-output-of-a-jsp-as-a-string/3/
 		
 		String result = null;
-		Locale locale = Locale.GERMAN;
-		System.out.println(locale.toString());
+		Locale locale = Locale.getDefault();
+		System.out.println("Current Locale: "+locale.toString());
 		
 		StringWriter sout = new StringWriter();
         StringBuffer sbuffer = sout.getBuffer();
@@ -101,8 +102,8 @@ public class SwallowingJspRenderer implements ServletContextAware {
             
             RequestDispatcher dispatcher = servletContext.getRequestDispatcher(viewResolver.urlForView(viewName));
             
-            String m = Spring.getApplicationContext().getMessage("tasks.menu.models", null, locale);
-            System.out.println(m);
+//            String m = Spring.getApplicationContext().getMessage("tasks.menu.models", null, locale);
+//            System.out.println(m);
             
             dispatcher.include(request, swallowingResponse);
 			
