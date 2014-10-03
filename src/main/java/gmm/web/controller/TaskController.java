@@ -12,21 +12,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.support.RequestContext;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
 import java.io.IOException;
 /** java */
 
 
+import java.io.StringWriter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import freemarker.template.Template;
 import gmm.domain.Comment;
 import gmm.domain.Label;
 import gmm.domain.Task;
 import gmm.domain.TaskType;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
+import gmm.service.Spring;
 /* project */
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
@@ -60,6 +65,7 @@ public class TaskController {
 	@Autowired DataAccess data;
 	@Autowired TaskFilterService filter;
 	@Autowired UserService users;
+	@Autowired FreeMarkerConfigurer ftlConfig;
 
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {return new TaskForm();}
@@ -257,5 +263,29 @@ public class TaskController {
 	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");
+	}
+	
+	@RequestMapping(value="/ftl", method = RequestMethod.GET)
+	public String ftlTest(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+		/**
+		 * Only need to copy model if you want to use it for html response.
+		 * If you return JSON you can use original.
+		 */
+		ModelMap copy = (ModelMap) model.clone();
+		copy.put("springMacroRequestContext", new RequestContext(request, response, Spring.getServletContext(), null));
+		
+		StringWriter sout = new StringWriter();
+		StringBuffer sbuffer = sout.getBuffer();
+		
+		Template test = ftlConfig.getConfiguration().getTemplate("test.ftl");
+		test.process(copy, sout);
+		
+		System.out.println(sbuffer.toString());
+		
+		return "test";
 	}
 }

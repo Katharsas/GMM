@@ -26,6 +26,8 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
 @Configuration
 @ComponentScan(basePackages = {"gmm", "com.technologicaloddity"})
@@ -58,16 +60,37 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	}
 	
 	/**
-	 * Resolves the name given from controller to a file by using prefix and suffix
+	 * ViewResolver resolve the String return value from controller methods into templates (jsp or ftl).
 	 */
 	@Bean
-	public ViewResolver viewResolver() {
+	public ViewResolver jspViewResolver() {
 		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+		resolver.setOrder(255);
 		resolver.setViewClass(JstlView.class);
 		resolver.setPrefix("/WEB-INF/jsp/");
 		resolver.setSuffix(".jsp");
 		return resolver;
 	}
+	@Bean
+	public ViewResolver ftlViewResolver() {
+	    FreeMarkerViewResolver resolver = new FreeMarkerViewResolver();
+	    resolver.setOrder(0);
+	    resolver.setCache(true);
+//	    resolver.setPrefix("");
+	    resolver.setSuffix(".ftl");
+	    return resolver;
+	}
+	/**
+	 * FreeMarker (ftl) configuration
+	 */
+	@Bean
+	public FreeMarkerConfigurer freemarkerConfig() {
+	    FreeMarkerConfigurer result = new FreeMarkerConfigurer();
+	    result.setTemplateLoaderPath("/WEB-INF/ftl/");
+	    return result;
+
+	}
+	
 	
 	/**
 	 * Handle Multipart File Upload
