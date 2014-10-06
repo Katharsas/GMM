@@ -88,7 +88,17 @@ $(document).ready(
 			tasksVars.expandedTasks = new TaskQueue(3, function($task1, $task2) {
 				return $task1[0] === $task2[0];
 			});
+			
+			ftlTest();
 });
+
+function ftlTest() {
+	// TODO
+	console.log("Testing ajax ftl:");
+	$.getJSON("render").done(function(tasks) {
+		console.log(tasks);
+	}).fail(showException);
+}
 
 function collapseListElements() {
 	$(".listElementBody").hide();

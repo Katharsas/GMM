@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 
@@ -31,6 +32,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import freemarker.template.Template;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 import gmm.domain.Comment;
 import gmm.domain.Label;
 import gmm.domain.Task;
@@ -265,10 +268,10 @@ public class TaskController {
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
 	    
-		String jspOutput = jspRenderer.renderB("tasks", model, request, response);
-		System.out.println("========================= JSP Render Start ========================");
-	    System.out.println(jspOutput);
-	    System.out.println("=========================  JSP Render End  ========================");
+//		String jspOutput = jspRenderer.renderB("tasks", model, request, response);
+//		System.out.println("========================= JSP Render Start ========================");
+//	    System.out.println(jspOutput);
+//	    System.out.println("=========================  JSP Render End  ========================");
 	    
 	    return "tasks";
 	}
@@ -299,5 +302,29 @@ public class TaskController {
 		System.out.println(sbuffer.toString());
 		
 		return "test";
+	}
+	
+	@RequestMapping(value = "/render", method = RequestMethod.GET)
+	@ResponseBody
+	public java.util.List<String> taskMap(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+		model.put("springMacroRequestContext",
+				new RequestContext(request, response, Spring.getServletContext(), null));
+		Template taskTemplate = ftlConfig.getConfiguration().getTemplate("task.ftl");
+		
+		List<String> renderedTasks = new LinkedList<>();
+		for(Task t : session.getTasks()) {
+			model.put("task", t);
+			
+			StringWriter sout = new StringWriter();
+			StringBuffer sbuffer = sout.getBuffer();
+			taskTemplate.process(model, sout);
+			
+			renderedTasks.add(sbuffer.toString());
+		}
+		return renderedTasks;
 	}
 }
