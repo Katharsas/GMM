@@ -13,17 +13,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-
-
 import org.springframework.web.servlet.support.RequestContext;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
-import com.technologicaloddity.capturejsp.util.SwallowingJspRenderer;
-
 import java.io.IOException;
 /** java */
-
-
 
 
 import java.io.StringWriter;
@@ -74,7 +68,6 @@ public class TaskController {
 	@Autowired DataAccess data;
 	@Autowired TaskFilterService filter;
 	@Autowired UserService users;
-	@Autowired SwallowingJspRenderer jspRenderer;
 	@Autowired FreeMarkerConfigurer ftlConfig;
 
 	@ModelAttribute("task")
@@ -267,11 +260,6 @@ public class TaskController {
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
-	    
-//		String jspOutput = jspRenderer.renderB("tasks", model, request, response);
-//		System.out.println("========================= JSP Render Start ========================");
-//	    System.out.println(jspOutput);
-//	    System.out.println("=========================  JSP Render End  ========================");
 	    
 	    return "tasks";
 	}

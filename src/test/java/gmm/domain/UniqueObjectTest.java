@@ -1,4 +1,4 @@
-package gmm.domain.ClassTests;
+package gmm.domain;
 
 import static org.junit.Assert.*;
 
@@ -11,7 +11,7 @@ import gmm.domain.UniqueObject;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestUniqueObject {
+public class UniqueObjectTest {
 
 	public class TestClass1 extends UniqueObject {
 		private String var;
@@ -22,6 +22,10 @@ public class TestUniqueObject {
 			var = arg;}
 		public String getVar() {
 			return var;}
+		@Override
+		public String getIdLink() {
+			return getId()+"";
+		}
 	}
 	
 	public class TestClass2 extends UniqueObject {	

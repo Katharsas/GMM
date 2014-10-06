@@ -1,10 +1,9 @@
-package gmm.service.data.ClassTests;
+package gmm.service.data;
 
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import gmm.collections.Collection;
 import gmm.domain.Notification;
@@ -20,10 +19,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations="XMLSerializerServiceTest-Context.xml")
+@WebAppConfiguration
+@ContextConfiguration(classes={gmm.ApplicationConfiguration.class})
 public class XMLSerializerServiceTest {
 
 	@Autowired
@@ -52,10 +53,10 @@ public class XMLSerializerServiceTest {
 		data.add(testUser);
 		
 		//serialize and deserialize
-		Path filename = Paths.get("user_test_file");
+		Path file = dataConfig.USERS.resolve("user_test_file");
 		Collection<User> users = data.<User>getList(User.class);
-		xmlService.serialize(users, filename);
-		Collection<? extends User> resultUsers = xmlService.deserialize(filename, User.class);
+		xmlService.serialize(users, file);
+		Collection<? extends User> resultUsers = xmlService.deserialize(file, User.class);
 		
 		//compare
 		for (User u : users) {
