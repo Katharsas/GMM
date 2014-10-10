@@ -5,8 +5,8 @@ import gmm.domain.Task;
 import gmm.domain.TaskPriority;
 import gmm.domain.TaskStatus;
 import gmm.domain.User;
+import gmm.service.filter.GmmSelection;
 import gmm.service.filter.Selection;
-import gmm.service.filter.SimpleSelection;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 
@@ -28,27 +28,25 @@ public class TaskFilterService {
 	public synchronized <T extends Task, I extends Collection<T>> I search(
 			I tasks, SearchForm search) {
 		
-		Selection<T,I> selection;
+		I selected;
 		if(search.isEasySearch()) {
-			selection = new SimpleSelection<T,I>(tasks, false)
-					.bufferFilter(search.getEasy())
-					.uniteWith()
-					.matchingGetter("getName")
-					.matchingGetter("getAuthor")
-					.matchingGetter("getDetails")
-					.matchingGetter("getLabel")
-					.matchingGetter("getAssigned");
+			selected = new GmmSelection<T,I>(tasks, false).start()
+				.uniteWith()
+				.forFilter(search.getEasy())
+				.match("getName", "getAuthor", "getDetails", "getLabel", "getAssigned")
+				.getSelected();
 		}
 		else {
-			selection = new SimpleSelection<T,I>(tasks, true)
-					.intersectWith()
-					.matching("getName", search.getName())
-					.matching("getAuthor", search.getAuthor())
-					.matching("getDetails", search.getDetails())
-					.matching("getLabel", search.getLabel())
-					.matching("getAssigned", search.getAssigned());
+			selected = new GmmSelection<T,I>(tasks, true).start()
+				.intersectWith()
+				.matching("getName", search.getName())
+				.matching("getAuthor", search.getAuthor())
+				.matching("getDetails", search.getDetails())
+				.matching("getLabel", search.getLabel())
+				.matching("getAssigned", search.getAssigned())
+				.getSelected();
 		}
-		return selection.getSelected();
+		return selected;
 	}
 	
 	/**
@@ -61,8 +59,8 @@ public class TaskFilterService {
 	public synchronized <T extends Task, I extends Collection<T>> I filter(
 			I tasks, FilterForm filterData, User currentUser) {
 		
-		Selection<T,I> selection = new SimpleSelection<T,I>(tasks, true);
-		selection.setOnlyMatchEqual(true);
+		Selection<T,I> selection = new GmmSelection<T,I>(tasks, true);
+		selection.strictEqual(true);
 		
 		if (filterData.isCreatedByMe()) {
 			selection.intersectWith().matching("getAuthor", currentUser);

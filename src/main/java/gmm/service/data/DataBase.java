@@ -26,11 +26,11 @@ public class DataBase implements DataAccess {
 	@Autowired UserService userService;
 	@Autowired PasswordEncoder encoder;
 	
-	final private List<User> users = new LinkedList<User>();
-	final private Set<GeneralTask> generalTasks = new HashSet<GeneralTask>();
-	final private Set<TextureTask> textureTasks = new HashSet<TextureTask>();
-	final private Set<ModelTask> modelTasks = new HashSet<ModelTask>();
-	final private Set<Label> taskLabels = new HashSet<Label>();
+	final private List<User> users = new LinkedList<>();
+	final private Set<GeneralTask> generalTasks = new HashSet<>();
+	final private Set<TextureTask> textureTasks = new HashSet<>();
+	final private Set<ModelTask> modelTasks = new HashSet<>();
+	final private Set<Label> taskLabels = new HashSet<>();
 	
 	@PostConstruct
 	private void init() {
@@ -47,17 +47,17 @@ public class DataBase implements DataAccess {
 		System.out.println("\n##########################################################");
 	}
 	
-	@Override
 	@SuppressWarnings("unchecked")
-	public synchronized <T extends Linkable> Collection<T> getList(Class<?> clazz) {
+	@Override
+	public synchronized <T extends Linkable> Collection<T> getList(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
 			Collection<T> allTasks = new HashSet<>();
-			allTasks.addAll((Collection<T>) generalTasks);
+			allTasks.addAll((Collection<T>)generalTasks);
 			allTasks.addAll((Collection<T>) textureTasks);
 			allTasks.addAll((Collection<T>) modelTasks);
 			return allTasks;
 		}
-		return this.<T>getDataList(clazz).copy();
+		return (Collection<T>) this.<T>getDataList(clazz).copy();
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> boolean addAll(Class<?> clazz, Collection<? extends T> data) {
+	public synchronized <T extends Linkable> boolean addAll(Class<T> clazz, Collection<? extends T> data) {
 		Collection<T> collection = getDataList(clazz);
 		boolean result =  collection.addAll(data);
 		
@@ -88,7 +88,7 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized void removeAll(Class<?> clazz) {
+	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
 			textureTasks.clear();
@@ -100,7 +100,7 @@ public class DataBase implements DataAccess {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Linkable> Collection<T> getDataList(Class<?> clazz) {
+	private <T extends Linkable> Collection<T> getDataList(Class<? extends T> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":

@@ -118,7 +118,7 @@ public class AdminUserController {
 	public @ResponseBody void loadUsers() throws AjaxResponseException {	
 		try {
 			Path path = config.USERS.resolve("users.xml");
-			Collection<? extends User> loadedUsers =  xmlService.deserialize(path, User.class);
+			Collection<User> loadedUsers =  xmlService.deserialize(path, User.class);
 			for(User user : loadedUsers) {
 				user.makeUnique();
 			}

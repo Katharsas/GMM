@@ -25,9 +25,9 @@
     <jsp:body>
 		<div class="table">
 			<div class="tr">
-				<div class="td">
+				<div class="td leftColumn">
 				</div>
-				<div class="td">
+				<div class="td rightColumn">
 <!-- New Task Area -->
 					<div id="generalArea">
 						<div id="newTaskButton" class="button pageButton">
@@ -56,12 +56,12 @@
 				</div>
 			</div>
 			<div class="tr">
-				<div class="td">
+				<div class="td leftColumn">
 <!-- Side Filter Area -->
 					<t:tasks_filters>
 					</t:tasks_filters>
 				</div>
-				<div class="td">
+				<div class="td rightColumn">
 <!-- Task List Area -->
 					<t:tasks_lists newLine="${newLine}">
 					</t:tasks_lists>

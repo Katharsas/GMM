@@ -1,41 +1,41 @@
 package gmm.web.controller;
 
-/** Controller class & ModelAndView */
+/** Other*/
+
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 /** Annotations */
-import org.springframework.stereotype.Controller;
+
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
-
-
-
-
-
-import java.io.IOException;
 /** java */
 
+import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+/* project */
 
-
-
-
-
+import gmm.collections.List;
 import gmm.domain.Comment;
 import gmm.domain.Label;
 import gmm.domain.Task;
 import gmm.domain.TaskType;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
-/* project */
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskCreator;
+import gmm.web.AjaxResponseException;
+import gmm.web.TaskRenderer;
+import gmm.web.TaskRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
@@ -44,13 +44,13 @@ import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
 /**
- * Controller class which handles all GET & POST requests with root "tasks".
- * This class is responsible for most CRUD operations on tasks.
+ * This controller is responsible for most task-CRUD operations requested by "tasks" page.
  * 
  * The session state and flow is managed by the TaskSession object.
  * @see {@link gmm.web.sessions.TaskSession}
  * 
- * @author Jan Mothes aka Kellendil
+ * @author Jan Mothes
+ * 
  */
 @Controller
 @RequestMapping(value={"tasks", "/"})
@@ -59,27 +59,38 @@ import gmm.web.sessions.TaskSession;
 
 public class TaskController {
 	
-	@Autowired TaskCreator taskCreator;
-	@Autowired TaskSession session;
-	@Autowired DataAccess data;
-	@Autowired TaskFilterService filter;
-	@Autowired UserService users;
+	@Autowired private TaskCreator taskCreator;
+	@Autowired private TaskSession session;
+	@Autowired private DataAccess data;
+	@Autowired private TaskFilterService filter;
+	@Autowired private UserService users;
+	@Autowired private TaskRenderer ftlTaskRenderer;
 
 	@ModelAttribute("task")
-	public TaskForm getTaskFacade() {return new TaskForm();}
-	
-	@ModelAttribute("comment")
-	public CommentForm getCommentFacade() {return new CommentForm();}
-	
-	@ModelAttribute("sort")
-	public SortForm getSortFacade() {return session.getSortForm();}
+	public TaskForm getTaskForm() {return new TaskForm();}
 	
 	@ModelAttribute("search")
-	public SearchForm getSearchFacade() {return new SearchForm();}
+	public SearchForm getSearchForm() {return new SearchForm();}
+	
+	@ModelAttribute("comment")
+	public CommentForm getCommentForm() {return new CommentForm();}
+	
+	@ModelAttribute("sort")
+	public SortForm getSortForm() {return session.getSortForm();}
 	
 	@ModelAttribute("generalFilter")
 	public FilterForm getGeneralFilter() {return session.getFilterForm();}
 
+	/**
+	 * For FTL rendering
+	 */
+	private void populateRequest(HttpServletRequest request) {
+		request.setAttribute("task", getTaskForm());
+		request.setAttribute("search", getSearchForm());
+		request.setAttribute("comment", getCommentForm());
+		request.setAttribute("sort", getSortForm());
+		request.setAttribute("generalFilter", getGeneralFilter());
+	}
 	
 	/**
 	 * Filter
@@ -154,7 +165,7 @@ public class TaskController {
 	public String editComment(
 				@PathVariable String taskIdLink,
 				@PathVariable String commentIdLink,
-				@ModelAttribute("editedComment") String edited) {
+				@RequestParam("editedComment") String edited) {
 		Task task = UniqueObject.getFromId(session.getTasks(), taskIdLink);
 		Comment comment = UniqueObject.getFromId(task.getComments(), commentIdLink);
 		if(comment.getAuthor().getId() == session.getUser().getId()) {
@@ -234,6 +245,8 @@ public class TaskController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String send(
 			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response,
 			@ModelAttribute("task") TaskForm form,
 			@RequestParam(value="tab", defaultValue="") String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
@@ -246,17 +259,34 @@ public class TaskController {
 			model.addAttribute("label", task.getLabel());
 			model.addAttribute("task", form);
 		}
-		session.updateTab(TaskType.fromTab(tab));
+		TaskType type = TaskType.fromTab(tab);
+		session.updateTab(type);
+		form.setType(type);
 		
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("tab", tab);
 	    model.addAttribute("edit", edit);
+	    
 	    return "tasks";
 	}
 	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");
+	}
+	
+	@RequestMapping(value = "/render", method = RequestMethod.GET)
+	@ResponseBody
+	public List<TaskRenderResult> taskMap(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) throws AjaxResponseException {
+		try {
+			populateRequest(request);
+			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response);
+		} catch(Exception e) {
+			throw new AjaxResponseException(e);
+		}
 	}
 }

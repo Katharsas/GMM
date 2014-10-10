@@ -1,4 +1,4 @@
-package gmm.service.ClassTests;
+package gmm.service;
 
 import static org.junit.Assert.*;
 
