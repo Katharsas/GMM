@@ -18,13 +18,12 @@ public class Comment extends UniqueObject {
 	//Methods
 	public Comment(User author) {
 		super();
+		Objects.requireNonNull(author);
 		this.author = author;
 	}
 	
 	public Comment(User author, String text) {
-		super();
-		Objects.requireNonNull(author);
-		this.author = author;
+		this(author);
 		setText(text);
 	}
 

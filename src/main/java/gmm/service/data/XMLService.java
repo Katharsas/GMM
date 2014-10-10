@@ -60,10 +60,10 @@ public class XMLService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized <T> Collection<? extends T> deserialize(Path path, Class<T> clazz) throws IOException {
+	public synchronized <T> Collection<T> deserialize(Path path, Class<T> clazz) throws IOException {
 		if(!path.toFile().exists()) {
 			throw new IOException("File with serialized data at \""+path+"\" does not exist! Cannot deserialize.");
 		}
-		return (Collection<? extends T>) xstream.fromXML(path.toFile());
+		return (Collection<T>) xstream.fromXML(path.toFile());
 	}
 }

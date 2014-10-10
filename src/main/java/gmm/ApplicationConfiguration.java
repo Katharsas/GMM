@@ -24,6 +24,7 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
@@ -40,6 +41,14 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	/**
 	 * ----------------------------- Basic Config -----------------------------
 	 */
+	
+	@Bean
+	public RequestMappingHandlerMapping requestMappingHandlerMapping() {
+		RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
+		mapping.setUseSuffixPatternMatch(false);
+		mapping.setUseTrailingSlashMatch(false);
+		return mapping;
+	}
 	
 	/**
 	 * Provides property-files for fmt:message keys from jsps
@@ -96,7 +105,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 * Handle Multipart File Upload
 	 */
 	@Bean
-	public MultipartResolver multipartRsolver() {
+	public MultipartResolver multipartResolver() {
 		return new CommonsMultipartResolver();
 	}
 	

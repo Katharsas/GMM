@@ -75,12 +75,12 @@ public class TaskSession {
 	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
-	public List<? extends Task> getTasks() {
+	public List<Task> getTasks() {
 		if (dirtyTasksFlag) {
 			updateAndFilterTasks(currentTaskType);
 			dirtyTasksFlag = false;
 		}
-		return tasks.copy();
+		return (List<Task>) tasks.copy();
 	}
 	
 	public TaskType getCurrentTaskType() {
@@ -151,7 +151,7 @@ public class TaskSession {
 	/**
 	 * Remove task from session data.
 	 */
-	public <T extends Task> void remove(T task) {
+	public void remove(Task task) {
 		filteredTasks.remove(task);
 		tasks.remove(task);
 	}
@@ -159,12 +159,12 @@ public class TaskSession {
 	/**
 	 * Add task to session data
 	 */
-	public <T extends Task> void add(T task) {
-		List<T> single = new LinkedList<>();
+	public void add(Task task) {
+		List<Task> single = new LinkedList<>();
 		single.add(task);
 		filteredTasks.addAll(filterService.filter(single, generalFilter, user));
 		filteredTasks = sortService.sort(filteredTasks, sort);
-		tasks = filteredTasks.copy();
+		tasks = (List<Task>) filteredTasks.copy();
 	}
 	
 	/*--------------------------------------------------
@@ -175,7 +175,7 @@ public class TaskSession {
 		filteredTasks = new LinkedList<Task>();
 		filteredTasks.addAll(filterService.filter(getTaskList(tab), generalFilter, user));
 		filteredTasks = sortService.sort(filteredTasks, sort);
-		tasks = filteredTasks.copy();
+		tasks = (List<Task>) filteredTasks.copy();
 	}
 	
 	private Collection<? extends Task> getTaskList (TaskType tab) {

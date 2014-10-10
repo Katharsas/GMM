@@ -4,15 +4,21 @@ import static org.junit.Assert.*;
 
 import java.util.Collections;
 
-import gmm.collections.LinkedList;
-import gmm.collections.List;
+import gmm.collections.Collection;
+import gmm.collections.HashSet;
+import gmm.service.filter.CustomSelection.CopyMethod;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class SimpleSelectionTest {
 
-	@Test
-	public void test() {
+	Collection<TestPerson> persons = new HashSet<TestPerson>();
+	Collection<TestPerson> expected = new HashSet<TestPerson>();
+	
+	@Before
+	public void before() {
 		TestPerson p01 = new TestPerson("Julian Tomston", 20, "Boston", "male");
 		TestPerson p02 = new TestPerson("Chris Tomston", 20, "New York", "male");
 		TestPerson p03 = new TestPerson("Tina Turner", 22, "Tomston", "female");
@@ -29,25 +35,68 @@ public class SimpleSelectionTest {
 		TestPerson p14 = new TestPerson("Brian Biranha", 20, "Boston", "male");
 		TestPerson p15 = new TestPerson("Julian Bacher", 22, "NY", "male");
 		
-		List<TestPerson> persons = new LinkedList<TestPerson>();
 		Collections.addAll(persons, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15);
-		
-		List<TestPerson> result =
-			new SimpleSelection<>(persons, true)
+		Collections.addAll(expected, p01, p04, p05, p08, p10, p14, p15);
+	}
+	
+	@After
+	public void after() {
+		persons.clear();
+		expected.clear();
+	}
+	
+	@Test
+	public void test1_Simple() {
+		Collection<TestPerson> result = new SimpleSelection<>(persons, true)
 				.remove().matching("getName","Tom")
 				.uniteWith().matching("getHometown", "Boston")
+				.strictEqual(true)
 				.intersectWith().matching("getSex", "male")
-				.bufferGetter("getAge")
-				.intersectWith()
-				.matchingFilter("20")
-				.matchingFilter("21")
-				.matchingFilter("22")
+				.cutSelected()
+				.negateAll()
+				.forGetter("getAge")
+				.uniteWith().matchingFilter(20, "21", "22")
 				.getSelected();
-		
-		List<TestPerson> expected = new LinkedList<TestPerson>();
-		Collections.addAll(persons, p01, p04, p05, p08, p10, p14, p15);
 		
 		assertEquals(expected, result);
 	}
-
+	
+	@Test
+	public void test2_Gmm() {
+		Collection<TestPerson> result = new GmmSelection<>(persons, true)
+				.start()
+				.remove().matching("getName","Tom")
+				.uniteWith().matching("getHometown", "Boston")
+				.strictEqual(true)
+				.intersectWith().matching("getSex", "male")
+				.cutSelected()
+				.negateAll()
+				.uniteWith().forGetter("getAge").match(20, 21, 22)
+				.getSelected();
+		
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void test3_Custom() {
+		Collection<TestPerson> result =
+			new CustomSelection<>(persons, true, new CopyMethod<TestPerson,Collection<TestPerson>>() {
+				@Override
+				public Collection<TestPerson> copy(Collection<TestPerson> i) {
+					return new HashSet<TestPerson>(i);
+				}
+			})
+				.remove().matching("getName","Tom")
+				.uniteWith().matching("getHometown", "Boston")
+				.strictEqual(true)
+				.intersectWith().matching("getSex", "male")
+				.cutSelected()
+				.negateAll()			
+				.forGetter("getAge")
+				.uniteWith()
+				.matchingFilter(20, "21", "22")
+				.getSelected();
+		
+		assertEquals(expected, result);
+	}
 }
