@@ -11,7 +11,7 @@
 						${task.getId()}
 				    </div>
 <!-- Label -->
-				    <#if (!task.getLabel()?has_content)>
+				    <#if task.getLabel()?has_content>
 					    <div class="left elementLabel elementContent labelTag">
 							${task.getLabel()}
 					    </div>

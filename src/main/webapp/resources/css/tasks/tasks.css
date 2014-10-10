@@ -5,9 +5,20 @@
 	padding:5px;
 }
 
+
+
 /*Content/Body of the tasks tab*/
 #main{
     padding-right:1.5%;
+    width: 100%;
+}
+
+.td.leftColumn {
+	white-space: nowrap;
+}
+
+.td.rightColumn {
+	width:100%;
 }
 
 #generalArea{
@@ -37,36 +48,25 @@
 
 #listsMain {
 /* 	Min height interpreted as height by chrome */
-/* 	min-height:600px; */
-
+	min-height:600px;
+	width:100%;
 	border-top:2px solid #151515;
 	padding:10px;
-	
-	column-count:10;
-	column-width:460px;
-	column-gap:10px;
-	/*CSS3 (following can be removed later)*/
-	-moz-column-count:10;
-	-moz-column-width:460px;
-	-moz-column-gap:10px;
-	-webkit-column-count:10;
-	-webkit-column-width:460px;
-	-webkit-column-gap:10px;
 }
 
 #listsMain .listElement{
 	margin-top:7px;
 	padding:4px 8px;
 	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
-	border-left:0px solid rgba(255, 78, 35, 1);;
-	
-	column-break-inside: avoid;
-	-moz-column-break-inside: avoid;
-	-webkit-column-break-inside: avoid;
-	
-	/* 	Mozilla fix for column break */
+	border-left:0px solid rgba(255, 78, 35, 1);
 	overflow:hidden;
-	break-inside: avoid-column;
+	
+	/**
+	 * New solution for performance
+	 */
+	 
+	min-width:470px;
+	/* TODO always use maximum available width */
 }
 #listsMain .elementCount {
 	font-size:0.9em;

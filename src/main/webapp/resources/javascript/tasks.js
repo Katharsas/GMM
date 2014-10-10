@@ -4,12 +4,13 @@ $.expr[':'].blank = function(obj) {
 };
 
 //TODO use big Tasks object to store these variables and all methods of this js file
-//TODO put all handlers/listener callbaacks into Handler object in Tasks object
+//TODO put all handlers/listener callbacks into Handler object in Tasks object
 var tasksVars = {
 	"tab" : "",
 	"edit" : "",
 	"selectedTaskFileIsAsset" : "",
-	"expandedTasks" : undefined
+	"expandedTasks" : undefined,
+	"taskLoader" : undefined
 };
 
 var tasksFuncs = {
@@ -47,16 +48,9 @@ $(document).ready(
 			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
 			$activeTab.addClass("activeSubpage");
 			
+			TaskLoader = TaskLoader();
 			new TaskForm();
 			
-			// hide .listElementBody
-			collapseListElements();
-			// hide comment and details when empty
-			$(".elementComments:blank, .elementDetails:blank").hide();
-			// hide comment input field & delete question
-			$(".commentForm").hide();
-			// hide delete question
-			$(".elementDelete").hide();
 			// set Search according to selected search type (easy or complex)
 			setSearchVisibility($("#searchTypeSelect").val());
 			// hide search type selector
@@ -88,25 +82,8 @@ $(document).ready(
 			tasksVars.expandedTasks = new TaskQueue(3, function($task1, $task2) {
 				return $task1[0] === $task2[0];
 			});
-			
-			ftlTest();
 });
 
-function ftlTest() {
-	// TODO
-	console.log("Testing ajax ftl:");
-	$.getJSON("render").done(function(tasks) {
-		console.log(tasks);
-	}).fail(showException);
-}
-
-function collapseListElements() {
-	$(".listElementBody").hide();
-}
-
-function expandListElements() {
-	$(".listElementBody").show();
-}
 
 function switchListElement(element) {
     var $newElement = $(element).parent().first();
@@ -173,8 +150,7 @@ function confirmCommentChange(taskId, commentId) {
 }
 
 /**
- * @param isEasySearch -
- *            String or boolean
+ * @param isEasySearch - String or boolean
  */
 function setSearchVisibility(isEasySearch) {
 	var $search = $(".search");
@@ -254,7 +230,7 @@ function downloadFile(idLink) {
 	if (dir === undefined || dir === "") {
 		return;
 	}
-	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/" + tasksFuncs.tabPar();
+	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/";
 	window.open(uri);
 }
 
@@ -265,11 +241,10 @@ function confirmDeleteFile(idLink) {
 	}
 	confirm(
 			function() {
-				var assetPar = "&asset=" + tasksVars.selectedTaskFileIsAsset.toString();
-				$.post("tasks/deleteFile/" + idLink + tasksFuncs.tabPar() + assetPar, {
-					dir : dir
-				}, function() {
-					tasksFuncs.refresh();
+				$.post("tasks/deleteFile/" + idLink, {dir: dir,
+						asset: tasksVars.selectedTaskFileIsAsset.toString()},
+					function() {
+						tasksFuncs.refresh();
 				});
 			}, "Delete " + tasksFuncs.filePath() + " ?");
 }
@@ -279,11 +254,74 @@ function confirmDeleteTask(idLink, name) {
 		window.location = "tasks/deleteTask/" + idLink + tasksFuncs.tabPar();
 	}, "Delete task \'" + name + "\' ?");
 }
+
+//var getUri = function(url, parameters) {
+//	var fullUri = url;
+//	var first = true;
+//	if (parameters !== undefined && parameters!== null) {
+//		console.log("Parameters:");
+//		for (key in parameters) {
+//			var parameter = key + "=" + encodeURIComponent(parameters[key]);
+//			console.log(parameter);
+//			if (first) {
+//				fullUri += "?"+parameter;
+//				first = false;
+//			} else {
+//				fullUri += "&"+parameter;
+//			}
+//		}
+//	}
+//	console.log(fullUri);
+//	return fullUri;
+//};
+
+
 /**
- * -------------------- TaskDetails -----------------------------------------------------------------
+ * -------------------- TaskLoader ----------------------------------------------------------------
+ * Static (called when document ready)
+ * Accepts callback which will be executed when all tasks are loaded
  */
-var TaskDetails = function() {
-	//TODO remove task details from page and store the in a map
+var TaskLoader = function(onLoaded) {
+	this.tasks = undefined;
+	reloadAndInsert();
+	
+	function reloadAndInsert() {
+		$.getJSON("render").done(function(taskRenders) {
+			tasks = taskRenders;
+			insertHeaders();
+			if(onLoaded !== undefined) onLoaded();
+		}).fail(showException);
+	}
+	
+	function insertHeaders() {
+		var headerString = "";
+		tasks.forEach(function (task) {
+			headerString = headerString + task.header + "\n";
+		});
+		$("#listsMain").append(headerString);
+	}
+	
+	return {
+		
+		insertBody : function ($task) {
+			console.log("Inserting task body!");
+			var idLink = $task.attr('id');
+			console.log("with id: "+idLink);
+			var body = undefined;
+			tasks.some(function(task) {
+				if(task.idLink === idLink) {
+					body = task.body;
+					return true;
+				}
+				return false;
+			});
+			$task.append(body);
+		},
+		
+		removeBody : function ($task) {
+			$task.children(":last-child").remove();
+		}
+	};
 };
 
 /**
@@ -356,11 +394,6 @@ var TaskSwitcher = function() {
     				allFuncs.selectTreeElement($file, "selectedTaskFile");
     			});
     };
-
-    var removeTaskFileTrees = function($element) {
-    	$element.find('#assetFilesContainer').empty();
-    	$element.find('#wipFilesContainer').empty();
-    };
     
     return {
         /**
@@ -370,13 +403,8 @@ var TaskSwitcher = function() {
             if($task !== undefined) {
             	var $body = getBody($task);
             	TweenLite.to($body, slideUpTime, {height: "0px", onComplete: function() {
-            			$body.hide();
-            			$body.css("height","");
-            			$task.css("border-width", "0px");
-            			$task.css("padding-left", "8px");
-            			$task.css("background-color", allVars.taskBackgroundColor);
-            	        removeTaskFileTrees($task);
-            	        //TODO: remove task detail data
+            			$task.removeAttr("style");
+            	        TaskLoader.removeBody($task);
                     }
                 });
             }
@@ -387,8 +415,15 @@ var TaskSwitcher = function() {
          */
         expand : function($task) {
         	if ($task !== undefined) {
-        		//TODO: add task detail data
+        		TaskLoader.insertBody($task);
         		var $body = getBody($task);
+        		
+        		//TODO move following to css
+        		$body.find(".elementComments:blank, .elementDetails:blank").hide();
+        		$body.find(".commentForm").hide();
+        		$body.find(".elementDelete").hide();
+        		//TODO end
+        		
         		addTaskFileTrees($task);
         		$task.css("border-width", "2px");
         		$task.css("padding-left", "6px");
