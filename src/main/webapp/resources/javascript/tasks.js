@@ -365,7 +365,6 @@ function TaskForm() {
 	}
 }
 
-
 /**
  * -------------------- TaskSwitcher -------------------------------------------------------------
  * Provides the two static methods collapse and expand, which load and animate a tasks details.

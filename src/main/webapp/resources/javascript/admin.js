@@ -18,53 +18,6 @@ function hideTaskFormType() {
 	$("#taskForm").find("#taskGroupType").hide();
 }
 
-function loadTasks() {
-	var dir = allVars.selectedBackupFile.attr('rel');
-	if(dir === undefined || dir === "") {
-		return;
-	}
-	$("#conflictOptions").hide();
-	$("#finishLoadingButton").hide();
-	showDialogue("#loadTasksDialog");
-	$.getJSON("admin/load", { dir: dir })
-		.done(handleLoadAnswer)
-		.fail(showException);
-}
-
-function loadTasksNext(answer) {
-	$("#conflictOptions").hide();
-	$("#conflictMessage").empty();
-	var doForAll = $('#doForAllCheckbox input').is(":checked");
-	loadTasksNextElement(answer, doForAll);
-}
-
-function loadTasksNextElement(answer, doForAll) {
-	$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll })
-		.done(handleLoadAnswer)
-		.fail(showException);
-}
-
-function handleLoadAnswer(data) {
-	if(data.status == "finished") {
-		$("#finishLoadingButton").show();
-	}
-	else {
-		if(data.status == "conflict") {
-			$("#conflictMessage").html(data.message);
-			$("#conflictOptions").show();
-		}
-		else {
-			$("#loadedTasks ul").append("<li>"+data.message+"</li>");
-			loadTasksNextElement("default", false);
-		}
-	}
-	return;
-}
-function finishTaskLoading() {
-	hideDialogue();
-	$("#loadedTasks ul").empty();
-}
-
 function deleteFile() {
 	var dir = allVars.selectedBackupFile.attr('rel');
 	if(dir === undefined || dir === "") {
@@ -220,4 +173,85 @@ function loadUsers() {
 			})
 			.fail(showException);
 	}, "Delete all unsaved user data?");
+}
+
+
+/**
+ * -------------------- ResponseBundleHandler -----------------------------------------------------
+ * Provides a way to communicate with the server when the server needs to send a lot of
+ * messages to the client and the client needs to be able to respond to any of those messages.
+ * 
+ * To not waste requests, the messages from the server will come in bundles of dynamic size, where
+ * the last bundle message either indicates that the server needs a message from the client or that
+ * the server has finished sending all messages.
+ */
+function ResponseBundleHandler() {
+	var $messageList = $("#loadedTasks ul");
+	var $conflictMessage  = $("#conflictMessage");
+	var $conflictOptions = $("#conflictOptions");
+	var $finishedButton = $("#finishLoadingButton");
+	var $checkBox = $('#doForAllCheckbox input');
+	
+	/**
+	 * process server response bundle
+	 */
+	function reactToResults(results) {
+		results.forEach(function(data) {
+			//all elements before last should be success
+			if(data.status == "success") {
+				$messageList.append("<li>"+data.message+"</li>");
+			}
+			//last element is conflict or finished
+			else {
+				if(data.status == "finished") {
+					$finishedButton.show();
+				}
+				else if (data.status == "conflict") {
+					$conflictMessage.html(data.message);
+					$conflictOptions.show();
+				}
+				else {
+					$conflictMessage.html("Something went wrong! " +
+							"Out of sync with server. Please reload page.");
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
+	 * or conflict message.
+	 */
+	this.start = function () {
+		var dir = allVars.selectedBackupFile.attr('rel');
+		if(dir === undefined || dir === "") {
+			return;
+		}
+		$conflictOptions.hide();
+		$finishedButton.hide();
+		showDialogue("#loadTasksDialog");
+		$.getJSON("admin/load", { dir: dir })
+			.done(reactToResults)
+			.fail(showException);
+	};
+	
+	/**
+	 * If a conflict occured at last bundle, use this method to give an answer for conflict handling.
+	 * Server will return another response bundle.
+	 */
+	this.answer = function (answer) {
+		$conflictOptions.hide();
+		$conflictMessage.empty();
+		var doForAll = $checkBox.is(":checked");
+		console.log(answer);
+		console.log(doForAll);
+		$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll })
+			.done(reactToResults)
+			.fail(showException);
+	};
+	
+	this.finish = function () {
+		hideDialogue();
+		$messageList.empty();
+	};
 }

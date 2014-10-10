@@ -1,5 +1,7 @@
 package gmm.service;
 
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 import gmm.domain.Task;
 import gmm.domain.UniqueObject;
 import gmm.service.data.DataAccess;
@@ -9,6 +11,16 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
+/**
+ * Provides a way to communicate with the client when the server needs to send a lot of
+ * messages to the client and the client needs to be able to respond to any of those messages.
+ * 
+ * To not waste requests, the messages from the server will come in bundles of dynamic size, where
+ * the last bundle message either indicates that the server needs a message from the client or that
+ * the server has finished sending all messages.
+ * 
+ * Counterpart to js class "ResponseBundleHandler"
+ */
 public class TaskLoader {
 	
 	private final DataAccess data = Spring.get(DataAccess.class);
@@ -22,8 +34,25 @@ public class TaskLoader {
 	private static final String overwriteOp = "overwrite";
 	private static final String bothOp = "both";
 	
+	private static final String success = "success";
+	private static final String conflict = "conflict";
+	private static final String finished = "finished";
+	
 	public TaskLoader(Path path) throws IOException {
 		taskLoader = Spring.get(XMLService.class).deserialize(path, Task.class).iterator();
+	}
+	
+	public List<TaskLoaderResult> loadNextBundle(String operation, boolean doForAllFlag) {
+		List<TaskLoaderResult> results = new LinkedList<>();
+		TaskLoaderResult result = loadNext(operation, doForAllFlag);
+		boolean loadNext = result.status.equals(success);
+		results.add(result);
+		while(loadNext) {
+			result = loadNext(defaultOp, false);
+			results.add(result);
+			loadNext = result.status.equals(success);
+		}
+		return results;
 	}
 	
 	public TaskLoaderResult loadNext(String operation, boolean doForAllFlag) {
@@ -35,7 +64,7 @@ public class TaskLoader {
 		if(operation.equals(defaultOp)) {
 			if (!taskLoader.hasNext()) {
 				//Loading finished, user will stop sending requests!
-				result.status = "finished";
+				result.status = finished;
 				return result;
 			}
 			//We try to add the next element. If a conflict occurs, we may need to ask the user.
@@ -62,7 +91,7 @@ public class TaskLoader {
 		
 		//If we have an operation now, we use it.
 		if(!needOperation) {
-			result.status = "success";
+			result.status = success;
 			if(operation.equals(defaultOp)) {
 				result.message = "Successfully added task [id: "+id+", name: "+name+"]";
 			}
@@ -83,7 +112,7 @@ public class TaskLoader {
 		}
 		//If not, we need to get an operation from the user. The user will then give us an answer.
 		else{
-			result.status = "conflict";
+			result.status = conflict;
 			result.message = "Conflict: A task with id: "+id+" already exists!";
 		}
 		return result;
@@ -98,5 +127,9 @@ public class TaskLoader {
 	public static class TaskLoaderResult {
 		public String status;
 		public String message;
+		@Override
+		public String toString() {
+			return "Status: "+status+", "+"Message: "+message;
+		}
 	}
 }

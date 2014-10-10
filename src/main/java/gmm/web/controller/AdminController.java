@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.HashSet;
+import gmm.collections.List;
 import gmm.collections.Set;
 import gmm.domain.Label;
 import gmm.domain.Task;
@@ -95,23 +96,23 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody TaskLoaderResult loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
+	public @ResponseBody List<TaskLoaderResult> loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
 			session.notifyDataChange();
 			Path visible = config.TASKS;
 			dir = fileService.restrictAccess(dir, visible);
 			taskLoader = new TaskLoader(visible.resolve(dir));
-			return taskLoader.loadNext("default", false);
+			return taskLoader.loadNextBundle("default", false);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = "/load/next", method = RequestMethod.GET)
-	public @ResponseBody TaskLoaderResult loadNextTask (
+	public @ResponseBody List<TaskLoaderResult> loadNextTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
 		try {
-			return taskLoader.loadNext(operation, doForAll);
+			return taskLoader.loadNextBundle(operation, doForAll);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}

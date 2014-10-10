@@ -22,23 +22,27 @@
         	    <div class="adminElement hint">Select a file to load tasks from:</div>
         		<div id="taskBackupsContainer" class="adminElement"></div>
         		<br/>
-        		<div class="button pageButton left" onclick="loadTasks()"><fmt:message key="admin.database.load"/></div>
-        		<div class="button pageButton left" onclick="deleteFile()"><fmt:message key="admin.database.deletefile"/></div>
+        		<div class="button pageButton left" onclick="taskLoader = new ResponseBundleHandler();taskLoader.start();">
+        			<fmt:message key="admin.database.load"/>
+        		</div>
+        		<div class="button pageButton left" onclick="deleteFile()">
+        			<fmt:message key="admin.database.deletefile"/>
+        		</div>
         		<div class="clear"></div>
         		<div id="loadTasksDialog" class="dialogContainer">
         			<p>Loading tasks:</p>
         			<p id="conflictMessage"></p>
         			<div id="loadedTasks" class="dialogList"><ul></ul></div>
         			<div id="conflictOptions">
-	        			<div id="skipTaskButton" class="left dialogButton button" onclick="loadTasksNext('skip');">Skip</div>
-	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="loadTasksNext('overwrite');">Overwrite</div>
-	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="loadTasksNext('both');">Keep Both</div>
+	        			<div id="skipTaskButton" class="left dialogButton button" onclick="taskLoader.answer('skip');">Skip</div>
+	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="taskLoader.answer('overwrite');">Overwrite</div>
+	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="taskLoader.answer('both');">Keep Both</div>
 	        			<div class="clear"></div>
 	        			<label id="doForAllCheckbox">
 	        				<input type="checkbox" name="doForAll" value="doForAll">Für alle aktuellen Elemente wiederholen<br>
         				</label>
         			</div>
-        			<div id="finishLoadingButton" class="dialogButton button" onclick="finishTaskLoading()">Finish</div>
+        			<div id="finishLoadingButton" class="dialogButton button" onclick="taskLoader.finish()">Finish</div>
         		</div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
