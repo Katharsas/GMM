@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,9 @@ import gmm.domain.Task;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
-import gmm.service.TaskLoader;
-import gmm.service.TaskLoader.TaskLoaderResult;
+import gmm.service.ajax.BundledMessageResponses;
+import gmm.service.ajax.MessageResponse;
+import gmm.service.ajax.TaskLoaderOperations;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
@@ -51,7 +53,7 @@ public class AdminController {
 	@Autowired XMLService xmlService;
 	@Autowired TaskCreator taskCreator;
 	
-	private TaskLoader taskLoader;
+	private BundledMessageResponses<Task> taskLoader;
 	
 	private final Set<String> filePaths = new HashSet<>();
 	boolean areTexturePaths = true;
@@ -96,19 +98,22 @@ public class AdminController {
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody List<TaskLoaderResult> loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
+	public @ResponseBody List<MessageResponse> loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
 			session.notifyDataChange();
 			Path visible = config.TASKS;
 			dir = fileService.restrictAccess(dir, visible);
-			taskLoader = new TaskLoader(visible.resolve(dir));
+			
+			Iterator<Task> i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
+			
+			taskLoader = new BundledMessageResponses<Task>(i, new TaskLoaderOperations());
 			return taskLoader.loadNextBundle("default", false);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	@RequestMapping(value = "/load/next", method = RequestMethod.GET)
-	public @ResponseBody List<TaskLoaderResult> loadNextTask (
+	public @ResponseBody List<MessageResponse> loadNextTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
 		try {
