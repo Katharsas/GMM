@@ -43,7 +43,7 @@
 						<div class="clear"></div>
 						<div class="taskButtons">
 							<div id="submitTaskButton" class="button pageButton left" style="display: none;">
-								Submit Task
+								<fmt:message key="tasks.submit"/>
 							</div>
 							<div id="cancelTaskButton" class="button pageButton left" style="display: none;">
 								<a href="?tab=${tab}">

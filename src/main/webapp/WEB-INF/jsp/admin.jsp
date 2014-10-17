@@ -19,7 +19,7 @@
     	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
         <div class="adminElementGroup">
         	<div id="loadTasks" class="adminElement left">
-        	    <div class="adminElement hint">Select a file to load tasks from:</div>
+        	    <div class="adminElement hint"><fmt:message key="admin.database.message"/></div>
         		<div id="taskBackupsContainer" class="adminElement"></div>
         		<br/>
         		<div class="button pageButton left" onclick="taskLoader = new ResponseBundleHandler();taskLoader.start();">
@@ -116,10 +116,10 @@
 <!-- 						Change Role -->
 <!-- 					</div> -->
 					<div class="button listButton right" onclick="resetPassword('${user.getIdLink()}')">
-						Reset Password
+						<fmt:message key="admin.database.resetpassword"/>
 					</div>
 					<div class="button listButton right" onclick="editUserName('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
-						Edit Name
+						<fmt:message key="admin.database.editname"/>
 					</div>
 					<div class="clear"></div>
 				</div>

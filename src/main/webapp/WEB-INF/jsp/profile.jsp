@@ -13,18 +13,18 @@
 
     <jsp:body>
     	<div id="changePassword">
-			<div class="button pageButton" onclick="showChangePassword()">Change Password</div>
+			<div class="button pageButton" onclick="showChangePassword()"><fmt:message key="password.change"/></div>
 			<div id="changePasswordDialog" class="dialogContainer">
 				<div id="passwordError"></div>
-				<div>Password must contain at least 8 letters.</div>
+				<div><fmt:message key="password.min"/></div>
 				<div class="inputDescriptor">
-					Current password:
+					<fmt:message key="password.current"/>:
 				</div>
 				<div class="inputWrapper">
 					<input type="password" id="oldPassword"/>
 				</div>
 				<div class="inputDescriptor">
-					New password:
+					<fmt:message key="password.new"/>:
 				</div>
 				<div class="inputWrapper">
 					<input type="password" id="newPassword1"/>
@@ -32,8 +32,8 @@
 				<div class="inputWrapper">
 					<input type="password" id="newPassword2"/>
 				</div>
-				<div class="button pageButton left" onclick="changePassword()">Submit</div>
-				<div class="button pageButton right" onclick="hideDialogue()">Cancel</div>
+				<div class="button pageButton left" onclick="changePassword()"><fmt:message key="password.submit"/></div>
+				<div class="button pageButton right" onclick="hideDialogue()"><fmt:message key="password.cancel"/></div>
 			</div>
 		</div>
     </jsp:body>

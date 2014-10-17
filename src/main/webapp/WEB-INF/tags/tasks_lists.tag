@@ -77,7 +77,7 @@
 		<div class="sort listElement">
 			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
 				<div class="left">
-					First sort by 
+				<fmt:message key="search.first"/><span></span>
 				</div>
 				<div id="primarySort" class="left">
 					<form:select class="sortFormElement" path="sortByPrimary">
@@ -90,7 +90,7 @@
 				</div>
 				<div class="clear"></div>
 				<div class="left">
-					Then sort by 
+					<fmt:message key="search.seconde"/><span></span> 
 				</div>
 				<div id="secondarySort" class="left">
 					<form:select class="sortFormElement" path="sortBySecondary">
