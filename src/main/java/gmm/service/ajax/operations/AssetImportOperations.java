@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import gmm.domain.Asset;
 import gmm.domain.AssetTask;
 import gmm.service.FileService;
 import gmm.service.Spring;
@@ -20,7 +21,7 @@ import gmm.web.forms.TaskForm;
  * 
  * Choice 1.:
  * - Skip
- * - Aquire data: Delete existing, use data from new asset folder / original folder
+ * - Aquire data: Delete existing, use data from new asset folder / original folder (sets newestAsset as in deleted task if exists)
  * - Delete: Delete existing, delete new asset folder, use original folder
  * 
  * Choice 2.:
@@ -30,7 +31,7 @@ import gmm.web.forms.TaskForm;
  * 
  * @author Jan Mothes
  */
-public class AssetImportOperations<E extends AssetTask<?>> extends MessageResponseOperations<String> {
+public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> extends MessageResponseOperations<String> {
 
 	private final FileService fileService = Spring.get(FileService.class);
 	private final DataConfigService config = Spring.get(DataConfigService.class);
@@ -39,7 +40,7 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 	
 	private final Class<E> clazz;
 	private final TaskForm form;
-	private AssetTask<?> conflictingTask;
+	private AssetTask<T> conflictingTask;
 	
 	public AssetImportOperations(TaskForm form, Class<E> clazz) {
 		this.form = form;
@@ -73,8 +74,13 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 		});
 		map.put("overwriteTaskAquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
+				E newTask = create(assetPath);
+				T asset = conflictingTask.getNewestAsset();
+				if (asset != null && conflictingTask.getNewestAssetPath(config).toFile().isFile()) {
+					newTask.setNewestAsset(asset);
+				}
 				data.remove(conflictingTask);
-				data.add(creator.create(clazz, prepare(form, assetPath)));
+				data.add(newTask);
 				return "Overwriting existing task and aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -82,31 +88,32 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 			@Override public String execute(String assetPath) throws Exception {
 				data.remove(conflictingTask);
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(creator.create(clazz, prepare(form, assetPath)));
+				data.add(create(assetPath));
 				return "Overwriting existing task and deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("aquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
-				data.add(creator.create(clazz, prepare(form, assetPath)));
+				data.add(create(assetPath));
 				return "Aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("deleteData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(creator.create(clazz, prepare(form, assetPath)));
+				data.add(create(assetPath));
 				return "Deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		return map;
 	}
 	
-	private TaskForm prepare(TaskForm form, String assetPath) {
+	private E create(String assetPath) throws Exception {
 		form.setAssetPath(assetPath);
-		return form;
+		return creator.create(clazz, form);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public Conflict<String> onLoad(String assetPathString) {
 		Path assetPath = Paths.get(assetPathString);
@@ -115,7 +122,7 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 		// full AssetTask conflict
 		for (AssetTask<?> t : data.getList(AssetTask.class)) {
 			if (t.getAssetPath().equals(assetPath)) {
-				conflictingTask = t;
+				conflictingTask = (AssetTask<T>) t;
 				return taskConflict;
 			}
 		}
@@ -127,7 +134,8 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 	}
 
 	@Override
-	public String onDefault(String assetPath) {
+	public String onDefault(String assetPath) throws Exception {
+		data.add(create(assetPath));
 		return "Successfully imported asset at \""+assetPath+"\"";
 	}
 }

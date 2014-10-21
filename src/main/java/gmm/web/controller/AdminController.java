@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.collections.List;
 import gmm.domain.Label;
 import gmm.domain.Task;
+import gmm.domain.Texture;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
@@ -236,7 +237,7 @@ public class AdminController {
 		try {
 			session.notifyDataChange();
 			assetImporter = new BundledMessageResponses<String>(toImport.get().iterator(),
-					new AssetImportOperations<TextureTask>(form, TextureTask.class));
+					new AssetImportOperations<Texture,TextureTask>(form, TextureTask.class));
 			return assetImporter.loadFirstBundle();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}

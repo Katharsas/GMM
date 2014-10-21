@@ -47,5 +47,5 @@ public abstract class MessageResponseOperations<T> {
 	 * Executed when no conflict occured on the last element processed.
 	 * @return MessageResponse message
 	 */
-	public abstract String onDefault(T element);
+	public abstract String onDefault(T element) throws Exception;
 }
