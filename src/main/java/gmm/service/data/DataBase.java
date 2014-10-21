@@ -58,13 +58,15 @@ public class DataBase implements DataAccess {
 			allTasks.addAll((Collection<T>) modelTasks);
 			return allTasks;
 		}
-		if(clazz.equals(AssetTask.class)) {
+		else if(clazz.equals(AssetTask.class)) {
 			Collection<T> assetTasks = new HashSet<>();
 			assetTasks.addAll((Collection<T>) textureTasks);
 			assetTasks.addAll((Collection<T>) modelTasks);
 			return assetTasks;
 		}
-		return (Collection<T>) this.<T>getDataList(clazz).copy();
+		else {
+			return (Collection<T>) this.<T>getDataList(clazz).copy();
+		}
 	}
 
 	@Override
@@ -98,6 +100,10 @@ public class DataBase implements DataAccess {
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
+			textureTasks.clear();
+			modelTasks.clear();
+		}
+		else if (clazz.equals(AssetTask.class)) {
 			textureTasks.clear();
 			modelTasks.clear();
 		}

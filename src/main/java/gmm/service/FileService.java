@@ -110,14 +110,27 @@ public class FileService {
 	}
 	
 	/**
-	 * Deletes the given file and all empty parent directories.
+	 * Deletes the given file or directory and all empty parent directories.
 	 * So if a file is the only file in a folder, the folder will be deleted too.
 	 */
 	public synchronized void delete(Path path) throws IOException {
 		Path parent = path.getParent();
+		if (path.toFile().isDirectory()) clearDirectory(path);
 		Files.delete(path);
 		if(parent.toFile().list().length == 0) {
 			delete(parent);
+		}
+	}
+	
+	/**
+	 * Deletes everything in this directory recursively.
+	 */
+	private void clearDirectory(Path path) throws IOException {
+		if (path.toFile().isDirectory()) {
+			for (File f : path.toFile().listFiles()) {
+				if (f.isDirectory()) clearDirectory(f.toPath());
+				Files.delete(f.toPath());
+			}
 		}
 	}
 	

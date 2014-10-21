@@ -36,14 +36,6 @@ function saveAllTasks() {
 	$("#saveAllTasksForm").submit();
 }
 
-function importAssets(textures) {
-	$("#overlay").show();
-	$("#taskForm").ajaxSubmit({
-			data: { textures: textures },
-			success: function() {$("#overlay").hide();},
-			error: showException});
-}
-
 function refreshTaskImportTree() {
 	$('#originalAssetsContainer').fileTree(
 		allFuncs.treePluginOptions("admin/originalAssets", true),
@@ -175,6 +167,18 @@ function loadUsers() {
 	}, "Delete all unsaved user data?");
 }
 
+var ajaxChannel;
+
+function loadTasks() {
+	ajaxChannel = new ResponseBundleHandler('tasks');
+	ajaxChannel.start();
+}
+
+function importAssets(assetTypes) {
+	ajaxChannel = new ResponseBundleHandler("assets");
+	ajaxChannel.start(assetTypes);
+}
+
 
 /**
  * -------------------- ResponseBundleHandler -----------------------------------------------------
@@ -185,7 +189,63 @@ function loadUsers() {
  * the last bundle message either indicates that the server needs a message from the client or that
  * the server has finished sending all messages.
  */
-function ResponseBundleHandler() {
+function ResponseBundleHandler(responseBundleOption) {
+//	var Option = {startURI:undefined, nextURI:undefined, conflicts:[], showButtons:undefined};
+	//TODO make Option interface for options (for auto-complete)
+	var ResponseBundleOptions = {
+			tasks : {
+				nextURI : "admin/load/next",
+				conflicts : ["conflict"],
+				showButtons : function(conflict, $options) {
+					$options.children("#skipButton").show();
+					$options.children("#doForAllCheckbox").show();
+					$options.children("#overwriteTaskButton").show();
+					$options.children("#addBothTasksButton").show();
+				},
+				start : function(reactToResults, showException) {
+					var dir = allVars.selectedBackupFile.attr('rel');
+					if(dir === undefined || dir === "") {
+						return undefined;
+					}
+					return $.getJSON("admin/load", { dir: dir })
+						.done(reactToResults).fail(showException);
+				}
+
+			},
+			assets : {
+				nextURI : "admin/importAssets/next",
+				conflicts : ["taskConflict", "folderConflict"],
+				showButtons : function(conflict, $options) {
+					$options.children("#skipButton").show();
+					$options.children("#doForAllCheckbox").show();
+					switch(conflict) {
+					case "taskConflict":
+						$options.children("#overwriteTaskAquireDataButton").show();
+						$options.children("#overwriteTaskDeleteDataButton").show();
+						break;
+					case "folderConflict":
+						$options.children("#aquireDataButton").show();
+						$options.children("#deleteDataButton").show();
+						break;
+					}
+				},
+				start : function(reactToResults, showException, assetTypes) {
+					var textures;
+					console.log(assetTypes);
+					if (assetTypes === "textures") textures = true;
+					else if (assetTypes === "models") textures = false;
+					else return undefined;
+					$("#taskForm").ajaxSubmit({data: { textures: textures },
+						success: reactToResults, error: showException});
+					//TODO return ajaxResult whitch functions which get called by ajaxSubmit
+					// or use a submit which returns getJSON like result.
+					return true;
+				}
+			}
+		};
+	var options = ResponseBundleOptions[responseBundleOption];
+//	var options = Option;
+	
 	var $messageList = $("#loadedTasks ul");
 	var $conflictMessage  = $("#conflictMessage");
 	var $conflictOptions = $("#conflictOptions");
@@ -206,13 +266,22 @@ function ResponseBundleHandler() {
 				if(data.status == "finished") {
 					$finishedButton.show();
 				}
-				else if (data.status == "conflict") {
+				else  {
+					//TODO: contains method for arrays?
+					//START contains
+					var contains = false;
+					for (var i = 0; i < options.conflicts.length; i++) {
+						if (data.status === options.conflicts[i]) {
+							contains = true;
+						}
+					}
+					//END contains
 					$conflictMessage.html(data.message);
-					$conflictOptions.show();
-				}
-				else {
-					$conflictMessage.html("Something went wrong! " +
-							"Out of sync with server. Please reload page.");
+					if (contains) options.showButtons(data.status, $conflictOptions);
+					else {
+						$conflictMessage.html("Something went wrong! " +
+								"Out of sync with server. Please reload page.");
+					}
 				}
 			}
 		});
@@ -222,17 +291,15 @@ function ResponseBundleHandler() {
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
 	 * or conflict message.
 	 */
-	this.start = function () {
-		var dir = allVars.selectedBackupFile.attr('rel');
-		if(dir === undefined || dir === "") {
-			return;
-		}
-		$conflictOptions.hide();
+	this.start = function (startOptions) {
+		$conflictOptions.children().hide();
 		$finishedButton.hide();
+		ajaxResult = options.start(reactToResults, showException, startOptions);
+		console.log(ajaxResult);
+		if (ajaxResult === undefined) return;
+		//TODO if ajaxResult has function done and fail, use them
+//		ajaxResult.done(reactToResults).fail(showException);
 		showDialogue("#loadTasksDialog");
-		$.getJSON("admin/load", { dir: dir })
-			.done(reactToResults)
-			.fail(showException);
 	};
 	
 	/**
@@ -240,12 +307,10 @@ function ResponseBundleHandler() {
 	 * Server will return another response bundle.
 	 */
 	this.answer = function (answer) {
-		$conflictOptions.hide();
+		$conflictOptions.children().hide();
 		$conflictMessage.empty();
 		var doForAll = $checkBox.is(":checked");
-		console.log(answer);
-		console.log(doForAll);
-		$.getJSON("admin/load/next", { operation: answer, doForAll: doForAll })
+		$.getJSON(options.nextURI, { operation: answer, doForAll: doForAll })
 			.done(reactToResults)
 			.fail(showException);
 	};

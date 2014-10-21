@@ -51,6 +51,10 @@ public class BundledMessageResponses<T> {
 		operations = ops.getOperations();
 	}
 	
+	public List<MessageResponse> loadFirstBundle() throws Exception {
+		return loadNextBundle(defaultOp, false);
+	}
+	
 	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) throws Exception {
 		List<MessageResponse> results = new LinkedList<>();
 		MessageResponse result = loadNext(operation, doForAllFlag);

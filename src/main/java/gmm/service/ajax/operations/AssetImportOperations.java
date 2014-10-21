@@ -74,7 +74,7 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 		map.put("overwriteTaskAquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
 				data.remove(conflictingTask);
-				data.add(creator.create(clazz, form));
+				data.add(creator.create(clazz, prepare(form, assetPath)));
 				return "Overwriting existing task and aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -82,24 +82,29 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 			@Override public String execute(String assetPath) throws Exception {
 				data.remove(conflictingTask);
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(creator.create(clazz, form));
+				data.add(creator.create(clazz, prepare(form, assetPath)));
 				return "Overwriting existing task and deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("aquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
-				data.add(creator.create(clazz, form));
+				data.add(creator.create(clazz, prepare(form, assetPath)));
 				return "Aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("deleteData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(creator.create(clazz, form));
+				data.add(creator.create(clazz, prepare(form, assetPath)));
 				return "Deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		return map;
+	}
+	
+	private TaskForm prepare(TaskForm form, String assetPath) {
+		form.setAssetPath(assetPath);
+		return form;
 	}
 	
 	@Override
@@ -118,12 +123,11 @@ public class AssetImportOperations<E extends AssetTask<?>> extends MessageRespon
 		if (config.ASSETS_NEW.resolve(assetPath).toFile().exists()) {
 			return onlyFolderConflict;
 		}
-		
 		return MessageResponseOperations.cast(NO_CONFLICT);
 	}
 
 	@Override
 	public String onDefault(String assetPath) {
-		return "Successfully importet asset at \""+assetPath+"\"";
+		return "Successfully imported asset at \""+assetPath+"\"";
 	}
 }

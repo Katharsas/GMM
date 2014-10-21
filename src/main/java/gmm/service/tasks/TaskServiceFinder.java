@@ -3,8 +3,6 @@ package gmm.service.tasks;
 import java.io.IOException;
 import java.util.List;
 
-import gmm.collections.HashSet;
-import gmm.collections.Set;
 import gmm.domain.Asset;
 import gmm.domain.AssetTask;
 import gmm.domain.Task;
@@ -61,17 +59,6 @@ public class TaskServiceFinder {
 		Class<T> clazz = (Class<T>) task.getClass();
 		final TaskService<T> taskService = getService(clazz);
 		return taskService.prepareForm(task);
-	}
-	
-	public <T extends AssetTask<?>> void importTasks(Iterable<String> assetPaths, TaskForm form, Class<T> type) throws IOException {
-		Set<T> result = new HashSet<>();
-		for(String path : assetPaths) {
-			form.setAssetPath(path);
-			//TODO only createTask (inlcuding preview generation), if no conflict (messageOperations)
-			//TODO move createTask call to messageOperations
-			result.add(this.<T>create(type, form));
-		}
-		data.addAll(type, result);
 	}
 	
 	public <T extends Task> TaskService<T> getTaskService(Class<T> type) {

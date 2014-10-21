@@ -22,7 +22,7 @@
         	    <div class="adminElement hint"><fmt:message key="admin.database.message"/></div>
         		<div id="taskBackupsContainer" class="adminElement"></div>
         		<br/>
-        		<div class="button pageButton left" onclick="taskLoader = new ResponseBundleHandler();taskLoader.start();">
+        		<div class="button pageButton left" onclick="loadTasks()">
         			<fmt:message key="admin.database.load"/>
         		</div>
         		<div class="button pageButton left" onclick="deleteFile()">
@@ -30,19 +30,25 @@
         		</div>
         		<div class="clear"></div>
         		<div id="loadTasksDialog" class="dialogContainer">
-        			<p>Loading tasks:</p>
+        			<p>Loading:</p>
         			<p id="conflictMessage"></p>
         			<div id="loadedTasks" class="dialogList"><ul></ul></div>
         			<div id="conflictOptions">
-	        			<div id="skipTaskButton" class="left dialogButton button" onclick="taskLoader.answer('skip');"><fmt:message key="admin.database.skip"/></div>
-	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="taskLoader.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
-	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="taskLoader.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
+	        			<div id="skipButton" class="left dialogButton button" onclick="ajaxChannel.answer('skip');"><fmt:message key="admin.database.skip"/></div>
+	        			<!-- Load Tasks -->
+	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
+	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="ajaxChannel.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
+	        			<!-- Import Assets -->
+	        			<div id="overwriteTaskAquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskAquireData');">Aquire Data (Overwrites Task)</div>
+	        			<div id="overwriteTaskDeleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');">Delete Data (Overwrites Task)</div>
+	        			<div id="aquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('aquireData');">Aquire Data</div>
+	        			<div id="deleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('deleteData');">Delete Data</div>
 	        			<div class="clear"></div>
 	        			<label id="doForAllCheckbox">
 	        				<input type="checkbox" name="doForAll" value="doForAll"><fmt:message key="admin.database.dothesame"/><br>
         				</label>
         			</div>
-        			<div id="finishLoadingButton" class="dialogButton button" onclick="taskLoader.finish()"><fmt:message key="admin.database.finish"/></div>
+        			<div id="finishLoadingButton" class="dialogButton button" onclick="ajaxChannel.finish()"><fmt:message key="admin.database.finish"/></div>
         		</div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
@@ -82,8 +88,8 @@
 				
 				<div class="clear"></div>
 				<div id="importButtons">
-					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')"><fmt:message key="admin.database.texturesimport"/></div>
-					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')"><fmt:message key="admin.database.meshesimport"/></div>
+					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('textures')"><fmt:message key="admin.database.texturesimport"/></div>
+					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('models')"><fmt:message key="admin.database.meshesimport"/></div>
 					<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()"><fmt:message key="admin.database.cancelimport"/></div>
 					<div class="clear"></div>
 				</div>
