@@ -1,5 +1,6 @@
 package gmm.web.controller;
 
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,11 +28,13 @@ import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.TaskLoaderOperations;
+import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
-import gmm.service.tasks.TaskCreator;
+import gmm.service.tasks.ModelTaskService;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.service.tasks.TextureTaskService;
 import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
@@ -51,7 +54,7 @@ public class AdminController {
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	@Autowired XMLService xmlService;
-	@Autowired TaskCreator taskCreator;
+	@Autowired TaskServiceFinder taskCreator;
 	
 	private BundledMessageResponses<Task> taskLoader;
 	
@@ -63,7 +66,7 @@ public class AdminController {
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {
 		TaskForm defaultFacade = new TaskForm();
-		defaultFacade.setIdName("%filename%");
+		defaultFacade.setName("%filename%");
 		return defaultFacade;
 	}
 	
@@ -170,15 +173,10 @@ public class AdminController {
 				this.filePaths.clear();
 				this.areTexturePaths = textures;
 			}
-			String[] extensions;
-			if(textures) {
-				extensions = new String[]{"tga","TGA"};
-			}
-			else {
-				extensions = new String[]{"3ds","3DS"};
-			}
+			FilenameFilter filter = textures ?
+					TextureTaskService.extensions : ModelTaskService.extensions;
 			this.filePaths.addAll(fileService.getRelativeNames(
-					fileService.getFilePaths(visible.resolve(dir), extensions), visible));
+					fileService.getFilePaths(visible.resolve(dir), filter), visible));
 			String[] result = this.filePaths.toArray(new String[filePaths.size()]);
 			Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
 			return result;

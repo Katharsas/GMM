@@ -1,33 +1,42 @@
 package gmm.domain;
 
+import gmm.service.Spring;
+import gmm.service.data.DataConfigService;
+
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 public abstract class Asset {
 	
-	@XStreamAsAttribute
-	protected Path relative;
-	@XStreamOmitField
-	protected Path absolute;
+	DataConfigService config = Spring.get(DataConfigService.class);
 	
-	public Asset(Path base, Path relative) {
-		Objects.requireNonNull(relative);
-		this.relative = relative;
-		setBase(base);
+	@XStreamAsAttribute
+	private final Path fileName;
+	private final AssetTask<?> owner;
+	private final boolean isOriginal;
+	
+	public Asset(Path newFileName, AssetTask<?> owner) {
+		Objects.requireNonNull(owner);
+		this.isOriginal = newFileName == null;
+		this.fileName = isOriginal ? owner.getAssetPath() : newFileName;
+		Objects.requireNonNull(this.fileName);
+		this.owner = owner;
 	}
 	
-	public void setBase(Path base) {
-		Objects.requireNonNull(base);
-		absolute = base.resolve(relative);
-		if(!absolute.toFile().isFile()) throw new IllegalArgumentException("Asset file does not exist!");
+	protected Path getAbsolute() {
+		//TODO security to here
+		//TODO move all this to assettask. remove knowlege about original
+		Path path = isOriginal ? config.ASSETS_ORIGINAL : config.ASSETS_NEW;
+		path = path.resolve(owner.getAssetPath());
+		if (!isOriginal) path = path.resolve(config.SUB_ASSETS).resolve(fileName);
+		return path;
 	}
 	
 	private long getSize() {
-		return absolute.toFile().length();
+		return getAbsolute().toFile().length();
 	}
 	
 	public String getSizeInKB() {
@@ -41,6 +50,6 @@ public abstract class Asset {
 	}
 	
 	public Path getPath() {
-		return relative;
+		return fileName;
 	}
 }

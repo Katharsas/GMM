@@ -3,6 +3,7 @@ package gmm.service;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.util.StringUtil;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -54,16 +55,15 @@ public class FileService {
 	
 	/**
 	 * Returns the file paths of all files inside the given directory recursivly.
-	 * Thi includes files inside directories inside the given directory.
+	 * This includes files inside directories inside the given directory.
 	 * 
 	 * @param fileExtensions - Filters the files by file extension.
 	 */
-	public List<Path> getFilePaths(Path path, String[] fileExtensions) {
+	public List<Path> getFilePaths(Path path, FilenameFilter filter) {
 		List<Path> filePaths = new LinkedList<>();
 		File root = path.toFile();
 		if (root.exists()) {
-			List<File> files = getFilesRecursive(root, fileExtensions == null ? 
-					null :new FileExtensionFilter(fileExtensions));
+			List<File> files = getFilesRecursive(root, filter);
 			for (File f : files) {
 				filePaths.add(f.toPath());
 			}
@@ -88,10 +88,12 @@ public class FileService {
 
 	/**
 	 * A Filter that only accepts extensions specified on contruction.
+	 * Does not accept hidden files (unix).
 	 * @author Jan
 	 */
-	public class FileExtensionFilter implements FilenameFilter {
-		private String[] extensions;
+	public static class FileExtensionFilter implements FilenameFilter {
+		private final static StringUtil strings = new StringUtil().ignoreCase();
+		private final String[] extensions;
 		/**
 		 * @param extensions - An array with file extensions like "txt","jpg".
 		 */
@@ -101,7 +103,7 @@ public class FileService {
 		@Override
 		public boolean accept(File _, String name) {
 			for(String ext : this.extensions) {
-				if(name.endsWith("."+ext)) return name.charAt(0) != '.';
+				if(strings.endsWith(name, "." + ext)) return name.charAt(0) != '.';
 			}
 			return false;
 		}

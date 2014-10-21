@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 public class Model extends Asset {
 
-	public Model(Path base, Path relative) {
-		super(base, relative);
+	public Model(Path relative, AssetTask<Model> owner) {
+		super(relative, owner);
 	}
 }

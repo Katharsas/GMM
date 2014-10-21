@@ -1,47 +1,45 @@
 package gmm.domain;
 
-import gmm.service.Spring;
-import gmm.service.data.DataConfigService;
-
 import java.nio.file.Path;
 
+/**
+ * 
+ * 
+ * @author Jan Mothes
+ *
+ * @param <A> type of asset
+ */
 public class AssetTask<A extends Asset> extends Task {
-
+	
+	private final Path assetPath;
 	private A originalAsset = null;
 	private A newestAsset = null;
 	
-	private Path newAssetFolder = null;
-	
 	//Methods--------------------------------------------
-	public AssetTask(User author) {
+	public AssetTask(User author, Path assetPath) {
 		super(author);
-	}
-	
-	@Override
-	public void onLoad() {
-		DataConfigService config = Spring.get(DataConfigService.class);
-		if(originalAsset!=null) originalAsset.setBase(config.ASSETS_ORIGINAL);
-		if(newestAsset!=null) newestAsset.setBase(config.ASSETS_NEW);
+		this.assetPath = assetPath;
 	}
 	
 	//Setters, Getters---------------------------------
-	public Path getNewAssetFolder() {
-		return newAssetFolder;
-	}
-	public void setNewAssetFolder(Path newAssetFolderPath) {
-		this.newAssetFolder = newAssetFolderPath;
+	
+	public Path getAssetPath() {
+		return assetPath;
 	}
 	
-	public void setOriginalAsset(A originalAssetPath) {
-		this.originalAsset = originalAssetPath;
-	}
 	public A getOriginalAsset() {
 		return originalAsset;
 	}
-	public void setNewestAsset(A newestAsset) {
-		this.newestAsset = newestAsset;
+
+	public void setOriginalAsset(A originalAsset) {
+		this.originalAsset = originalAsset;
 	}
+	
 	public A getNewestAsset() {
 		return newestAsset;
+	}
+	
+	public void setNewestAsset(A newestAsset) {
+		this.newestAsset = newestAsset;
 	}
 }

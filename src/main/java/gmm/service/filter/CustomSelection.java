@@ -21,7 +21,6 @@ import gmm.util.StringUtil;
  */
 public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I> {
 	
-	
 	public class Operation{
 		protected CustomSelection<T,I> s;
 		public Operation(CustomSelection<T,I> s) {
@@ -144,7 +143,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	private boolean REMOVE = false;
 	
 	private final static boolean DEBUG = false;
-	
+	private final StringUtil strings = new StringUtil();
 	
 	/**
 	 * The given elements will be the elements this selection operates on.
@@ -249,8 +248,8 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		for (T t : elements) {
 			if(DEBUG) System.out.print("Matching "+getterMethodName+" on "+t.toString()+" vs "+filter.toString());
 			try {
-				StringUtil.IGNORE_CASE = true;
-				StringUtil.ALWAYS_CONTAINS_EMPTY = true;
+				strings.IGNORE_CASE = true;
+				strings.ALWAYS_CONTAINS_EMPTY = true;
 				Method method = t.getClass().getMethod(getterMethodName);
 				Object result = method.invoke(t);
 				
@@ -267,13 +266,13 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 				
 				boolean string = filter instanceof String && result instanceof String;
 				boolean contains = string && (ONLY_MATCH_EQUAL ? 
-						StringUtil.equals((String)result,(String)filter) : 
-						StringUtil.contains((String)result,(String)filter));
+						strings.equals((String)result,(String)filter) : 
+						strings.contains((String)result,(String)filter));
 				boolean equalsOrContains = !isNull && (contains || result.equals(filter)); 
 				boolean equalsOrContainsOrToString = !isNull && (equalsOrContains ||
 						(AUTO_STRING_CONVERT && (ONLY_MATCH_EQUAL ?
-						StringUtil.equals(result.toString(), filter.toString()) :
-						StringUtil.contains(result.toString(), filter.toString()))));
+						strings.equals(result.toString(), filter.toString()) :
+						strings.contains(result.toString(), filter.toString()))));
 				
 				this.applyMatching(equalsOrContainsOrToString, t);
 			}

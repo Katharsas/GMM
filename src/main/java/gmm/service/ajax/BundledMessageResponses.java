@@ -2,10 +2,14 @@ package gmm.service.ajax;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.UniqueObject;
+import gmm.service.ajax.operations.MessageResponseOperations;
+import gmm.service.ajax.operations.MessageResponseOperations.Conflict;
+import gmm.service.ajax.operations.MessageResponseOperations.Operation;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Provides a way to communicate with the client when the server needs to send a lot of
@@ -20,27 +24,34 @@ import java.util.Iterator;
  * @author Jan Mothes
  * @param <T> Type of elements that are being operated on
  */
-public class BundledMessageResponses<T extends UniqueObject> {
+public class BundledMessageResponses<T> {
 	
 	private final MessageResponseOperations<T> ops;
+	private final Map<String, Operation<T>> operations;
+	
+	/**
+	 * A conflict gets added if the user checks the "doForAll" button.
+	 * Conflicts are mapped to the operation the user chose when he checked the button.
+	 */
+	private final Map<Conflict<T>, String> doForAlls = new HashMap<>();
+	private Conflict<T> currentConflict = 
+			MessageResponseOperations.cast(MessageResponseOperations.NO_CONFLICT);
 	
 	private final Iterator<T> elements;
 	private T currentlyLoaded;
-	private String doForAll = "default";
 	
 	private static final String defaultOp = "default";
-	
 	private static final String success = "success";
-	private static final String conflict = "conflict";
 	private static final String finished = "finished";
 	
 	public BundledMessageResponses(Iterator<T> elements,
 			MessageResponseOperations<T> ops) throws IOException {
 		this.elements = elements;
 		this.ops = ops;
+		operations = ops.getOperations();
 	}
 	
-	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) {
+	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) throws Exception {
 		List<MessageResponse> results = new LinkedList<>();
 		MessageResponse result = loadNext(operation, doForAllFlag);
 		boolean loadNext = result.status.equals(success);
@@ -53,7 +64,7 @@ public class BundledMessageResponses<T extends UniqueObject> {
 		return results;
 	}
 	
-	private MessageResponse loadNext(String operation, boolean doForAllFlag) {
+	private MessageResponse loadNext(String operation, boolean doForAllFlag) throws Exception {
 		MessageResponse result = new MessageResponse();
 		boolean needOperation;
 		
@@ -66,10 +77,12 @@ public class BundledMessageResponses<T extends UniqueObject> {
 			}
 			//We try to add the next element. If a conflict occurs, we may need to ask the user.
 			currentlyLoaded = elements.next();
-			needOperation = ops.onLoad(currentlyLoaded);
+			currentConflict = ops.onLoad(currentlyLoaded);
+			needOperation = !currentConflict.equals(MessageResponseOperations.NO_CONFLICT);
+			
 			//we only need a new operation for a conflict, if the user never answered "doForAll".
-			if(needOperation && !doForAll.equals(defaultOp)) {
-				operation = doForAll;
+			if(needOperation && doForAlls.containsKey(currentConflict)) {
+				operation = doForAlls.get(currentConflict);
 				needOperation = false;
 			}
 		}
@@ -77,7 +90,7 @@ public class BundledMessageResponses<T extends UniqueObject> {
 		else {
 			needOperation = false;
 			if(doForAllFlag) {
-				doForAll = operation;
+				doForAlls.put(currentConflict, operation);
 			}
 		}
 		
@@ -87,13 +100,17 @@ public class BundledMessageResponses<T extends UniqueObject> {
 			if(operation.equals(defaultOp)) {
 				result.message = ops.onDefault(currentlyLoaded);}
 			else {
-				result.message = ops.doOperation(operation, currentlyLoaded);}
+				result.message = doOperation(operation, currentlyLoaded);}
 		}
 		//If not, we need to get an operation from the user. The user will then give us an answer.
 		else{
-			result.status = conflict;
-			result.message = ops.onConflict(currentlyLoaded);
+			result.status = currentConflict.getStatus();
+			result.message = currentConflict.getMessage(currentlyLoaded);
 		}
 		return result;
+	}
+	
+	private final String doOperation(String operationType, T element) throws Exception {
+		return operations.get(operationType).execute(element);
 	}
 }

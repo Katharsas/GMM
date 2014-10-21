@@ -15,9 +15,9 @@ public class Texture extends Asset {
 	@XStreamAsAttribute
 	private int width;
 	
-	public Texture(Path base, Path relative) throws IOException {
-		super(base, relative);
-		BufferedImage image = ImageIO.read(absolute.toFile());
+	public Texture(Path relative, AssetTask<Texture> owner) throws IOException {
+		super(relative, owner);
+		BufferedImage image = ImageIO.read(getAbsolute().toFile());
 		height = image.getHeight();
 		width = image.getWidth();
 	}

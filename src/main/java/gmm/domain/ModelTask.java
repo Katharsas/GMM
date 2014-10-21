@@ -1,5 +1,7 @@
 package gmm.domain;
 
+import java.nio.file.Path;
+
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 
@@ -10,8 +12,8 @@ public class ModelTask extends AssetTask<Model> {
 	private int originalFaceCount;
 	private int newFaceCount;
 	
-	public ModelTask(User author) {
-		super(author);
+	public ModelTask(User author, Path assetPath) {
+		super(author, assetPath);
 	}
 
 	public int getOriginalFaceCount() {

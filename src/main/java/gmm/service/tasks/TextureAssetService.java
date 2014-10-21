@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -18,19 +19,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Should be used for asset operations like asset loading/asset conversion.
- * TODO: When MeshService is done, maybe a partly common Interface with this class is possible.
+ * TODO: When MeshAssetService is done, maybe a partly common Interface with this class is possible.
  * 
- * IF so, this class could be joined with TexturePreviewCreator
- * (as MeshService should be joined with MeshPreviewCreator).
+ * If so, this class could be joined with {@link TextureTaskService}
+ * (as MeshService should be joined with {@link ModelTaskService}).
  * 
  * @author Jan
  */
 @Service
-public class TextureService {
+public class TextureAssetService {
 
-	@Autowired FileService fileService;
-	@Autowired DataConfigService config;
-	@Autowired TextureAssetCreator creator;
+	@Autowired private FileService fileService;
+	@Autowired private DataConfigService config;
+	@Autowired private TextureTaskService creator;
 	
 	/**
 	 * Returns a texture preview image (png) as byte array.
@@ -40,10 +41,9 @@ public class TextureService {
 		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
 		
 		Path imagePath = config.ASSETS_NEW
-				.resolve(task.getNewAssetFolder())
+				.resolve(task.getAssetPath())
 				.resolve(config.SUB_PREVIEW)
 				.resolve(imageName);
-		
 
 		if(!imagePath.toFile().exists()) {
 			return null;
@@ -64,14 +64,14 @@ public class TextureService {
 		boolean isAsset = fileName.endsWith(".tga") || fileName.endsWith(".TGA");
 		
 		//Add file
-		Path relative = task.getNewAssetFolder()
+		Path relative = task.getAssetPath()
 				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
 				.resolve(fileName);
 		Path assetPath = config.ASSETS_NEW.resolve(relative);
 		fileService.createFile(assetPath, file.getBytes());
 		
 		if(isAsset) {
-			task.setNewestAsset(creator.createAsset(config.ASSETS_NEW, relative));
+			task.setNewestAsset(creator.createAsset(Paths.get(fileName), task));
 			creator.createPreview(assetPath, task, false);
 		}
 	}
@@ -79,7 +79,7 @@ public class TextureService {
 	public void deleteTextureFile(Path relativeFile, boolean isAsset, TextureTask task) throws IOException {
 		
 		//Restrict access
-		Path taskFolder = config.ASSETS_NEW.resolve(task.getNewAssetFolder());
+		Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
 		Path visible = taskFolder.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER);
 		Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		

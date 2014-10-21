@@ -5,7 +5,7 @@
 <!-- AssetPath -->
 				    <#if tab=='textures'||tab=='models'>
 				    	<div class="elementPath elementContent">
-				    		File Path: &#160; &#160; ${task.getNewAssetFolder().toString()?html}
+				    		File Path: &#160; &#160; ${task.getAssetPath().toString()?html}
 			    		</div>
 				    </#if>
 <!-- Details -->

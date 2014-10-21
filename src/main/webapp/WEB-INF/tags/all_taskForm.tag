@@ -21,7 +21,7 @@
 	<div class="taskElement">
 		<div class="taskDescription"><fmt:message key="tasks.title"/>:</div>
 		<div class="taskInput">
-			<form:input path="idName" value=""/>
+			<form:input path="name" value=""/>
 		</div>
 	</div>
 </div>
@@ -116,7 +116,7 @@
 		</div>
 		<div class="taskDescription">File name:</div>
 		<div class="taskInput">
-			<form:input path="newAssetFolderPath" value=""/>
+			<form:input path="assetPath" value=""/>
 		</div>
 	</div>
 </div>

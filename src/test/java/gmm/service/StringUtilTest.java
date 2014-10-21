@@ -9,15 +9,16 @@ public class StringUtilTest {
 	
 	@Test
 	public void testContains(){
-		StringUtil.IGNORE_CASE = false;
-		StringUtil.ALWAYS_CONTAINS_EMPTY = true;
-		assertFalse(StringUtil.contains("Bla", "bla"));
-		assertTrue(StringUtil.contains("Bla", ""));
-		assertTrue(StringUtil.contains("", ""));
-		StringUtil.IGNORE_CASE = true;
-		assertTrue(StringUtil.contains("Bla", "bla"));
-		StringUtil.ALWAYS_CONTAINS_EMPTY = false;
-		assertFalse(StringUtil.contains("Bla", ""));
-		assertFalse(StringUtil.contains("", ""));
+		StringUtil strings = new StringUtil();
+		strings.IGNORE_CASE = false;
+		strings.ALWAYS_CONTAINS_EMPTY = true;
+		assertFalse(strings.contains("Bla", "bla"));
+		assertTrue(strings.contains("Bla", ""));
+		assertTrue(strings.contains("", ""));
+		strings.IGNORE_CASE = true;
+		assertTrue(strings.contains("Bla", "bla"));
+		strings.ALWAYS_CONTAINS_EMPTY = false;
+		assertFalse(strings.contains("Bla", ""));
+		assertFalse(strings.contains("", ""));
 	}
 }

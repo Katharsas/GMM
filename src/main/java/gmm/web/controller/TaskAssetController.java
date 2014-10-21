@@ -11,7 +11,7 @@ import gmm.domain.UniqueObject;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.tasks.TextureService;
+import gmm.service.tasks.TextureAssetService;
 import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.sessions.TaskSession;
@@ -38,7 +38,7 @@ public class TaskAssetController {
 
 	@Autowired TaskSession session;
 	@Autowired DataAccess data;
-	@Autowired TextureService assetService;
+	@Autowired TextureAssetService assetService;
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
@@ -98,7 +98,7 @@ public class TaskAssetController {
 			boolean isAssets = subDir.equals("assets");
 			
 			Path visible = config.ASSETS_NEW
-					.resolve(task.getNewAssetFolder())
+					.resolve(task.getAssetPath())
 					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
 			dir = fileService.restrictAccess(dir, visible);
 			return new FileTreeScript().html(dir, visible);
@@ -157,18 +157,20 @@ public class TaskAssetController {
 		if(subDir.equals("preview")) {
 			if(dir.equals("original")) {
 				base = config.ASSETS_ORIGINAL;
-				filePath = task.getOriginalAsset().getPath();
+				filePath = task.getAssetPath();
 			}
 			else if(dir.equals("newest")) {
 				base = config.ASSETS_NEW;
-				filePath = task.getNewestAsset().getPath();
+				filePath = task.getAssetPath()
+						.resolve(config.SUB_ASSETS)
+						.resolve(task.getNewestAsset().getPath());
 			}
 			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
 		}
 		else if (subDir.equals("asset") || subDir.equals("other") ){
 			boolean isAssets = subDir.equals("asset");
 			base = config.ASSETS_NEW;
-			filePath = task.getNewAssetFolder()
+			filePath = task.getAssetPath()
 					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER)
 					.resolve(dir);
 		}

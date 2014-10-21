@@ -8,37 +8,35 @@ import gmm.domain.User;
 
 public class TaskForm {
 	
-	private String idName;
+	private String name;
 	private String label;
 	private String details;
 	private String assigned;
 	private TaskPriority priority;
 	private TaskStatus status;
 	private TaskType type;
-	private String originalAssetPath;
-	private String newAssetFolderPath;
+	private String assetPath;
 	
 	public TaskForm() {
 		setDefaultState();
 	}
 	public void setDefaultState() {
-		idName = "";
+		name = "";
 		label = "";
 		details = "";
 		assigned = "";
 		priority = TaskPriority.MID;
 		status = TaskStatus.TODO;
 		type = TaskType.GENERAL;
-		originalAssetPath = "";
-		newAssetFolderPath = "";
+		assetPath = "";
 	}
 	
 	//Setters, Getters-------------------------------------------
-	public String getIdName() {
-		return idName;
+	public String getName() {
+		return name;
 	}
-	public void setIdName(String idName) {
-		this.idName = idName;
+	public void setName(String idName) {
+		this.name = idName;
 	}
 	public String getDetails() {
 		return details;
@@ -85,16 +83,10 @@ public class TaskForm {
 	public void setType(TaskType type) {
 		this.type = type;
 	}
-	public String getOriginalAssetPath() {
-		return originalAssetPath;
+	public String getAssetPath() {
+		return assetPath;
 	}
-	public void setOriginalAssetPath(String assetPath) {
-		this.originalAssetPath = assetPath;
-	}
-	public String getNewAssetFolderPath() {
-		return newAssetFolderPath;
-	}
-	public void setNewAssetFolderPath(String newAssetFolderPath) {
-		this.newAssetFolderPath = newAssetFolderPath;
+	public void setAssetPath(String assetPath) {
+		this.assetPath = assetPath;
 	}
 }

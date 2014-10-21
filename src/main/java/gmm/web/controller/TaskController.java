@@ -32,7 +32,7 @@ import gmm.domain.User;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
-import gmm.service.tasks.TaskCreator;
+import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.AjaxResponseException;
 import gmm.web.TaskRenderer;
 import gmm.web.TaskRenderer.TaskRenderResult;
@@ -59,7 +59,7 @@ import gmm.web.sessions.TaskSession;
 
 public class TaskController {
 	
-	@Autowired private TaskCreator taskCreator;
+	@Autowired private TaskServiceFinder taskCreator;
 	@Autowired private TaskSession session;
 	@Autowired private DataAccess data;
 	@Autowired private TaskFilterService filter;
@@ -219,7 +219,7 @@ public class TaskController {
 		Class<? extends Task> type = form.getType().toClass();
 
 		if(isNew) {
-			task = taskCreator.createTask(type, form);
+			task = taskCreator.create(type, form);
 			task = type.cast(task);
 			data.add(task);
 			if(session.getCurrentTaskType().toClass().equals(type)) {
@@ -228,7 +228,7 @@ public class TaskController {
 		}
 		else {
 			task = UniqueObject.getFromId(session.getTasks(), idLink);
-			taskCreator.editTask(task, form);
+			taskCreator.edit(task, form);
 		}
 		return "redirect:/tasks?tab="+session.getTab();
 	}

@@ -2,10 +2,12 @@ package gmm.service.tasks;
 
 import gmm.domain.Texture;
 import gmm.domain.TextureTask;
+import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
 
 import java.awt.image.BufferedImage;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -18,15 +20,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Should maybe be joined with TextureService after Mesh implementation.
+ * Should maybe be joined with {@link TextureAssetService} after Mesh implementation.
  * 
  * @author Jan
  */
 @Service
-public class TextureAssetCreator extends AssetCreator<Texture, TextureTask> {
+public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 
-	@Autowired DataConfigService config;
-	@Autowired FileService fileService;
+	@Autowired private DataConfigService config;
+	@Autowired private FileService fileService;
+	
+	public static final FilenameFilter extensions =
+			new FileService.FileExtensionFilter(new String[] {"tga"});
 	
 	private static final int SMALL_SIZE = 300;
 	
@@ -39,14 +44,14 @@ public class TextureAssetCreator extends AssetCreator<Texture, TextureTask> {
 	
 	/**
 	 * Create Preview files from texture file.
-	 * For more texture operations see {@link gmm.service.tasks.TextureService}
+	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
-	protected void createPreview(Path sourceFile, TextureTask task, boolean isOriginal) throws IOException {
+	public void createPreview(Path sourceFile, TextureTask task, boolean isOriginal) throws IOException {
 		if(!sourceFile.toFile().exists()) {
 			return;
 		}
-		Path taskFolder = config.ASSETS_NEW.resolve(task.getNewAssetFolder());
+		Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
 		Path targetFile;
 		String version = isOriginal ? "original" : "newest";
 		BufferedImage image = ImageIO.read(sourceFile.toFile());
@@ -66,7 +71,17 @@ public class TextureAssetCreator extends AssetCreator<Texture, TextureTask> {
 	}
 
 	@Override
-	protected Texture createAsset(Path base, Path relative) throws IOException {
-		return new Texture(base, relative);
+	public Texture createAsset(Path relative, TextureTask owner) throws IOException {
+		return new Texture(relative, owner);
+	}
+
+	@Override
+	public Class<TextureTask> getTaskType() {
+		return TextureTask.class;
+	}
+
+	@Override
+	protected TextureTask createNew(Path assetPath, User user) {
+		return new TextureTask(user, assetPath);
 	}
 }

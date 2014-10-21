@@ -11,6 +11,7 @@ import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.collections.Set;
+import gmm.domain.AssetTask;
 import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Linkable;
@@ -56,6 +57,12 @@ public class DataBase implements DataAccess {
 			allTasks.addAll((Collection<T>) textureTasks);
 			allTasks.addAll((Collection<T>) modelTasks);
 			return allTasks;
+		}
+		if(clazz.equals(AssetTask.class)) {
+			Collection<T> assetTasks = new HashSet<>();
+			assetTasks.addAll((Collection<T>) textureTasks);
+			assetTasks.addAll((Collection<T>) modelTasks);
+			return assetTasks;
 		}
 		return (Collection<T>) this.<T>getDataList(clazz).copy();
 	}
