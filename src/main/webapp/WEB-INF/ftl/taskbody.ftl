@@ -27,7 +27,7 @@
 								<#if comment.getAuthor().getIdLink() == principal.getIdLink()>
 							    	<div class="right commentButton elementContent button commentEditButton"
 							    			onclick="changeComment('${comment.getText()?js_string?html}', '${task.getIdLink()}', '${comment.getIdLink()}')">
-										Editieren
+										<@s.message "edit"/>
 									</div>
 								</#if>
 						    	<div class="left subElementText elementContent">

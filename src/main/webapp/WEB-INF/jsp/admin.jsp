@@ -34,26 +34,26 @@
         			<p id="conflictMessage"></p>
         			<div id="loadedTasks" class="dialogList"><ul></ul></div>
         			<div id="conflictOptions">
-	        			<div id="skipTaskButton" class="left dialogButton button" onclick="taskLoader.answer('skip');">Skip</div>
-	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="taskLoader.answer('overwrite');">Overwrite</div>
-	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="taskLoader.answer('both');">Keep Both</div>
+	        			<div id="skipTaskButton" class="left dialogButton button" onclick="taskLoader.answer('skip');"><fmt:message key="admin.database.skip"/></div>
+	        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="taskLoader.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
+	        			<div id="addBothTasksButton" class="left dialogButton button" onclick="taskLoader.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
 	        			<div class="clear"></div>
 	        			<label id="doForAllCheckbox">
-	        				<input type="checkbox" name="doForAll" value="doForAll">Für alle aktuellen Elemente wiederholen<br>
+	        				<input type="checkbox" name="doForAll" value="doForAll"><fmt:message key="admin.database.dothesame"/><br>
         				</label>
         			</div>
-        			<div id="finishLoadingButton" class="dialogButton button" onclick="taskLoader.finish()">Finish</div>
+        			<div id="finishLoadingButton" class="dialogButton button" onclick="taskLoader.finish()"><fmt:message key="admin.database.finish"/></div>
         		</div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
         		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue('#saveAllTasksDialog')"><fmt:message key="admin.database.saveall"/></div>
         		<div id="saveAllTasksDialog" class="dialogContainer">
         			<form id="saveAllTasksForm" method="POST" action="admin/save">
-        				Enter a name for the save file:<br/><br/>
+        				<fmt:message key="admin.database.filename"/><br/><br/>
         				<input name="name" value="manual/example"/>.xml
         			</form><br/>
-        			<div class="dialogButton button left" onclick="saveAllTasks()">Save</div>
-        			<div class="dialogButton button right" onclick="hideDialogue()">Cancel</div>
+        			<div class="dialogButton button left" onclick="saveAllTasks()"><fmt:message key="admin.database.save"/></div>
+        			<div class="dialogButton button right" onclick="hideDialogue()"><fmt:message key="admin.database.cancel"/></div>
         			<div class="clear"></div>
         		</div>
         		<div class="verticalSpace"></div>
@@ -65,8 +65,8 @@
         <div class="groupDescriptor">Import Assets (WIP)</div>
         <div class="adminElementGroup">
 			<div id="originalAssetsContainer" class="adminElement"></div>
-			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)">Add Textures</div>
-			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)">Add 3D Meshes</div>
+			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>
+			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)"><fmt:message key="admin.database.addmeshes"/></div>
 			<div class="clear"></div>
 			<div id="selectedPaths" class="adminElement"><ul></ul></div>
 
@@ -82,16 +82,16 @@
 				
 				<div class="clear"></div>
 				<div id="importButtons">
-					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')">Import Textures</div>
-					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')">Import 3D Meshes</div>
-					<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()">Cancel Import</div>
+					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('true')"><fmt:message key="admin.database.texturesimport"/></div>
+					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('false')"><fmt:message key="admin.database.meshesimport"/></div>
+					<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()"><fmt:message key="admin.database.cancelimport"/></div>
 					<div class="clear"></div>
 				</div>
 			</div>
 		</div>
 		
 		<div class="groupDescriptor">
-			User Accounts
+			<fmt:message key="admin.database.useraccounts"/>
 		</div>
 		<div class="adminElementGroup">
 			<br/>
@@ -125,9 +125,9 @@
 				</div>
 			</c:forEach>
 			<br/>
-			<div class="button pageButton left" onclick="editUserName('new','')">New User</div>
-			<div class="button pageButton right" onclick="saveUsers()">Save Users</div>
-			<div class="button pageButton right" onclick="loadUsers()">Load Users</div>
+			<div class="button pageButton left" onclick="editUserName('new','')"><fmt:message key="admin.database.newuser"/></div>
+			<div class="button pageButton right" onclick="saveUsers()"><fmt:message key="admin.database.saveuser"/></div>
+			<div class="button pageButton right" onclick="loadUsers()"><fmt:message key="admin.database.loaduser"/></div>
 		</div>
 			
 	</jsp:body>
