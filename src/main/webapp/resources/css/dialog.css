@@ -12,7 +12,7 @@
 
 .dialogContainer {	
   	z-index: 250;
-  	position: absolute;
+  	position: fixed;
   	background-color:#111;
   	border:5px solid #333;
 }

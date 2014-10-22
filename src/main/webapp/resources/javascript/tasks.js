@@ -304,9 +304,7 @@ var TaskLoader = function(onLoaded) {
 	return {
 		
 		insertBody : function ($task) {
-			console.log("Inserting task body!");
 			var idLink = $task.attr('id');
-			console.log("with id: "+idLink);
 			var body = undefined;
 			tasks.some(function(task) {
 				if(task.idLink === idLink) {

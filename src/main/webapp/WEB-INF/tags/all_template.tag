@@ -57,6 +57,27 @@
 					Reload Page
 				</div>
 			</div>
+			<div id="bundledMessageDialog" class="dialogContainer">
+       			<p>Loading:</p>
+       			<p id="conflictMessage"></p>
+       			<div id="messageList" class="dialogList"><ul></ul></div>
+       			<div id="conflictOptions">
+        			<div id="skipButton" class="left dialogButton button" onclick="ajaxChannel.answer('skip');"><fmt:message key="admin.database.skip"/></div>
+        			<!-- Load Tasks -->
+        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
+        			<div id="addBothTasksButton" class="left dialogButton button" onclick="ajaxChannel.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
+        			<!-- Import Assets -->
+        			<div id="overwriteTaskAquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskAquireData');">Aquire Data (Overwrites Task)</div>
+        			<div id="overwriteTaskDeleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');">Delete Data (Overwrites Task)</div>
+        			<div id="aquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('aquireData');">Aquire Data</div>
+        			<div id="deleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('deleteData');">Delete Data</div>
+        			<div class="clear"></div>
+        			<label id="doForAllCheckbox">
+        				<input type="checkbox" name="doForAll" value="doForAll"><fmt:message key="admin.database.dothesame"/><br>
+       				</label>
+       			</div>
+       			<div id="finishLoadingButton" class="dialogButton button" onclick="ajaxChannel.finish()"><fmt:message key="admin.database.finish"/></div>
+       		</div>
 		
 		
 			<!-- No Javascript Warning -->

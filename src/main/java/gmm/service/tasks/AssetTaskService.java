@@ -28,28 +28,34 @@ public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> 
 	
 	@Override
 	public final T create(TaskForm form) throws IOException {
-		//get asset path
-		String assetPathString = form.getAssetPath();
-		Path assetPath = Paths.get(assetPathString);
-		if(assetPathString.equals("")) {
-			throw new IllegalStateException("Form does not contain any asset path. Cannot create asset task!");
-		}
-		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_NEW);
-		//create asset task
+		final Path assetPath = getAssetPath(form);
 		T task = createNew(assetPath, session.getUser());
 		
-		//Substitute wildcards
-		form.setName(form.getName().replace("%filename%", assetPath.getFileName().toString()));
-		form.setDetails(form.getDetails().replace("%filename%", assetPath.getFileName().toString()));
-
 		//If original asset exists, create previews and asset
 		Path originalAbsolute = config.ASSETS_ORIGINAL.resolve(assetPath);
 		if(originalAbsolute.toFile().isFile()) {
 			createPreview(originalAbsolute, task, true);
 			task.setOriginalAsset(createAsset(null, task));
 		}
-		super.edit(task, form);
+		edit(task, form);
 		return task;
+	}
+	
+	private Path getAssetPath(TaskForm form) {
+		final String assetPathString = form.getAssetPath();
+		if(assetPathString.equals("")) {
+			throw new IllegalStateException("Form does not contain any asset path. Cannot create asset task!");
+		}
+		return fileService.restrictAccess(Paths.get(assetPathString), config.ASSETS_NEW);
+	}
+	
+	@Override
+	public void edit(T task, TaskForm form) {
+		super.edit(task, form);
+		final Path assetPath = getAssetPath(form);
+		//Substitute wildcards
+		task.setName(form.getName().replace("%filename%", assetPath.getFileName().toString()));
+		task.setDetails(form.getDetails().replace("%filename%", assetPath.getFileName().toString()));
 	}
 	
 	@Override

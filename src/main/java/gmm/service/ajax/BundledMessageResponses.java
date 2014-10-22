@@ -18,6 +18,9 @@ import java.util.Map;
  * To not waste requests, the messages from the server will come in bundles of dynamic size, where
  * the last bundle message either indicates that the server needs a message from the client or that
  * the server has finished sending all messages.
+ * If the server needs more than two seconds while creating a bundle, it will send the responses
+ * anyway. In this case, the last message does not indicate anything and the client can just request
+ * the next bundle.
  * 
  * Counterpart to js class "ResponseBundleHandler"
  * 
@@ -60,10 +63,12 @@ public class BundledMessageResponses<T> {
 		MessageResponse result = loadNext(operation, doForAllFlag);
 		boolean loadNext = result.status.equals(success);
 		results.add(result);
+		long timeStamp = System.currentTimeMillis();
 		while(loadNext) {
 			result = loadNext(defaultOp, false);
 			results.add(result);
-			loadNext = result.status.equals(success);
+			long duration = System.currentTimeMillis() - timeStamp;
+			loadNext = result.status.equals(success) && duration < 2000;
 		}
 		return results;
 	}

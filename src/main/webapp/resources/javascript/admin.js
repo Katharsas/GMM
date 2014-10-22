@@ -179,7 +179,6 @@ function importAssets(assetTypes) {
 	ajaxChannel.start(assetTypes);
 }
 
-
 /**
  * -------------------- ResponseBundleHandler -----------------------------------------------------
  * Provides a way to communicate with the server when the server needs to send a lot of
@@ -190,8 +189,6 @@ function importAssets(assetTypes) {
  * the server has finished sending all messages.
  */
 function ResponseBundleHandler(responseBundleOption) {
-//	var Option = {startURI:undefined, nextURI:undefined, conflicts:[], showButtons:undefined};
-	//TODO make Option interface for options (for auto-complete)
 	var ResponseBundleOptions = {
 			tasks : {
 				nextURI : "admin/load/next",
@@ -202,13 +199,12 @@ function ResponseBundleHandler(responseBundleOption) {
 					$options.children("#overwriteTaskButton").show();
 					$options.children("#addBothTasksButton").show();
 				},
-				start : function(reactToResults, showException) {
+				start : function() {
 					var dir = allVars.selectedBackupFile.attr('rel');
 					if(dir === undefined || dir === "") {
 						return undefined;
 					}
-					return $.getJSON("admin/load", { dir: dir })
-						.done(reactToResults).fail(showException);
+					return $.getJSON("admin/load", { dir: dir });
 				}
 
 			},
@@ -229,63 +225,25 @@ function ResponseBundleHandler(responseBundleOption) {
 						break;
 					}
 				},
-				start : function(reactToResults, showException, assetTypes) {
+				start : function(assetTypes) {
 					var textures;
-					console.log(assetTypes);
 					if (assetTypes === "textures") textures = true;
 					else if (assetTypes === "models") textures = false;
 					else return undefined;
-					$("#taskForm").ajaxSubmit({data: { textures: textures },
-						success: reactToResults, error: showException});
-					//TODO return ajaxResult whitch functions which get called by ajaxSubmit
-					// or use a submit which returns getJSON like result.
-					return true;
+					return $("#taskForm").ajaxSubmit({data: { textures: textures }}).data('jqxhr');
 				}
 			}
 		};
 	var options = ResponseBundleOptions[responseBundleOption];
-//	var options = Option;
 	
-	var $messageList = $("#loadedTasks ul");
+	var $dialog = $("#bundledMessageDialog");
+	var $messageList = $("#messageList ul");
 	var $conflictMessage  = $("#conflictMessage");
 	var $conflictOptions = $("#conflictOptions");
 	var $finishedButton = $("#finishLoadingButton");
 	var $checkBox = $('#doForAllCheckbox input');
 	
-	/**
-	 * process server response bundle
-	 */
-	function reactToResults(results) {
-		results.forEach(function(data) {
-			//all elements before last should be success
-			if(data.status == "success") {
-				$messageList.append("<li>"+data.message+"</li>");
-			}
-			//last element is conflict or finished
-			else {
-				if(data.status == "finished") {
-					$finishedButton.show();
-				}
-				else  {
-					//TODO: contains method for arrays?
-					//START contains
-					var contains = false;
-					for (var i = 0; i < options.conflicts.length; i++) {
-						if (data.status === options.conflicts[i]) {
-							contains = true;
-						}
-					}
-					//END contains
-					$conflictMessage.html(data.message);
-					if (contains) options.showButtons(data.status, $conflictOptions);
-					else {
-						$conflictMessage.html("Something went wrong! " +
-								"Out of sync with server. Please reload page.");
-					}
-				}
-			}
-		});
-	}
+	var that = this;
 	
 	/**
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
@@ -294,12 +252,10 @@ function ResponseBundleHandler(responseBundleOption) {
 	this.start = function (startOptions) {
 		$conflictOptions.children().hide();
 		$finishedButton.hide();
-		ajaxResult = options.start(reactToResults, showException, startOptions);
-		console.log(ajaxResult);
+		ajaxResult = options.start(startOptions);
 		if (ajaxResult === undefined) return;
-		//TODO if ajaxResult has function done and fail, use them
-//		ajaxResult.done(reactToResults).fail(showException);
-		showDialogue("#loadTasksDialog");
+		ajaxResult.done(reactToResults).fail(showException);
+		showDialogue($dialog);
 	};
 	
 	/**
@@ -319,4 +275,38 @@ function ResponseBundleHandler(responseBundleOption) {
 		hideDialogue();
 		$messageList.empty();
 	};
+	
+	/**
+	 * process server response bundle
+	 */
+	function reactToResults(results) {
+		var outOfSync = "Something went wrong! Out of sync with server. Please reload page.";
+		//for all but the last element, the status should be success
+		for (var i = 0; i < results.length-1; i++) {
+			var data = results[i];
+			if(data.status == "success") {
+				$messageList.append("<li>"+data.message+"</li>");
+			}
+			else $conflictMessage.html(outOfSync);
+		}
+		//last result can be anything
+		var data = results[results.length-1];
+		if(data.status == "success") {
+			//if success, the server can go on with next package
+			$messageList.append("<li>"+data.message+"</li>");
+			that.answer("default");
+		}
+		else if(data.status == "finished") {
+			$finishedButton.show();
+		}
+		else {
+			//if conflict, we need to validate the conflict type
+			//and show conflict options accordingly.
+			$conflictMessage.html(data.message);
+			if (options.conflicts.indexOf(data.status) !== -1) {
+				options.showButtons(data.status, $conflictOptions);
+			}
+			else $conflictMessage.html(outOfSync);
+		}
+	}
 }

@@ -78,7 +78,9 @@ function getURLParameter(sParam)
 
 function showDialogue(selector) {
 	allVars.$overlay.show();
-	$(selector).show();
+	var dialog = $(selector);
+	dialog.show();
+	//TODO calculate height & width and position dialog in the middle of page
 }
 
 function hideDialogue() {

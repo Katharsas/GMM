@@ -43,7 +43,6 @@ public class TaskServiceFinder {
 	
 	public <T extends Task> T create(Class<T> type, TaskForm form) throws IOException {
 		final T task = getService(type).create(form);
-		edit(task, form);
 		return task;
 	}
 	

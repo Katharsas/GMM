@@ -64,10 +64,14 @@
 	margin: 8px 20px;
 	margin-left: 0px;
 }
-#loadTasksDialog {
-	min-width:600px;
+#bundledMessageDialog {
+	width: 600px;
+	top: 50%;
+	left: 50%;
+	margin-top: -200px;
+	margin-left: -300px;
 }
-#loadTasksDialog > *{
+#bundledMessageDialog > *{
 	margin:7px 10px;
 }
 #conflictMessage {
