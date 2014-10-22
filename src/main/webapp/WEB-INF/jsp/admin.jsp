@@ -55,7 +55,7 @@
 			<div class="clear"></div>
 			<div id="selectedPaths" class="adminElement"><ul></ul></div>
 
-			<div id="importTaskForm">
+			<div id="importTaskForm" class="adminElement">
 				<form:form id="taskForm" method="POST"
 						action="admin/importAssets"
 						commandName="task">

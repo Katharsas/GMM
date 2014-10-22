@@ -1,8 +1,8 @@
 package gmm.web.sessions;
 
 import gmm.collections.Collection;
-import gmm.collections.HashSet;
-import gmm.collections.Set;
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AssetImportSession {
 
-	private final Set<String> filePaths = new HashSet<>();
+	private final List<String> filePaths = new LinkedList<>();
 	private boolean areTexturePaths = true;
 	
 	public void addPaths(Collection<String> paths, boolean areTexturePaths) {
@@ -31,11 +31,7 @@ public class AssetImportSession {
 		filePaths.clear();
 	}
 	
-	public String[] getAsArray() {
-		return filePaths.toArray(new String[filePaths.size()]);
-	}
-	
-	public Collection<String> get() {
+	public List<String> get() {
 		return filePaths.copy();
 	}
 }

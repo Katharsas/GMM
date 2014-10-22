@@ -4,7 +4,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import org.springframework.ui.ModelMap;
@@ -197,7 +196,7 @@ public class AdminController {
 	 * If user switches type of assets, selection must be cleared.
 	 */
 	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
-	public @ResponseBody String[] getAssetPaths(
+	public @ResponseBody List<String> getAssetPaths(
 			@RequestParam("dir") Path dir,
 			@RequestParam("textures") boolean textures) throws AjaxResponseException {
 		try {
@@ -207,9 +206,7 @@ public class AdminController {
 					TextureTaskService.extensions : ModelTaskService.extensions;
 			List<Path> paths = fileService.getFilePaths(visible.resolve(dir), filter);
 			toImport.addPaths(fileService.getRelativeNames(paths, visible), textures);
-			String[] result = toImport.getAsArray();
-			Arrays.sort(result, String.CASE_INSENSITIVE_ORDER);
-			return result;
+			return toImport.get();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}

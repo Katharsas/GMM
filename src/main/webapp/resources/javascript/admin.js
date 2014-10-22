@@ -46,6 +46,7 @@ function refreshTaskImportTree() {
 }
 
 function addAssetPaths(textures) {
+	var pathSep = "&#160;&#160;►&#160;";
 	var dir = allVars.selectedAssetFile.attr('rel');
 	$("#selectedPaths ul").empty();
 	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
@@ -54,6 +55,8 @@ function addAssetPaths(textures) {
 			return;
 		}
 		for(var i in paths) {
+			paths[i] = paths[i].replace("/", pathSep);
+			paths[i] = paths[i].replace("\\", pathSep);
 			$("#selectedPaths ul").append("<li>"+paths[i]+"</li>");
 		}
 	});

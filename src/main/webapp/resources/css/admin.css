@@ -42,15 +42,27 @@
 	background-color:#164054;
 	width:75%;
 }
+#selectedPaths {
+	
+}
 #selectedPaths ul{
 	font-family: Verdana, sans-serif;
-	font-size: 9px;
-	line-height: 18px;
+	font-size: 10px;
+	line-height: 14px;
 	list-style: none;
+	
+	max-height: 315px;
+	overflow: auto;
 	padding: 0px;
+}
+#selectedPaths ul li {
+	background-color: #164054;
+	padding: 0px 6px;
 }
 #importTaskForm {
 	padding-top:10px;
+}
+#importTaskForm #taskForm {
 	display:table-cell;
 }
 .taskGroup {
