@@ -32,6 +32,12 @@ public class DataBase implements DataAccess {
 	final private Set<TextureTask> textureTasks = new HashSet<>();
 	final private Set<ModelTask> modelTasks = new HashSet<>();
 	final private Set<Label> taskLabels = new HashSet<>();
+	final private CombinedData combined;
+	
+	@Autowired
+	private DataBase(CombinedData combined) {
+		this.combined = combined;
+	}
 	
 	@PostConstruct
 	private void init() {
@@ -133,5 +139,10 @@ public class DataBase implements DataAccess {
 			System.err.println("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	@Override
+	public CombinedData getCombinedData() {
+		return combined;
 	}
 }

@@ -3,6 +3,13 @@ $(document).ready( function() {
 	hideTaskFormType();
 	refreshTaskBackups();
 	refreshTaskImportTree();
+	
+	var $adminBanner = $("#adminBannerTextArea");
+	$adminBanner.html(allVars.adminBanner);
+	$adminBanner.blur(function() {
+		$.post("admin/changeBannerMessage", {message: $adminBanner.val()})
+			.fail(showException);
+	});
 });
 
 function refreshTaskBackups() {

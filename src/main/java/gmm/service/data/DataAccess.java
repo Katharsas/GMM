@@ -13,4 +13,5 @@ public interface DataAccess {
 	public <T extends Linkable> boolean remove(T data);
 	public <T extends Linkable> boolean addAll(Class<T> clazz, Collection<? extends T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
+	public CombinedData getCombinedData();
 }

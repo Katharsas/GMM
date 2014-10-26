@@ -4,7 +4,6 @@
 <%@attribute name="js" fragment="true" %>
 <%@attribute name="css" fragment="true" %>
 
-
 <%-- Template Start --%>
 <html>
 	<head>
@@ -13,10 +12,13 @@
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
 		<!-- Javascript -->
 			<script src="res/javascript/lib/jQuery.js" type="text/javascript"></script>
-<!-- 			<script src="//code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script> -->
-<!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
+<!-- 			<script defer src="//code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script> -->
+<!-- 			<script defer src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="res/javascript/lib/jquery.form.min.js" type="text/javascript"></script>
 			<script src="res/javascript/default.js" type="text/javascript"></script>
+			<script type="text/javascript">
+				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
+			</script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
 			<link id="css_link" href="res/css/default.css" media="screen" rel="stylesheet" type="text/css" />
@@ -83,8 +85,10 @@
 			<!-- No Javascript Warning -->
 			<!-- TODO: Test -->
 			<noscript>
-				<div class="warning">
-					<p><fmt:message key="noscript"/><br/></p>
+				<div class="blocker">
+					<div class="warning">
+						<p><fmt:message key="noscript"/><br/></p>
+					</div>
 				</div>
 			</noscript>
 			<!-- End of No Javascript Warning -->
@@ -109,6 +113,10 @@
 			</div>
 			<!-- End of Top Tab-Menu -->
 			
+			<c:if test="${!combinedData.customAdminBanner.equals('')}">
+				<div id="customAdminBanner">
+				</div>
+			</c:if>
 		
 			<!-- Body of Task Tab -->
 			<div id="main" class="pageTabbody tabbody activePage">
@@ -117,6 +125,7 @@
 			<!-- End of body of Task Tab -->
 			
 		</div>
+		
 	</body>
 </html>
 <%-- Template End --%>

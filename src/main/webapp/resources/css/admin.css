@@ -30,6 +30,11 @@
 	font-style:italic;
 }
 
+#adminBannerTextArea {
+	width:100%;
+	height:200px;
+}
+
 .selectedAssetFile, .selectedBackupFile {
 	background-color:#A82709;
 	font-weight: bold;

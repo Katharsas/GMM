@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="/WEB-INF/tags/all_include.tagf" %>
-<% pageContext.setAttribute("newLine", "\n"); %>
 
 <t:all_template>
 
@@ -16,6 +15,12 @@
     
     
     <jsp:body>
+    	<div class="groupDescriptor">Customization</div>
+        <div class="adminElementGroup">
+        	Admin Banner HTML Code:
+			<textarea id="adminBannerTextArea"></textarea>
+        </div>
+    
     	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
         <div class="adminElementGroup">
         	<div id="loadTasks" class="adminElement left">

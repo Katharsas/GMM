@@ -81,7 +81,14 @@ a:link{color:inherit;}
 a:visited{color:inherit;}
 a:active{color:inherit;}
 a:hover{}
-noscript .warning {
+.blocker {
+	position: fixed;
+	height:100%;
+	width:100%;
+	background-color:#AAAAAA;
+	z-index: 270;
+}
+.warning {
 	text-align: center;
 	border:10px solid red;
 	width:100%;

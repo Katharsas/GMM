@@ -79,6 +79,12 @@ public class AdminController {
         return "admin";
     }
 	
+	@RequestMapping(value = {"/changeBannerMessage"} , method = RequestMethod.POST)
+	public @ResponseBody void setBannerMessage(
+			@RequestParam("message") String message) {
+		data.getCombinedData().setCustomAdminBanner(message);
+	}
+	
 	/**
 	 * Delete all tasks <br/>
 	 * -----------------------------------------------------------------
@@ -100,7 +106,6 @@ public class AdminController {
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
 	public @ResponseBody String showBackups(@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-		
 			Path visible = config.TASKS;
 			Path dirPath = fileService.restrictAccess(dir, visible);
 			return new FileTreeScript().html(dirPath, visible);

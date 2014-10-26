@@ -33,6 +33,12 @@ String.prototype.nl2br = function(is_xhtml) {
     return (this + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
 };
 
+function htmlDecode(input){
+	var e = document.createElement('div');
+	e.innerHTML = input;
+	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+}
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -56,6 +62,19 @@ $(document).ready(function() {
 			confirmOk();
 		}
 	});
+	
+	allVars.adminBanner = htmlDecode(allVars.adminBanner);
+	var $adminBanner = $("#customAdminBanner");
+	if ($adminBanner.length > 0) {
+		var doubleDecoded = htmlDecode(allVars.adminBanner);
+		
+		//Entweder newLines mit <br/> (sieht gut aus) ODER echtes html mit scripting
+		//(<br/> macht scripttag kaputt)
+		
+//		doubleDecoded = doubleDecoded.nl2br();
+		
+		$adminBanner.html(doubleDecoded);
+	}
 });
 
 
