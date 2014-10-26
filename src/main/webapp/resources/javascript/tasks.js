@@ -73,7 +73,7 @@ $(document).ready(
 				switchGeneralFiltersAll($(this));
 			});
 			$(".generalFiltersFormElement").change(function() {
-				$(".generalFilters").submit();
+				submitGeneralFilters();
 			});
 			
 			//default is 60
@@ -206,6 +206,10 @@ function switchGeneralFiltersAll($element) {
 	$(".generalFiltersAllCheckBoxTarget").attr("checked",
 			$element.is(":checked"));
 	submitGeneralFilters();
+}
+
+function submitGeneralFilters() {
+	$(".generalFilters").submit();
 }
 
 function uploadFile(input, idLink) {
