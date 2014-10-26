@@ -17,8 +17,17 @@
     <jsp:body>
     	<div class="groupDescriptor">Customization</div>
         <div class="adminElementGroup">
-        	Admin Banner HTML Code:
-			<textarea id="adminBannerTextArea"></textarea>
+			<div class="customizationDescription adminElement left">Admin Banner HTML Code:</div>
+			<c:if test="${combinedData.isCustomAdminBannerActive()}">
+				<div  class="button pageButton right"><a href="admin/deactivateBanner">Deactivate<span></span></a></div>
+			</c:if>
+			<c:if test="${!combinedData.isCustomAdminBannerActive()}">
+				<div  class="button pageButton right"><a href="admin/activateBanner">Activate<span></span></a></div>
+			</c:if>
+        	<div class="clear"></div>
+        	<div class="adminElement">
+        		<textarea id="adminBannerTextArea" ></textarea>
+        	</div>
         </div>
     
     	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
@@ -64,10 +73,8 @@
 				<form:form id="taskForm" method="POST"
 						action="admin/importAssets"
 						commandName="task">
-					<div style="width:100%;">
-						<t:all_taskForm>
-						</t:all_taskForm>
-					</div>
+					<t:all_taskForm>
+					</t:all_taskForm>
 				</form:form>
 				
 				<div class="clear"></div>

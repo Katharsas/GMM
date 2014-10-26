@@ -111,10 +111,11 @@
 				
 				<div class="clear"></div>
 			</div>
+			<div id ="menuSpacer"></div>
 			<!-- End of Top Tab-Menu -->
 			
-			<c:if test="${!combinedData.customAdminBanner.equals('')}">
-				<div id="customAdminBanner">
+			<c:if test="${combinedData.isCustomAdminBannerActive()}">
+				<div id="customAdminBanner" class="center">
 				</div>
 			</c:if>
 		

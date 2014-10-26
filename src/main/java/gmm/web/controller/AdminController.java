@@ -79,10 +79,27 @@ public class AdminController {
         return "admin";
     }
 	
+	/**
+	 * Banner code <br/>
+	 * -----------------------------------------------------------------
+	 */
+	
 	@RequestMapping(value = {"/changeBannerMessage"} , method = RequestMethod.POST)
 	public @ResponseBody void setBannerMessage(
 			@RequestParam("message") String message) {
 		data.getCombinedData().setCustomAdminBanner(message);
+	}
+	
+	@RequestMapping(value = {"/activateBanner"} , method = RequestMethod.GET)
+	public String activateBannerMessage() {
+		data.getCombinedData().setCustomAdminBannerActive(true);
+		return "redirect:/admin";
+	}
+	
+	@RequestMapping(value = {"/deactivateBanner"} , method = RequestMethod.GET)
+	public String deactivateBannerMessage() {
+		data.getCombinedData().setCustomAdminBannerActive(false);
+		return "redirect:/admin";
 	}
 	
 	/**

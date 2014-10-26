@@ -67,12 +67,6 @@ $(document).ready(function() {
 	var $adminBanner = $("#customAdminBanner");
 	if ($adminBanner.length > 0) {
 		var doubleDecoded = htmlDecode(allVars.adminBanner);
-		
-		//Entweder newLines mit <br/> (sieht gut aus) ODER echtes html mit scripting
-		//(<br/> macht scripttag kaputt)
-		
-//		doubleDecoded = doubleDecoded.nl2br();
-		
 		$adminBanner.html(doubleDecoded);
 	}
 });
