@@ -8,7 +8,7 @@
 <html>
 	<head>
 		<!-- Stuff -->
-			<title>GMM - Tasks</title>
+			<title><fmt:message key="all_template.GMMtasks"/></title>
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
 		<!-- Javascript -->
 			<script src="res/javascript/lib/jQuery.js" type="text/javascript"></script>
@@ -37,30 +37,30 @@
 				</div>
 				<textarea id="confirmDialogTextArea">
 				</textarea>
-				<div class="dialogButton confirmOk button left" onclick="confirmOk()">Confirm</div>
-				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()">Cancel</div>
+				<div class="dialogButton confirmOk button left" onclick="confirmOk()"><fmt:message key="all_template.confirm"/></div>
+				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()"><fmt:message key="all_template.cancel"/></div>
 				<div class="clear"></div>
 			</div>
 			<div id="exceptionDialog" class="dialogContainer">
 				<div id="exceptionHeading">
-					Internal Server Error 500
+					<fmt:message key="all_template.error"/>
 				</div>
 				<div id="exceptionMessage"></div>
 				<div id="exceptionInstructions">
-					Please copy text below and send it to somebody reponsible for this app.<br>
-					Please also add an description of what you did before receiving this error.<br>
+					<fmt:message key="all_template.errortext"/><br>
+					<fmt:message key="all_template.errortext2"/><br>
 					<br>
-					Error Message:
+					<fmt:message key="all_template.errormessage"/>
 				</div>
 				<div id="exceptionStackTraceWrapper">
 					<pre id="exceptionStackTrace"></pre>
 				</div>
 				<div class="dialogButton button" onclick="window.location.reload()">
-					Reload Page
+					<fmt:message key="all_template.reload"/>
 				</div>
 			</div>
 			<div id="bundledMessageDialog" class="dialogContainer">
-       			<p>Loading:</p>
+       			<p><fmt:message key="all_template.loading"/></p>
        			<p id="conflictMessage"></p>
        			<div id="messageList" class="dialogList"><ul></ul></div>
        			<div id="conflictOptions">
@@ -102,7 +102,7 @@
 					<spring:eval expression="@config.getProperty('app.version')" />
 				</div>
 				
-				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>">Logout<span></span></a></div>
+				<div class="tab right"><a href="<c:url value="j_spring_security_logout"/>"><fmt:message key="all_template.logout"/><span></span></a></div>
 				<div class="tab right"><a href="profile"><fmt:message key="menu.profile"/><span></span></a></div>
 				
 				<sec:authorize access="hasRole('ROLE_ADMIN')">
