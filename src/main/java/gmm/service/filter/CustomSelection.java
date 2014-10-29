@@ -21,6 +21,10 @@ import gmm.util.StringUtil;
  */
 public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I> {
 	
+	/**
+	 * Helper classes -----------------------------------------------
+	 */
+	
 	public class Operation{
 		protected CustomSelection<T,I> s;
 		public Operation(CustomSelection<T,I> s) {
@@ -129,6 +133,11 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	public static interface CopyMethod<T,I> {
 		public I copy(I i);
 	}
+	
+	/**
+	 * Variables -----------------------------------------------
+	 */
+	
 	final private CopyMethod<T,I> copyMethod;
 	
 	private final I selected;
