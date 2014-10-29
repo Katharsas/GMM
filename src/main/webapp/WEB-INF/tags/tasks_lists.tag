@@ -86,7 +86,7 @@
 							<form:option value="${sort}" label="${svalue}"/>
 						</c:forEach>
 					</form:select>
-					Down: <form:checkbox class="sortFormElement" path="sortDownPrimary"/>
+					<fmt:message key="tasks.down"/><form:checkbox class="sortFormElement" path="sortDownPrimary"/>
 				</div>
 				<div class="clear"></div>
 				<div class="left">
@@ -99,7 +99,7 @@
 							<form:option value="${sort}" label="${svalue}"/>
 						</c:forEach>
 					</form:select>
-					Down: <form:checkbox class="sortFormElement" path="sortDownSecondary"/>
+					<fmt:message key="tasks.down"/><form:checkbox class="sortFormElement" path="sortDownSecondary"/>
 				</div>
 			</form:form>
 		</div>

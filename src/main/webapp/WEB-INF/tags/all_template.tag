@@ -69,10 +69,10 @@
         			<div id="overwriteTaskButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
         			<div id="addBothTasksButton" class="left dialogButton button" onclick="ajaxChannel.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
         			<!-- Import Assets -->
-        			<div id="overwriteTaskAquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskAquireData');">Aquire Data (Overwrites Task)</div>
-        			<div id="overwriteTaskDeleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');">Delete Data (Overwrites Task)</div>
-        			<div id="aquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('aquireData');">Aquire Data</div>
-        			<div id="deleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('deleteData');">Delete Data</div>
+        			<div id="overwriteTaskAquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskAquireData');"><fmt:message key="all_template.acquire"/></div>
+        			<div id="overwriteTaskDeleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');"><fmt:message key="all_template.delete"/></div>
+        			<div id="aquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('aquireData');"><fmt:message key="all_template.acquire"/></div>
+        			<div id="deleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('deleteData');"><fmt:message key="all_template.delete"/></div>
         			<div class="clear"></div>
         			<label id="doForAllCheckbox">
         				<input type="checkbox" name="doForAll" value="doForAll"><fmt:message key="admin.database.dothesame"/><br>

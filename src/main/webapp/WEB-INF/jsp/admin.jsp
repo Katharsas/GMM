@@ -15,14 +15,14 @@
     
     
     <jsp:body>
-    	<div class="groupDescriptor">Customization</div>
+    	<div class="groupDescriptor"><fmt:message key="admin.customization"/></div>
         <div class="adminElementGroup">
-			<div class="customizationDescription adminElement left">Admin Banner HTML Code:</div>
+			<div class="customizationDescription adminElement left"><fmt:message key="admin.htmlCode"/></div>
 			<c:if test="${combinedData.isCustomAdminBannerActive()}">
-				<div  class="button pageButton right"><a href="admin/deactivateBanner">Deactivate<span></span></a></div>
+				<div  class="button pageButton right"><a href="admin/deactivateBanner"><fmt:message key="admin.deactivate"/><span></span></a></div>
 			</c:if>
 			<c:if test="${!combinedData.isCustomAdminBannerActive()}">
-				<div  class="button pageButton right"><a href="admin/activateBanner">Activate<span></span></a></div>
+				<div  class="button pageButton right"><a href="admin/activateBanner"><fmt:message key="admin.activate"/><span></span></a></div>
 			</c:if>
         	<div class="clear"></div>
         	<div class="adminElement">
@@ -61,7 +61,7 @@
 			<div class="clear"></div>
         </div>
         
-        <div class="groupDescriptor">Import Assets (WIP)</div>
+        <div class="groupDescriptor"><fmt:message key="admin.importAssets"/></div>
         <div class="adminElementGroup">
 			<div id="originalAssetsContainer" class="adminElement"></div>
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>

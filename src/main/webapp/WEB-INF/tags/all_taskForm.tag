@@ -114,7 +114,7 @@
 			<fmt:message key="all_taskForm.text2"/><br/><br/>
 			<fmt:message key="all_taskForm.text3"/>
 		</div>
-		<div class="taskDescription">File name:</div>
+		<div class="taskDescription"><fmt:message key="all_taskForm.file"/></div>
 		<div class="taskInput">
 			<form:input path="assetPath" value=""/>
 		</div>
