@@ -252,29 +252,27 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 				strings.ALWAYS_CONTAINS_EMPTY = true;
 				Method method = t.getClass().getMethod(getterMethodName);
 				Object result = method.invoke(t);
+				boolean matching = false;
 				
-				boolean bothNull = filter==null && result==null;
-				boolean isNull = filter==null || result==null;
-				boolean bothEmpty = isNull &&
-						(filter==null && result.toString().equals("")) ||
-						(result==null && filter.toString().equals(""));
-				
-				if (bothNull || bothEmpty) {
-					this.applyMatching(true, t);
-					return this;
+				if (filter==null && result==null) {
+					matching = true;
 				}
-				
-				boolean string = filter instanceof String && result instanceof String;
-				boolean contains = string && (ONLY_MATCH_EQUAL ? 
-						strings.equals((String)result,(String)filter) : 
-						strings.contains((String)result,(String)filter));
-				boolean equalsOrContains = !isNull && (contains || result.equals(filter)); 
-				boolean equalsOrContainsOrToString = !isNull && (equalsOrContains ||
-						(AUTO_STRING_CONVERT && (ONLY_MATCH_EQUAL ?
-						strings.equals(result.toString(), filter.toString()) :
-						strings.contains(result.toString(), filter.toString()))));
-				
-				this.applyMatching(equalsOrContainsOrToString, t);
+				else if(filter==null || result==null) {
+					matching = AUTO_STRING_CONVERT &&
+							((filter==null && result.toString().equals("")) ||
+							(result==null && filter.toString().equals("")));
+				} else {
+					if (filter instanceof String && result instanceof String) {
+						matching = ONLY_MATCH_EQUAL ? 
+								strings.equals((String)result,(String)filter) : 
+								strings.contains((String)result,(String)filter);
+					} else {
+						matching = result.equals(filter) || AUTO_STRING_CONVERT && (ONLY_MATCH_EQUAL ?
+								strings.equals(result.toString(), filter.toString()) :
+								strings.contains(result.toString(), filter.toString()));
+					}
+				}
+				this.applyMatching(matching, t);
 			}
 			catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				System.err.println("SimpleSelection Error: Wrong getterMethodName or wrong list item!");
