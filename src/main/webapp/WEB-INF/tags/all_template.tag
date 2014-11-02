@@ -13,8 +13,8 @@
 		<!-- Javascript -->
 			<script src="res/javascript/lib/jQuery.js" type="text/javascript"></script>
 <!-- 			<script defer src="//code.jquery.com/jquery-1.9.1.min.js" type="text/javascript"></script> -->
-<!-- 			<script defer src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
-			<script src="res/javascript/lib/jquery.form.min.js" type="text/javascript"></script>
+			<script defer src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
+<!-- 			<script src="res/javascript/lib/jquery.form.min.js" type="text/javascript"></script> -->
 			<script src="res/javascript/default.js" type="text/javascript"></script>
 			<script type="text/javascript">
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';

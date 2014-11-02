@@ -138,9 +138,9 @@ public class FileService {
 	 * Creates necessary parent directories for this file.
 	 */
 	public void prepareFileCreation(Path path) throws IOException {
-		File parent = path.toFile().getParentFile();
+		Path parent = path.getParent();
 		try {
-			if(!parent.exists()) {
+			if(!parent.toFile().exists()) {
 				createDirectory(parent);
 			}
 		} catch (Exception e) {
@@ -151,16 +151,16 @@ public class FileService {
 	/**
 	 * Creates a directory and any necessary parent directories.
 	 */
-	private synchronized void createDirectory(File file) throws IOException {
-		if(!file.exists()) {
-			File parent = file.getParentFile();
-			if(!parent.exists()) {
+	public synchronized void createDirectory(Path dir) throws IOException {
+		if(!dir.toFile().exists()) {
+			Path parent = dir.getParent();
+			if(!parent.toFile().exists()) {
 				createDirectory(parent);
 			}
 			try {
-				Files.createDirectory(file.toPath());
+				Files.createDirectory(dir);
 			} catch (IOException e) {
-				throw new IOException("Could not create directory at " + file.toPath(), e);
+				throw new IOException("Could not create directory at " + dir, e);
 			}
 		}
 	}
