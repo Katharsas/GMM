@@ -68,7 +68,7 @@
 								    			${asset.width} x ${asset.height}
 								    		</span>
 								    		<div class="clear"></div>
-								    		<span class="left">${asset.path.fileName?html}</span>
+								    		<span class="left">${asset.fileName?html}</span>
 								    		<span class="right">${asset.sizeInKB} KB</span>
 								    	</td>
 							    	<#else><td></td>
@@ -83,7 +83,7 @@
 								    			${asset.width} x ${asset.height}
 								    		</span>
 								    		<div class="clear"></div>
-								    		<span class="left">${asset.path.fileName?html}</span>
+								    		<span class="left">${asset.fileName?html}</span>
 								    		<span class="right">${asset.sizeInKB} KB</span>
 								    	</td>
 							    	<#else><td></td>

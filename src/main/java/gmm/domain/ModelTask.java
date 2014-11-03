@@ -12,7 +12,7 @@ public class ModelTask extends AssetTask<Model> {
 	private int originalFaceCount;
 	private int newFaceCount;
 	
-	public ModelTask(User author, Path assetPath) {
+	public ModelTask(User author, Path assetPath) throws Exception {
 		super(author, assetPath);
 	}
 

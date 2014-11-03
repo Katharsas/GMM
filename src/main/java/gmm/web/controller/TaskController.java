@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 /** java */
 
-import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 /* project */
+
+
 
 import gmm.collections.List;
 import gmm.domain.Comment;
@@ -207,12 +209,11 @@ public class TaskController {
 	 * @param form - object containing all task information
 	 * @param tab - see send method
 	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
-	 * @throws IOException 
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
 	public String handleTasksCreateEdit(
 			@ModelAttribute("task") TaskForm form,
-			@RequestParam(value="edit", defaultValue="") String idLink) throws IOException {
+			@RequestParam(value="edit", defaultValue="") String idLink) throws Exception {
 		
 		Task task;
 		boolean isNew = !validateId(idLink);

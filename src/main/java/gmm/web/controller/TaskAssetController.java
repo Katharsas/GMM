@@ -157,13 +157,11 @@ public class TaskAssetController {
 		if(subDir.equals("preview")) {
 			if(dir.equals("original")) {
 				base = config.ASSETS_ORIGINAL;
-				filePath = task.getAssetPath();
+				filePath = task.getOriginalAssetPath();
 			}
 			else if(dir.equals("newest")) {
 				base = config.ASSETS_NEW;
-				filePath = task.getAssetPath()
-						.resolve(config.SUB_ASSETS)
-						.resolve(task.getNewestAsset().getPath());
+				filePath = task.getNewestAssetPath();
 			}
 			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
 		}

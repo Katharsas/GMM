@@ -76,7 +76,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 			@Override public String execute(String assetPath) throws Exception {
 				E newTask = create(assetPath);
 				T asset = conflictingTask.getNewestAsset();
-				if (asset != null && conflictingTask.getNewestAssetPath(config).toFile().isFile()) {
+				if (asset != null && conflictingTask.getNewestAssetPath().toFile().isFile()) {
 					newTask.setNewestAsset(asset);
 				}
 				data.remove(conflictingTask);

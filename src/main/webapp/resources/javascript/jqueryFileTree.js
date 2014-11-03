@@ -77,7 +77,7 @@ if(jQuery) (function($){
 									$(this).parent().parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
 								}
 								$(this).parent().find('UL').remove(); // cleanup
-								showTree( $(this).parent(), escape($(this).attr('rel').match( /.*\// )) );
+								showTree( $(this).parent(), $(this).attr('rel'));// removed some pointless matching and escaping, which broke inner folders
 								$(this).parent().removeClass('collapsed').addClass('expanded');
 							} else {
 								// Collapse
@@ -85,12 +85,10 @@ if(jQuery) (function($){
 								$(this).parent().removeClass('expanded').addClass('collapsed');
 							}
 							if(options.directoryClickable) {
-//								callback($(this).attr('rel'));
 								callback($(this));
 								return false;
 							}
 						} else {
-//							callback($(this).attr('rel'));
 							callback($(this));
 							return false;
 						}

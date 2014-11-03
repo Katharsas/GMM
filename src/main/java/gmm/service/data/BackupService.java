@@ -129,9 +129,12 @@ public class BackupService {
 		createBackUp(now, directory, Task.class, maxTriggered);
 	}
 	
+	/**
+	 * Only for internal use!
+	 */
 	@Service
 	@WebListener
-	private static class BackupServiceShutdownHook implements ServletContextListener {
+	public static class BackupServiceShutdownHook implements ServletContextListener {
 		@Autowired BackupService service;
 		@Override
 		public void contextInitialized(ServletContextEvent sce) {}

@@ -18,8 +18,8 @@ public class ModelTaskService extends AssetTaskService<Model, ModelTask> {
 			new FileService.FileExtensionFilter(new String[] {"3ds"});
 	
 	@Override
-	public Model createAsset(Path relative, ModelTask owner) {
-		return new Model(relative, owner);
+	public Model createAsset(Path fileName) {
+		return new Model(fileName);
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class ModelTaskService extends AssetTaskService<Model, ModelTask> {
 	}
 
 	@Override
-	protected ModelTask createNew(Path assetPath, User user) {
+	protected ModelTask createNew(Path assetPath, User user) throws Exception {
 		return new ModelTask(user, assetPath);
 	}
 }

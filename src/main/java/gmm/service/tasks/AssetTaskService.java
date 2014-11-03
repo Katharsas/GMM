@@ -24,18 +24,18 @@ public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> 
 	@Autowired private FileService fileService;
 	@Autowired private TaskSession session;
 	
-	protected abstract T createNew(Path assetPath, User user);
+	protected abstract T createNew(Path assetPath, User user) throws Exception;
 	
 	@Override
-	public final T create(TaskForm form) throws IOException {
+	public final T create(TaskForm form) throws Exception {
 		final Path assetPath = getAssetPath(form);
 		T task = createNew(assetPath, session.getUser());
 		
 		//If original asset exists, create previews and asset
 		Path originalAbsolute = config.ASSETS_ORIGINAL.resolve(assetPath);
 		if(originalAbsolute.toFile().isFile()) {
+			task.setOriginalAsset(createAsset(assetPath.getFileName()));
 			createPreview(originalAbsolute, task, true);
-			task.setOriginalAsset(createAsset(null, task));
 		}
 		edit(task, form);
 		return task;
@@ -50,7 +50,7 @@ public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> 
 	}
 	
 	@Override
-	public void edit(T task, TaskForm form) {
+	public void edit(T task, TaskForm form) throws IOException {
 		super.edit(task, form);
 		final Path assetPath = getAssetPath(form);
 		//Substitute wildcards
@@ -65,6 +65,6 @@ public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> 
 		return form;
 	}
 	
-	public abstract A createAsset(Path relative, T owner) throws IOException;
+	public abstract A createAsset(Path fileName);
 	public abstract void createPreview(Path sourceFile, T targetTask, boolean original) throws IOException;
 }

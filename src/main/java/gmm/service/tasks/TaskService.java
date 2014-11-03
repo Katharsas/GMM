@@ -18,9 +18,9 @@ abstract class TaskService<T extends Task> {
 	@Autowired private UserService users;
 	
 	public abstract Class<T> getTaskType();
-	public abstract T create(TaskForm form) throws IOException ;
+	public abstract T create(TaskForm form) throws Exception ;
 	
-	public void edit(T task, TaskForm form) {
+	public void edit(T task, TaskForm form) throws IOException {
 		task.setName(form.getName());
 		task.setPriority(form.getPriority());
 		task.setTaskStatus(form.getStatus());
