@@ -43,12 +43,11 @@ public class BundledMessageResponses<T> {
 	private final Iterator<T> elements;
 	private T currentlyLoaded;
 	
-	private static final String defaultOp = "default";
-	private static final String success = "success";
-	private static final String finished = "finished";
+	protected static final String defaultOp = "default";
+	protected static final String success = "success";
+	protected static final String finished = "finished";
 	
-	public BundledMessageResponses(Iterator<T> elements,
-			MessageResponseOperations<T> ops) throws IOException {
+	public BundledMessageResponses(Iterator<T> elements, MessageResponseOperations<T> ops) throws IOException {
 		this.elements = elements;
 		this.ops = ops;
 		operations = ops.getOperations();

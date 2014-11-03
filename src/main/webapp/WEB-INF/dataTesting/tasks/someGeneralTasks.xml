@@ -1,0 +1,71 @@
+<gmm.collections.HashSet serialization="custom">
+  <unserializable-parents/>
+  <set>
+    <default/>
+    <int>16</int>
+    <float>0.75</float>
+    <int>5</int>
+    <GeneralTask id="6" name="test xy" priority="MID" taskStatus="TODO">
+      <created>2014-10-29 20:06:12.788 UTC</created>
+      <author id="User2" name="admin"/>
+      <assigned id="User2" name="admin"/>
+      <details></details>
+      <label></label>
+      <comments class="linked-list">
+        <Comment id="8">
+          <created>2014-10-29 20:06:55.260 UTC</created>
+          <author id="User2" name="admin"/>
+          <text>irgendwas kaputt mit xy</text>
+          <edited>2014-10-29 20:06:55.260 UTC</edited>
+        </Comment>
+        <Comment id="9">
+          <created>2014-10-29 20:07:01.765 UTC</created>
+          <author id="User2" name="admin"/>
+          <text>yoyo</text>
+          <edited>2014-10-29 20:07:01.765 UTC</edited>
+        </Comment>
+      </comments>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="5" name="test" priority="HIGH" taskStatus="INPROGRESS">
+      <created>2014-10-29 20:05:57.739 UTC</created>
+      <author id="User2" name="admin"/>
+      <details>TODO: asdasdasdasd</details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="7" name="vorschlag" priority="LOW" taskStatus="TODO">
+      <created>2014-10-29 20:06:32.976 UTC</created>
+      <author id="User2" name="admin"/>
+      <details>Details&#xd;
+Details&#xd;
+Details</details>
+      <label></label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="4" name="Aufgabe 2" priority="HIGH" taskStatus="TODO">
+      <created>2014-10-29 20:05:16.670 UTC</created>
+      <author id="User2" name="admin"/>
+      <details>wichtig</details>
+      <label>GMM</label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+    <GeneralTask id="3" name="Test Aufgabe 1" priority="MID" taskStatus="TODO">
+      <created>2014-10-29 20:04:51.150 UTC</created>
+      <author id="User2" name="admin"/>
+      <assigned id="User2" name="admin"/>
+      <details></details>
+      <label>GMM</label>
+      <comments class="linked-list"/>
+      <dependsOn class="linked-list"/>
+      <dependencyFor class="linked-list"/>
+    </GeneralTask>
+  </set>
+</gmm.collections.HashSet>
