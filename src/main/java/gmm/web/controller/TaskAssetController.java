@@ -11,7 +11,8 @@ import gmm.domain.UniqueObject;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.tasks.TextureAssetService;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.service.tasks.TextureTaskService;
 import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.sessions.TaskSession;
@@ -38,7 +39,8 @@ public class TaskAssetController {
 
 	@Autowired TaskSession session;
 	@Autowired DataAccess data;
-	@Autowired TextureAssetService assetService;
+	@Autowired TaskServiceFinder taskService;
+	@Autowired TextureTaskService textureService;
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
@@ -69,7 +71,7 @@ public class TaskAssetController {
 			setHeaderCaching(response);
 			//TODO enable reasonable caching
 			TextureTask task = UniqueObject.<TextureTask>getFromId(data.<TextureTask>getList(TextureTask.class), idLink);
-			return assetService.getPreview(task, small, version);
+			return textureService.getPreview(task, small, version);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -122,8 +124,8 @@ public class TaskAssetController {
 			MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
 			MultipartFile file = (MultipartFile) map.getFirst("myFile");
 			
-			TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
-			assetService.addTextureFile(file, task);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
+			taskService.addFile(task, file);
 			
 			return file.isEmpty()? "Upload failed!" : "Upload successfull!";
 		}
@@ -193,8 +195,8 @@ public class TaskAssetController {
 			@RequestParam("asset") Boolean asset,
 			@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-			TextureTask task = (TextureTask) UniqueObject.getFromId(session.getTasks(), idLink);
-			assetService.deleteTextureFile(dir, asset, task);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromId(session.getTasks(), idLink);
+			taskService.deleteFile(task, dir, asset);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}

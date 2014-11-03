@@ -1,6 +1,7 @@
 package gmm.service.tasks;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 import gmm.domain.Asset;
@@ -12,6 +13,7 @@ import gmm.web.forms.TaskForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class TaskServiceFinder {
@@ -62,5 +64,23 @@ public class TaskServiceFinder {
 	
 	public <T extends Task> TaskService<T> getTaskService(Class<T> type) {
 		return getService(type);
+	}
+	
+	public <E extends Asset, T extends AssetTask<E>> AssetTaskService<E, T> getAssetService(Class<T> type) {
+		@SuppressWarnings("unchecked")
+		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getService(type);
+		return taskService;
+	}
+	
+	public <E extends Asset, T extends AssetTask<E>> void addFile(T task, MultipartFile file) throws IOException {
+		@SuppressWarnings("unchecked")
+		AssetTaskService<E, T> taskService = getAssetService(task.getClass());
+		taskService.addFile(file, task);
+	}
+	
+	public <E extends Asset, T extends AssetTask<E>> void deleteFile(T task, Path relativeFile, boolean isAsset) throws IOException {
+		@SuppressWarnings("unchecked")
+		AssetTaskService<E, T> taskService = getAssetService(task.getClass());
+		taskService.deleteFile(task, relativeFile, isAsset);
 	}
 }

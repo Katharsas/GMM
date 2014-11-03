@@ -5,11 +5,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
 import gmm.domain.Asset;
 import gmm.domain.AssetTask;
 import gmm.domain.User;
 import gmm.service.FileService;
+import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
@@ -66,5 +68,40 @@ public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> 
 	}
 	
 	public abstract A createAsset(Path fileName);
-	public abstract void createPreview(Path sourceFile, T targetTask, boolean original) throws IOException;
+	public abstract void createPreview(Path sourceFile, T task, boolean original) throws IOException;
+	public abstract FileExtensionFilter getExtensions();
+	
+	public void addFile(MultipartFile file, T task) throws IOException {
+		String fileName = file.getOriginalFilename();
+		boolean isAsset = getExtensions().accept(null, fileName);
+		//Add file
+		Path relative = task.getAssetPath()
+				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
+				.resolve(fileName);
+		Path assetPath = config.ASSETS_NEW.resolve(relative);
+		fileService.createFile(assetPath, file.getBytes());
+		
+		if(isAsset) {
+			task.setNewestAsset(createAsset(Paths.get(fileName)));
+			createPreview(assetPath, task, false);
+		}
+	}
+	
+	public abstract void deletePreview(Path taskFolder) throws IOException;
+	
+	public void deleteFile(T task, Path relativeFile, boolean isAsset) throws IOException {
+		//Restrict access
+		Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
+		Path visible = taskFolder.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER);
+		Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
+		//Delete previews
+		A newestAsset = task.getNewestAsset();
+		if(isAsset && newestAsset != null && 
+				assetPath.getFileName().toString().equals(newestAsset.getFileName())) {
+			deletePreview(taskFolder);
+			task.setNewestAsset(null);
+		}
+		//Delete file
+		fileService.delete(assetPath);
+	}
 }

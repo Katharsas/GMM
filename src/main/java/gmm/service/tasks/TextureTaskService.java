@@ -4,10 +4,11 @@ import gmm.domain.Texture;
 import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
+import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 
 import java.awt.image.BufferedImage;
-import java.io.FilenameFilter;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -30,7 +31,7 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	
-	public static final FilenameFilter extensions =
+	public static final FileExtensionFilter extensions =
 			new FileService.FileExtensionFilter(new String[] {"tga"});
 	
 	private static final int SMALL_SIZE = 300;
@@ -71,6 +72,20 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 		fileService.prepareFileCreation(targetFile);
 		ImageIO.write(image, "png", targetFile.toFile());
 	}
+	
+	@Override
+	public void deletePreview(Path taskFolder) throws IOException {
+		Path preview = taskFolder.resolve(config.SUB_PREVIEW);
+		Path previewFile;
+		previewFile = preview.resolve("newest_full.png");
+		if(previewFile.toFile().exists()) {
+			fileService.delete(previewFile);
+		}
+		previewFile = preview.resolve("newest_small.png");
+		if(previewFile.toFile().exists()) {
+			fileService.delete(previewFile);
+		}
+	}
 
 	@Override
 	public Texture createAsset(Path relative) {
@@ -85,5 +100,31 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	@Override
 	protected TextureTask createNew(Path assetPath, User user) throws Exception {
 		return new TextureTask(user, assetPath);
+	}
+	
+	@Override
+	public FileExtensionFilter getExtensions() {
+		return TextureTaskService.extensions;
+	}
+	
+	/**
+	 * Returns a texture preview image (png) as byte array.
+	 */
+	public byte[] getPreview(TextureTask task, boolean small, String version) throws IOException {
+		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
+		
+		Path imagePath = config.ASSETS_NEW
+				.resolve(task.getAssetPath())
+				.resolve(config.SUB_PREVIEW)
+				.resolve(imageName);
+
+		if(!imagePath.toFile().exists()) {
+			return null;
+		}
+		BufferedImage image = ImageIO.read(imagePath.toFile());
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", out);
+		byte[] bytes = out.toByteArray();
+		return bytes;
 	}
 }
