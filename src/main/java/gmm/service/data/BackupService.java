@@ -30,22 +30,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
- * We need to backup:
- * 
- * Users
- * - on shutdown (one file)
- * - hourly (last 24 h)
- * - dayly (last 7 days)
- * - monthly (last 6 months)
- * 
- * Tasks
- * - on shutdown (one file)
- * - dayly (last 7 days)
- * - monthly (last 6 months)
- * 
- * Saving on change for:
- * Configuration, CombinedData
- * 
  * Saves names are contructed like:
  * backup_type_dd-mmm-yyyy_at_hh-mm.xml
  * 
@@ -56,16 +40,16 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-@WebListener
-public class BackupService implements ServletContextListener {
+
+public class BackupService {
 	
 	protected final Path backupPath = Paths.get("autoBackups");
-	protected final Path shutDownPath = Paths.get("onServletShutDown");
+	protected final Path triggeredPath = Paths.get("triggered");
 	protected final Path monthlyPath = Paths.get("monthly");
 	protected final Path daylyPath = Paths.get("dayly");
 	protected final Path hourlyPath = Paths.get("hourly");
 	
-	private final int maxShutDown =100;
+	private final int maxTriggered = 100;
 	private final int maxMonthly = 6;
 	private final int maxDayly = 7;
 	private final int maxHourly = 24;
@@ -134,21 +118,35 @@ public class BackupService implements ServletContextListener {
 		createBackUp(now, directory, User.class, maxMonthly);
 	}
 	
+	public void triggerUserBackup() throws Exception {
+		DateTime now = new DateTime();
+		Path directory = config.USERS.resolve(backupPath).resolve(triggeredPath);
+		createBackUp(now, directory, User.class, maxTriggered);
+	}
+	
+	public void triggerTaskBackup() throws Exception {
+		DateTime now = new DateTime();
+		Path directory = config.TASKS.resolve(backupPath).resolve(triggeredPath);
+		createBackUp(now, directory, Task.class, maxTriggered);
+	}
+	
 	/**
-	 * Do not call this method!
-	 * TODO register callback at separate ServletContextListener
+	 * Only for internal use!
 	 */
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		try {
-			DateTime now = new DateTime();
-			Path directory;
-			directory = config.TASKS.resolve(backupPath).resolve(shutDownPath);
-			createBackUp(now, directory, Task.class, maxShutDown);
-			directory = config.USERS.resolve(backupPath).resolve(shutDownPath);
-			createBackUp(now, directory, User.class, maxShutDown);
+	@Service
+	@WebListener
+	public static class BackupServiceShutdownHook implements ServletContextListener {
+		@Autowired BackupService service;
+		@Override
+		public void contextInitialized(ServletContextEvent sce) {}
+		@Override
+		public void contextDestroyed(ServletContextEvent sce) {
+			try {
+				service.triggerUserBackup();
+				service.triggerTaskBackup();
+			}
+			catch (Exception e) {throw new IllegalStateException(e);}
 		}
-		catch (Exception e) {throw new IllegalStateException(e);}
 	}
 	
 	public Path getLatestUserBackup() {
@@ -164,7 +162,7 @@ public class BackupService implements ServletContextListener {
 	}
 	
 	public Path getLatestBackup(Path folder, String type) {
-		List<File> files = asList(folder.resolve(shutDownPath));
+		List<File> files = asList(folder.resolve(triggeredPath));
 		files.addAll(asList(folder.resolve(daylyPath)));
 		files.addAll(asList(folder.resolve(hourlyPath)));
 		files.addAll(asList(folder.resolve(daylyPath)));
@@ -216,7 +214,4 @@ public class BackupService implements ServletContextListener {
 	private Path getFileName(String type, DateTime date) {
 		return Paths.get("backup_"+type+"_"+formatter.print(date)+".xml");
 	}
-
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {}
 }

@@ -28,6 +28,7 @@ import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetImportOperations;
 import gmm.service.ajax.operations.TaskLoaderOperations;
+import gmm.service.data.BackupService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
@@ -56,6 +57,7 @@ public class AdminController {
 	@Autowired FileService fileService;
 	@Autowired XMLService xmlService;
 	@Autowired TaskServiceFinder taskCreator;
+	@Autowired BackupService backups;
 	
 	private BundledMessageResponses<Task> taskLoader;
 	private BundledMessageResponses<String> assetImporter;
@@ -168,6 +170,7 @@ public class AdminController {
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
 	public @ResponseBody List<MessageResponse> loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
+			backups.triggerTaskBackup();
 			session.notifyDataChange();
 			Path visible = config.TASKS;
 			dir = fileService.restrictAccess(dir, visible);
@@ -254,6 +257,7 @@ public class AdminController {
 			@RequestParam("textures") boolean textures,
 			@ModelAttribute("task") TaskForm form) throws AjaxResponseException {
 		try {
+			backups.triggerTaskBackup();
 			session.notifyDataChange();
 			assetImporter = new BundledMessageResponses<String>(toImport.get().iterator(),
 					new AssetImportOperations<Texture,TextureTask>(form, TextureTask.class));

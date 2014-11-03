@@ -55,6 +55,8 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 		Path targetFile;
 		String version = isOriginal ? "original" : "newest";
 		BufferedImage image = ImageIO.read(sourceFile.toFile());
+		Texture asset = isOriginal ? task.getOriginalAsset() : task.getNewestAsset();
+		asset.setDimensions(image.getHeight(), image.getWidth());
 		
 		//full preview 
 		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_full.png");
@@ -71,8 +73,8 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	}
 
 	@Override
-	public Texture createAsset(Path relative, TextureTask owner) throws IOException {
-		return new Texture(relative, owner);
+	public Texture createAsset(Path relative) {
+		return new Texture(relative);
 	}
 
 	@Override
@@ -81,7 +83,7 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	}
 
 	@Override
-	protected TextureTask createNew(Path assetPath, User user) {
+	protected TextureTask createNew(Path assetPath, User user) throws Exception {
 		return new TextureTask(user, assetPath);
 	}
 }

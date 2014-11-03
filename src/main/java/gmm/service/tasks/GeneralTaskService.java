@@ -4,8 +4,6 @@ import gmm.domain.GeneralTask;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +18,7 @@ public class GeneralTaskService extends TaskService<GeneralTask> {
 	}
 
 	@Override
-	public GeneralTask create(TaskForm form) throws IOException {
+	public GeneralTask create(TaskForm form) throws Exception {
 		GeneralTask task = new GeneralTask(session.getUser());
 		edit(task, form);
 		return task;

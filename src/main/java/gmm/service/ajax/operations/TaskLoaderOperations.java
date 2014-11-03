@@ -52,7 +52,7 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 		return map;
 	}
 	
-	@Override public Conflict<Task> onLoad(Task t) {
+	@Override public Conflict<Task> onLoad(Task t) throws Exception {
 		t.onLoad();
 		UniqueObject.updateCounter(t);
 		if(!data.add(t)) return conflict;

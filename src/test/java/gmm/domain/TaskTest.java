@@ -49,7 +49,7 @@ public class TaskTest {
 	}
 	
 	@Test
-	public void testNullPointerExceptions() {
+	public void testNullPointerExceptions() throws Exception {
 		boolean thrown = true;
 	    try {objectUnderTest = new GeneralTask(null);
 	    	thrown = false;}

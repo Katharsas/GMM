@@ -29,10 +29,11 @@ public abstract class Task extends NamedObject{
 	final private List<Task> dependencyFor = new LinkedList<Task>();
 	
 	//Methods--------------------------------------------------------
-	public Task(User author) {
+	public Task(User author) throws Exception {
 		super();
 		Objects.requireNonNull(author);
 		this.author = author;
+		onLoad();
 	}
 	
 	@Override
@@ -89,6 +90,6 @@ public abstract class Task extends NamedObject{
 		return dependencyFor;
 	}
 
-	public void onLoad() {
+	public void onLoad() throws Exception {
 	}
 }

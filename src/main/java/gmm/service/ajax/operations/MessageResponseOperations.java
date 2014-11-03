@@ -40,8 +40,9 @@ public abstract class MessageResponseOperations<T> {
 	
 	/**
 	 * @return {@link #NO_CONFLICT} if no conflict occured, otherwise the conflict which occured.
+	 * @throws Exception 
 	 */
-	public abstract Conflict<T> onLoad(T element);
+	public abstract Conflict<T> onLoad(T element) throws Exception;
 	
 	/**
 	 * Executed when no conflict occured on the last element processed.

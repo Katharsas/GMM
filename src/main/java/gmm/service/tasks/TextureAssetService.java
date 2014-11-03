@@ -71,7 +71,7 @@ public class TextureAssetService {
 		fileService.createFile(assetPath, file.getBytes());
 		
 		if(isAsset) {
-			task.setNewestAsset(creator.createAsset(Paths.get(fileName), task));
+			task.setNewestAsset(creator.createAsset(Paths.get(fileName)));
 			creator.createPreview(assetPath, task, false);
 		}
 	}
@@ -86,7 +86,7 @@ public class TextureAssetService {
 		//Delete previews
 		Texture tex = task.getNewestAsset();
 		if(isAsset && tex!=null) {
-			if(assetPath.getFileName().toString().equals(tex.getPath().getFileName().toString())) {
+			if(assetPath.getFileName().toString().equals(tex.getFileName())) {
 				Path preview = taskFolder.resolve(config.SUB_PREVIEW);
 				Path previewFile;
 				previewFile = preview.resolve("newest_full.png");

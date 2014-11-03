@@ -41,12 +41,12 @@ public class TaskServiceFinder {
 		return (TaskService<T>) currentService;
 	}
 	
-	public <T extends Task> T create(Class<T> type, TaskForm form) throws IOException {
+	public <T extends Task> T create(Class<T> type, TaskForm form) throws Exception {
 		final T task = getService(type).create(form);
 		return task;
 	}
 	
-	public <T extends Task, E extends T> void edit(T task, TaskForm form) {
+	public <T extends Task, E extends T> void edit(T task, TaskForm form) throws IOException {
 		@SuppressWarnings("unchecked")
 		Class<T> clazz = (Class<T>) task.getClass();
 		final TaskService<T> taskService = getService(clazz);
