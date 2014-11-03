@@ -1,7 +1,7 @@
 package gmm.service.data;
 
-import gmm.domain.GeneralTask;
 import gmm.domain.Linkable;
+import gmm.domain.Task;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
@@ -14,6 +14,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
@@ -52,19 +56,26 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class BackupService {
+@WebListener
+public class BackupService implements ServletContextListener {
 	
-	private static final Path taskBackupPath = Paths.get("/autoBackups");
-	private static final Path userBackupPath = Paths.get("/autoBackups");
-	private static final Path monthlyPath = Paths.get("/monthly");
-	private static final Path daylyPath = Paths.get("/dayly");
-	private static final Path hourlyPath = Paths.get("/hourly");
+	protected final Path backupPath = Paths.get("autoBackups");
+	protected final Path shutDownPath = Paths.get("onServletShutDown");
+	protected final Path monthlyPath = Paths.get("monthly");
+	protected final Path daylyPath = Paths.get("dayly");
+	protected final Path hourlyPath = Paths.get("hourly");
+	
+	private final int maxShutDown =100;
+	private final int maxMonthly = 6;
+	private final int maxDayly = 7;
+	private final int maxHourly = 24;
 	
 	@Autowired private FileService fileService;
 	@Autowired private DataConfigService config;
 	@Autowired private XMLService serializer;
 	@Autowired private DataAccess data;
 	
+	FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
 	DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MMM-yyyy'_at_'HH-mm");
 	
 	private DateTime lastHourlyBackup;
@@ -103,24 +114,71 @@ public class BackupService {
 
 	private void createHourlyBackup(DateTime now) throws Exception {
 		Path directory;
-		directory = config.USERS.resolve(userBackupPath).resolve(hourlyPath);
-		createBackUp(now, directory, User.class, 24);
+		directory = config.USERS.resolve(backupPath).resolve(hourlyPath);
+		createBackUp(now, directory, User.class, maxHourly);
 	}
 	
 	private void createDaylyBackup(DateTime now) throws Exception {
 		Path directory;
-		directory = config.TASKS.resolve(taskBackupPath).resolve(daylyPath);
-		createBackUp(now, directory, GeneralTask.class, 7);
-		directory = config.USERS.resolve(userBackupPath).resolve(daylyPath);
-		createBackUp(now, directory, User.class, 7);
+		directory = config.TASKS.resolve(backupPath).resolve(daylyPath);
+		createBackUp(now, directory, Task.class, maxDayly);
+		directory = config.USERS.resolve(backupPath).resolve(daylyPath);
+		createBackUp(now, directory, User.class, maxDayly);
 	}
 	
 	private void createMonthlyBackup(DateTime now) throws Exception {
 		Path directory;
-		directory = config.TASKS.resolve(taskBackupPath).resolve(monthlyPath);
-		createBackUp(now, directory, GeneralTask.class, 6);
-		directory = config.USERS.resolve(userBackupPath).resolve(monthlyPath);
-		createBackUp(now, directory, User.class, 6);
+		directory = config.TASKS.resolve(backupPath).resolve(monthlyPath);
+		createBackUp(now, directory, Task.class, maxMonthly);
+		directory = config.USERS.resolve(backupPath).resolve(monthlyPath);
+		createBackUp(now, directory, User.class, maxMonthly);
+	}
+	
+	/**
+	 * Do not call this method!
+	 * TODO register callback at separate ServletContextListener
+	 */
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		try {
+			DateTime now = new DateTime();
+			Path directory;
+			directory = config.TASKS.resolve(backupPath).resolve(shutDownPath);
+			createBackUp(now, directory, Task.class, maxShutDown);
+			directory = config.USERS.resolve(backupPath).resolve(shutDownPath);
+			createBackUp(now, directory, User.class, maxShutDown);
+		}
+		catch (Exception e) {throw new IllegalStateException(e);}
+	}
+	
+	public Path getLatestUserBackup() {
+		String type = User.class.getSimpleName();
+		Path folder = config.USERS.resolve(backupPath);
+		return getLatestBackup(folder, type);
+	}
+	
+	public Path getLatestTaskBackup() {
+		String type = Task.class.getSimpleName();
+		Path folder = config.TASKS.resolve(backupPath);
+		return getLatestBackup(folder, type);
+	}
+	
+	public Path getLatestBackup(Path folder, String type) {
+		List<File> files = asList(folder.resolve(shutDownPath));
+		files.addAll(asList(folder.resolve(daylyPath)));
+		files.addAll(asList(folder.resolve(hourlyPath)));
+		files.addAll(asList(folder.resolve(daylyPath)));
+		File[] fileArray = files.toArray(new File[files.size()]);
+		sortByDate(fileArray, type);
+		return fileArray[fileArray.length-1].toPath();
+	}
+	
+	private List<File> asList(Path folder) {
+		File[] files = folder.toFile().listFiles(xmlFilter);
+		if (files == null) {
+			files = new File[] {};
+		}
+		return Arrays.asList(files);
 	}
 	
 	private void createBackUp(DateTime timeStamp, Path directory, Class<? extends Linkable> type, int maxSaveFiles) throws Exception {
@@ -128,11 +186,10 @@ public class BackupService {
 		Path save = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
 		serializer.serialize(data.getList(type), save);
 		//remove files if too many
-		File[] files = directory.toFile().listFiles(new FileExtensionFilter(new String[]{"xml"}));
+		File[] files = directory.toFile().listFiles(xmlFilter);
 		sortByDate(files, type.getSimpleName());
-		List<File> fileList = Arrays.asList(files);
-		if (fileList.size() > maxSaveFiles) {
-			fileList.remove(0);
+		if (files.length > maxSaveFiles) {
+			fileService.delete(files[0].toPath());
 		}
 	}
 	
@@ -148,7 +205,7 @@ public class BackupService {
 	}
 	
 	private DateTime getDate(String filename, String type) {
-		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4}_at_[0-9]{1,2}-[0-9]{1,2})\\.xml");
+		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4}_at_[0-9]{1,2}-[0-9]{2})\\.xml");
 		Matcher matcher = regex.matcher(filename);
 		if(!matcher.matches()) {
 			throw new IllegalArgumentException("Filename must have form: backup_type_dd-mmm-yyyy_at_hh-mm.xml");
@@ -159,4 +216,7 @@ public class BackupService {
 	private Path getFileName(String type, DateTime date) {
 		return Paths.get("backup_"+type+"_"+formatter.print(date)+".xml");
 	}
+
+	@Override
+	public void contextInitialized(ServletContextEvent sce) {}
 }

@@ -1,0 +1,20 @@
+<gmm.collections.LinkedList serialization="custom">
+  <unserializable-parents/>
+  <linked-list>
+    <default/>
+    <int>2</int>
+    <User id="3" name="TestUser1" role="ROLE_ADMIN" email="">
+      <created>2014-11-03 18:25:06.83 UTC</created>
+      <passwordHash>$2a$10$BSjeYjyTaYWElw44gqi1CuaHWjUeu06AuCHWk/pXdYRUBJb1QRpAC</passwordHash>
+      <enabled>true</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+    <User id="4" name="Peter" role="ROLE_USER" email="">
+      <created>2014-11-03 18:25:35.536 UTC</created>
+      <enabled>true</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+    </User>
+  </linked-list>
+</gmm.collections.LinkedList>
