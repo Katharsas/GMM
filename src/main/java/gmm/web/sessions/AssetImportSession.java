@@ -25,7 +25,11 @@ public class AssetImportSession {
 			filePaths.clear();
 			this.areTexturePaths = areTexturePaths;
 		}
-		filePaths.addAll(paths);
+		for (String path : paths) {
+			if (!filePaths.contains(path)) {
+				filePaths.add(path);
+			}
+		}
 	}
 	public void clear() {
 		filePaths.clear();
