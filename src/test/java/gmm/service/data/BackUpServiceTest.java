@@ -29,7 +29,7 @@ public class BackUpServiceTest {
 	@Autowired private XMLService xmlService;
 	
 	@Test
-	public void backupOnShutdownTest() throws Exception {
+	public void backupTest() throws Exception {
 		//deserialize tasks/users from test directory
 		config.updateWorkspace(Paths.get("WEB-INF/dataTesting"));
 		
@@ -44,7 +44,8 @@ public class BackUpServiceTest {
 		data.addAll(User.class, users);
 		
 		//trigger task/user save
-		backupService.contextDestroyed(null);
+		backupService.triggerUserBackup();
+		backupService.triggerTaskBackup();
 		
 		//assert correct tasks backup
 		Path taskSave = backupService.getLatestTaskBackup();
