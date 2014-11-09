@@ -6,7 +6,8 @@ var allVars = {
 	"selectedTaskFile":$(),
 	"selectedAssetFile":$(),
 	"selectedBackupFile":$(),
-	"taskBackgroundColor":"#111"
+	"taskBackgroundColor":"#111",
+	"$htmlElement":$("html")
 };
 var allFuncs = {
 	"selectTreeElement":
@@ -89,8 +90,18 @@ function getURLParameter(sParam)
     return "";
 }
 
-function showDialogue(selector) {
+function showOverlay() {
+	allVars.$htmlElement.addClass("hideResizeFirefoxFix");
 	allVars.$overlay.show();
+}
+
+function hideOverlay() {
+	allVars.$overlay.hide();
+	allVars.$htmlElement.removeClass("hideResizeFirefoxFix");
+}
+
+function showDialogue(selector) {
+	showOverlay();
 	var dialog = $(selector);
 	dialog.show();
 	//TODO calculate height & width and position dialog in the middle of page
@@ -98,7 +109,7 @@ function showDialogue(selector) {
 
 function hideDialogue() {
 	$(".dialogContainer").hide();
-	allVars.$overlay.hide();
+	hideOverlay();
 }
 
 /**
@@ -173,7 +184,7 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 	else {
 		$cancelButton.hide();
 	}
-	$("#overlay").show();
+	showOverlay();
 	$confirmDialog.show();
 	if(textInputDefault !== undefined) {
 		$textInputField.select();
@@ -182,7 +193,7 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 
 function showException(jqXHR) {
 	$(".dialogContainer").hide();
-	allVars.$overlay.show();
+	showOverlay();
 	
 	var exception = jQuery.parseJSON(jqXHR.responseText);
 	var $exceptionDialog = $("#exceptionDialog");

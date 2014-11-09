@@ -48,17 +48,16 @@
 	width:75%;
 }
 #selectedPaths {
-	
+	max-height: 315px;
+	overflow: auto;
 }
 #selectedPaths ul{
 	font-family: Verdana, sans-serif;
 	font-size: 10px;
 	line-height: 14px;
 	list-style: none;
-	
-	max-height: 315px;
-	overflow: auto;
 	padding: 0px;
+	margin: 0px;
 }
 #selectedPaths ul li {
 	background-color: #164054;

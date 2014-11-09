@@ -30,7 +30,7 @@
 	<div class="taskElement">
 		<div class="taskDescription"><fmt:message key="tasks.label"/>:</div>
 		<div class="taskInput">
-			<form:input id="labelInput" path="label" value=""/>
+			<form:input id="labelInput" path="label" value="" autocomplete="off"/>
 		</div>
 	</div>
 	<div class="taskElement">

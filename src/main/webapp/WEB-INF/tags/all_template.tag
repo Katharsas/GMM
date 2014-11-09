@@ -29,6 +29,11 @@
 	<body class="noPage">
 		<div id="wrap">
 	
+			<!-- 
+				###################################################
+				Overlay & Dialogs
+				###################################################
+			-->
 			<div id="overlay"></div>
 			<div id="confirmDialog" class="dialogContainer">
 				<p id="confirmDialogMessage" class="center"></p>
@@ -82,7 +87,11 @@
        		</div>
 		
 		
-			<!-- No Javascript Warning -->
+			<!-- 
+				###################################################
+				No Javascript Warning
+				###################################################
+			-->
 			<!-- TODO: Test -->
 			<noscript>
 				<div class="blocker">
@@ -93,7 +102,11 @@
 			</noscript>
 			<!-- End of No Javascript Warning -->
 		
-			<!-- Top Tab-Menu -->
+			<!-- 
+				###################################################
+				Top Menu
+				###################################################
+			-->
 			<div id="top" class="pageTabmenu tabmenu inactivePage h3">
 				<sec:authorize access="hasRole('ROLE_USER')">
 					<div class="tab left">
@@ -128,12 +141,21 @@
 			<div id ="menuSpacer"></div>
 			<!-- End of Top Tab-Menu -->
 			
+			<!-- 
+				###################################################
+				Custom Admin Banner
+				###################################################
+			-->
 			<c:if test="${combinedData.isCustomAdminBannerActive()}">
 				<div id="customAdminBanner" class="center">
 				</div>
 			</c:if>
 		
-			<!-- Body of Task Tab -->
+			<!-- 
+				###################################################
+				Dynamic Body
+				###################################################
+			-->
 			<div id="main" class="pageTabbody tabbody activePage">
 				<jsp:doBody/>
 			</div>

@@ -55,7 +55,9 @@ function refreshTaskImportTree() {
 function addAssetPaths(textures) {
 	var pathSep = "&#160;&#160;►&#160;";
 	var dir = allVars.selectedAssetFile.attr('rel');
-	$("#selectedPaths ul").empty();
+	var $selectedPathsListContainer = $("#selectedPaths");
+	var $selectedPathsList = $("#selectedPaths ul");
+	$selectedPathsList.empty();
 	$.getJSON(allVars.contextPath+"/admin/getAssetPaths",
 			{ dir: dir, textures: textures }, function(paths) {
 		if(paths.length===0) {
@@ -63,10 +65,11 @@ function addAssetPaths(textures) {
 			return;
 		}
 		for(var i in paths) {
-			paths[i] = paths[i].replace("/", pathSep);
-			paths[i] = paths[i].replace("\\", pathSep);
-			$("#selectedPaths ul").append("<li>"+paths[i]+"</li>");
+			paths[i] = paths[i].replace(new RegExp("/", 'g'), pathSep);
+			paths[i] = paths[i].replace(new RegExp("\\\\", 'g'), pathSep);
+			$selectedPathsList.append("<li>"+paths[i]+"</li>");
 		}
+		$selectedPathsListContainer.scrollTop($selectedPathsList.height());
 	});
 	
 	if(textures) {
@@ -248,6 +251,7 @@ function ResponseBundleHandler(responseBundleOption) {
 	var options = ResponseBundleOptions[responseBundleOption];
 	
 	var $dialog = $("#bundledMessageDialog");
+	var $messageListContainer = $("#messageList");
 	var $messageList = $("#messageList ul");
 	var $conflictMessage  = $("#conflictMessage");
 	var $conflictOptions = $("#conflictOptions");
@@ -296,7 +300,7 @@ function ResponseBundleHandler(responseBundleOption) {
 		for (var i = 0; i < results.length-1; i++) {
 			var data = results[i];
 			if(data.status == "success") {
-				$messageList.append("<li>"+data.message+"</li>");
+				appendMessage(data.message);
 			}
 			else $conflictMessage.html(outOfSync);
 		}
@@ -304,7 +308,7 @@ function ResponseBundleHandler(responseBundleOption) {
 		var data = results[results.length-1];
 		if(data.status == "success") {
 			//if success, the server can go on with next package
-			$messageList.append("<li>"+data.message+"</li>");
+			appendMessage(data.message);
 			that.answer("default");
 		}
 		else if(data.status == "finished") {
@@ -319,5 +323,11 @@ function ResponseBundleHandler(responseBundleOption) {
 			}
 			else $conflictMessage.html(outOfSync);
 		}
+		console.log($messageList.height());
+		$messageListContainer.scrollTop($messageList.height());
+	}
+	
+	function appendMessage(message) {
+		$messageList.append("<li>"+message+"</li>");
 	}
 }

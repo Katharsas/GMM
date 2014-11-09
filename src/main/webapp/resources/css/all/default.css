@@ -68,7 +68,8 @@ submit {
 /* //////////////////////////////////////////////////
  * General style settings and colour sets
  * //////////////////////////////////////////////////*/
-
+ /*Browser fixes etc.*/
+.hideResizeFirefoxFix * { resize: none !important; }
 /*Default*/
 *{
   -moz-box-sizing: border-box;

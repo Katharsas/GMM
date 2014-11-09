@@ -26,9 +26,12 @@
 	background-color: #222;
 }
 
-.dialogList ul{
+.dialogList {
 	overflow: auto;
 	height:200px;
+}
+
+.dialogList ul{
 	margin:0px;
 	padding:2px 10px;
 	list-style-type: none;
