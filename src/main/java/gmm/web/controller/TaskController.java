@@ -54,11 +54,10 @@ import gmm.web.sessions.TaskSession;
  * @author Jan Mothes
  * 
  */
-@Controller
 @RequestMapping(value={"tasks", "/"})
 @SessionAttributes({"search", "sort", "generalFilter"})
 @PreAuthorize("hasRole('ROLE_USER')")
-
+@Controller
 public class TaskController {
 	
 	@Autowired private TaskServiceFinder taskCreator;
@@ -149,8 +148,8 @@ public class TaskController {
 	public String handleTasksDelete(
 				@PathVariable String idLink) {
 		
- 		data.remove(UniqueObject.getFromId(session.getTasks(), idLink));
- 		session.remove(UniqueObject.getFromId(session.getTasks(), idLink));
+ 		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
+ 		session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
  		
 		return "redirect:/tasks?tab="+session.getTab();
 	}
@@ -168,8 +167,8 @@ public class TaskController {
 				@PathVariable String taskIdLink,
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
-		Task task = UniqueObject.getFromId(session.getTasks(), taskIdLink);
-		Comment comment = UniqueObject.getFromId(task.getComments(), commentIdLink);
+		Task task = UniqueObject.getFromIdLink(session.getTasks(), taskIdLink);
+		Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
 		if(comment.getAuthor().getId() == session.getUser().getId()) {
 			comment.setText(edited);
 		}
@@ -190,7 +189,7 @@ public class TaskController {
 				@PathVariable String idLink,
 				@ModelAttribute("comment") CommentForm form) {
 		Comment comment = new Comment(session.getUser(), form.getText());
-		UniqueObject.getFromId(session.getTasks(), idLink).getComments().add(comment);
+		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
 		
 		return "redirect:/tasks?tab="+session.getTab();
 	}
@@ -228,7 +227,7 @@ public class TaskController {
 			}
 		}
 		else {
-			task = UniqueObject.getFromId(session.getTasks(), idLink);
+			task = UniqueObject.getFromIdLink(session.getTasks(), idLink);
 			taskCreator.edit(task, form);
 		}
 		return "redirect:/tasks?tab="+session.getTab();
@@ -255,7 +254,7 @@ public class TaskController {
 		if(tab.equals("")) {return "redirect:/tasks?tab="+session.getTab();}
 		
 		if (validateId(edit)) {
-			Task task = UniqueObject.getFromId(session.getTasks(), edit);
+			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
 			form = taskCreator.prepareForm(task);
 			model.addAttribute("label", task.getLabel());
 			model.addAttribute("task", form);

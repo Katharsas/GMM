@@ -34,11 +34,15 @@ public class UserService {
 	}
 	
 	public User getByIdLink(String idLink) {
-		return UniqueObject.getFromId(data.<User>getList(User.class), idLink);
+		return UniqueObject.getFromIdLink(data.<User>getList(User.class), idLink);
 	}
 	
 	public String generatePassword() {
 		SecureRandom random = new SecureRandom();
 		return new BigInteger(50, random).toString(32);
+	}
+	
+	public void add(User user) {
+		data.add(user);
 	}
 }

@@ -1,0 +1,139 @@
+.elementCount {
+	font-size:0.9em;
+	margin-top:3px;
+	font-weight:bold;
+	color:#000000;
+}
+.elementContent {
+	 word-wrap:break-word;
+	 max-width:100%;
+}
+.elementId{
+	padding-right:7px;
+	margin-top:5px;
+	color:#6D6D6D;
+	font-size:0.8em;
+}
+.elementStatus {
+	color:#E8E8E8;
+}
+.elementAssigned {
+	font-weight:bold;
+/* 	font-style:italic; */
+	margin-right:10px;
+}
+.elementStatus, .elementAssigned, .elementLabel {
+	margin-top:4px;
+	font-size:0.96em;
+}
+
+.elementPriority {
+	margin-top:5px;
+}
+
+.elementPriority{
+	margin-left:10px;
+	height:1em;
+	width:0.5em;
+}
+.elementLabel{
+	margin-right:5px;
+}
+.elementName{
+	padding-left:5px;
+	padding-bottom:3px;
+}
+.listElementBody {
+	overflow:hidden;
+}
+.listElementBodyFooter {
+	margin: 25px 0px 2px 0px;
+}
+.elementAuthorDate{
+	bottom:0px;
+	color:#999999;
+	font-size:0.7em;
+}
+.elementButton, .commentButton {
+	font-size:0.87em;
+	color:#CCCCCC;
+	background-color: #3A3A3A;
+}
+.elementButton{
+	padding:3px 7px;
+	margin:2px 10px 0px 0px;
+	min-width:5.5em;
+}
+.elementButton:hover{
+	background-color:292929;
+}
+.elementButton.commentElement {
+	margin-left:3px;
+}
+
+.elementPriority.ULTRA{
+	width:0.9em;
+	background-color:#F30021;
+}
+.elementPriority.HIGH{
+	width:0.7em;
+	background-color:#FF4F00;
+}
+.elementPriority.MID{
+	background-color:#FFB400;
+}
+.elementPriority.LOW{
+	width:0.3em;
+	background-color:#DDDDDD;
+}
+commentButton {
+	height:30px;
+}
+.elementComments {
+	margin-top:10px;
+	margin-left:20px;
+}
+.elementDetails{
+	color:#DDDDDD;
+	padding:0px 5px;
+}
+.subListElement{
+	color:#DDDDDD;
+	border-top: 1px dotted #666;
+	margin-top:3px;
+	padding-top:3px;
+}
+.subElementAuthor, .commentForm .commentSubmitButton {
+	margin-top: 2px;
+	margin-right:2px;
+	min-width:6em;
+}
+.commentEditButton {
+	padding-left:5px;
+	padding-right:5px;
+}
+.subElementText {
+	padding-left:5px;
+}
+.commentForm .subElementText{
+	width:auto;
+	overflow:hidden;
+}
+.commentForm .commentTextArea {
+	width:auto;
+	width:100%;
+	resize:vertical;
+}
+.elementDelete {
+	background-color:#000000;
+	border:3px solid red;
+}
+.elementDelete .deleteQuestion{
+	margin:6px;
+}
+.elementDelete .deleteButton{
+	margin:3px;
+	width:5em;
+	color:#000000;
+	background-color:#FFFFFF;
+}

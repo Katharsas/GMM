@@ -28,7 +28,7 @@
 	<!-- Define location of config class -->
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>gmm.ApplicationConfiguration</param-value>
+		<param-value>gmm</param-value>
 	</context-param>
 
 

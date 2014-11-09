@@ -5,21 +5,22 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
-		<script src="res/javascript/lib/three.min.js" type="text/javascript"></script>
-    	<script src="res/javascript/lib/OrbitControls.js" type="text/javascript"></script>
-    	<script src="res/javascript/lib/TweenLite.min.js" type="text/javascript"></script>
-    	<script src="res/javascript/lib/CSSPlugin.min.js" type="text/javascript"></script>
+		<script src="<c:url value="/res/javascript/lib/three.min.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/lib/OrbitControls.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/lib/TweenLite.min.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/lib/CSSPlugin.min.js"/>" type="text/javascript"></script>
     	
-    	<script src="res/javascript/tasks.js" type="text/javascript"></script>
-    	<script src="res/javascript/jqueryFileTree.js" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/tasks.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/jqueryFileTree.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
-		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/tasks/tasks.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/tasks/tasks_filters.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/tasks/tasks_search.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/tasks/tasks_assets.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/taskForm.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/task.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/task_asset.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/jqueryFileTree.css"/>" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/tasks/tasks.css"/>" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/tasks/tasks_filters.css"/>" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/tasks/tasks_search.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 
     <jsp:body>

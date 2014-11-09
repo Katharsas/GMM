@@ -37,7 +37,7 @@ abstract class NamedReferenceConverter implements Converter{
 	public Object unmarshal(HierarchicalStreamReader reader,
 			UnmarshallingContext context) {
 		String id = reader.getAttribute("id");
-        return UniqueObject.getFromId(getNamedObjects(), id);
+        return UniqueObject.getFromIdLink(getNamedObjects(), id);
 	}
 	
 	abstract Collection<? extends NamedObject> getNamedObjects();

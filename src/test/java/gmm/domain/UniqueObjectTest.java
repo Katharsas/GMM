@@ -57,7 +57,7 @@ public class UniqueObjectTest {
 			l.add(new TestClass1("numero"+i));
 		}
 		for(int i = 0; i<10; i++) {
-			assertEquals(UniqueObject.getFromId(l, (idNow+1+i)+"").getVar(), "numero"+i);
+			assertEquals(UniqueObject.getFromIdLink(l, (idNow+1+i)+"").getVar(), "numero"+i);
 		}
 	}
 	

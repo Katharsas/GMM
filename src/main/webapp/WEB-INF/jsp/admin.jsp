@@ -4,13 +4,13 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
-    	<script src="res/javascript/admin.js" type="text/javascript"></script>
-    	<script src="res/javascript/jqueryFileTree.js" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/admin.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/jqueryFileTree.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
-		<link id="css_link" href="res/css/taskForm.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/admin.css" media="screen" rel="stylesheet" type="text/css" />
-    	<link id="css_link" href="res/css/jqueryFileTree.css" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/taskForm.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/all/jqueryFileTree.css"/>" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/admin.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
     
     

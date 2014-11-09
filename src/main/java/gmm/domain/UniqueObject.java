@@ -26,9 +26,16 @@ public abstract class UniqueObject implements Linkable{
 		return getClass().getSimpleName()+id;
 	}
 	
-	public  static <U extends UniqueObject> U getFromId(Collection<U> c, String idLink) {
+	public  static <U extends UniqueObject> U getFromIdLink(Collection<U> c, String idLink) {
 		for(U u : c) {
 			if(u.getIdLink().equals(idLink)) return u;
+		}
+		return null;
+	}
+	
+	public  static <U extends UniqueObject> U getFromId(Collection<U> c, long id) {
+		for(U u : c) {
+			if(u.getId() == id) return u;
 		}
 		return null;
 	}

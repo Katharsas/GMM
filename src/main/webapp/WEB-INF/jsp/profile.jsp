@@ -5,10 +5,10 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
-    	<script src="res/javascript/profile.js" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/profile.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
-    	<link id="css_link" href="res/css/profile.css" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/profile.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 
     <jsp:body>

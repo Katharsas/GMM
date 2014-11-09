@@ -7,14 +7,14 @@ $(document).ready( function() {
 	var $adminBanner = $("#adminBannerTextArea");
 	$adminBanner.html(allVars.adminBanner);
 	$adminBanner.blur(function() {
-		$.post("admin/changeBannerMessage", {message: $adminBanner.val()})
+		$.post(allVars.contextPath+"/admin/changeBannerMessage", {message: $adminBanner.val()})
 			.fail(showException);
 	});
 });
 
 function refreshTaskBackups() {
 	$('#taskBackupsContainer').fileTree(
-		allFuncs.treePluginOptions("admin/backups", false),
+		allFuncs.treePluginOptions(allVars.contextPath+"/admin/backups", false),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedBackupFile");
 		}
@@ -30,13 +30,13 @@ function deleteFile() {
 	if(dir === undefined || dir === "") {
 		return;
 	}
-	$.post("admin/deleteFile", { dir: dir })
+	$.post(allVars.contextPath+"/admin/deleteFile", { dir: dir })
 		.done(refreshTaskBackups)
 		.fail(showException);
 }
 
 function deleteAllTasks() {
-	$.post("admin/deleteTasks").fail(showException);
+	$.post(allVars.contextPath+"/admin/deleteTasks").fail(showException);
 }
 
 function saveAllTasks() {
@@ -45,7 +45,7 @@ function saveAllTasks() {
 
 function refreshTaskImportTree() {
 	$('#originalAssetsContainer').fileTree(
-		allFuncs.treePluginOptions("admin/originalAssets", true),
+		allFuncs.treePluginOptions(allVars.contextPath+"/admin/originalAssets", true),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedAssetFile");
 		}
@@ -56,7 +56,8 @@ function addAssetPaths(textures) {
 	var pathSep = "&#160;&#160;►&#160;";
 	var dir = allVars.selectedAssetFile.attr('rel');
 	$("#selectedPaths ul").empty();
-	$.getJSON("admin/getAssetPaths", { dir: dir, textures: textures }, function(paths) {
+	$.getJSON(allVars.contextPath+"/admin/getAssetPaths",
+			{ dir: dir, textures: textures }, function(paths) {
 		if(paths.length===0) {
 			cancelImport();
 			return;
@@ -91,7 +92,7 @@ function hideImport() {
 }
 
 function cancelImport() {
-	$.post("admin/import/cancel")
+	$.post(allVars.contextPath+"/admin/import/cancel")
 		.done(function() {hideImport();})
 		.fail(showException);
 }
@@ -100,7 +101,7 @@ function editUserRole(idLink, userRole) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var role = $textField.attr("value");
-		$.post("admin/users/edit/"+idLink, {"role": role})
+		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"role": role})
 			.done(function() {
 				window.location.reload();
 			})
@@ -109,7 +110,7 @@ function editUserRole(idLink, userRole) {
 }
 
 function switchAdmin(idLink) {
-	$.post("admin/users/admin/"+idLink)
+	$.post(allVars.contextPath+"/admin/users/admin/"+idLink)
 		.done(function() {
 			var $role = $("#"+idLink+" .subElementUserRole");
 			if($.trim($role.html())==="[ADMIN]") {
@@ -126,7 +127,7 @@ function editUserName(idLink, userName) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var name = $textField.attr("value");
-		$.post("admin/users/edit/"+idLink, {"name": name})
+		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"name": name})
 			.done(function() {
 				window.location.reload();
 			})
@@ -136,7 +137,7 @@ function editUserName(idLink, userName) {
 
 function resetPassword(idLink) {
 	confirm(function() {
-		$.post("admin/users/reset/"+idLink)
+		$.post(allVars.contextPath+"/admin/users/reset/"+idLink)
 			.done(function(data) {
 				hideDialogue();
 				alert(function() {
@@ -149,7 +150,7 @@ function resetPassword(idLink) {
 }
 
 function switchUser(idLink, userName) {
-	$.post("admin/users/switch/"+idLink)
+	$.post(allVars.contextPath+"/admin/users/switch/"+idLink)
 		.done(function() {
 			var $enabled = $("#"+idLink+" .subElementUserEnabled");
 			console.log($.trim($enabled.html()));
@@ -164,12 +165,12 @@ function switchUser(idLink, userName) {
 }
 
 function saveUsers() {
-	$.post("admin/users/save").fail(showException);
+	$.post(allVars.contextPath+"/admin/users/save").fail(showException);
 }
 
 function loadUsers() {
 	confirm(function() {
-		$.post("admin/users/load")
+		$.post(allVars.contextPath+"/admin/users/load")
 			.done(function() {
 				window.location.reload();
 			})
@@ -201,7 +202,7 @@ function importAssets(assetTypes) {
 function ResponseBundleHandler(responseBundleOption) {
 	var ResponseBundleOptions = {
 			tasks : {
-				nextURI : "admin/load/next",
+				nextURI : allVars.contextPath+"/admin/load/next",
 				conflicts : ["conflict"],
 				showButtons : function(conflict, $options) {
 					$options.children("#skipButton").show();
@@ -214,12 +215,12 @@ function ResponseBundleHandler(responseBundleOption) {
 					if(dir === undefined || dir === "") {
 						return undefined;
 					}
-					return $.getJSON("admin/load", { dir: dir });
+					return $.getJSON(allVars.contextPath+"/admin/load", { dir: dir });
 				}
 
 			},
 			assets : {
-				nextURI : "admin/importAssets/next",
+				nextURI : allVars.contextPath+"/admin/importAssets/next",
 				conflicts : ["taskConflict", "folderConflict"],
 				showButtons : function(conflict, $options) {
 					$options.children("#skipButton").show();
