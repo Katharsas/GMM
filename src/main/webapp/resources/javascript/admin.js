@@ -298,9 +298,9 @@ function ResponseBundleHandler(responseBundleOption) {
 		var outOfSync = "Something went wrong! Out of sync with server. Please reload page.";
 		//for all but the last element, the status should be success
 		for (var i = 0; i < results.length-1; i++) {
-			var data = results[i];
-			if(data.status == "success") {
-				appendMessage(data.message);
+			var dataToCheck = results[i];
+			if(dataToCheck.status == "success") {
+				appendMessage(dataToCheck.message);
 			}
 			else $conflictMessage.html(outOfSync);
 		}
