@@ -20,7 +20,6 @@ import gmm.web.forms.SortForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 
@@ -64,8 +63,7 @@ public class TaskSession {
 	@PostConstruct
 	private void init() {
 		currentTaskType = TaskType.GENERAL;
-		user = users.get(((org.springframework.security.core.userdetails.User)
-				SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername());
+		user = users.getLoggedInUser();
 		sort = new SortForm();
 		generalFilter = new FilterForm();
 		updateAndFilterTasks(currentTaskType);
@@ -85,10 +83,6 @@ public class TaskSession {
 	
 	public TaskType getCurrentTaskType() {
 		return currentTaskType;
-	}
-	
-	public String getTab() {
-		return currentTaskType.getTab();
 	}
 	
 	public User getUser() {

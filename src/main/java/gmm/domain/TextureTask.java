@@ -12,4 +12,9 @@ public class TextureTask extends AssetTask<Texture> {
 	public TextureTask(User author, Path assetPath) throws Exception {
 		super(author, assetPath);
 	}
+
+	@Override
+	public TaskType getType() {
+		return TaskType.TEXTURE;
+	}
 }

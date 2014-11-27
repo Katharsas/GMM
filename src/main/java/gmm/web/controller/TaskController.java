@@ -98,14 +98,13 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * Filter is always applied to all tasks of a kind
 	 * @param filterForm - object containing all filter information
-	 * @param tab - see send method
 	 */
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	public String handleFilter(
 		 		@ModelAttribute("generalFilter") FilterForm filterForm) {
 
 		session.updateFilter(filterForm);
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	
@@ -120,7 +119,7 @@ public class TaskController {
 		 		@ModelAttribute("search") SearchForm searchForm) {
 		
 		session.updateSearch(searchForm);
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	
@@ -135,7 +134,7 @@ public class TaskController {
 		 		@ModelAttribute("sort") SortForm sortForm) {
 		
 		session.updateSort(sortForm);
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	
@@ -151,7 +150,7 @@ public class TaskController {
  		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
  		session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
  		
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	
@@ -172,7 +171,7 @@ public class TaskController {
 		if(comment.getAuthor().getId() == session.getUser().getId()) {
 			comment.setText(edited);
 		}
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	
@@ -182,7 +181,6 @@ public class TaskController {
 	 * @param principal - user sending the request
 	 * @param idLink - identifies the task to which the comment will be added
 	 * @param form - object containing all comment information
-	 * @param tab - see send method
 	 */
 	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
 	public String handleTasksComment(
@@ -191,22 +189,15 @@ public class TaskController {
 		Comment comment = new Comment(session.getUser(), form.getText());
 		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
 		
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 
 	
 	/**
 	 * Create / Edit Task
 	 * -----------------------------------------------------------------
-	 * If a task is edited, the current task list is sent again.
-	 * If a new task is added, the currents tab default view is sent,
-	 * because its unknown whether the new task should be added to current task list or not.
-	 * TODO: Make selection a mask that cna be applied multiple times.
-	 * TODO: Save this mask to session when changed, an apply it to the new element.
-	 * 
-	 * @param principal - User sending the request
+	 * If the task is new, it will be added to session if its types matches the current tab.
 	 * @param form - object containing all task information
-	 * @param tab - see send method
 	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
@@ -230,7 +221,7 @@ public class TaskController {
 			task = UniqueObject.getFromIdLink(session.getTasks(), idLink);
 			taskCreator.edit(task, form);
 		}
-		return "redirect:/tasks?tab="+session.getTab();
+		return "redirect:/tasks";
 	}
 	
 	/**
@@ -239,6 +230,7 @@ public class TaskController {
 	 * Used internally by other controller methods, which only modify the session object.
 	 * They then call this method which sends all necessary data to the lient.
 	 * 
+	 * TODO: put tab change into extra method receiving ajax request
 	 * @param tab - determines which tab will be selected on client page.
 	 * @param edit - Task ID to be made editable in task form
 	 */
@@ -248,10 +240,14 @@ public class TaskController {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			@ModelAttribute("task") TaskForm form,
-			@RequestParam(value="tab", defaultValue="") String tab,
+			@RequestParam(value="tab", required=false) String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
 		
-		if(tab.equals("")) {return "redirect:/tasks?tab="+session.getTab();}
+		if(tab != null) {
+			TaskType type = TaskType.fromTab(tab);
+			session.updateTab(type);
+			form.setType(type);
+		}
 		
 		if (validateId(edit)) {
 			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
@@ -259,14 +255,11 @@ public class TaskController {
 			model.addAttribute("label", task.getLabel());
 			model.addAttribute("task", form);
 		}
-		TaskType type = TaskType.fromTab(tab);
-		session.updateTab(type);
-		form.setType(type);
 		
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("tab", tab);
+	    model.addAttribute("tab", session.getCurrentTaskType().getTab());
 	    model.addAttribute("edit", edit);
 	    
 	    return "tasks";
@@ -284,7 +277,7 @@ public class TaskController {
 			HttpServletResponse response) throws AjaxResponseException {
 		try {
 			populateRequest(request);
-			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response);
+			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response, true);
 		} catch(Exception e) {
 			throw new AjaxResponseException(e);
 		}

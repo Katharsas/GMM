@@ -38,4 +38,9 @@ public class ModelTask extends AssetTask<Model> {
 	public List<ModelSite> getSites() {
 		return sites;
 	}
+
+	@Override
+	public TaskType getType() {
+		return TaskType.MODEL;
+	}
 }

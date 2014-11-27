@@ -16,7 +16,7 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
  *
  * @param <A> type of asset
  */
-public class AssetTask<A extends Asset> extends Task {
+public abstract class AssetTask<A extends Asset> extends Task {
 
 	@XStreamOmitField
 	protected DataConfigService config;

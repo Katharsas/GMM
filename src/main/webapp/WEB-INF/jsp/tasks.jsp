@@ -10,8 +10,14 @@
     	<script src="<c:url value="/res/javascript/lib/TweenLite.min.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/CSSPlugin.min.js"/>" type="text/javascript"></script>
     	
-    	<script src="<c:url value="/res/javascript/tasks.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/jqueryFileTree.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/jqueryFileTree.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/queue.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/tasks/taskloader.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/tasks/taskswitcher.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/tasks/tasks.js"/>" type="text/javascript"></script>
+    	<script type="text/javascript">
+			tasksVars['tab'] = '${fn:escapeXml(cfn:escapeJS(tab))}';
+		</script>
     </jsp:attribute>
 	<jsp:attribute name="css">
 		<link href="<c:url value="/res/css/all/taskForm.css"/>" media="screen" rel="stylesheet" type="text/css" />

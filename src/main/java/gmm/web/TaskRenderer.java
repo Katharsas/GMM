@@ -17,7 +17,7 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.Task;
 import gmm.service.Spring;
-import gmm.web.sessions.TaskSession;
+import gmm.service.UserService;
 
 /**
  * @author Jan Mothes
@@ -25,7 +25,7 @@ import gmm.web.sessions.TaskSession;
 @Service
 public class TaskRenderer {
 	
-	@Autowired private TaskSession session;
+	@Autowired private UserService users;
 	
 	private Configuration config;
 	
@@ -54,9 +54,9 @@ public class TaskRenderer {
 	 * Request must already include all needed forms.
 	 */
 	public TaskRenderResult renderTask(Task task, ModelMap model,
-			HttpServletRequest request, HttpServletResponse response) throws Exception {
+			HttpServletRequest request, HttpServletResponse response, boolean isEditable) throws Exception {
 		
-		populateModel(model, request, response);
+		populateModel(model, request, response, isEditable);
 		return renderSingleTask(task, model);
 	}
 	
@@ -64,9 +64,9 @@ public class TaskRenderer {
 	 * Request must already include all needed forms.
 	 */
 	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ModelMap model,
-			HttpServletRequest request, HttpServletResponse response) throws Exception {
+			HttpServletRequest request, HttpServletResponse response, boolean isEditable) throws Exception {
 		
-		populateModel(model, request, response);
+		populateModel(model, request, response, isEditable);
 		List<TaskRenderResult> renderedTasks = new LinkedList<>();
 		
 		for(Task task : tasks) {
@@ -91,14 +91,17 @@ public class TaskRenderer {
 	}
 	
 	private void populateModel(ModelMap model, HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+			HttpServletResponse response, boolean isEditable) throws IOException {
 		
-		model.addAttribute("tab", session.getTab());
-		model.addAttribute("principal", session.getUser());
+		boolean isUserLoggedIn = users.isUserLoggedIn();
+		boolean isTaskEditable = isUserLoggedIn && isEditable;
+		
+		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
+		model.addAttribute("isTaskEditable", isTaskEditable);
+	    if (isUserLoggedIn) {
+	    	model.addAttribute("principal", users.getLoggedInUser());
+	    }
 		model.put("request", request);
-		
-		model.put("springMacroRequestContext",
-				new RequestContext(request, response, Spring.getServletContext(), null));
 		model.put("springMacroRequestContext",
 				new RequestContext(request, response, Spring.getServletContext(), null));
 	}

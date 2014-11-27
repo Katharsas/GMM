@@ -92,4 +92,5 @@ public abstract class Task extends NamedObject{
 
 	public void onLoad() throws Exception {
 	}
+	public abstract TaskType getType();
 }

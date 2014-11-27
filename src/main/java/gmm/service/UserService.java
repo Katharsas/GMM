@@ -11,13 +11,14 @@ import java.security.Principal;
 import java.security.SecureRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
-	@Autowired
-	DataAccess data;
+	@Autowired private DataAccess data;
 
 	public User get(Principal principal) {
 		return (principal == null) ?
@@ -44,5 +45,20 @@ public class UserService {
 	
 	public void add(User user) {
 		data.add(user);
+	}
+	
+	public boolean isUserLoggedIn() {
+		return getAuth() != null && getAuth().isAuthenticated() &&
+				getAuth().getPrincipal() instanceof org.springframework.security.core.userdetails.User;
+	}
+	
+	public User getLoggedInUser() {
+		if (!isUserLoggedIn()) throw new IllegalStateException("User is not logged in!");
+		return get(((org.springframework.security.core.userdetails.User)
+				getAuth().getPrincipal()).getUsername());
+	}
+	
+	private Authentication getAuth() {
+		return SecurityContextHolder.getContext().getAuthentication();
 	}
 }

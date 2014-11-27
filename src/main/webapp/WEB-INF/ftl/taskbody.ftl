@@ -3,7 +3,7 @@
 
 			    <div class="listElementBody" css="display:none;">
 <!-- AssetPath -->
-				    <#if tab=='textures'||tab=='models'>
+				    <#if !(task.getType().name() == "GENERAL")>
 				    	<div class="elementPath elementContent">
 				    		File Path: &#160; &#160; ${task.getAssetPath().toString()?html}
 			    		</div>
@@ -24,7 +24,7 @@
 						    			${comment.getAuthor().getName()?html}
 					    			</div>
 						    	</div>
-								<#if comment.getAuthor().getIdLink() == principal.getIdLink()>
+								<#if isTaskEditable && comment.getAuthor().getIdLink() == principal.getIdLink()>
 							    	<div class="right commentButton elementContent button commentEditButton"
 							    			onclick="changeComment('${comment.getText()?js_string?html}', '${task.getIdLink()}', '${comment.getIdLink()}')">
 										<@s.message "edit"/>
@@ -36,21 +36,23 @@
 						    	<div class="clear"></div>
 						    </div>
 						</#list>
-						<form class="subListElement commentForm"
-					    		method="POST"
-					    		action="tasks/submitComment/${task.getIdLink()}?tab=${tab}">
-					    	<@s.bind "comment"/>
-					    	<div class="left subElementAuthor">
-					    		<div class="button commentButton commentSubmitButton"
-					    				onclick="$(this).parents('form.commentForm').submit()">Submit</div>
-					    	</div>
-					    	<div class="subElementText input">
-					    		<textarea class="commentTextArea" rows="2" cols="1" name="text"></textarea>
-					    	</div>
-					    </form>
+						<#if isUserLoggedIn>
+							<form class="subListElement commentForm"
+						    		method="POST"
+						    		action="tasks/submitComment/${task.getIdLink()}">
+						    	<@s.bind "comment"/>
+						    	<div class="left subElementAuthor">
+						    		<div class="button commentButton commentSubmitButton"
+						    				onclick="$(this).parents('form.commentForm').submit()">Submit</div>
+						    	</div>
+						    	<div class="subElementText input">
+						    		<textarea class="commentTextArea" rows="2" cols="1" name="text"></textarea>
+						    	</div>
+						    </form>
+						</#if>
 				    </div>
 <!-- TexturePreview -->
-				    <#if tab == 'textures'>
+				    <#if task.getType().name() == 'TEXTURE'>
 				    	<div class="elementPreview elementContent">
 					    	<table>
 				    			<colgroup>
@@ -114,7 +116,7 @@
 						</div>
 				    </#if>
 <!-- Files -->
-					<#if tab == 'textures' || tab == 'models'>
+					<#if !(task.getType().name() == 'GENERAL')>
 						<div class="elementFiles elementContent">
 							<div class="subElementAssets left">
 								<div class="subFilesDescriptor">
@@ -131,26 +133,32 @@
 							<div class="clear"></div>
 <!-- File Operations -->
 							<div class="subElementFileOperations">
-								<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
-								<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
-									Upload
-								</div>
+								<#if isUserLoggedIn>
+									<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
+									<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
+										Upload
+									</div>
+								</#if>
 <#-- 								<a id="${task.getIdLink()}-download" href="#">Link</a> -->
 								<div class="button subElementButton left" onclick="downloadFile('${task.getIdLink()}')">
 									Download
 								</div>
+								<#if isUserLoggedIn>
 								<div class="button subElementButton right" onclick="confirmDeleteFile('${task.getIdLink()}')">
 									Delete
 								</div>
+								</#if>
 								<div class="clear"></div>
 							</div>
 						</div>
 					</#if>
 <!-- Footer -->
 				    <div class="listElementBodyFooter">
-					    <div class="left commentElement elementButton button" onclick="findSwitchCommentForm(this)">
-				    		<@s.message "to.comment"/>
-				    	</div>
+				    	<#if isUserLoggedIn>
+						    <div class="left commentElement elementButton button" onclick="findSwitchCommentForm(this)">
+					    		<@s.message "to.comment"/>
+					    	</div>
+				    	</#if>
 					    <div class="elementAuthorDate right">
 				    		<div class=" elementContent right">
 				    			${task.getAuthor().getName()?html}<br/>
@@ -161,12 +169,14 @@
 					    		<@s.message "created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
-				    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()?js_string?html}')">
-				    		<@s.message "delete"/>
-				    	</div>
-				    	<div class="right editElement elementButton button">
-				    		<a href="?tab=${tab}&edit=${task.getIdLink()}"><@s.message "edit"/><span></span></a>
-				    	</div>
+				    	<#if isTaskEditable>
+					    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()?js_string?html}')">
+					    		<@s.message "delete"/>
+					    	</div>
+					    	<div class="right editElement elementButton button">
+					    		<a href="?edit=${task.getIdLink()}"><@s.message "edit"/><span></span></a>
+					    	</div>
+					    </#if>
 				    	<div class="clear"></div>
 			    	</div>
 			    </div>

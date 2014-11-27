@@ -14,7 +14,7 @@
 			<script src="<c:url value="/res/javascript/lib/jquery-2.1.1.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
-			<script src="<c:url value="/res/javascript/default.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/all/default.js"/>" type="text/javascript"></script>
 			<script type="text/javascript">
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
 				allVars['contextPath'] = '${pageContext.request.contextPath}';
@@ -48,7 +48,7 @@
 			</div>
 			<div id="exceptionDialog" class="dialogContainer">
 				<div id="exceptionHeading">
-					<fmt:message key="all_template.error"/>
+					Internal Server Error 500
 				</div>
 				<div id="exceptionMessage"></div>
 				<div id="exceptionInstructions">

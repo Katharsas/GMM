@@ -1,3 +1,8 @@
+//adds :blank selector to jQuery
+$.expr[':'].blank = function(obj) {
+	return !$.trim($(obj).text()).length;
+};
+
 var fileName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
 var paramString = window.location.search.substring(1);
 
