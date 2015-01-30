@@ -12,20 +12,19 @@
     	
     	<script src="<c:url value="/res/javascript/all/jqueryFileTree.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/all/queue.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/tasks/taskloader.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/tasks/taskswitcher.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/taskloader.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/taskswitcher.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/tasklisteners.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/links.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
     	<link href="<c:url value="/res/css/all/task.css"/>" media="screen" rel="stylesheet" type="text/css" />
     	<link href="<c:url value="/res/css/all/task_asset.css"/>" media="screen" rel="stylesheet" type="text/css" />
-    	<link href="<c:url value="/res/css/tasks/tasks.css"/>" media="screen" rel="stylesheet" type="text/css" />
+    	<link href="<c:url value="/res/css/links.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 
     <jsp:body>
-		<div id="listsMain" class="subTabbody tabbody activeSubpage">
-			Hello World!
-			Hier wird die Liste mit den verlinkten Tasks per Ajax reingeladen...
+		<div id="taskList" class="subTabbody tabbody activeSubpage">
 		</div>
     </jsp:body>
 </t:all_template>

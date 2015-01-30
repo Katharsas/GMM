@@ -55,8 +55,11 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 	@Override public Conflict<Task> onLoad(Task t) throws Exception {
 		t.onLoad();
 		UniqueObject.updateCounter(t);
-		if(!data.add(t)) return conflict;
-		else return no_conflict;
+		if (data.hasIds(new long[]{t.getId()})) return conflict;
+		else {
+			data.add(t);
+			return no_conflict;
+		}
 	}
 	
 	@Override public String onDefault(Task element) {

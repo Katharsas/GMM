@@ -20,13 +20,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.collections.List;
 import gmm.domain.Label;
 import gmm.domain.Task;
-import gmm.domain.Texture;
-import gmm.domain.TextureTask;
 import gmm.domain.User;
 import gmm.service.FileService;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetImportOperations;
 import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.BackupService;
 import gmm.service.data.DataAccess;
@@ -38,7 +35,7 @@ import gmm.service.tasks.TextureTaskService;
 import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.AssetImportSession;
+import gmm.web.sessions.AdminSession;
 import gmm.web.sessions.TaskSession;
 
 
@@ -49,8 +46,8 @@ import gmm.web.sessions.TaskSession;
 
 public class AdminController {
 
-	@Autowired TaskSession session;
-	@Autowired AssetImportSession toImport;
+	@Autowired TaskSession taskSession;
+	@Autowired AdminSession session;
 	
 	@Autowired DataAccess data;
 	@Autowired DataConfigService config;
@@ -58,9 +55,6 @@ public class AdminController {
 	@Autowired XMLService xmlService;
 	@Autowired TaskServiceFinder taskCreator;
 	@Autowired BackupService backups;
-	
-	private BundledMessageResponses<Task> taskLoader;
-	private BundledMessageResponses<String> assetImporter;
 	
 	@ModelAttribute("task")
 	public TaskForm getTaskFacade() {
@@ -75,7 +69,7 @@ public class AdminController {
 	 */
 	@RequestMapping(method = RequestMethod.GET)
     public String send(ModelMap model) {
-		toImport.clear();
+		session.clearImportPaths();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
         return "admin";
@@ -110,7 +104,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteTasks() {
-		session.notifyDataChange();
+		taskSession.notifyDataChange();
 		data.removeAll(Task.class);
 	}
 	
@@ -168,17 +162,25 @@ public class AdminController {
 	 * @see {@link #loadNextTask(String, boolean)}
 	 */
 	@RequestMapping(value = "/load", method = RequestMethod.GET)
-	public @ResponseBody List<MessageResponse> loadTasks(@RequestParam("dir") Path dir) throws AjaxResponseException {
+	public @ResponseBody List<MessageResponse> loadTasks(
+			@RequestParam(value = "dir", required = false) Path dir) throws AjaxResponseException {
 		try {
 			backups.triggerTaskBackup();
-			session.notifyDataChange();
-			Path visible = config.TASKS;
-			dir = fileService.restrictAccess(dir, visible);
+			taskSession.notifyDataChange();
 			
-			Iterator<Task> i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
-			
-			taskLoader = new BundledMessageResponses<Task>(i, new TaskLoaderOperations());
-			return taskLoader.loadFirstBundle();
+			Iterator<? extends Task> i;
+			// Load tasks from file
+			if (!(dir == null)) {
+				Path visible = config.TASKS;
+				dir = fileService.restrictAccess(dir, visible);
+				i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
+			}
+			// Load tasks from asset import
+			else {
+				i = session.getImportedTasks();
+			}
+			session.taskLoader = new BundledMessageResponses<>(i, new TaskLoaderOperations());
+			return session.taskLoader.loadFirstBundle();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -192,7 +194,7 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
 		try {
-			return taskLoader.loadNextBundle(operation, doForAll);
+			return session.taskLoader.loadNextBundle(operation, doForAll);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -230,8 +232,8 @@ public class AdminController {
 			FilenameFilter filter = textures ?
 					TextureTaskService.extensions : ModelTaskService.extensions;
 			List<Path> paths = fileService.getFilePaths(visible.resolve(dir), filter);
-			toImport.addPaths(fileService.getRelativeNames(paths, visible), textures);
-			return toImport.get();
+			session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
+			return session.getImportPaths();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -243,7 +245,7 @@ public class AdminController {
 	@RequestMapping(value = {"/import/cancel"} , method = RequestMethod.POST)
 	public @ResponseBody void cancelAssetImport() throws AjaxResponseException {
 		try {
-			toImport.clear();
+			session.clearImportPaths();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -258,10 +260,10 @@ public class AdminController {
 			@ModelAttribute("task") TaskForm form) throws AjaxResponseException {
 		try {
 			backups.triggerTaskBackup();
-			session.notifyDataChange();
-			assetImporter = new BundledMessageResponses<String>(toImport.get().iterator(),
-					new AssetImportOperations<Texture,TextureTask>(form, TextureTask.class));
-			return assetImporter.loadFirstBundle();
+			taskSession.notifyDataChange();
+			session.assetImporter = new BundledMessageResponses<>(
+					session.getImportPaths().iterator(), session.getAssetImportOperations(form));
+			return session.assetImporter.loadFirstBundle();
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
@@ -275,7 +277,7 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
 		try {
-			return assetImporter.loadNextBundle(operation, doForAll);
+			return session.assetImporter.loadNextBundle(operation, doForAll);
 		} catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 }

@@ -14,6 +14,7 @@
 			<script src="<c:url value="/res/javascript/lib/jquery-2.1.1.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/all/preprocessor.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/default.js"/>" type="text/javascript"></script>
 			<script type="text/javascript">
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
@@ -40,8 +41,10 @@
 				<div id="confirmDialogTextInputWrapper">
 					<input id="confirmDialogTextInput" class="center"/>
 				</div>
-				<textarea id="confirmDialogTextArea">
-				</textarea>
+				<div>
+					<textarea id="confirmDialogTextArea">
+					</textarea>
+				</div>
 				<div class="dialogButton confirmOk button left" onclick="confirmOk()"><fmt:message key="all_template.confirm"/></div>
 				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()"><fmt:message key="all_template.cancel"/></div>
 				<div class="clear"></div>

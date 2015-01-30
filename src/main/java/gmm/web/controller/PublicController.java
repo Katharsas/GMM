@@ -15,6 +15,7 @@ import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -43,7 +44,7 @@ public class PublicController {
 		try {
 			request.setAttribute("comment", getCommentForm());
 			List<Task> tasks = session.getTaskLinks();
-			return ftlTaskRenderer.renderTasks(tasks, model, request, response, false);
+			return ftlTaskRenderer.renderTasks(tasks, model, request, response);
 		} catch(Exception e) {
 			throw new AjaxResponseException(e);
 		}
@@ -54,5 +55,12 @@ public class PublicController {
 			@PathVariable String ids) {
 		session.setTaskLinks(ids);
 		return "links";
+	}
+	
+	@PreAuthorize("hasRole('ROLE_USER')")
+	@RequestMapping(value = "/login/linkTasks/{ids}", method = RequestMethod.GET)
+	public String login(ModelMap model, 
+			@PathVariable String ids) {
+		return "redirect:/public/linkTasks/"+ids;
 	}
 }

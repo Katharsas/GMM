@@ -40,14 +40,14 @@ public class BundledMessageResponses<T> {
 	private Conflict<T> currentConflict = 
 			MessageResponseOperations.cast(MessageResponseOperations.NO_CONFLICT);
 	
-	private final Iterator<T> elements;
+	private final Iterator<? extends T> elements;
 	private T currentlyLoaded;
 	
 	protected static final String defaultOp = "default";
 	protected static final String success = "success";
 	protected static final String finished = "finished";
 	
-	public BundledMessageResponses(Iterator<T> elements, MessageResponseOperations<T> ops) throws IOException {
+	public BundledMessageResponses(Iterator<? extends T> elements, MessageResponseOperations<T> ops) throws IOException {
 		this.elements = elements;
 		this.ops = ops;
 		operations = ops.getOperations();

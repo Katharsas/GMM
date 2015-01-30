@@ -24,10 +24,11 @@
 						    			${comment.getAuthor().getName()?html}
 					    			</div>
 						    	</div>
-								<#if isTaskEditable && comment.getAuthor().getIdLink() == principal.getIdLink()>
+								<#if isUserLoggedIn && comment.getAuthor().getIdLink() == principal.getIdLink()>
 							    	<div class="right commentButton elementContent button commentEditButton"
 							    			onclick="changeComment('${comment.getText()?js_string?html}', '${task.getIdLink()}', '${comment.getIdLink()}')">
-										<@s.message "edit"/>
+										<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
+										<#--<@s.message "edit"/>-->
 									</div>
 								</#if>
 						    	<div class="left subElementText elementContent">
@@ -39,7 +40,7 @@
 						<#if isUserLoggedIn>
 							<form class="subListElement commentForm"
 						    		method="POST"
-						    		action="tasks/submitComment/${task.getIdLink()}">
+						    		action="${request.contextPath}/tasks/submitComment/${task.getIdLink()}">
 						    	<@s.bind "comment"/>
 						    	<div class="left subElementAuthor">
 						    		<div class="button commentButton commentSubmitButton"
@@ -95,8 +96,8 @@
 						    		<#if task.originalAsset?has_content>
 						    			<#assign asset = task.originalAsset/>
 							    		<td class="subPreviewHalf leftHalf">
-							    			<a href="tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
-							    				<img src="tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
+							    			<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
+							    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
 								    		</a>
 								    	</td>
 								    <#else><td></td>
@@ -105,8 +106,8 @@
 							    	<#if task.newestAsset?has_content>
 							    		<#assign asset = task.newestAsset/>
 								    	<td class="subPreviewHalf rightHalf clickable">
-								    		<a href="tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
-								    			<img src="tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}">
+								    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
+								    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}">
 								    		</a>
 								    	</td>
 								    <#else><td></td>
@@ -118,47 +119,64 @@
 <!-- Files -->
 					<#if !(task.getType().name() == 'GENERAL')>
 						<div class="elementFiles elementContent">
-							<div class="subElementAssets left">
-								<div class="subFilesDescriptor">
-									Assets
-								</div>
-								<div id="assetFilesContainer" class="subFilesContainer"></div>
-							</div>
-							<div class="subElementWip right">
-								<div class="subFilesDescriptor">
-									Other
-								</div>
-								<div id="wipFilesContainer" class="subFilesContainer"></div>
-							</div>
-							<div class="clear"></div>
-<!-- File Operations -->
-							<div class="subElementFileOperations">
-								<#if isUserLoggedIn>
-									<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
-									<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
-										Upload
+							<#if isUserLoggedIn>
+								<div class="subElementAssets left">
+									<div class="subFilesDescriptor">
+										Assets
 									</div>
-								</#if>
-<#-- 								<a id="${task.getIdLink()}-download" href="#">Link</a> -->
-								<div class="button subElementButton left" onclick="downloadFile('${task.getIdLink()}')">
-									Download
+									<div id="assetFilesContainer" class="subFilesContainer"></div>
 								</div>
-								<#if isUserLoggedIn>
-								<div class="button subElementButton right" onclick="confirmDeleteFile('${task.getIdLink()}')">
-									Delete
+								<div class="subElementWip right">
+									<div class="subFilesDescriptor">
+										Other
+									</div>
+									<div id="wipFilesContainer" class="subFilesContainer"></div>
 								</div>
-								</#if>
 								<div class="clear"></div>
-							</div>
+<!-- File Operations -->
+								<div class="subElementFileOperations">
+									<#if isUserLoggedIn>
+										<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
+										<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
+											Upload
+										</div>
+									</#if>
+	<#-- 								<a id="${task.getIdLink()}-download" href="#">Link</a> -->
+									<div class="button subElementButton left" onclick="downloadFile('${task.getIdLink()}')">
+										Download
+									</div>
+									<#if isUserLoggedIn>
+									<div class="button subElementButton right" onclick="confirmDeleteFile('${task.getIdLink()}')">
+										Delete
+									</div>
+									</#if>
+									<div class="clear"></div>
+								</div>
+							</#if>
+							<#if !isUserLoggedIn>
+								You must login to see any files! Use Login button below.
+							</#if>
 						</div>
 					</#if>
 <!-- Footer -->
 				    <div class="listElementBodyFooter">
 				    	<#if isUserLoggedIn>
-						    <div class="left commentElement elementButton button" onclick="findSwitchCommentForm(this)">
+						    <div class="left elementButton button" onclick="findSwitchCommentForm(this)">
+					    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/bubble.svg">
 					    		<@s.message "to.comment"/>
 					    	</div>
-				    	</#if>
+					    	<div class="left elementButton button">
+						    	<a href="${request.contextPath}/public/linkTasks/${task.getId()}">
+					    			<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/link.svg">
+						    		Link <span></span>
+						    	</a>
+						    </div>
+					    </#if>
+					    <#if !isUserLoggedIn>
+					    	<div class="left elementButton button">
+						    	<a href="${request.contextPath}/public/login/linkTasks/${task.getId()}">Login<span></span></a>
+						    </div>
+					    </#if>
 					    <div class="elementAuthorDate right">
 				    		<div class=" elementContent right">
 				    			${task.getAuthor().getName()?html}<br/>
@@ -169,12 +187,16 @@
 					    		<@s.message "created"/>:&#160;&#160;
 				    		</div>
 				    	</div>
-				    	<#if isTaskEditable>
-					    	<div class="right deleteElement elementButton button" onclick="confirmDeleteTask('${task.getIdLink()}','${task.getName()?js_string?html}')">
+				    	<#if isUserLoggedIn>
+					    	<div class="right elementButton button" onclick="deleteTask('${task.getIdLink()}','${task.getName()?js_string?html}')">
+					    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/delete.svg">
 					    		<@s.message "delete"/>
 					    	</div>
-					    	<div class="right editElement elementButton button">
-					    		<a href="?edit=${task.getIdLink()}"><@s.message "edit"/><span></span></a>
+					    	<div class="right elementButton button">
+								<a href="${request.contextPath}/tasks?edit=${task.getIdLink()}">
+									<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
+									<@s.message "edit"/><span></span>
+								</a>
 					    	</div>
 					    </#if>
 				    	<div class="clear"></div>

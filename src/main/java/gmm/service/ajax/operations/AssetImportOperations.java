@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 import gmm.domain.Asset;
 import gmm.domain.AssetTask;
 import gmm.service.FileService;
@@ -18,6 +20,7 @@ import gmm.web.forms.TaskForm;
  * Possible conflicts:
  * 1. - task with this assetPath already exists
  * 2. - only new folder exists (not task)
+ * 3. - id conflict (not handled in this class, use TaskLoaderOperations)
  * 
  * Choice 1.:
  * - Skip
@@ -41,10 +44,12 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 	private final Class<E> clazz;
 	private final TaskForm form;
 	private AssetTask<T> conflictingTask;
+	private List<E> tempData;
 	
 	public AssetImportOperations(TaskForm form, Class<E> clazz) {
 		this.form = form;
 		this.clazz = clazz;
+		this.tempData = new LinkedList<>();
 	}
 	
 	private final Conflict<String> taskConflict = new Conflict<String>() {
@@ -80,7 +85,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 					newTask.setNewestAsset(asset);
 				}
 				data.remove(conflictingTask);
-				data.add(newTask);
+				tempData.add(newTask);
 				return "Overwriting existing task and aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -88,20 +93,20 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 			@Override public String execute(String assetPath) throws Exception {
 				data.remove(conflictingTask);
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(create(assetPath));
+				tempData.add(create(assetPath));
 				return "Overwriting existing task and deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("aquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
-				data.add(create(assetPath));
+				tempData.add(create(assetPath));
 				return "Aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("deleteData", new Operation<String>() {
 			@Override public String execute(String assetPath) throws Exception {
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				data.add(create(assetPath));
+				tempData.add(create(assetPath));
 				return "Deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -135,7 +140,11 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 
 	@Override
 	public String onDefault(String assetPath) throws Exception {
-		data.add(create(assetPath));
+		tempData.add(create(assetPath));
 		return "Successfully imported asset at \""+assetPath+"\"";
+	}
+	
+	public List<E> getTasks() {
+		return tempData;
 	}
 }

@@ -24,13 +24,18 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 	}
 	
 	return {
+		
+		getBody : function($task) {
+			return $task.children(":last-child");
+	    },
+		
 		/**
 		 * Insert the taskbody of the given task.
 		 * Task must not have body already!
 		 */
 		insertBody : function ($task) {
 			var idLink = $task.attr('id');
-			var body = undefined;
+			var body = null;
 			tasks.some(function(task) {
 				if(task.idLink === idLink) {
 					body = task.body;
@@ -38,15 +43,19 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 				}
 				return false;
 			});
-			$task.append(body);
+			if (body !== null) {
+				$task.append(body);
+			} else {
+				alert(undefined, "TaskLoader# insertBody(): No body found!");
+			}
 		},
 		
 		/**
 		 * Remove the taskbody of the given task.
 		 * Task must have a body!
 		 */
-		removeBody : function ($task) {
-			$task.children(":last-child").remove();
+		removeBody : function ($body) {
+			$body.remove();
 		}
 	};
 };

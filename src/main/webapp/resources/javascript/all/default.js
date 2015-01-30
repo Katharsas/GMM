@@ -1,3 +1,5 @@
+
+
 //adds :blank selector to jQuery
 $.expr[':'].blank = function(obj) {
 	return !$.trim($(obj).text()).length;
@@ -75,6 +77,9 @@ $(document).ready(function() {
 		var doubleDecoded = htmlDecode(allVars.adminBanner);
 		$adminBanner.html(doubleDecoded);
 	}
+	
+	allVars.htmlPreProcessor = HtmlPreProcessor();
+	allVars.htmlPreProcessor.apply($("body"));
 });
 
 

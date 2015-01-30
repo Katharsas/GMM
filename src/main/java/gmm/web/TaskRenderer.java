@@ -54,9 +54,9 @@ public class TaskRenderer {
 	 * Request must already include all needed forms.
 	 */
 	public TaskRenderResult renderTask(Task task, ModelMap model,
-			HttpServletRequest request, HttpServletResponse response, boolean isEditable) throws Exception {
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		populateModel(model, request, response, isEditable);
+		populateModel(model, request, response);
 		return renderSingleTask(task, model);
 	}
 	
@@ -64,9 +64,9 @@ public class TaskRenderer {
 	 * Request must already include all needed forms.
 	 */
 	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ModelMap model,
-			HttpServletRequest request, HttpServletResponse response, boolean isEditable) throws Exception {
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		populateModel(model, request, response, isEditable);
+		populateModel(model, request, response);
 		List<TaskRenderResult> renderedTasks = new LinkedList<>();
 		
 		for(Task task : tasks) {
@@ -91,13 +91,10 @@ public class TaskRenderer {
 	}
 	
 	private void populateModel(ModelMap model, HttpServletRequest request,
-			HttpServletResponse response, boolean isEditable) throws IOException {
+			HttpServletResponse response) throws IOException {
 		
 		boolean isUserLoggedIn = users.isUserLoggedIn();
-		boolean isTaskEditable = isUserLoggedIn && isEditable;
-		
 		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
-		model.addAttribute("isTaskEditable", isTaskEditable);
 	    if (isUserLoggedIn) {
 	    	model.addAttribute("principal", users.getLoggedInUser());
 	    }

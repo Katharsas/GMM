@@ -129,7 +129,7 @@ function switchAdmin(idLink) {
 function editUserName(idLink, userName) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
-		var name = $textField.attr("value");
+		var name = $textField.val();
 		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"name": name})
 			.done(function() {
 				window.location.reload();
@@ -185,12 +185,16 @@ var ajaxChannel;
 
 function loadTasks() {
 	ajaxChannel = new ResponseBundleHandler('tasks');
-	ajaxChannel.start();
+	ajaxChannel.start(false);
 }
 
 function importAssets(assetTypes) {
 	ajaxChannel = new ResponseBundleHandler("assets");
-	ajaxChannel.start(assetTypes);
+	ajaxChannel.start(assetTypes,
+			function() {
+		ajaxChannel = new ResponseBundleHandler('tasks');
+		ajaxChannel.start(true);
+	});
 }
 
 /**
@@ -200,7 +204,8 @@ function importAssets(assetTypes) {
  * 
  * To not waste requests, the messages from the server will come in bundles of dynamic size, where
  * the last bundle message either indicates that the server needs a message from the client or that
- * the server has finished sending all messages.
+ * the server has finished sending all messages or the server wants to give an update because he is
+ * very slow.
  */
 function ResponseBundleHandler(responseBundleOption) {
 	var ResponseBundleOptions = {
@@ -213,12 +218,12 @@ function ResponseBundleHandler(responseBundleOption) {
 					$options.children("#overwriteTaskButton").show();
 					$options.children("#addBothTasksButton").show();
 				},
-				start : function() {
+				start : function(loadAssets) {
 					var dir = allVars.selectedBackupFile.attr('rel');
-					if(dir === undefined || dir === "") {
+					if(!loadAssets && (dir === undefined || dir === "")) {
 						return undefined;
 					}
-					return $.getJSON(allVars.contextPath+"/admin/load", { dir: dir });
+					return $.getJSON(allVars.contextPath+"/admin/load", (loadAssets ? {} : { dir: dir }));
 				}
 
 			},
@@ -258,13 +263,15 @@ function ResponseBundleHandler(responseBundleOption) {
 	var $finishedButton = $("#finishLoadingButton");
 	var $checkBox = $('#doForAllCheckbox input');
 	
+	var callback;
 	var that = this;
 	
 	/**
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
 	 * or conflict message.
 	 */
-	this.start = function (startOptions) {
+	this.start = function (startOptions, onFinished) {
+		callback = onFinished;
 		$conflictOptions.children().hide();
 		$finishedButton.hide();
 		ajaxResult = options.start(startOptions);
@@ -289,6 +296,7 @@ function ResponseBundleHandler(responseBundleOption) {
 	this.finish = function () {
 		hideDialogue();
 		$messageList.empty();
+		if (callback !== undefined) callback();
 	};
 	
 	/**
@@ -323,7 +331,6 @@ function ResponseBundleHandler(responseBundleOption) {
 			}
 			else $conflictMessage.html(outOfSync);
 		}
-		console.log($messageList.height());
 		$messageListContainer.scrollTop($messageList.height());
 	}
 	

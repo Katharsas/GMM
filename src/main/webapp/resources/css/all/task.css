@@ -1,3 +1,18 @@
+.listElement{
+	margin-top:7px;
+	padding:4px 8px;
+	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
+	border-left:0px solid rgba(255, 78, 35, 1);
+	overflow:hidden;
+	
+	/**
+	 * New solution for performance
+	 */
+	 
+	min-width:470px;
+	/* TODO always use maximum available width */
+}
+
 .elementCount {
 	font-size:0.9em;
 	margin-top:3px;
@@ -54,20 +69,41 @@
 	color:#999999;
 	font-size:0.7em;
 }
+
+.elementButton{
+	padding:3px 7px;
+	margin:2px 10px 0px 0px;
+	min-width:5.5em;
+	line-height: 1.4em;
+}
+
 .elementButton, .commentButton {
 	font-size:0.87em;
 	color:#CCCCCC;
 	background-color: #3A3A3A;
 }
-.elementButton{
-	padding:3px 7px;
-	margin:2px 10px 0px 0px;
-	min-width:5.5em;
+
+.commentButton {
+	min-width:3em;
+	padding-left:5px;
+	padding-right:5px;
 }
+
 .elementButton:hover{
 	background-color:292929;
 }
-.elementButton.commentElement {
+
+svg.buttonIcon {
+	height:16px;
+	width:16px;
+	padding-bottom:1px;
+	vertical-align: bottom;
+}
+svg.buttonIcon * {
+	fill: #CCCCCC;
+}
+
+.listElementBodyFooter {
 	margin-left:3px;
 }
 
@@ -85,9 +121,6 @@
 .elementPriority.LOW{
 	width:0.3em;
 	background-color:#DDDDDD;
-}
-commentButton {
-	height:30px;
 }
 .elementComments {
 	margin-top:10px;
@@ -108,10 +141,7 @@ commentButton {
 	margin-right:2px;
 	min-width:6em;
 }
-.commentEditButton {
-	padding-left:5px;
-	padding-right:5px;
-}
+
 .subElementText {
 	padding-left:5px;
 }

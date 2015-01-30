@@ -1,0 +1,9 @@
+#taskList {
+/* 	Min height interpreted as height by chrome */
+	min-height:600px;
+	width:100%;
+	border-top:2px solid #151515;
+	padding:10px 40px;
+	max-width:850px;
+	margin: auto;
+}

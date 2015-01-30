@@ -96,7 +96,7 @@ public class TaskAssetController {
 			@PathVariable String subDir,
 			@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(session.getTasks(), idLink);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 			boolean isAssets = subDir.equals("assets");
 			
 			Path visible = config.ASSETS_NEW
@@ -124,7 +124,7 @@ public class TaskAssetController {
 			MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
 			MultipartFile file = (MultipartFile) map.getFirst("myFile");
 			
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(session.getTasks(), idLink);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 			taskService.addFile(task, file);
 			
 			return file.isEmpty()? "Upload failed!" : "Upload successfull!";
@@ -153,7 +153,7 @@ public class TaskAssetController {
 			@PathVariable final String idLink,
 			@PathVariable final String subDir,
 			@PathVariable final String dir) {
-		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(session.getTasks(), idLink);
+		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		Path filePath;
 		Path base;
 		if(subDir.equals("preview")) {
@@ -195,7 +195,7 @@ public class TaskAssetController {
 			@RequestParam("asset") Boolean asset,
 			@RequestParam("dir") Path dir) throws AjaxResponseException {
 		try {
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(session.getTasks(), idLink);
+			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 			taskService.deleteFile(task, dir, asset);
 		}
 		catch (Exception e) {throw new AjaxResponseException(e);}

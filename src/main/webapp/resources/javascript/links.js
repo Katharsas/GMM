@@ -1,18 +1,35 @@
-var expandedTasks = undefined;
+var tasksVars = {
+	"selectedTaskFileIsAsset" : "",
+	"expandedTasks" : undefined,
+};
 
+var tasksFuncs = {
+	"subDir" : function() {
+		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
+	},
+	"filePath" : function() {
+		return allVars.selectedTaskFile.attr("rel");
+	}
+};
+
+//add listeners to global scope
+var listeners = TaskListeners(tasksVars, tasksFuncs);
+for (func in listeners) {
+	window[func] = listeners[func];
+}
 
 /**
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(
-	function() {			
-		TaskLoader = TaskLoader("render", $("#listsMain"));
+	function() {
+		TaskLoader = TaskLoader("render", $("#taskList"));
 		TaskSwitcher = TaskSwitcher(TaskLoader);
-		expandedTasks = new Queue(3, function($task1, $task2) {
+		tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
 			return $task1[0] === $task2[0];
 	});
 });
 
 function switchListElement(element) {
-	TaskSwitcher.switchTask($(element).parent().first(), expandedTasks);
+	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);
 }

@@ -26,6 +26,9 @@ public abstract class UniqueObject implements Linkable{
 		return getClass().getSimpleName()+id;
 	}
 	
+	/**
+	 * @return null if an element with this idLink does not exist in the given collection
+	 */
 	public  static <U extends UniqueObject> U getFromIdLink(Collection<U> c, String idLink) {
 		for(U u : c) {
 			if(u.getIdLink().equals(idLink)) return u;
@@ -33,6 +36,9 @@ public abstract class UniqueObject implements Linkable{
 		return null;
 	}
 	
+	/**
+	 * @return null if an element with this id does not exist in the given collection
+	 */
 	public  static <U extends UniqueObject> U getFromId(Collection<U> c, long id) {
 		for(U u : c) {
 			if(u.getId() == id) return u;
@@ -45,6 +51,7 @@ public abstract class UniqueObject implements Linkable{
 			updateCounter(u);
 		}
 	}
+	
 	public static <U extends UniqueObject> void updateCounter(U u) {
 		if(u.getId() > idCount) idCount = u.getId();
 	}

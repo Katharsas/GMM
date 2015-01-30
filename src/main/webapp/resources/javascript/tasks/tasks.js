@@ -24,6 +24,15 @@ var tasksFuncs = {
 	}
 };
 
+//add listeners to global scope
+(function() {
+	var ls = TaskListeners(tasksVars, tasksFuncs);
+	for (func in ls) {
+		window[func] = ls[func];
+	}
+})();
+
+
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -75,49 +84,6 @@ $(document).ready(
 
 function switchListElement(element) {
 	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);
-}
-
-function switchDeleteQuestion(element) {
-	var $delete = $(element).parent().parent().children(".elementDelete");
-	$delete.toggle();
-}
-
-function findSwitchCommentForm(element) {
-	switchCommentForm($(element).parents(".listElementBody").find(
-			".commentForm"));
-}
-function switchCommentForm($commentForm) {
-	if ($commentForm.is(":visible")) {
-		hideCommentForm($commentForm);
-	} else {
-		showCommentForm($commentForm);
-	}
-}
-function hideCommentForm($commentForm) {
-	var $elementComments = $commentForm.parent();
-	if ($elementComments.is(":visible:blank")) {
-		$elementComments.hide();
-	}
-	$commentForm.hide();
-}
-function showCommentForm($commentForm) {
-	$commentForm.parent().show();
-	$commentForm.show();
-}
-
-function changeComment(comment, taskId, commentId) {
-	confirm(function() {confirmCommentChange(taskId, commentId);},
-			"Bitte Kommentar ändern",
-			undefined,
-			comment);
-}
-
-function confirmCommentChange(taskId, commentId) {
-	var comment = $("#confirmDialogTextArea").val();
-	var url = "editComment/" + taskId + "/" + commentId;
-	$.post(url, {"editedComment" : comment}, 
-			function() {window.location.reload();}
-	);
 }
 
 /**
@@ -181,53 +147,6 @@ function switchGeneralFiltersAll($element) {
 
 function submitGeneralFilters() {
 	$(".generalFilters").submit();
-}
-
-function uploadFile(input, idLink) {
-	allVars.$overlay.show();
-	
-	var file = input.files[0];
-	var uri = "tasks/upload/" + idLink + tasksFuncs.tabPar();
-
-	sendFile(file, uri, function(responseText) {
-		tasksFuncs.refresh();
-//		alert(allVars.$overlay.show, "Upload successfull!");
-	});
-}
-
-function downloadFromPreview(idLink, version) {
-	var uri = "tasks/download/" + idLink + "/preview/" + version + "/" + tasksFuncs.tabPar();
-	window.open(uri);
-}
-
-function downloadFile(idLink) {
-	var dir = tasksFuncs.filePath();
-	if (dir === undefined || dir === "") {
-		return;
-	}
-	var uri = "tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/";
-	window.open(uri);
-}
-
-function confirmDeleteFile(idLink) {
-	var dir = tasksFuncs.filePath();
-	if (dir === undefined || dir === "") {
-		return;
-	}
-	confirm(
-			function() {
-				$.post("tasks/deleteFile/" + idLink, {dir: dir,
-						asset: tasksVars.selectedTaskFileIsAsset.toString()},
-					function() {
-						tasksFuncs.refresh();
-				});
-			}, "Delete " + tasksFuncs.filePath() + " ?");
-}
-
-function confirmDeleteTask(idLink, name) {
-	confirm(function() {
-		window.location = "tasks/deleteTask/" + idLink + tasksFuncs.tabPar();
-	}, "Delete task \'" + name + "\' ?");
 }
 
 

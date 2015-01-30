@@ -18,9 +18,11 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 /** java */
 
 
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 /* project */
+
 
 
 
@@ -143,14 +145,15 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted
 	 */
-	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.GET)
-	public String handleTasksDelete(
-				@PathVariable String idLink) {
-		
- 		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
- 		session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
- 		
-		return "redirect:/tasks";
+	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
+	@ResponseBody
+	public void handleTasksDelete(
+				@PathVariable String idLink) throws AjaxResponseException {
+		try {
+			data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
+			session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	
@@ -277,7 +280,7 @@ public class TaskController {
 			HttpServletResponse response) throws AjaxResponseException {
 		try {
 			populateRequest(request);
-			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response, true);
+			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response);
 		} catch(Exception e) {
 			throw new AjaxResponseException(e);
 		}

@@ -18,6 +18,7 @@ import gmm.domain.Linkable;
 import gmm.domain.ModelTask;
 import gmm.domain.Task;
 import gmm.domain.TextureTask;
+import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.service.UserService;
 
@@ -144,5 +145,23 @@ public class DataBase implements DataAccess {
 	@Override
 	public CombinedData getCombinedData() {
 		return combined;
+	}
+	
+	@Override
+	public boolean hasIds(long[] ids) {
+		return exists(users, ids) == true ||
+				exists(generalTasks, ids) == true ||
+				exists(textureTasks, ids) == true ||
+				exists(modelTasks, ids) == true;
+
+	}
+	
+	private boolean exists(Collection<? extends UniqueObject> c, long[] ids) {
+		for(UniqueObject u : c) {
+			for (long id : ids) {
+				if(u.getId() == id) return true;
+			}
+		}
+		return false;
 	}
 }

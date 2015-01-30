@@ -7,6 +7,11 @@ function CustomRenderer() {
 	var $canvas, width, height;
 	var scene, camera, renderer, controls;
 	var boxMesh;
+	var directionalLight;
+	
+	var directionalLightRadians = 0;
+	var shadowsEnabled = true;
+	var rotateLight = true;
 
 	var createScene = function () {
 		$canvas = $('canvas#canvas');
@@ -19,32 +24,44 @@ function CustomRenderer() {
 		camera.position.z = 50;
 		
 		controls = new THREE.OrbitControls( camera );
-		// controls.position0.set( 0, 0, 0 );
-		// controls.reset();
-		// use this to invoke render on listener, but animation invokes rendering anyway.
-		// controls.addEventListener( 'change', render );
-		// whatever
-		// controls.target.set( 0, 0, 0 );
-		
-//		var geometry = new THREE.BoxGeometry( 2, 2, 2 );
-//		var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: false } );
-//		var material = new THREE.MeshLambertMaterial( );
-//		boxMesh = new THREE.Mesh( geometry, material );
-
-//		scene.add( boxMesh );
 		
 		//ambient light
-		var ambientLight = new THREE.AmbientLight(0x111122);
+		var ambientLight = new THREE.AmbientLight(0x181818);
 		scene.add(ambientLight);
 
 		// directional lighting
-		var directionalLight = new THREE.DirectionalLight(0xffffff);
-		directionalLight.position.set(10, 10, 10).normalize();
+		directionalLight = new THREE.DirectionalLight(0xffffff);
+		directionalLight.position.set(100, 100, 100);
+		
+		if(shadowsEnabled) {
+			directionalLight.castShadow = true;
+			
+			directionalLight.shadowCameraNear = 100;
+			directionalLight.shadowCameraFar = 300;
+			
+			directionalLight.shadowCameraLeft = -50;
+			directionalLight.shadowCameraRight = 50;
+			directionalLight.shadowCameraTop = 50;
+			directionalLight.shadowCameraBottom = -50;
+			
+			directionalLight.shadowDarkness = 0.5;
+			directionalLight.shadowBias = 0.0001;
+			
+			directionalLight.shadowMapWidth = 2048;
+			directionalLight.shadowMapHeight = 2048;
+			
+			directionalLight.shadowCameraVisible = true;
+		}
 		scene.add(directionalLight);
 	};
 	
 	var createRenderer = function() {
 		renderer = new THREE.WebGLRenderer({canvas:$canvas[0], antialias: true});
+		if(shadowsEnabled) {
+			renderer.shadowMapType = THREE.PCFSoftShadowMap;
+			renderer.shadowMapEnabled = true;
+			renderer.shadowMapSoft = true;
+		}
 	};
 	
 	var loadModel = function() {
@@ -52,6 +69,10 @@ function CustomRenderer() {
 //			var material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
 			var material = new THREE.MeshLambertMaterial( );
 			var mesh = new THREE.Mesh( geometry, material );
+			if(shadowsEnabled) {
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+			}
 			scene.add(mesh);
 		};
 		var loader = new THREE.JSONLoader();
@@ -60,8 +81,13 @@ function CustomRenderer() {
 
 	var render = function() {
 		requestAnimationFrame(render);
-
-//		boxMesh.rotation.y += 0.005;
+		
+		if(rotateLight) {
+			directionalLightRadians += 0.002;
+			var sin = Math.sin(directionalLightRadians) * 100;
+			var cos = Math.cos(directionalLightRadians) * 100;
+			directionalLight.position.set(sin, 100, cos);
+		}
 		renderer.render(scene, camera);
 	};
 
