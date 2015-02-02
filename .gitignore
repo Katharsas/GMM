@@ -225,7 +225,7 @@ pip-log.txt
 ## Custom
 #############
 
-.sass-cache/
-/src/main/webapp/WEB-INF/data
+src/main/webapp/WEB-INF/data
 builds/
 blender/
+src/main/webapp/resources/css/compiled
