@@ -94,10 +94,10 @@
 			<br/>
 			<c:forEach items="${users}" var="user">
 				<div id="${user.getIdLink()}" class="elementUser">
-					<div class="subElementUserEnabled button left" onclick="switchUser('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
+					<div class="subElementUserEnabled clickable left" onclick="switchUser('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
 						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
 					</div>
-					<div class="subElementUserRole button left"  onclick="switchAdmin('${user.getIdLink()}')">
+					<div class="subElementUserRole clickable left"  onclick="switchAdmin('${user.getIdLink()}')">
 						${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
 					</div>
 					<div class="subElementUserName left">

@@ -1,0 +1,48 @@
+//-------------------------------------------------------------------------------------------------
+// This file contains general mixins with an above-average amount of logic.
+// Big loads of logic should go into javascript.
+//-------------------------------------------------------------------------------------------------
+
+@mixin browser-property-prefix($property, $value) {
+	-webkit-#{$property}: $value;
+	-moz-#{$property}: $value;
+	-ms-#{$property}: $value;
+	-o-#{$property}: $value;
+	#{$property}: $value;
+}
+
+@mixin browser-value-prefix($property, $value) {
+	#{$property}: -webkit-#{$value};
+	#{$property}: -moz-#{$value};
+	#{$property}: -ms-#{$value};
+	#{$property}: -o-#{$value};
+	#{$property}: $value;
+}
+
+@mixin background-linear-gradient($linear-gradient-args...) {
+	@include browser-value-prefix(background-image, linear-gradient(#{$linear-gradient-args}));
+}
+
+@mixin button-color($color, $gradient-width: 20%) {
+
+	$top:lighten($color, 7%);
+	$bot:darken($color, 4%);
+	@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
+	box-shadow: inset 0px 1px 1px lighten($color, 20%);
+	
+	&:hover {
+		$color:lighten($color, 4%);
+		$top:lighten($color, 7%);
+		$bot:darken($color, 6%);
+		@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
+		box-shadow: inset 0px 1px 1px lighten($color, 20%);
+	}
+}
+
+@mixin indented-shadow-for-bright($color) {
+	box-shadow: inset -1px -1px 0px lighten($color, 13%), inset 1px 1px 0px darken($color, 17%);
+}
+
+@mixin indented-shadow-for-color($color) {
+	box-shadow: inset -1px -1px 0px lighten($color, 10%), inset 1px 1px 0px darken($color, 4%);
+}

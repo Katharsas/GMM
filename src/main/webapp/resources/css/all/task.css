@@ -1,4 +1,7 @@
 .listElement{
+	color:inherit;
+	background-color:#111;
+	
 	margin-top:7px;
 	padding:4px 8px;
 	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;

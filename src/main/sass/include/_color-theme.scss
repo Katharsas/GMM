@@ -1,0 +1,58 @@
+//-------------------------------------------------------------------------------------------------
+// You can change basic colors here.
+//-------------------------------------------------------------------------------------------------
+
+$bgc-page:	#000;
+$fgc-page:	#EEE;
+
+//blue
+$bgc-subpage-bright:	#0B3F57;
+$fgc-subpage-bright:	#EEE;
+
+//blue
+$bgc-subpage-dark:	#072737;
+$fgc-subpage-dark:	#DDD;
+
+//orange
+$c-highlight:	#FF4E23;
+
+$c-button-mid:	#353535;
+
+$bgc-usertag:	#DDD;
+$fgc-usertag:	#444;
+
+//blue
+$bgc-labeltag:	#164054;
+$fgc-labeltag:	#DDD;
+
+$bgc-task:	#111;
+$bgc-task-expanded:	#002030;
+
+//-------------------------------------------------------------------------------------------------
+// Helper functions for less clutter in css. Not really necessary.
+//-------------------------------------------------------------------------------------------------
+
+@mixin color-theme-page {
+	background-color: $bgc-page;
+	color: $fgc-page;
+}
+
+@mixin color-theme-subpage-bright {
+	background-color: $bgc-subpage-bright;
+	color: $fgc-subpage-bright;
+}
+
+@mixin color-theme-subpage-dark {
+	background-color: $bgc-subpage-dark;
+	color: $fgc-subpage-dark;
+}
+
+@mixin color-theme-usertag {
+	background-color: $bgc-usertag;
+	color: $fgc-usertag;
+}
+
+@mixin color-theme-labeltag {
+	background-color: $bgc-labeltag;
+	color: $fgc-labeltag;
+}

@@ -22,8 +22,7 @@
 			</script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
-			<link href="<c:url value="/res/css/all/default.css"/>" media="screen" rel="stylesheet" type="text/css" />
-			<link href="<c:url value="/res/css/all/dialog.css"/>" media="screen" rel="stylesheet" type="text/css" />
+			<link href="<c:url value="/res/css/compiled/all_template.css"/>" media="screen" rel="stylesheet" type="text/css" />
 			<jsp:invoke fragment="css"/>
 	</head>
 	
@@ -110,13 +109,13 @@
 				Top Menu
 				###################################################
 			-->
-			<div id="top" class="pageTabmenu tabmenu inactivePage h3">
+			<div id="page-tabmenu" class="tabmenu h3">
 				<sec:authorize access="hasRole('ROLE_USER')">
 					<div class="tab left">
 						<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
 					</div>
 				</sec:authorize>
-				<div class="meta left">
+				<div id="metainfo" class="left">
 					<spring:eval expression="@config.getProperty('app.name')" /><br/>
 					<spring:eval expression="@config.getProperty('app.version')" />
 				</div>
@@ -141,7 +140,7 @@
 				
 				<div class="clear"></div>
 			</div>
-			<div id ="menuSpacer"></div>
+			<div id ="page-tabmenu-spacer"></div>
 			<!-- End of Top Tab-Menu -->
 			
 			<!-- 
@@ -159,7 +158,7 @@
 				Dynamic Body
 				###################################################
 			-->
-			<div id="main" class="pageTabbody tabbody activePage">
+			<div id="page">
 				<jsp:doBody/>
 			</div>
 			<!-- End of body of Task Tab -->

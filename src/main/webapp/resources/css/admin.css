@@ -113,12 +113,12 @@
 	padding:7px;
 	font-weight: bold;
 }
-.subElementUserRole.button {
+.subElementUserRole {
 	min-width:5em;
 	padding:7px;
 	color:#999;
 }
-.subElementUserEnabled.button {
+.subElementUserEnabled {
 	margin-left:5px;
 	padding-top:2px;
 	font-size:1.4em;
