@@ -1,0 +1,55 @@
+Frontend developer guide
+===========================
+
+This guide tries to give an overview over the frontend side of the project (html, css, javascript) regarding folders where things are stored, preprocessing ect.
+
+-------------------------------------------
+1. HTML
+-------------------------------------------
+HTML is generated server-side from templates (templates allow to put variables/lists/logic from Java into html). Uncompiled template code is not accessible from the client. There are two template engines which compile different types of templates and use a different template syntax:
+
+1.1 Freemaker Java Template Engine
+=> compiles .ftl files from folder: "src/main/webapp/WEB_INF/ftl"
+=> See website with syntax, guides & docs: http://freemarker.org/
+=> This engine is used, because the Java code can call this engine to compile html without having to send the html to the client. (This is not possible with the other templating engine, see 1.2).
+=> Used to compile html for tasks dynamically (when needed) and send it to the client (by AJAX currently, later goal: Websockets). The client uses the html to build the task list on the page.
+=> You can compile a template to a Java String by using the Java class "gmm.web.TaskRenderer".
+
+1.2 Jasper 2 JSP Engine (Java Server Pages)
+=> compiles .jsp files from folder: "src/main/webapp/WEB_INF/jsp"
+=> uses .tag/.tagf files from folder: "src/main/webapp/WEB_INF/tags" when it compiles .jsp files. Files in the tags folder have the same basic syntax as .jsp files.
+=> This engine is part of the tomcat server and can only be used as part of a server response to the client. Using it with AJAX does not work. Because of this limitation parts of the templates where converted to Freemarker templates (see 1.1).
+=> Used to compile html for static page content.
+=> You can compile a template (and send it as html page to the client) by returning the name of your JSP file in a Java Controller method.
+=> The file "all_template.tag" contains the basic html used by every site.
+
+-------------------------------------------
+2. CSS
+-------------------------------------------
+CSS is generated with the preprocessor SASS
+=> compiles .scss files from folder: "src/main/sass" -----> to .css files in folder "src/main/webapp/resources/css/compiled"
+=> SASS files (.scss) are very similar to real .css files, but allow things like variables, imports, nested selectors or functions/logic. This also makes it possible to automatically minify the compiled .css files.
+=> See website with syntax, guides & docs: http://sass-lang.com/
+=> Files are compiled whenever you change a .scss file or start a complete maven build.
+=> This thing is a memory hog, so make sure Eclipse has enough or disable the automatic compilation on file change:
+Search for line "<runOnIncremental>true</runOnIncremental>" in Eclipse and change to false (don't accidentally commit).
+=> Basic folder structure:
+- Files in all_template folder belong to the html template file "all_template.tag".
+- Files in shared folder are used by some but not all pages.
+- Files/Folders in folder pages belong to each specific page with the same name.
+- Files in the sass folder glue together all parts for every page using import statements only.
+=> Files not starting with underscore are compiled to real css.
+
+-------------------------------------------
+3. Javascript (JS)
+-------------------------------------------
+Nothing important going on here. Javascript is in folder "src/main/webapp/resources/javascript".
+
+-------------------------------------------
+4. Internationalization
+-------------------------------------------
+=> Internationalized text ist stored in .properties files in folder "src/main/resources/i18n".
+=> The language delivered is the clients choosen language (browser language settings).
+=> Language text can be linked in all types of html templates using the keys from the properties files (for exact syntax examples see template source).
+=> Language text cannot be used in CSS
+=> Language text can be used in JS only manually currently (though that will change in future) by adding a keyname--->text mapping in a script tag in HTML templates. When Require.js gets implemented, it will maybe be possible to configure it so that text can get linked directly from any JS file.

@@ -35,6 +35,9 @@ public class PublicController {
 	@ModelAttribute("comment")
 	public CommentForm getCommentForm() {return new CommentForm();}
 	
+	/**
+	 * Serves task data to client ajax code.
+	 */
 	@RequestMapping(value = "/linkTasks/render", method = RequestMethod.GET)
 	@ResponseBody
 	public List<TaskRenderResult> renderTasks(
@@ -50,6 +53,9 @@ public class PublicController {
 		}
 	}
 	
+	/**
+	 * Stores ids and waits for client ajax code to do more stuff.
+	 */
 	@RequestMapping(value = "/linkTasks/{ids}", method = RequestMethod.GET)
 	public String showTasks(ModelMap model, 
 			@PathVariable String ids) {
@@ -57,6 +63,9 @@ public class PublicController {
 		return "links";
 	}
 	
+	/**
+	 * Needed so you can link to the same page but with Login interdiction.
+	 */
 	@PreAuthorize("hasRole('ROLE_USER')")
 	@RequestMapping(value = "/login/linkTasks/{ids}", method = RequestMethod.GET)
 	public String login(ModelMap model, 

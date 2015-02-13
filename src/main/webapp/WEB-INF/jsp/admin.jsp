@@ -8,9 +8,7 @@
     	<script src="<c:url value="/res/javascript/all/jqueryFileTree.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
-		<link href="<c:url value="/res/css/all/taskForm.css"/>" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<c:url value="/res/css/all/jqueryFileTree.css"/>" media="screen" rel="stylesheet" type="text/css" />
-    	<link href="<c:url value="/res/css/admin.css"/>" media="screen" rel="stylesheet" type="text/css" />
+		<link href="<c:url value="/res/css/compiled/admin.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
     
     

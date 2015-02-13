@@ -1,0 +1,14 @@
+//------------------------------------------------------------------------------
+// Current version of SASS does not include dependency managment (import only once),
+// but rather copy-pastes code where you put an include statement.
+// This will be changed in SASS 4.0.
+//
+// Until then try to avoid including stuff from multiple files where the files
+// could end up in the same final file (you can do so if necessary).
+//
+// Files from the include folder are save to use anywhere because they don't
+// actually render out any CSS (don't add CSS to them).
+//------------------------------------------------------------------------------
+
+@import 'include/sass-default';
+@import 'include/color-theme';
