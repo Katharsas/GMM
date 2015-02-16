@@ -25,7 +25,7 @@
 ## Custom
 #############
 
-src/main/webapp/javascript/lib/* linguist-vendored
+src/main/webapp/resources/javascript/lib/* linguist-vendored
 *.scss linguist-language=CSS
 *.jsp linguist-language=HTML
 *.tag linguist-language=HTML
