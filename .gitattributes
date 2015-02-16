@@ -20,3 +20,14 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+#############
+## Custom
+#############
+
+src/main/webapp/javascript/lib/* linguist-vendored
+*.scss linguist-language=CSS
+*.jsp linguist-language=HTML
+*.tag linguist-language=HTML
+*.tagf linguist-language=HTML
+*.ftl linguist-language=HTML
