@@ -5,7 +5,6 @@
 	min-width:5em;
 	border:1px solid #555;
 	margin:3px 5px;
-/* 	height:1.2em; */
 }
 .adminElementGroup, .groupDescriptor {
 	margin:0 auto;
@@ -82,10 +81,6 @@
 }
 #bundledMessageDialog {
 	width: 600px;
-	top: 50%;
-	left: 50%;
-	margin-top: -200px;
-	margin-left: -300px;
 }
 #bundledMessageDialog > *{
 	margin:7px 10px;
@@ -97,7 +92,6 @@
 
 .elementUser {
 	background-color:#164054;
-/* 	margin:10px; */
 }
 .elementUser:hover {
 	background-color:#072737;

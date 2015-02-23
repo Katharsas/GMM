@@ -32,7 +32,7 @@ CSS is generated with the preprocessor SASS
 => See website with syntax, guides & docs: http://sass-lang.com/
 => Files are compiled whenever you change a .scss file or start a complete maven build.
 => This thing is a memory hog, so make sure Eclipse has enough or disable the automatic compilation on file change:
-Search for line "<runOnIncremental>true</runOnIncremental>" in Eclipse and change to false (don't accidentally commit).
+Search for line "<runOnIncremental>true</runOnIncremental>" in pom.xml file and change to false (don't accidentally commit).
 => Basic folder structure:
 - Files in all_template folder belong to the html template file "all_template.tag".
 - Files in shared folder are used by some but not all pages.

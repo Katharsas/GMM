@@ -43,7 +43,7 @@
         		<div class="clear"></div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
-        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue('#saveAllTasksDialog')"><fmt:message key="admin.database.saveall"/></div>
+        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue($('#saveAllTasksDialog'))"><fmt:message key="admin.database.saveall"/></div>
         		<div id="saveAllTasksDialog" class="dialogContainer">
         			<form id="saveAllTasksForm" method="POST" action="admin/save">
         				<fmt:message key="admin.database.filename"/><br/><br/>

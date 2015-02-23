@@ -61,15 +61,16 @@ $(document).ready(function() {
 	
 	hideDialogue();
 	//find page tab by URL and set as active tab
-	var activeTab = $(".pageTabmenu .tab a[href=\""+fileName+"\"]").parent();
+	var activeTab = $("#page-tabmenu .tab a[href=\""+allVars.contextPath+"/"+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
 	
-	//setup enter keys
+	//setup enter keys of dialogs
 	$(".dialogContainer").bind("keypress", function(event) {
 		if(event.which === 13) {
 			confirmOk();
 		}
 	});
+	$(".draggable").fixedDraggable();
 	
 	allVars.adminBanner = htmlDecode(allVars.adminBanner);
 	var $adminBanner = $("#customAdminBanner");
@@ -110,15 +111,34 @@ function hideOverlay() {
 	allVars.$htmlElement.removeClass("hideResizeFirefoxFix");
 }
 
-function showDialogue(selector) {
-	showOverlay();
-	var dialog = $(selector);
-	dialog.show();
-	//TODO calculate height & width and position dialog in the middle of page
+/**
+ * @param width - int: Width of the dialog (default is min-width from css).
+ * @param height - int: Height of the dialog (default is min-width from css).
+ */
+function centerDialog($dialog, width, height) {
+	if(width === undefined)  width = $dialog.outerWidth();
+	$dialog.css("left", ($(window).innerWidth()/2-width/2)+"px");
+	if(height === undefined) height = $dialog.innerHeight();
+	$dialog.css("top", (($(window).innerHeight()/2-height/2)*0.7)+"px");
 }
 
-function hideDialogue() {
-	$(".dialogContainer").hide();
+function setDialogDimensions($dialog, width, height) {
+	if(width === undefined)  width = $dialog.outerWidth();
+	$dialog.css("min-width", width+"px");
+	if(height === undefined) height = $dialog.innerHeight();
+	$dialog.css("min-height", height+"px");
+}
+
+function showDialogue($dialog, width, height) {
+	showOverlay();
+	centerDialog($dialog, width, height);
+	$dialog.show();
+}
+
+function hideDialogue($dialog) {
+	if ($dialog === undefined) $dialog = $(".dialogContainer");
+	$dialog.removeAttr("style");
+	$dialog.hide();
 	hideOverlay();
 }
 
@@ -145,8 +165,8 @@ function sendFile(file, uri, callback) {
  * Show a confirmation dialog to the user.
  * @see showConfirmMessage
  */
-function confirm(onConfirm, message, textInputDefault, textAreaDefault) {
-	showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault);
+function confirm(onConfirm, message, textInputDefault, textAreaDefault, width, height) {
+	showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault, width, height);
 }
 
 /**
@@ -163,17 +183,20 @@ function alert (onConfirm, message, textInputDefault, textAreaDefault) {
  * @param onConfirm - Function: callback executes when user hits confirm button (ok).
  * @param message - String: message to show in the dialog.
  * @param hasCancel - boolean: if true, a cancel button will be shown, which closes the dialog.
- * @param textInputDefault - String: If defined, a form input tag will be shown. Default text value of the input.
- * @param textAreaDefault - String: If defined, a form textarea tag will be shown. Default text value of the textarea.
+ * @param textInputDefault - String: If defined, a form input tag will be shown with the argument as its value/text.
+ * @param textAreaDefault - String: If defined, a form textarea tag will be shown with the argument as its value/text.
+ * @param width - int: Width of the dialog (default is min-width from css).
+ * @param height - int: Height of the dialog (default is min-width from css).
  */
-function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, textAreaDefault) {
+function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, textAreaDefault, width, height) {
+	showOverlay();
+	//apply elements and texts to dialog
 	allVars.onConfirmCallback = onConfirm;
 	var $confirmDialog = $("#confirmDialog");
 	$confirmDialog.find("#confirmDialogMessage").text(message);
 	var $textInputField = $confirmDialog.find("#confirmDialogTextInput");
 	var $textArea = $confirmDialog.find("#confirmDialogTextArea");
 	var $cancelButton = $confirmDialog.find(".dialogButton.confirmCancel");
-//	var $okButton = $confirmDialog.find(".dialogButton.confirmOk");
 	if(textInputDefault !== undefined) {
 		$textInputField.attr("value", textInputDefault);
 		$textInputField.show();
@@ -194,7 +217,10 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 	else {
 		$cancelButton.hide();
 	}
-	showOverlay();
+	//set width and height & center
+	setDialogDimensions($confirmDialog, width, height);
+	centerDialog($confirmDialog, width, height);
+	//show
 	$confirmDialog.show();
 	if(textInputDefault !== undefined) {
 		$textInputField.select();
@@ -209,7 +235,7 @@ function showException(jqXHR) {
 	var $exceptionDialog = $("#exceptionDialog");
 	$exceptionDialog.find("#exceptionMessage").text(exception.message);
 	$exceptionDialog.find("#exceptionStackTrace").text(exception.stackTrace);
-	$exceptionDialog.show();
+	showDialogue($exceptionDialog);
 }
 
 function confirmOk() {

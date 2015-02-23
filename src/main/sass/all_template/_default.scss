@@ -60,12 +60,15 @@ label, .button, .clickable{
 submit {
 	font-size: inherit;
 }
-
+.draggable {
+	cursor:move;
+}
+.draggable * {
+	cursor:default;
+}
 /* //////////////////////////////////////////////////
  * General style settings and colour sets
  * //////////////////////////////////////////////////*/
- /*Browser fixes etc.*/
-.hideResizeFirefoxFix * { resize: none !important; }
 /*Default*/
 * {
 	@include browser-property-prefix(box-sizing, border-box);

@@ -16,7 +16,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 	
 	var reload = function() {
 		window.location.reload();
-	}
+	};
 	
 	return {
 		switchDeleteQuestion : function(element) {
@@ -52,9 +52,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		
 		changeComment : function(comment, taskId, commentId) {
 			confirm(function() {confirmCommentChange(taskId, commentId);},
-					"Bitte Kommentar ändern",
-					undefined,
-					comment);
+					"Change your comment below:", undefined, comment, 700);
 		},
 		
 		confirmCommentChange : function(taskId, commentId) {

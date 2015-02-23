@@ -14,6 +14,7 @@
 			<script src="<c:url value="/res/javascript/lib/jquery-2.1.1.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/all/jqueryDraggable.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/preprocessor.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/default.js"/>" type="text/javascript"></script>
 			<script type="text/javascript">
@@ -35,7 +36,7 @@
 				###################################################
 			-->
 			<div id="overlay"></div>
-			<div id="confirmDialog" class="dialogContainer">
+			<div id="confirmDialog" class="dialogContainer draggable">
 				<p id="confirmDialogMessage" class="center"></p>
 				<div id="confirmDialogTextInputWrapper">
 					<input id="confirmDialogTextInput" class="center"/>
@@ -48,7 +49,7 @@
 				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()"><fmt:message key="all_template.cancel"/></div>
 				<div class="clear"></div>
 			</div>
-			<div id="exceptionDialog" class="dialogContainer">
+			<div id="exceptionDialog" class="dialogContainer draggable">
 				<div id="exceptionHeading">
 					Internal Server Error 500
 				</div>
@@ -66,7 +67,7 @@
 					<fmt:message key="all_template.reload"/>
 				</div>
 			</div>
-			<div id="bundledMessageDialog" class="dialogContainer">
+			<div id="bundledMessageDialog" class="dialogContainer draggable">
        			<p><fmt:message key="all_template.loading"/></p>
        			<p id="conflictMessage"></p>
        			<div id="messageList" class="dialogList"><ul></ul></div>

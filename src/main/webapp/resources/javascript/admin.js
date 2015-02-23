@@ -36,7 +36,13 @@ function deleteFile() {
 }
 
 function deleteAllTasks() {
-	$.post(allVars.contextPath+"/admin/deleteTasks").fail(showException);
+	confirm(function() {
+		confirm(function() {
+			$.post(allVars.contextPath+"/admin/deleteTasks")
+				.done(function(){hideDialogue();})
+				.fail(showException);
+		}, "Are you really really sure?");
+	},"Delete all tasks?");
 }
 
 function saveAllTasks() {
