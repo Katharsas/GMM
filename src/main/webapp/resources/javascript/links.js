@@ -14,7 +14,7 @@ var tasksFuncs = {
 
 //add listeners to global scope
 var listeners = TaskListeners(tasksVars, tasksFuncs);
-for (func in listeners) {
+for (var func in listeners) {
 	window[func] = listeners[func];
 }
 
@@ -23,12 +23,13 @@ for (func in listeners) {
  */
 $(document).ready(
 	function() {
-		TaskLoader = TaskLoader("render", $("#taskList"));
+		TaskLoader = TaskLoader(allVars.contextPath+"/public/linkTasks/render", $("#taskList"));
 		TaskSwitcher = TaskSwitcher(TaskLoader);
 		tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
-			return $task1[0] === $task2[0];
-	});
-});
+				return $task1[0] === $task2[0];
+		});
+	}
+);
 
 function switchListElement(element) {
 	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);

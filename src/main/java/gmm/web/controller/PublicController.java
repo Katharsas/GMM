@@ -56,10 +56,11 @@ public class PublicController {
 	/**
 	 * Stores ids and waits for client ajax code to do more stuff.
 	 */
-	@RequestMapping(value = "/linkTasks/{ids}", method = RequestMethod.GET)
+	@RequestMapping(value = "/linkTasks/{ids}/{key}", method = RequestMethod.GET)
 	public String showTasks(ModelMap model, 
-			@PathVariable String ids) {
-		session.setTaskLinks(ids);
+			@PathVariable String ids,
+			@PathVariable String key) {
+		session.setTaskLinks(ids, key);
 		return "links";
 	}
 	

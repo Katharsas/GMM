@@ -2,6 +2,8 @@ package gmm.domain;
 
 import gmm.service.converters.UserReferenceConverter;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -11,10 +13,17 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 public abstract class Task extends NamedObject{
 	
-	//Variables--------------------------------------------------
+	//Static--------------------------------------------------
 	
+	private static SecureRandom random = new SecureRandom();
+	public static String getRandomKey() {
+		//toString(32) encodes 5 bits/char, so BigInteger range bits should be a multiple of 5
+		return new BigInteger(70, random).toString(32);
+	}
+	
+	//Variables--------------------------------------------------
 	@XStreamConverter(UserReferenceConverter.class)
-	private User author;
+	final private User author;
 	@XStreamConverter(UserReferenceConverter.class)
 	private User assigned = null;
 	private String details = "";
@@ -23,6 +32,8 @@ public abstract class Task extends NamedObject{
 	private TaskPriority priority = TaskPriority.MID;
 	@XStreamAsAttribute
 	private TaskStatus taskStatus = TaskStatus.TODO;
+	
+	final private String linkKey = Task.getRandomKey();
 	
 	final private List<Comment> comments = new LinkedList<Comment>();
 	final private List<Task> dependsOn = new LinkedList<Task>();
@@ -80,6 +91,9 @@ public abstract class Task extends NamedObject{
 	}
 	public void setAssigned(User assigned) {
 		this.assigned = assigned;
+	}
+	public String getLinkKey() {
+		return linkKey;
 	}
 	
 	public List<Task> getDependsOn() {

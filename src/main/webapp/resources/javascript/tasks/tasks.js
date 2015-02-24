@@ -27,7 +27,7 @@ var tasksFuncs = {
 //add listeners to global scope
 (function() {
 	var ls = TaskListeners(tasksVars, tasksFuncs);
-	for (func in ls) {
+	for (var func in ls) {
 		window[func] = ls[func];
 	}
 })();
@@ -49,7 +49,7 @@ $(document).ready(
 			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
 			$activeTab.addClass("activeSubpage");
 			
-			TaskLoader = TaskLoader("render", $("#listsMain"));
+			TaskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#listsMain"));
 			TaskSwitcher = TaskSwitcher(TaskLoader);
 			new TaskForm();
 			tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {

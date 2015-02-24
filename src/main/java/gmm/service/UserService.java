@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
 	@Autowired private DataAccess data;
+	private SecureRandom random = new SecureRandom();
 
 	public User get(Principal principal) {
 		return (principal == null) ?
@@ -39,7 +40,7 @@ public class UserService {
 	}
 	
 	public String generatePassword() {
-		SecureRandom random = new SecureRandom();
+		//toString(32) encodes 5 bits/char, so BigInteger range bits should be a multiple of 5
 		return new BigInteger(50, random).toString(32);
 	}
 	

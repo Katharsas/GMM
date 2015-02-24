@@ -191,8 +191,11 @@ function alert (onConfirm, message, textInputDefault, textAreaDefault) {
 function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, textAreaDefault, width, height) {
 	showOverlay();
 	//apply elements and texts to dialog
-	allVars.onConfirmCallback = onConfirm;
 	var $confirmDialog = $("#confirmDialog");
+	allVars.onConfirmCallback = function() {
+		onConfirm();
+		hideDialogue($confirmDialog);
+	}
 	$confirmDialog.find("#confirmDialogMessage").text(message);
 	var $textInputField = $confirmDialog.find("#confirmDialogTextInput");
 	var $textArea = $confirmDialog.find("#confirmDialogTextArea");

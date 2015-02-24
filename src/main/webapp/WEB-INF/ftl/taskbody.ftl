@@ -166,7 +166,7 @@
 					    		<@s.message "to.comment"/>
 					    	</div>
 					    	<div class="left elementButton button">
-						    	<a href="${request.contextPath}/public/linkTasks/${task.getId()}">
+						    	<a href="${request.contextPath}/public/linkTasks/${task.getId()}/${task.getLinkKey()}">
 					    			<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/link.svg">
 						    		Link <span></span>
 						    	</a>
