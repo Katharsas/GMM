@@ -1,23 +1,26 @@
+
 #changePassword {
 	margin:10px auto;
 	margin-top:100px;
 	width:300px;
 }
+
+/*
+ * Change Password Dialog
+ * #####################################
+ */
+
 #changePasswordDialog {
 	width:280px;
+	
+	> * {margin:10px;}
 }
-#changePasswordDialog > *{
-	margin:10px;
-}
-#changePasswordDialog > .pageButton {
-	margin-top:20px;
-	min-width:100px;
-}
-.inputWrapper *{
-	width:100%;
-	left:0px;
-}
-#passwordError {
+#changePasswordDialog-error {
     font-weight: bold;
     color: #A82709;
+}
+
+#changePasswordDialog-ok,
+#changePasswordDialog-cancel {
+	margin-top:20px;
 }

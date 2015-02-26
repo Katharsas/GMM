@@ -68,9 +68,8 @@ public class PublicController {
 	 * Needed so you can link to the same page but with Login interdiction.
 	 */
 	@PreAuthorize("hasRole('ROLE_USER')")
-	@RequestMapping(value = "/login/linkTasks/{ids}", method = RequestMethod.GET)
-	public String login(ModelMap model, 
-			@PathVariable String ids) {
-		return "redirect:/public/linkTasks/"+ids;
+	@RequestMapping(value = "/login", method = RequestMethod.GET)
+	public String login(ModelMap model) {
+		return "links";
 	}
 }

@@ -95,22 +95,26 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 			if (dir === undefined || dir === "") {
 				return;
 			}
-			confirm(function() {
-				$.post(allVars.contextPath + "/tasks/deleteFile/" + idLink, {dir: dir,
-						asset: tasksVars.selectedTaskFileIsAsset.toString()},
-					function() {
+			var $dialog = confirm(function() {
+				$.post(allVars.contextPath + "/tasks/deleteFile/" + idLink,
+						{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
+					.done(function() {
+						hideDialog($dialog);
 						alert(reload, "TODO: Refresh filetree");
-				});
+					})
+					.fail(showException);
 			}, "Delete " + tasksFuncs.filePath() + " ?");
 		},
 		
 		deleteTask : function(idLink, name) {
-			confirm(function() {
-					$.post(allVars.contextPath + "/tasks/deleteTask/" + idLink, {},
-						function() {
-							alert(reload, "TODO: Remove task from client");
-					});
-				}, "Are you sure you want to delete this task?");
+			var $dialog = confirm(function() {
+				$.post(allVars.contextPath + "/tasks/deleteTask/" + idLink, {})
+					.done(function() {
+						hideDialog($dialog);
+						alert(reload, "TODO: Remove task from client");
+					})
+					.fail(showException);
+			}, "Are you sure you want to delete this task?");
 		}
 	};
 };

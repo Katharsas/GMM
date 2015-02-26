@@ -4,6 +4,10 @@
 $.expr[':'].blank = function(obj) {
 	return !$.trim($(obj).text()).length;
 };
+//adds isEmpty function to jQuery
+$.fn.isEmpty = function() {
+	return this.length < 1;
+};
 
 var fileName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
 var paramString = window.location.search.substring(1);
@@ -59,7 +63,7 @@ function htmlDecode(input){
 $(document).ready(function() {
 	allVars.$overlay = $("#overlay");
 	
-	hideDialogue();
+	hideDialog();
 	//find page tab by URL and set as active tab
 	var activeTab = $("#page-tabmenu .tab a[href=\""+allVars.contextPath+"/"+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
@@ -102,13 +106,11 @@ function getURLParameter(sParam)
 }
 
 function showOverlay() {
-	allVars.$htmlElement.addClass("hideResizeFirefoxFix");
 	allVars.$overlay.show();
 }
 
 function hideOverlay() {
 	allVars.$overlay.hide();
-	allVars.$htmlElement.removeClass("hideResizeFirefoxFix");
 }
 
 /**
@@ -129,14 +131,14 @@ function setDialogDimensions($dialog, width, height) {
 	$dialog.css("min-height", height+"px");
 }
 
-function showDialogue($dialog, width, height) {
+function showDialog($dialog, width, height) {
 	showOverlay();
 	centerDialog($dialog, width, height);
 	$dialog.show();
 }
 
-function hideDialogue($dialog) {
-	if ($dialog === undefined) $dialog = $(".dialogContainer");
+function hideDialog($dialog) {
+	if ($dialog === undefined) $dialog = $(".dialog");
 	$dialog.removeAttr("style");
 	$dialog.hide();
 	hideOverlay();
@@ -166,7 +168,7 @@ function sendFile(file, uri, callback) {
  * @see showConfirmMessage
  */
 function confirm(onConfirm, message, textInputDefault, textAreaDefault, width, height) {
-	showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault, width, height);
+	return showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault, width, height);
 }
 
 /**
@@ -174,7 +176,12 @@ function confirm(onConfirm, message, textInputDefault, textAreaDefault, width, h
  * @see showConfirmMessage
  */
 function alert (onConfirm, message, textInputDefault, textAreaDefault) {
-	showConfirmDialog(onConfirm, message, false, textInputDefault, textAreaDefault);
+	var $dialog = showConfirmDialog(
+		function(){
+			hideDialog($dialog);
+			onConfirm();
+		}, message, false, textInputDefault, textAreaDefault);
+	return $dialog;
 }
 
 /**
@@ -194,12 +201,11 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 	var $confirmDialog = $("#confirmDialog");
 	allVars.onConfirmCallback = function() {
 		onConfirm();
-		hideDialogue($confirmDialog);
-	}
-	$confirmDialog.find("#confirmDialogMessage").text(message);
-	var $textInputField = $confirmDialog.find("#confirmDialogTextInput");
-	var $textArea = $confirmDialog.find("#confirmDialogTextArea");
-	var $cancelButton = $confirmDialog.find(".dialogButton.confirmCancel");
+	};
+	$confirmDialog.find("#confirmDialog-message").text(message);
+	var $textInputField = $confirmDialog.find("#confirmDialog-input");
+	var $textArea = $confirmDialog.find("#confirmDialog-textarea");
+	var $cancelButton = $confirmDialog.find("#confirmDialog-cancel");
 	if(textInputDefault !== undefined) {
 		$textInputField.attr("value", textInputDefault);
 		$textInputField.show();
@@ -228,17 +234,18 @@ function showConfirmDialog(onConfirm, message, hasCancel, textInputDefault, text
 	if(textInputDefault !== undefined) {
 		$textInputField.select();
 	}
+	return $confirmDialog;
 }
 
 function showException(jqXHR) {
-	$(".dialogContainer").hide();
+	hideDialog();
 	showOverlay();
 	
 	var exception = jQuery.parseJSON(jqXHR.responseText);
 	var $exceptionDialog = $("#exceptionDialog");
-	$exceptionDialog.find("#exceptionMessage").text(exception.message);
-	$exceptionDialog.find("#exceptionStackTrace").text(exception.stackTrace);
-	showDialogue($exceptionDialog);
+	$exceptionDialog.find("#exceptionDialog-message").text(exception.message);
+	$exceptionDialog.find("#exceptionDialog-trace").text(exception.stackTrace);
+	showDialog($exceptionDialog);
 }
 
 function confirmOk() {

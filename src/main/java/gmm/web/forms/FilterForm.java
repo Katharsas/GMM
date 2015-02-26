@@ -20,7 +20,7 @@ public class FilterForm {
 		createdByMe = false;
 		assignedToMe = false;
 		all = true;
-		hidden = true;
+		hidden = false;
 		priority = ListUtil.inflateToArray(true, TaskPriority.values().length);
 		taskStatus = ListUtil.inflateToArray(true, TaskStatus.values().length);
 	}

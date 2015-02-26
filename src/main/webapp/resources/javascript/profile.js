@@ -1,27 +1,31 @@
 function showChangePassword() {
-	$("#changePasswordDialog #passwordError").text("");
-	showDialogue("#changePasswordDialog");
+	var $dialog = $("#changePasswordDialog");
+	$dialog.find("#changePasswordDialog-error").text("");
+	showDialog($dialog);
 }
 
 function changePassword() {
-	var oldPW = $("#changePasswordDialog #oldPassword").attr("value");
-	var newPW1 = $("#changePasswordDialog #newPassword1").attr("value");
-	var newPW2 = $("#changePasswordDialog #newPassword2").attr("value");
+	//Namespace
+	var ns = "#changePasswordDialog";
+	var $dialog = $(ns);
+	var $error = $dialog.find(ns+"-error");
+	
+	var oldPW = $dialog.find(ns+"-old").attr("value");
+	var newPW1 = $dialog.find(ns+"-first").attr("value");
+	var newPW2 = $dialog.find(ns+"-second").attr("value");
 	
 	if(newPW1===newPW2) {
 		$.post("profile/password", {"oldPW" : oldPW, "newPW" : newPW2})
 			.done(function(error) {
 				if(error==="") {
-					hideDialogue();
-					alert(hideDialogue, "Password change was successful!");
-				}
-				else {
-					$("#changePasswordDialog #passwordError").text(error);
+					hideDialog($dialog);
+					alert(hideDialog, "Password change was successful!");
+				} else {
+					$error.text(error);
 				}
 			})
 			.fail(showException);
-	}
-	else {
-		$("#changePasswordDialog #passwordError").text("Error: New passwords differ!");
+	} else {
+		$error.text("Error: New passwords differ!");
 	}
 }

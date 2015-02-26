@@ -1,8 +1,10 @@
 @import '../include';
 
-/* /////////////////////////////////////////////////////////////////////////////////
+/* 
+ * ////////////////////////////////////////////////////////////////////////////
  * Unspecific styles which can be used anywhere
- * /////////////////////////////////////////////////////////////////////////////////*/
+ * ////////////////////////////////////////////////////////////////////////////
+ */
 
 .button {
 	position:relative;
@@ -20,7 +22,7 @@
 	padding-left:4px;
 	padding-right:4px;
 	
-	@include color-theme-usertag;
+	@include colorTheme-usertag;
 	@include indented-shadow-for-bright($bgc-usertag);
 }
 
@@ -28,7 +30,7 @@
 	padding-left:6px;
 	padding-right:6px;
 	
-	@include color-theme-labeltag;
+	@include colorTheme-labeltag;
 	@include indented-shadow-for-color(#164054);
 }
 
@@ -131,10 +133,10 @@ body {
 
 /*Colours Sub Page*/
 .activeSubpage{
-	@include color-theme-subpage-bright;
+	@include colorTheme-subpage-bright;
 }
 .inactiveSubpage{
-	@include color-theme-subpage-dark;
+	@include colorTheme-subpage-dark;
 }
 .noSubpage{
 	color:inherit;

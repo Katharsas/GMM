@@ -1,8 +1,10 @@
 @import '../include';
 
-/* /////////////////////////////////////////////////////////////////////////////////
+/* 
+ * ////////////////////////////////////////////////////////////////////////////
  * Styling for dialogs in all_template.tag html
- * /////////////////////////////////////////////////////////////////////////////////*/
+ * ////////////////////////////////////////////////////////////////////////////
+ */
 
 #overlay {
 	position: fixed;
@@ -16,81 +18,100 @@
     z-index: 200;
 }
 
-.dialogContainer {	
+.dialog {
+	@include colorTheme-dialog;
+	
+	min-width:250px;
+	min-height:40px;
+	
   	z-index: 250;
   	position: fixed;
-  	background-color:#111;
-  	border:5px solid #333;
+  	border-width: 5px;
+  	border-style: solid;
 }
 
-.dialogButton {
-	background-color: #333;
-	min-width:80px;
+.dialog-button {
+	min-width:100px;
 }
 
-.dialogButton:hover {
-	background-color: #222;
+.dialog-input {
+	width:100%;
 }
 
-.dialogList {
-	overflow: auto;
-	height:200px;
-}
-
-.dialogList ul{
-	margin:0px;
-	padding:2px 10px;
-	list-style-type: none;
-	color:#36A2D7;
-	font-size: 0.85em;
-}
+/*
+ * Confirm Dialog
+ * #####################################
+ */
 
 #confirmDialog {
 	padding:10px;
-	min-width:250px;
-	min-height:40px;
 	position:fixed;
+	
+	> * {margin:10px;}
 }
 
-#confirmDialog > * {
-	margin:10px;
-}
-
-#confirmDialog #confirmDialogTextInput{ 
-	width:100%;
-}
-
-#confirmDialog textarea{ 
-	width:100%;
-}
+/*
+ * Exception Dialog
+ * #####################################
+ */
 
 #exceptionDialog {
 	width:90%;
 	height:90%;
 	padding:20px;
 }
-#exceptionDialog #exceptionHeading {
+#exceptionDialog-heading {
+	color: $fgc-exceptionDialog-heading;
 	font-size:1.7em;
-	color:#D35A3D;
 }
-#exceptionDialog #exceptionMessage {
-	color:#D35A3D;
+#exceptionDialog-message {
+	color:$fgc-exceptionDialog-heading;
 	padding-bottom: 15px;
 }
-#exceptionDialog #exceptionInstructions {
+#exceptionDialog-instructions {
 	padding-bottom: 10px;
 }
-#exceptionDialog #exceptionStackTraceWrapper {
-/* 	height:500px; */
+#exceptionDialog-traceWrapper {
 	max-height:75%;
 	overflow:auto;
 	padding: 20px;
-	color:#BBB;
-	background-color: #333;
+	
+	@include colorTheme-exceptionDialog-trace;
 }
-#exceptionDialog .dialogButton {
+#exceptionDialog-reloadButton {
 	width:200px;
 	padding:5px;
 	margin:20px auto;
 	margin-bottom:0px;
 }
+
+/*
+ * Batch Dialog
+ * #####################################
+ */
+#batchDialog {
+	width: 650px;
+	> * {margin:7px 10px;}
+}
+#batchDialog-conflictMessage {
+	font-weight: bold;
+	color: $fgc-batchDialog-conflict;
+}
+#batchDialog-listWrapper {
+	overflow: auto;
+	height:200px;
+}
+#batchDialog-list {
+	margin:0px;
+	padding:2px 10px;
+	list-style-type: none;
+	font-size: 0.85em;
+	
+	@include colorTheme-batchDialog-list;
+}
+#batchDialog-conflictOptions > .dialog-button,
+#batchDialog-doForAllCheckbox {
+	margin: 8px 20px;
+	margin-left: 0px;
+}
+

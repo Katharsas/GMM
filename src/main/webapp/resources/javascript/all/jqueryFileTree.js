@@ -8,7 +8,7 @@
 //
 // Visit http://abeautifulsite.net/notebook.php?article=58 for more information
 //
-// Usage: $('.fileTreeDemo').fileTree( options, callback )
+// Usage: $('.fileTreeDemo').fileTree( options, callbackOnSelect )
 //
 // Options:  root           - root folder to display; default = /
 //           script         - location of the serverside AJAX file to use; default = jqueryFileTree.php
@@ -33,12 +33,12 @@
 //
 // MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION:
 //
-// Options:  directoryClickable - whether or not to call the callback function on directory click
+// Options:  directoryClickable - whether or not to call the callbackOnSelect function on directory click
 //
 if(jQuery) (function($){
 	
 	$.extend($.fn, {
-		fileTree: function(options, callback) {
+		fileTree: function(options, callbackOnSelect, callbackOnCollapse) {
 			// Defaults
 			if( !options ) options = {};
 			if( options.root === undefined ) options.root = '/';
@@ -69,27 +69,30 @@ if(jQuery) (function($){
 				
 				function bindTree(t) {
 					$(t).find('LI A').bind(options.folderEvent, function() {
-						if( $(this).parent().hasClass('directory') ) {
-							if( $(this).parent().hasClass('collapsed') ) {
+						var $parent = $(this).parent();
+						if( $parent.hasClass('directory') ) {
+							if( $parent.hasClass('collapsed') ) {
 								// Expand
 								if( !options.multiFolder ) {
-									$(this).parent().parent().find('UL').slideUp({ duration: options.collapseSpeed, easing: options.collapseEasing });
-									$(this).parent().parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
+									$parent.parent().find('UL').slideUp({ duration: options.collapseSpeed, easing: options.collapseEasing });
+									$parent.parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
 								}
-								$(this).parent().find('UL').remove(); // cleanup
-								showTree( $(this).parent(), $(this).attr('rel'));// removed some pointless matching and escaping, which broke inner folders
-								$(this).parent().removeClass('collapsed').addClass('expanded');
+								$parent.find('UL').remove(); // cleanup
+								showTree( $parent, $(this).attr('rel'));// removed some pointless matching and escaping, which broke inner folders
+								$parent.removeClass('collapsed').addClass('expanded');
 							} else {
 								// Collapse
-								$(this).parent().find('UL').slideUp({ duration: options.collapseSpeed, easing: options.collapseEasing });
-								$(this).parent().removeClass('expanded').addClass('collapsed');
+								$parent.find('UL').slideUp({
+									duration: options.collapseSpeed, easing: options.collapseEasing,
+									complete: function() {callbackOnCollapse($parent);}});
+								$parent.removeClass('expanded').addClass('collapsed');
 							}
 							if(options.directoryClickable) {
-								callback($(this));
+								callbackOnSelect($(this));
 								return false;
 							}
 						} else {
-							callback($(this));
+							callbackOnSelect($(this));
 							return false;
 						}
 					});

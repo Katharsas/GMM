@@ -13,27 +13,35 @@
 
     <jsp:body>
     	<div id="changePassword">
-			<div class="button pageButton" onclick="showChangePassword()"><fmt:message key="password.change"/></div>
-			<div id="changePasswordDialog" class="dialogContainer">
-				<div id="passwordError"></div>
-				<div><fmt:message key="password.min"/></div>
-				<div class="inputDescriptor">
+			<div class="button pageButton" onclick="showChangePassword()">
+				<fmt:message key="password.change"/>
+			</div>
+			<div id="changePasswordDialog" class="dialog">
+				<div id="changePasswordDialog-error"></div>
+				<div>
+					<fmt:message key="password.min"/>
+				</div>
+				<div>
 					<fmt:message key="password.current"/>:
 				</div>
-				<div class="inputWrapper">
-					<input type="password" id="oldPassword"/>
+				<div>
+					<input id="changePasswordDialog-old" class="dialog-input" type="password"/>
 				</div>
-				<div class="inputDescriptor">
+				<div>
 					<fmt:message key="password.new"/>:
 				</div>
-				<div class="inputWrapper">
-					<input type="password" id="newPassword1"/>
+				<div>
+					<input id="changePasswordDialog-first" class="dialog-input" type="password"/>
 				</div>
-				<div class="inputWrapper">
-					<input type="password" id="newPassword2"/>
+				<div>
+					<input id="changePasswordDialog-second" class="dialog-input" type="password" />
 				</div>
-				<div class="button pageButton left" onclick="changePassword()"><fmt:message key="password.submit"/></div>
-				<div class="button pageButton right" onclick="hideDialogue()"><fmt:message key="password.cancel"/></div>
+				<div id="changePasswordDialog-ok" class="dialog-button button left" onclick="changePassword()">
+					<fmt:message key="password.submit"/>
+				</div>
+				<div id="changePasswordDialog-cancel" class="dialog-button button right" onclick="hideDialog()">
+					<fmt:message key="password.cancel"/>
+				</div>
 			</div>
 		</div>
     </jsp:body>

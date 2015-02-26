@@ -1,0 +1,119 @@
+//------------------------------------------------------------------------------
+// You can change basic colors here.
+//------------------------------------------------------------------------------
+
+//pale <-> dark, bright <-> flat
+
+//orange (bright)
+$c-orange: #FF4E23;
+
+//orange (flat)
+$c-flatOrange: #D35A3D;
+
+//red
+$c-red: #A82709;
+
+//blue (dark)
+$c-darkBlue: #164054;
+
+//blue (pale)
+$c-paleBlue: #36A2D7;
+
+
+
+/*
+ * default & template
+ * #####################################
+ */
+
+$bgc-page:	#000;
+$fgc-page:	#EEE;
+
+$bgc-subpage-bright:	#0B3F57;//blue-green
+$fgc-subpage-bright:	#EEE;
+
+$bgc-subpage-dark:	#072737;//blue-green (dark)
+$fgc-subpage-dark:	#DDD;
+
+$c-highlight:	$c-orange;
+
+$c-button-mid:	#353535;
+
+$bgc-usertag:	#DDD;
+$fgc-usertag:	#444;
+
+$bgc-labeltag:	$c-darkBlue;
+$fgc-labeltag:	#DDD;
+
+$bgc-task:	#111;
+$bgc-task-expanded:	#002030;
+
+/*
+ * dialogs
+ * #####################################
+ */
+
+$bgc-dialog: #111;
+$fgc-dialog: #EEE;
+
+$bgc-dialog-border: #333;
+
+$fgc-exceptionDialog-heading: $c-flatOrange;
+
+$bgc-exceptionDialog-trace: #333;
+$fgc-exceptionDialog-trace: #BBB;
+
+$fgc-batchDialog-conflict: $c-red;
+
+$bgc-batchDialog-list: $bgc-dialog;
+$fgc-batchDialog-list: $c-paleBlue;
+
+/*
+ * 
+ * #####################################
+ */
+
+//------------------------------------------------------------------------------
+// Helper functions for less clutter in css. Not really necessary.
+//------------------------------------------------------------------------------
+
+@mixin colorTheme-page {
+	background-color: $bgc-page;
+	color: $fgc-page;
+}
+
+@mixin colorTheme-subpage-bright {
+	background-color: $bgc-subpage-bright;
+	color: $fgc-subpage-bright;
+}
+
+@mixin colorTheme-subpage-dark {
+	background-color: $bgc-subpage-dark;
+	color: $fgc-subpage-dark;
+}
+
+@mixin colorTheme-usertag {
+	background-color: $bgc-usertag;
+	color: $fgc-usertag;
+}
+
+@mixin colorTheme-labeltag {
+	background-color: $bgc-labeltag;
+	color: $fgc-labeltag;
+}
+
+@mixin colorTheme-dialog {
+	background-color: $bgc-dialog;
+	color: $fgc-dialog;
+	border-color: $bgc-dialog-border;
+}
+
+@mixin colorTheme-exceptionDialog-trace {
+	background-color: $bgc-exceptionDialog-trace;
+	color: $fgc-exceptionDialog-trace;
+}
+
+@mixin colorTheme-batchDialog-list {
+	background-color: $bgc-batchDialog-list;
+	color: $fgc-batchDialog-list;
+}

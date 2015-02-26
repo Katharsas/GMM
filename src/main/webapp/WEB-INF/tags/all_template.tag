@@ -31,71 +31,18 @@
 		<div id="wrap">
 	
 			<!-- 
-				###################################################
+				###############################################################
 				Overlay & Dialogs
-				###################################################
+				###############################################################
 			-->
 			<div id="overlay"></div>
-			<div id="confirmDialog" class="dialogContainer draggable">
-				<p id="confirmDialogMessage" class="center"></p>
-				<div id="confirmDialogTextInputWrapper">
-					<input id="confirmDialogTextInput" class="center"/>
-				</div>
-				<div>
-					<textarea id="confirmDialogTextArea">
-					</textarea>
-				</div>
-				<div class="dialogButton confirmOk button left" onclick="confirmOk()"><fmt:message key="all_template.confirm"/></div>
-				<div class="dialogButton confirmCancel button right" onclick="hideDialogue()"><fmt:message key="all_template.cancel"/></div>
-				<div class="clear"></div>
-			</div>
-			<div id="exceptionDialog" class="dialogContainer draggable">
-				<div id="exceptionHeading">
-					Internal Server Error 500
-				</div>
-				<div id="exceptionMessage"></div>
-				<div id="exceptionInstructions">
-					<fmt:message key="all_template.errortext"/><br>
-					<fmt:message key="all_template.errortext2"/><br>
-					<br>
-					<fmt:message key="all_template.errormessage"/>
-				</div>
-				<div id="exceptionStackTraceWrapper">
-					<pre id="exceptionStackTrace"></pre>
-				</div>
-				<div class="dialogButton button" onclick="window.location.reload()">
-					<fmt:message key="all_template.reload"/>
-				</div>
-			</div>
-			<div id="bundledMessageDialog" class="dialogContainer draggable">
-       			<p><fmt:message key="all_template.loading"/></p>
-       			<p id="conflictMessage"></p>
-       			<div id="messageList" class="dialogList"><ul></ul></div>
-       			<div id="conflictOptions">
-        			<div id="skipButton" class="left dialogButton button" onclick="ajaxChannel.answer('skip');"><fmt:message key="admin.database.skip"/></div>
-        			<!-- Load Tasks -->
-        			<div id="overwriteTaskButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwrite');"><fmt:message key="admin.database.overwrite"/></div>
-        			<div id="addBothTasksButton" class="left dialogButton button" onclick="ajaxChannel.answer('both');"><fmt:message key="admin.database.keepboth"/></div>
-        			<!-- Import Assets -->
-        			<div id="overwriteTaskAquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskAquireData');"><fmt:message key="all_template.acquire"/></div>
-        			<div id="overwriteTaskDeleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');"><fmt:message key="all_template.delete"/></div>
-        			<div id="aquireDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('aquireData');"><fmt:message key="all_template.acquire"/></div>
-        			<div id="deleteDataButton" class="left dialogButton button" onclick="ajaxChannel.answer('deleteData');"><fmt:message key="all_template.delete"/></div>
-        			<div class="clear"></div>
-        			<label id="doForAllCheckbox">
-        				<input type="checkbox" name="doForAll" value="doForAll"><fmt:message key="admin.database.dothesame"/><br>
-       				</label>
-       			</div>
-       			<div id="finishLoadingButton" class="dialogButton button" onclick="ajaxChannel.finish()"><fmt:message key="admin.database.finish"/></div>
-       		</div>
-		
-		
+			<%@ include file="/WEB-INF/tags/all_dialogs.tagf" %>
+			
 			<!-- 
-				###################################################
+				###############################################################
 				No Javascript Warning
-				###################################################
+				###############################################################
 			-->
-			<!-- TODO: Test -->
 			<noscript>
 				<div class="blocker">
 					<div class="warning">
@@ -103,12 +50,11 @@
 					</div>
 				</div>
 			</noscript>
-			<!-- End of No Javascript Warning -->
 		
 			<!-- 
-				###################################################
+				###############################################################
 				Top Menu
-				###################################################
+				###############################################################
 			-->
 			<div id="page-tabmenu" class="tabmenu h3">
 				<sec:authorize access="hasRole('ROLE_USER')">
@@ -145,9 +91,9 @@
 			<!-- End of Top Tab-Menu -->
 			
 			<!-- 
-				###################################################
+				###############################################################
 				Custom Admin Banner
-				###################################################
+				###############################################################
 			-->
 			<c:if test="${combinedData.isCustomAdminBannerActive()}">
 				<div id="customAdminBanner" class="center">
@@ -155,9 +101,9 @@
 			</c:if>
 		
 			<!-- 
-				###################################################
+				###############################################################
 				Dynamic Body
-				###################################################
+				###############################################################
 			-->
 			<div id="page">
 				<jsp:doBody/>

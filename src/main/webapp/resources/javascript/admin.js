@@ -17,6 +17,11 @@ function refreshTaskBackups() {
 		allFuncs.treePluginOptions(allVars.contextPath+"/admin/backups", false),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedBackupFile");
+		},
+		function($dir) {
+			var $selected = allVars.selectedBackupFile;
+			if ($selected === undefined || $selected.isEmpty()) return;
+			if (!$selected.is(':visible')) allVars.selectedBackupFile = $();
 		}
 	);
 }
@@ -27,19 +32,25 @@ function hideTaskFormType() {
 
 function deleteFile() {
 	var dir = allVars.selectedBackupFile.attr('rel');
-	if(dir === undefined || dir === "") {
-		return;
-	}
-	$.post(allVars.contextPath+"/admin/deleteFile", { dir: dir })
-		.done(refreshTaskBackups)
-		.fail(showException);
+	if(dir === undefined || dir === "") return;
+	var $confirm = confirm(function() {
+		$.post(allVars.contextPath+"/admin/deleteFile", { dir: dir })
+			.done(function() {
+				refreshTaskBackups();
+				hideDialog($confirm);
+			})
+			.fail(showException);
+	},"Delete file "+dir+"?");
 }
 
 function deleteAllTasks() {
-	confirm(function() {
+	var $confirm = confirm(function() {
+		hideDialog($confirm);
 		confirm(function() {
 			$.post(allVars.contextPath+"/admin/deleteTasks")
-				.done(function(){hideDialogue();})
+				.done(function(){
+					hideDialog($confirm);
+				})
 				.fail(showException);
 		}, "Are you really really sure?");
 	},"Delete all tasks?");
@@ -145,12 +156,12 @@ function editUserName(idLink, userName) {
 }
 
 function resetPassword(idLink) {
-	confirm(function() {
+	var $confirm = confirm(function() {
 		$.post(allVars.contextPath+"/admin/users/reset/"+idLink)
 			.done(function(data) {
-				hideDialogue();
-				alert(function() {
-					hideDialogue();
+				hideDialog($confirm);
+				var $alert = alert(function() {
+					hideDialog($alert);
 					window.location.reload();},
 					"New Password:",data);
 				})
@@ -190,8 +201,14 @@ function loadUsers() {
 var ajaxChannel;
 
 function loadTasks() {
-	ajaxChannel = new ResponseBundleHandler('tasks');
-	ajaxChannel.start(false);
+	var dir = allVars.selectedBackupFile.attr('rel');
+	if(dir === undefined || dir === "") return;
+	var $confirm = confirm(function() {
+		hideDialog($confirm);
+		ajaxChannel = new ResponseBundleHandler('tasks');
+		ajaxChannel.start({loadAssets:false, file:dir});
+	}, "Load all tasks from "+dir+"?");
+
 }
 
 function importAssets(assetTypes) {
@@ -199,7 +216,7 @@ function importAssets(assetTypes) {
 	ajaxChannel.start(assetTypes,
 			function() {
 		ajaxChannel = new ResponseBundleHandler('tasks');
-		ajaxChannel.start(true);
+		ajaxChannel.start({loadAssets:true});
 	});
 }
 
@@ -214,22 +231,26 @@ function importAssets(assetTypes) {
  * very slow.
  */
 function ResponseBundleHandler(responseBundleOption) {
+	//Namespace
+	var ns = "#batchDialog";
 	var ResponseBundleOptions = {
 			tasks : {
 				nextURI : allVars.contextPath+"/admin/load/next",
 				conflicts : ["conflict"],
 				showButtons : function(conflict, $options) {
-					$options.children("#skipButton").show();
-					$options.children("#doForAllCheckbox").show();
-					$options.children("#overwriteTaskButton").show();
-					$options.children("#addBothTasksButton").show();
+					$options.children(ns+"-skipButton").show();
+					$options.children(ns+"-doForAllCheckbox").show();
+					$options.children(ns+"-overwriteTaskButton").show();
+					$options.children(ns+"-addBothTasksButton").show();
 				},
-				start : function(loadAssets) {
-					var dir = allVars.selectedBackupFile.attr('rel');
-					if(!loadAssets && (dir === undefined || dir === "")) {
-						return undefined;
-					}
-					return $.getJSON(allVars.contextPath+"/admin/load", (loadAssets ? {} : { dir: dir }));
+				/**
+				 * @param loadAssets:boolean - true if tasks are provided by asset importer,
+				 * false if tasks are provided by xml file
+				 * @param file:String - xml task file path, if loadAssets is false
+				 */
+				start : function(options) {
+					var data = options.loadAssets ? {} : {dir: options.file};
+					return $.getJSON(allVars.contextPath+"/admin/load", data);
 				}
 
 			},
@@ -237,23 +258,26 @@ function ResponseBundleHandler(responseBundleOption) {
 				nextURI : allVars.contextPath+"/admin/importAssets/next",
 				conflicts : ["taskConflict", "folderConflict"],
 				showButtons : function(conflict, $options) {
-					$options.children("#skipButton").show();
-					$options.children("#doForAllCheckbox").show();
+					$options.children(ns+"-skipButton").show();
+					$options.children(ns+"-doForAllCheckbox").show();
 					switch(conflict) {
 					case "taskConflict":
-						$options.children("#overwriteTaskAquireDataButton").show();
-						$options.children("#overwriteTaskDeleteDataButton").show();
+						$options.children(ns+"-overwriteTaskAquireDataButton").show();
+						$options.children(ns+"-overwriteTaskDeleteDataButton").show();
 						break;
 					case "folderConflict":
-						$options.children("#aquireDataButton").show();
-						$options.children("#deleteDataButton").show();
+						$options.children(ns+"-aquireDataButton").show();
+						$options.children(ns+"-deleteDataButton").show();
 						break;
 					}
 				},
-				start : function(assetTypes) {
+				/**
+				 * @param assetType:String - "textures" or "models"
+				 */
+				start : function(assetType) {
 					var textures;
-					if (assetTypes === "textures") textures = true;
-					else if (assetTypes === "models") textures = false;
+					if (assetType === "textures") textures = true;
+					else if (assetType === "models") textures = false;
 					else return undefined;
 					return $("#taskForm").ajaxSubmit({data: { textures: textures }}).data('jqxhr');
 				}
@@ -261,13 +285,19 @@ function ResponseBundleHandler(responseBundleOption) {
 		};
 	var options = ResponseBundleOptions[responseBundleOption];
 	
-	var $dialog = $("#bundledMessageDialog");
-	var $messageListContainer = $("#messageList");
-	var $messageList = $("#messageList ul");
-	var $conflictMessage  = $("#conflictMessage");
-	var $conflictOptions = $("#conflictOptions");
-	var $finishedButton = $("#finishLoadingButton");
-	var $checkBox = $('#doForAllCheckbox input');
+	var $dialog = $(ns);
+	var $messageListContainer =
+			$dialog.find(ns+"-listWrapper");
+	var $messageList =
+			$dialog.find(ns+"-list");
+	var $conflictMessage  =
+			$dialog.find(ns+"-conflictMessage");
+	var $conflictOptions =
+			$dialog.find(ns+"-conflictOptions");
+	var $finishedButton =
+			$dialog.find(ns+"-finishLoadingButton");
+	var $checkBox =
+			$dialog.find(ns+'-doForAllCheckbox input');
 	
 	var callback;
 	var that = this;
@@ -275,6 +305,8 @@ function ResponseBundleHandler(responseBundleOption) {
 	/**
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
 	 * or conflict message.
+	 * @param startOptions:Any - see start method from chosen ResponseBundleOption
+	 * @param onFinished:Function - callback
 	 */
 	this.start = function (startOptions, onFinished) {
 		callback = onFinished;
@@ -283,7 +315,7 @@ function ResponseBundleHandler(responseBundleOption) {
 		ajaxResult = options.start(startOptions);
 		if (ajaxResult === undefined) return;
 		ajaxResult.done(reactToResults).fail(showException);
-		showDialogue($dialog);
+		showDialog($dialog);
 	};
 	
 	/**
@@ -300,7 +332,7 @@ function ResponseBundleHandler(responseBundleOption) {
 	};
 	
 	this.finish = function () {
-		hideDialogue();
+		hideDialog($dialog);
 		$messageList.empty();
 		if (callback !== undefined) callback();
 	};

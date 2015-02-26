@@ -74,20 +74,10 @@
 
 #saveAllTasksDialog {
 	padding:10px;
+	min-width:350px;
 }
-#conflictOptions > .dialogButton{
-	margin: 8px 20px;
-	margin-left: 0px;
-}
-#bundledMessageDialog {
-	width: 600px;
-}
-#bundledMessageDialog > *{
-	margin:7px 10px;
-}
-#conflictMessage {
-	font-weight: bold;
-	color:#A82709;
+#saveAllTasksDialog input{
+	width: 90%;
 }
 
 .elementUser {

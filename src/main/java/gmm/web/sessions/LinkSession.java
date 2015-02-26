@@ -27,17 +27,13 @@ public class LinkSession {
 	 * @param key - linkKey of given task or key from taskToLinkKeyMapping for multiple tasks.
 	 */
 	public void setTaskLinks(String ids, String key) {
-		System.out.println("setting tasks");
 		String[] idArray = ids.split(",");
 		if (idArray.length < 1) throw new IllegalArgumentException("No task ID specified!");
 		tasks.clear();
 		Collection<Task> allTasks = data.getList(Task.class);
 		//if one, check key from task
 		if(idArray.length == 1) {
-			System.out.println("One file linked");
 			Task task = UniqueObject.getFromId(allTasks, Long.parseLong(idArray[0]));
-			System.out.println(task.getId());
-			System.out.println(task.getLinkKey());
 			if (task != null && task.getLinkKey().equals(key)) tasks.add(task);
 			else throw new IllegalArgumentException("Task not found or wrong link key!");
 		}

@@ -174,7 +174,7 @@
 					    </#if>
 					    <#if !isUserLoggedIn>
 					    	<div class="left elementButton button">
-						    	<a href="${request.contextPath}/public/login/linkTasks/${task.getId()}">Login<span></span></a>
+						    	<a href="${request.contextPath}/public/login">Login<span></span></a>
 						    </div>
 					    </#if>
 					    <div class="elementAuthorDate right">

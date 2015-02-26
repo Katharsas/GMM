@@ -43,14 +43,14 @@
         		<div class="clear"></div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
-        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialogue($('#saveAllTasksDialog'))"><fmt:message key="admin.database.saveall"/></div>
-        		<div id="saveAllTasksDialog" class="dialogContainer">
+        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialog($('#saveAllTasksDialog'))"><fmt:message key="admin.database.saveall"/></div>
+        		<div id="saveAllTasksDialog" class="dialog draggable">
         			<form id="saveAllTasksForm" method="POST" action="admin/save">
-        				<fmt:message key="admin.database.filename"/><br/><br/>
-        				<input name="name" value="manual/example"/>.xml
+        				<div class="center"><fmt:message key="admin.database.filename"/><br/><br/></div>
+        				<input name="name" value="manual/example"/> .xml
         			</form><br/>
-        			<div class="dialogButton button left" onclick="saveAllTasks()"><fmt:message key="admin.database.save"/></div>
-        			<div class="dialogButton button right" onclick="hideDialogue()"><fmt:message key="admin.database.cancel"/></div>
+        			<div class="dialog-button button left" onclick="saveAllTasks()"><fmt:message key="admin.database.save"/></div>
+        			<div class="dialog-button button right" onclick="hideDialog()"><fmt:message key="admin.database.cancel"/></div>
         			<div class="clear"></div>
         		</div>
         		<div class="verticalSpace"></div>
@@ -104,9 +104,6 @@
 					<div class="subElementUserPassword left">
 						${user.getPasswordHash()==null ? '(Disabled - Needs Password)' : '&nbsp;'}
 					</div>
-<%-- 					<div class="button listButton right" onclick="switchUser('${user.getIdLink()}','${user.getName()}')"> --%>
-<%-- 						${user.isEnabled() ? 'Disable' : 'Enable'} --%>
-<!-- 					</div> -->
 <%-- 					<div class="button listButton right" onclick="editUserRole('${user.getIdLink()}','${user.getRole()}')"> --%>
 <!-- 						Change Role -->
 <!-- 					</div> -->

@@ -60,7 +60,7 @@ public class BackupService {
 	@Autowired private DataAccess data;
 	
 	FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
-	DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MMM-yyyy'_at_'HH-mm");
+	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm");
 	
 	private DateTime lastHourlyBackup;
 	private DateTime lastDaylyBackup;
@@ -203,10 +203,10 @@ public class BackupService {
 	}
 	
 	private DateTime getDate(String filename, String type) {
-		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{1,2}-[a-zA-Z]{3}-[0-9]{4}_at_[0-9]{1,2}-[0-9]{2})\\.xml");
+		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{4}-[a-zA-Z]{3}-[0-9]{1,2}_at_[0-9]{1,2}-[0-9]{2})\\.xml");
 		Matcher matcher = regex.matcher(filename);
 		if(!matcher.matches()) {
-			throw new IllegalArgumentException("Filename must have form: backup_type_dd-mmm-yyyy_at_hh-mm.xml");
+			throw new IllegalArgumentException("Filename must have form: backup_type_yyyy-mmm-dd_at_hh-mm.xml");
 		}
 		return formatter.parseDateTime(matcher.group(1));
 	}
