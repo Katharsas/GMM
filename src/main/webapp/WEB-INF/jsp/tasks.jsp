@@ -15,6 +15,7 @@
     	<script src="<c:url value="/res/javascript/all/taskloader.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/all/taskswitcher.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/all/tasklisteners.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/all/sidebarMarkers.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/tasks/tasks.js"/>" type="text/javascript"></script>
     	<script type="text/javascript">
 			tasksVars['tab'] = '${fn:escapeXml(cfn:escapeJS(tab))}';

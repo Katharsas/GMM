@@ -268,6 +268,40 @@ public class TaskController {
 	    return "tasks";
 	}
 	
+	/**
+	 * Default Handler (new)
+	 */
+	@RequestMapping(value="/tasksnew", method = RequestMethod.GET)
+	public String sendNew(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response,
+			@ModelAttribute("task") TaskForm form,
+			@RequestParam(value="tab", required=false) String tab,
+			@RequestParam(value="edit", defaultValue="") String edit) {
+		
+		if(tab != null) {
+			TaskType type = TaskType.fromTab(tab);
+			session.updateTab(type);
+			form.setType(type);
+		}
+		
+		if (validateId(edit)) {
+			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
+			form = taskCreator.prepareForm(task);
+			model.addAttribute("label", task.getLabel());
+			model.addAttribute("task", form);
+		}
+		
+	    model.addAttribute("taskList", session.getTasks());
+	    model.addAttribute("users", data.getList(User.class));
+	    model.addAttribute("taskLabels", data.getList(Label.class));
+	    model.addAttribute("tab", session.getCurrentTaskType().getTab());
+	    model.addAttribute("edit", edit);
+	    
+	    return "tasksnew";
+	}
+	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");
 	}

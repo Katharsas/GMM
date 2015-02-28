@@ -6,12 +6,20 @@
  * ////////////////////////////////////////////////////////////////////////////
  */
 
-/*Site position and size on screen*/
-#wrap {
-	@include colorTheme-page;
-	min-height:100%;
+html {	
+	font-family:Calibri, Verdana, Arial, sans-serif;
 }
-
+body {
+	@include colorTheme-page;
+	font-size:0.9375em;
+}
+/*Site position and size on screen*/
+#page-background {
+	z-index:-100;
+	position:fixed;
+	top:0px; bottom:0px;
+	left:0px; right:0px;
+}
 #page-tabmenu {
 	color:#EEE;
 	background-color:#333;

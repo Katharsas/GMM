@@ -1,0 +1,11 @@
+
+.sidebar-marked {
+    position: relative;
+}
+.sidebar-marker {
+    position: absolute;
+}
+.sidebar-marker.sidebar-marker-fixed {
+    position: fixed;
+    margin-top: 0px;
+}

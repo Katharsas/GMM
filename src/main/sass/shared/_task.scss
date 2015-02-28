@@ -1,21 +1,3 @@
-.listElement{
-	color:inherit;
-	background-color:#111;
-	
-	margin-top:7px;
-	padding:4px 8px;
-	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
-	border-left:0px solid rgba(255, 78, 35, 1);
-	overflow:hidden;
-	
-	/**
-	 * New solution for performance
-	 */
-	 
-	min-width:470px;
-	/* TODO always use maximum available width */
-}
-
 .elementCount {
 	font-size:0.9em;
 	margin-top:3px;

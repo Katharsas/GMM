@@ -55,7 +55,8 @@ public class XMLService {
 	
 	public synchronized void serialize(Collection<?> objects, Path path) throws IOException {
 		String xml= xstream.toXML(objects);
-		byte[] bytes = xml.getBytes();
+		xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" + xml;
+		byte[] bytes = xml.getBytes("UTF-8");
     	fileService.createFile(path, bytes);
 	}
 

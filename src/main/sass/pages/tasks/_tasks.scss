@@ -1,3 +1,48 @@
+@import '../../include';
+
+// ####################################### old tasks page content
+
+
+/*Colours Sub Page*/
+.activeSubpage{
+	@include colorTheme-subpage-bright;
+}
+.inactiveSubpage{
+	@include colorTheme-subpage-dark;
+}
+.noSubpage{
+	color:inherit;
+	background-color:inherit;
+}
+
+
+
+
+.listElement{
+	color:inherit;
+	background-color:#111;
+	
+	margin-top:7px;
+	padding:4px 8px;
+	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
+	border-left:0px solid rgba(255, 78, 35, 1);
+	overflow:hidden;
+	
+	/**
+	 * New solution for performance
+	 */
+	
+	min-width:470px;
+	/* TODO always use maximum available width */
+}
+
+
+
+
+
+
+// ####################################### tasks content
+
 .pageButton {
 	width:9em;
 }
@@ -5,13 +50,7 @@
 	padding:5px;
 }
 
-
-
 /*Content/Body of the tasks tab*/
-#main{
-    padding-right:1.5%;
-    width: 100%;
-}
 
 .td.leftColumn {
 	white-space: nowrap;

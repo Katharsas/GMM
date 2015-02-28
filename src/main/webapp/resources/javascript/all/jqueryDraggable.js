@@ -1,5 +1,5 @@
 /**
- * By Florian Reuschel
+ * @author Florian Reuschel
  */
 (function($) {
 	$.fn.fixedDraggable = function() {

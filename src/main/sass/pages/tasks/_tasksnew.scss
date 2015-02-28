@@ -1,0 +1,167 @@
+@import '../../include';
+
+// ######################################################### new css
+
+#newWrapper {
+	margin: 0px auto;
+/*	background-color: green; */
+	max-width: 1080px;
+}
+
+@media (min-width: 1080px) {
+	#main {
+		margin-left: 200px;
+	}
+}
+@media (max-width: 1079px) {
+	#main {
+		margin: 0px auto;
+	}
+}
+#main {
+	min-width:500px;
+	max-width: 880px;
+}
+
+.list {
+	margin-bottom: 50px;
+}
+
+.list-header {
+	padding: 10px;
+	margin-bottom: 1px;
+	
+	@include colorTheme-subpage-bright;
+}
+
+.list-body {
+	padding: 10px;
+	
+	@include colorTheme-subpage-dark;
+}
+
+.list-element {
+	margin: 10px;
+/* 	padding: 10px; */
+}
+
+.list-element{
+	color:inherit;
+	background-color:#111;
+	
+	margin-top:7px;
+/* 	padding:4px 8px; */
+	padding:10px 8px;
+
+	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
+	border-left:0px solid rgba(255, 78, 35, 1);
+	
+	/**
+	 * New solution for performance
+	 */
+	
+/* 	min-width:500px; */
+	/* TODO always use maximum available width */
+}
+
+.sidebar-marker {
+/* 	background-color:#0B3F57; */
+	background-color: brown;
+	padding: 10px;
+	width: 200px;
+	margin-left: -210px;
+	margin-top: -10px;
+	transition: margin-left 0.1s;
+}
+
+.sidebar-marker-fixed {
+	margin-left: -240px;
+}
+
+.sidebar-marked {
+	border: 2px solid orange;
+}
+
+#workbenchMenu {
+	
+}
+
+.workbenchMenu-tab {
+	padding: 10px;
+	background-color: green;
+	float: left;
+	width: 25%;
+	text-align: center;
+	border-right: 2px solid #000;
+	border-bottom: 2px solid #000;
+}
+
+.workbenchMenu-tab-last {
+	border-right: none;
+}
+
+.workbenchMenu-tab-active {
+	padding-bottom: 12px;
+	border-bottom: none;
+	background-color: darkgreen;
+}
+
+.workbenchTab {
+	padding: 10px;
+	background-color: darkgreen;
+	margin-bottom: 1px;
+	min-height: 100px;
+}
+
+// ######################################################### tasks css
+
+.pageButton {
+	width:9em;
+}
+.filterGroup {
+	padding:5px;
+}
+
+/*Content/Body of the tasks tab*/
+
+.td.leftColumn {
+	white-space: nowrap;
+}
+
+.td.rightColumn {
+	width:100%;
+}
+
+#generalArea{
+	margin:1em 0em;
+}
+
+.taskGroup {
+	background-color:#333333;
+}
+
+.taskButtons {
+	margin:1em 0em;
+}
+#submitTaskButton {
+	margin-right:2em;
+}
+
+#lists{
+	overflow:hidden;
+	max-width:860px;
+}
+
+#listsTop .tab{
+	width:33%;
+	height:30px;
+	padding-top:5px;
+}
+
+#listsMain {
+/* 	Min height interpreted as height by chrome */
+	min-height:600px;
+	width:100%;
+	border-top:2px solid #151515;
+	padding:10px;
+}
