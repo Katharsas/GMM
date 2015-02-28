@@ -51,18 +51,16 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		},
 		
 		changeComment : function(comment, taskId, commentId) {
-			confirm(function() {confirmCommentChange(taskId, commentId);},
-					"Change your comment below:", undefined, comment, 700);
-		},
-		
-		confirmCommentChange : function(taskId, commentId) {
-			var comment = $("#confirmDialogTextArea").val();
-			var url = allVars.contextPath + "/tasks/editComment/" + taskId + "/" + commentId;
-			$.post(url, {"editedComment" : comment}, 
-				function() {
-					alert(reload, "TODO: Refresh task body");
-				}
-			);
+			var $confirm = confirm(
+				function(input, textarea) {
+					var url = allVars.contextPath + "/tasks/editComment/" + taskId + "/" + commentId;
+					$.post(url, {"editedComment" : textarea}, 
+						function() {
+							hideDialog($confirm);
+							alert(reload, "TODO: Refresh task body");
+						}
+					);
+				}, "Change your comment below:", undefined, comment, 700);
 		},
 		
 		uploadFile : function(input, idLink) {

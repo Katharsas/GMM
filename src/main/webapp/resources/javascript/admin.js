@@ -144,9 +144,7 @@ function switchAdmin(idLink) {
 }
 
 function editUserName(idLink, userName) {
-	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
-	confirm(function () {
-		var name = $textField.val();
+	confirm(function (name) {
 		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"name": name})
 			.done(function() {
 				window.location.reload();

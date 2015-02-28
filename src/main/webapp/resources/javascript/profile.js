@@ -10,9 +10,9 @@ function changePassword() {
 	var $dialog = $(ns);
 	var $error = $dialog.find(ns+"-error");
 	
-	var oldPW = $dialog.find(ns+"-old").attr("value");
-	var newPW1 = $dialog.find(ns+"-first").attr("value");
-	var newPW2 = $dialog.find(ns+"-second").attr("value");
+	var oldPW = $dialog.find(ns+"-old").val();
+	var newPW1 = $dialog.find(ns+"-first").val();
+	var newPW2 = $dialog.find(ns+"-second").val();
 	
 	if(newPW1===newPW2) {
 		$.post("profile/password", {"oldPW" : oldPW, "newPW" : newPW2})
