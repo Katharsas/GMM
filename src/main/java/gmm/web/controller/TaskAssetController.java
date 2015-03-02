@@ -5,9 +5,9 @@ import java.nio.file.Path;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import gmm.domain.AssetTask;
-import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;

@@ -18,6 +18,7 @@
     	<script src="<c:url value="/res/javascript/links.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
+		<link href="<c:url value="/res/css/compiled/tasks.css"/>" media="screen" rel="stylesheet" type="text/css" />
     	<link href="<c:url value="/res/css/compiled/links.css"/>" media="screen" rel="stylesheet" type="text/css" />
     </jsp:attribute>
 

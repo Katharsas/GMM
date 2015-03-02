@@ -1,5 +1,6 @@
-package gmm.domain;
+package gmm.domain.task;
 
+import gmm.domain.User;
 import gmm.service.Spring;
 import gmm.service.data.DataConfigService;
 

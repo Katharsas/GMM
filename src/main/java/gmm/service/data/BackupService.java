@@ -1,8 +1,8 @@
 package gmm.service.data;
 
 import gmm.domain.Linkable;
-import gmm.domain.Task;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 

@@ -1,7 +1,7 @@
 package gmm.util;
-import gmm.domain.TaskPriority;
-import gmm.domain.TaskStatus;
-import gmm.domain.TaskType;
+import gmm.domain.task.TaskPriority;
+import gmm.domain.task.TaskStatus;
+import gmm.domain.task.TaskType;
 import gmm.service.sort.TaskSortAttribute;
 
 import org.apache.commons.lang3.StringEscapeUtils;

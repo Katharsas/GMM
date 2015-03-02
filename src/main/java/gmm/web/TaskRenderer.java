@@ -15,7 +15,7 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import freemarker.template.Configuration;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.UserService;
 

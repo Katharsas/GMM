@@ -1,8 +1,8 @@
 package gmm.service.data;
 
 import gmm.collections.Collection;
-import gmm.domain.Task;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.ajax.MockedResponseBundleHandler;
 import gmm.service.ajax.operations.TaskLoaderOperations;
 

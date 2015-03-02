@@ -45,41 +45,51 @@ var tasksFuncs = {
 $(document).ready(
 		function() {
 			// get subTab and set as active tab / others as inactivetabs
-			tasksVars.edit = getURLParameter("edit");
-			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
-			$activeTab.addClass("activeSubpage");
+			//TODO highlight currently selected load types
+//			tasksVars.edit = getURLParameter("edit");
+//			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
+//			$activeTab.addClass("activeSubpage");
 			
-			TaskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#listsMain"));
+			TaskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#workbench").find(".list-body"));
 			TaskSwitcher = TaskSwitcher(TaskLoader);
 			new TaskForm();
 			tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
 				return $task1[0] === $task2[0];
 			});
 			
-			// set Search according to selected search type (easy or complex)
+			//TODO sidebarmarker creation on task select
+//			SidebarMarkers = SidebarMarkers(function() {
+//				return $('<div>').html("Marker");
+//			}, 2);
+//			SidebarMarkers.registerSidebar("#page-tabmenu-spacer", true);
+//			SidebarMarkers.addMarker("#test1");
+//			SidebarMarkers.addMarker("#test2");
+			
+			//TODO setup search and filters and sort
+//			// set Search according to selected search type (easy or complex)
 			setSearchVisibility($("#searchTypeSelect").val());
-			// hide search type selector
+//			// hide search type selector
 			$("#searchTypeSelect").hide();
-			// hide filter submit
-			$("#generalFiltersInvisible").hide();
-			// hide generalFilterBody
-			if ($("#generalFiltersHidden").is(":checked"))
-				toggleGeneralFilters();
-			toggleSpecificFilters();// TODO
+//			// hide filter submit
+//			$("#generalFiltersInvisible").hide();
+//			// hide generalFilterBody
+//			if ($("#generalFiltersHidden").is(":checked"))
+//				toggleGeneralFilters();
+//			toggleSpecificFilters();// TODO
 		
 			// listener
 			$(".submitSearchButton").click(function() {
 				$("#searchForm").submit();
 			});
-			$(".sortFormElement").change(function() {
-				$("#sortForm").submit();
-			});
-			$("#generalFiltersAllCheckbox").change(function() {
-				switchGeneralFiltersAll($(this));
-			});
-			$(".generalFiltersFormElement").change(function() {
-				submitGeneralFilters();
-			});
+//			$(".sortFormElement").change(function() {
+//				$("#sortForm").submit();
+//			});
+//			$("#generalFiltersAllCheckbox").change(function() {
+//				switchGeneralFiltersAll($(this));
+//			});
+//			$(".generalFiltersFormElement").change(function() {
+//				submitGeneralFilters();
+//			});
 });
 
 function switchListElement(element) {

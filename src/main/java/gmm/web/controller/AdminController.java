@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.List;
 import gmm.domain.Label;
-import gmm.domain.Task;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;

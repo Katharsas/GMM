@@ -1,8 +1,8 @@
 <#import "/spring.ftl" as s/>
 
 
-			<div id="${task.getIdLink()}" class="listElement">
-				<div class="listElementTop clickable" onclick="switchListElement(this)">
+			<div id="${task.getIdLink()}" class="list-element">
+				<div class="task-header clickable" onclick="switchListElement(this)">
 <!-- Priority -->
 					<div class="right elementPriority ${task.getPriority().toString()}">
 				    </div>

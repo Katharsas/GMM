@@ -7,16 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
-import gmm.domain.Asset;
-import gmm.domain.AssetTask;
 import gmm.domain.Comment;
-import gmm.domain.GeneralTask;
-import gmm.domain.Model;
-import gmm.domain.ModelTask;
-import gmm.domain.Task;
-import gmm.domain.Texture;
-import gmm.domain.TextureTask;
 import gmm.domain.User;
+import gmm.domain.task.Asset;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.GeneralTask;
+import gmm.domain.task.Model;
+import gmm.domain.task.ModelTask;
+import gmm.domain.task.Task;
+import gmm.domain.task.Texture;
+import gmm.domain.task.TextureTask;
 import gmm.service.FileService;
 import gmm.service.converters.PathConverter;
 

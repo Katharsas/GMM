@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import gmm.collections.List;
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.web.AjaxResponseException;
 import gmm.web.TaskRenderer;

@@ -1,9 +1,10 @@
-package gmm.domain;
+package gmm.domain.task;
 
 import java.nio.file.Path;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.User;
 
 public class ModelTask extends AssetTask<Model> {
 

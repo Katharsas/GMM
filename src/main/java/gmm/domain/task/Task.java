@@ -1,5 +1,8 @@
-package gmm.domain;
+package gmm.domain.task;
 
+import gmm.domain.Comment;
+import gmm.domain.NamedObject;
+import gmm.domain.User;
 import gmm.service.converters.UserReferenceConverter;
 
 import java.math.BigInteger;

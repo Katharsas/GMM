@@ -1,8 +1,8 @@
 package gmm.service.tasks;
 
-import gmm.domain.Model;
-import gmm.domain.ModelTask;
 import gmm.domain.User;
+import gmm.domain.task.Model;
+import gmm.domain.task.ModelTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 

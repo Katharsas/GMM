@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 import gmm.web.forms.SortForm;
 
 @Service

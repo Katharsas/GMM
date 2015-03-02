@@ -1,6 +1,6 @@
 package gmm.service.sort;
 
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 
 import java.util.Comparator;
 

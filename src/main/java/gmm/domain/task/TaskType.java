@@ -1,4 +1,5 @@
-package gmm.domain;
+package gmm.domain.task;
+
 
 public enum TaskType {
 	GENERAL(GeneralTask.class, "general"), 

@@ -1,10 +1,10 @@
 package gmm.service;
 
 import gmm.collections.Collection;
-import gmm.domain.Task;
-import gmm.domain.TaskPriority;
-import gmm.domain.TaskStatus;
 import gmm.domain.User;
+import gmm.domain.task.Task;
+import gmm.domain.task.TaskPriority;
+import gmm.domain.task.TaskStatus;
 import gmm.service.filter.GmmSelection;
 import gmm.service.filter.Selection;
 import gmm.web.forms.FilterForm;

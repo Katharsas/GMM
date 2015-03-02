@@ -1,7 +1,8 @@
 <#import "/spring.ftl" as s/>
 <#assign newLine = "\n"/>
 
-			    <div class="listElementBody" css="display:none;">
+			<div class="task-body" css="display:none;">
+			    <div class="task-body-content">
 <!-- AssetPath -->
 				    <#if !(task.getType().name() == "GENERAL")>
 				    	<div class="elementPath elementContent">
@@ -158,8 +159,10 @@
 							</#if>
 						</div>
 					</#if>
+				</div>
 <!-- Footer -->
-				    <div class="listElementBodyFooter">
+			    <div class="task-body-footer">
+			    	<div class="task-operations">
 				    	<#if isUserLoggedIn>
 						    <div class="left elementButton button" onclick="findSwitchCommentForm(this)">
 					    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/bubble.svg">
@@ -200,5 +203,9 @@
 					    	</div>
 					    </#if>
 				    	<div class="clear"></div>
-			    	</div>
-			    </div>
+				    </div>
+				    <div class="task-operations-extended">
+				    	Extended Operations
+				    </div>
+		    	</div>
+			</div>

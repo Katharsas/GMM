@@ -61,9 +61,6 @@
 				<div class="tab left">
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
 				</div>
-				<div class="tab left">
-					<a href="<c:url value="/tasksnew"/>">New (WIP)<span></span></a>
-				</div>
 			</sec:authorize>
 			<div id="metainfo" class="left">
 				<spring:eval expression="@config.getProperty('app.name')" /><br/>

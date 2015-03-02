@@ -1,9 +1,10 @@
-package gmm.domain;
+package gmm.domain.task;
 
 import java.nio.file.Path;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
+import gmm.domain.User;
 
 public class TextureTask extends AssetTask<Texture> {
 	

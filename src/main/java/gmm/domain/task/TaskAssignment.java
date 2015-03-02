@@ -1,4 +1,6 @@
-package gmm.domain;
+package gmm.domain.task;
+
+import gmm.domain.Assignment;
 
 
 public class TaskAssignment extends Assignment<Task, Task> {
