@@ -1,15 +1,9 @@
 var tasksVars = {
-	"tab" : "",
 	"edit" : "",
 	"selectedTaskFileIsAsset" : "",
-	"expandedTasks" : undefined,
-	"taskLoader" : undefined
 };
 
 var tasksFuncs = {
-	"tabPar" : function() {
-		return "?tab=" + (tasksVars.tab === undefined || tasksVars.tab === null ? "" : tasksVars.tab);
-	},
 	"editPar" : function() {
 		return "&edit=" + (tasksVars.edit === undefined || tasksVars.edit === null ? "" : tasksVars.edit);
 	},
@@ -32,12 +26,35 @@ var tasksFuncs = {
 	}
 })();
 
-
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
  * ////////////////////////////////////////////////////////////////////////////////
  */
+
+var workbench = {};
+
+workbench.init = function() {
+	workbench.taskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#workbench").find(".list-body"));
+	workbench.render();
+}
+workbench.load = function(type) {
+	$.post(allVars.contextPath+"/load", { type: type })
+		.done(function() {
+			workbench.render();
+		})
+		.fail(showException);
+}
+workbench.render = function() {
+	workbench.taskLoader.init();
+	//TODO find better way to reset and reload without instantiating new stuff
+	//TODO attach listeners to tasks on creation so the correct switcher can be called
+	workbench.taskSwitcher = TaskSwitcher(workbench.taskLoader);
+	workbench.expandedTasks = new Queue(3, function($task1, $task2) {
+		return $task1[0] === $task2[0];
+	});
+}
+
 
 /**
  * This function is executed when document is ready for interactivity!
@@ -50,12 +67,8 @@ $(document).ready(
 //			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
 //			$activeTab.addClass("activeSubpage");
 			
-			TaskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#workbench").find(".list-body"));
-			TaskSwitcher = TaskSwitcher(TaskLoader);
+			workbench.init();
 			new TaskForm();
-			tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
-				return $task1[0] === $task2[0];
-			});
 			
 			//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {
@@ -92,9 +105,11 @@ $(document).ready(
 //			});
 });
 
+
+
 function switchListElement(element) {
-	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);
-}
+	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
+};
 
 /**
  * @param isEasySearch - String or boolean

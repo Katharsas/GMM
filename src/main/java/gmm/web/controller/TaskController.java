@@ -19,13 +19,9 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 
 
-
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 /* project */
-
-
 
 
 
@@ -49,6 +45,7 @@ import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
 import gmm.web.forms.TaskForm;
+import gmm.web.forms.WorkbenchLoadForm;
 import gmm.web.sessions.TaskSession;
 
 /**
@@ -87,6 +84,9 @@ public class TaskController {
 	
 	@ModelAttribute("generalFilter")
 	public FilterForm getGeneralFilter() {return session.getFilterForm();}
+	
+	@ModelAttribute("workbench-form-load")
+	public WorkbenchLoadForm getWorkbenchLoadForm() {return session.getUser().getLoadForm();}
 
 	/**
 	 * For FTL rendering
@@ -97,6 +97,7 @@ public class TaskController {
 		request.setAttribute("comment", getCommentForm());
 		request.setAttribute("sort", getSortForm());
 		request.setAttribute("generalFilter", getGeneralFilter());
+		request.setAttribute("workbench-form-load", getWorkbenchLoadForm());
 	}
 	
 	/**
@@ -247,14 +248,7 @@ public class TaskController {
 			HttpServletRequest request,
 			HttpServletResponse response,
 			@ModelAttribute("task") TaskForm form,
-			@RequestParam(value="tab", required=false) String tab,
 			@RequestParam(value="edit", defaultValue="") String edit) {
-		
-		if(tab != null) {
-			TaskType type = TaskType.fromTab(tab);
-			session.updateTab(type);
-			form.setType(type);
-		}
 		
 		if (validateId(edit)) {
 			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
@@ -266,7 +260,6 @@ public class TaskController {
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("tab", session.getCurrentTaskType().getTab());
 	    model.addAttribute("edit", edit);
 	    
 	    return "tasks";
@@ -274,6 +267,16 @@ public class TaskController {
 	
 	private boolean validateId(String idLink){
 		return idLink != null && idLink.matches(".*[0-9]+");
+	}
+	
+	@RequestMapping(value = "/load", method = RequestMethod.POST)
+	public @ResponseBody void loadTasks(
+			@RequestParam("type") TaskType type) throws AjaxResponseException {
+		try {
+			session.loadTasks(type);
+		} catch(Exception e) {
+			throw new AjaxResponseException(e);
+		}
 	}
 	
 	@RequestMapping(value = "/render", method = RequestMethod.GET)

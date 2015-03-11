@@ -16,6 +16,7 @@ import gmm.service.sort.TaskSortService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
+import gmm.web.forms.WorkbenchLoadForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -54,19 +55,34 @@ public class TaskSession {
 	//current task sort settings
 	private SortForm sort;
 	
-	//the last tab the user selected
-	private TaskType currentTaskType;
+	//current task load settings
+	private WorkbenchLoadForm load;
 	
 	//triggers a data reload when set to true
 	private boolean dirtyTasksFlag = false;
 	
 	@PostConstruct
 	private void init() {
-		currentTaskType = TaskType.GENERAL;
 		user = users.getLoggedInUser();
 		sort = new SortForm();
+		load = user.getLoadForm();
+		if (load == null) updateLoad(new WorkbenchLoadForm());
+		initializeWorkbench();
+	
 		generalFilter = new FilterForm();
-		updateAndFilterTasks(currentTaskType);
+		updateAndFilterTasks(load.getSelected());
+	}
+	
+	private void initializeWorkbench() {
+		if (load.isReloadOnStartup()) {
+			if (load.getDefaultStartupType().equals(WorkbenchLoadForm.TYPE_NONE)) {}//load nothing
+			else {//load default type
+				TaskType type = TaskType.valueOf(load.getDefaultStartupType());
+				load.setSelected(type);
+			}
+		} else {
+			//TODO load task list from last time
+		}
 	}
 	
 	/*--------------------------------------------------
@@ -75,14 +91,14 @@ public class TaskSession {
 	
 	public List<Task> getTasks() {
 		if (dirtyTasksFlag) {
-			updateAndFilterTasks(currentTaskType);
+			updateAndFilterTasks(load.getSelected());
 			dirtyTasksFlag = false;
 		}
 		return (List<Task>) tasks.copy();
 	}
 	
 	public TaskType getCurrentTaskType() {
-		return currentTaskType;
+		return load.getSelected();
 	}
 	
 	public User getUser() {
@@ -110,13 +126,21 @@ public class TaskSession {
 	}
 	
 	/**
-	 * Apply/notify tab change
+	 * Change/update loaded tasks
 	 */
-	public void updateTab(TaskType tab) {
-		if (!tab.equals(currentTaskType)) {
+	public void loadTasks(TaskType tab) {
+		if (!tab.equals(load.getSelected())) {
+			load.setSelected(tab);
 			updateAndFilterTasks(tab);
 		}
-		currentTaskType = tab;
+	}
+	
+	/**
+	 * Update load settings
+	 */
+	public void updateLoad(WorkbenchLoadForm load) {
+		this.load = load;
+		getUser().setLoadForm(load);
 	}
 	
 	/**
@@ -124,7 +148,7 @@ public class TaskSession {
 	 */
 	public void updateFilter(FilterForm filter) {
 		generalFilter = filter;
-		updateAndFilterTasks(currentTaskType);
+		updateAndFilterTasks(load.getSelected());
 	}
 	
 	/**

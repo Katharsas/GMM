@@ -1,8 +1,6 @@
 <%@ include file="/WEB-INF/tags/all_include.tagf" %>
-<%-- Tag Description --%>
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
-<%-- Template Start --%>
 <div id="filters">
 	<form:form class="generalFilters" method="POST" action="tasks/submitFilter?tab=${tab}" commandName="generalFilter">
 		<div id="switchGeneralFilterBody" class="filterGroup clickable" onclick="switchGeneralFilters()">

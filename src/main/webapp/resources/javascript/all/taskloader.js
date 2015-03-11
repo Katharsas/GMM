@@ -4,8 +4,8 @@
  * Accepts callback which will be executed when all tasks are loaded.
  */
 var TaskLoader = function(url, $taskList, onLoaded) {
-	this.tasks = undefined;
-	reloadAndInsert();
+//	this.tasks = undefined;
+//	reloadAndInsert();
 	
 	function reloadAndInsert() {
 		$.getJSON(url).done(function(taskRenders) {
@@ -24,6 +24,11 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 	}
 	
 	return {
+		init : function() {
+			$taskList.children().not(":first").remove();
+			this.tasks = undefined;
+			reloadAndInsert();
+		},
 		
 		getBody : function($task) {
 			return $task.children(":last-child");
