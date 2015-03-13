@@ -16,7 +16,7 @@ import gmm.service.sort.TaskSortService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
-import gmm.web.forms.WorkbenchLoadForm;
+import gmm.web.forms.LoadForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -56,7 +56,7 @@ public class TaskSession {
 	private SortForm sort;
 	
 	//current task load settings
-	private WorkbenchLoadForm load;
+	private LoadForm load;
 	
 	//triggers a data reload when set to true
 	private boolean dirtyTasksFlag = false;
@@ -66,22 +66,23 @@ public class TaskSession {
 		user = users.getLoggedInUser();
 		sort = new SortForm();
 		load = user.getLoadForm();
-		if (load == null) updateLoad(new WorkbenchLoadForm());
+		if (load == null) updateLoad(new LoadForm());
 		initializeWorkbench();
-	
 		generalFilter = new FilterForm();
 		updateAndFilterTasks(load.getSelected());
 	}
 	
 	private void initializeWorkbench() {
-		if (load.isReloadOnStartup()) {
-			if (load.getDefaultStartupType().equals(WorkbenchLoadForm.TYPE_NONE)) {}//load nothing
-			else {//load default type
-				TaskType type = TaskType.valueOf(load.getDefaultStartupType());
-				load.setSelected(type);
+		synchronized (load) {
+			if (load.isReloadOnStartup()) {
+				if (load.getDefaultStartupType().equals(LoadForm.TYPE_NONE)) {}//load nothing
+				else {//load default type
+					TaskType type = TaskType.valueOf(load.getDefaultStartupType());
+					load.setSelected(type);
+				}
+			} else {
+				//TODO load task list from last time
 			}
-		} else {
-			//TODO load task list from last time
 		}
 	}
 	
@@ -138,9 +139,11 @@ public class TaskSession {
 	/**
 	 * Update load settings
 	 */
-	public void updateLoad(WorkbenchLoadForm load) {
-		this.load = load;
-		getUser().setLoadForm(load);
+	public void updateLoad(LoadForm load) {
+		synchronized (load) {
+			this.load = load;
+			getUser().setLoadForm(load);
+		}
 	}
 	
 	/**

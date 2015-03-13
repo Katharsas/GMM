@@ -7,11 +7,11 @@ import org.apache.commons.lang3.EnumUtils;
 import gmm.domain.task.TaskType;
 
 /**
- * Load tab from workbench
+ * Load tab settings from workbench
  * 
  * @author Jan Mothes
  */
-public class WorkbenchLoadForm {
+public class LoadForm {
 	
 	private TaskType selected;//only for highlighting button
 	private LoadOperation loadOperation;
@@ -22,7 +22,7 @@ public class WorkbenchLoadForm {
 	private String defaultStartupType;//basically NONE or TaskType enum value
 	final public static String TYPE_NONE = "NONE";
 	
-	public WorkbenchLoadForm() {
+	public LoadForm() {
 		setDefaultState();
 	}
 	

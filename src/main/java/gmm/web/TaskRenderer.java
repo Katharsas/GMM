@@ -52,6 +52,20 @@ public class TaskRenderer {
 	
 	/**
 	 * Request must already include all needed forms.
+	 * Renders basically any template to a String.
+	 */
+	public String renderTemplate(ModelMap model, String template,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+		
+		populateModel(model, request, response);
+		StringWriter out = new StringWriter();
+		StringBuffer buffer = out.getBuffer();
+		config.getTemplate(template).process(model, out);
+		return buffer.toString();
+	}
+	
+	/**
+	 * Request must already include all needed forms.
 	 */
 	public TaskRenderResult renderTask(Task task, ModelMap model,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {

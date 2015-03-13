@@ -38,8 +38,8 @@
 						<fmt:message key="tasks.new"/>
 					</div>
 					<form:form id="taskForm" method="POST"
-							action="tasks/submitTask?tab=${tab}&edit=${edit}"
-							commandName="task"
+							action="${contextUrl}/tasks/submitTask?edit=${edit}"
+							commandName="taskForm"
 							style="display: none;">
 						<t:all_taskForm>
 						</t:all_taskForm>
@@ -50,9 +50,7 @@
 							<fmt:message key="tasks.submit"/>
 						</div>
 						<div id="cancelTaskButton" class="button pageButton left" style="display: none;">
-							<a href="?tab=${tab}">
-								<fmt:message key="tasks.new.cancel"/><span></span>
-							</a>
+							<fmt:message key="tasks.new.cancel"/>
 						</div>
 						<div class="clear"></div>
 					</div>
@@ -103,8 +101,7 @@
 	    				</t:workbench_search>
 	    			</div>
 	    			<div id="workbench-tab-search" class="workbench-tab">
-	    				<t:workbench_filters>
-	    				</t:workbench_filters>
+	    				${workbench_filters}
 	    			</div>
 	    			<div id="workbench-tab-more" class="workbench-tab">
 	    				[All] [General] [Texture] [3D-Model]<br>

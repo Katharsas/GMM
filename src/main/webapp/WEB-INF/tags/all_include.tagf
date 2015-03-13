@@ -6,3 +6,4 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="cfn" uri="/WEB-INF/ElFunctions.tld" %>
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
+<c:set var="contextUrl">${pageContext.request.contextPath}</c:set>

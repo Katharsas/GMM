@@ -1,8 +1,13 @@
 package gmm;
 
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateHashModel;
+import gmm.util.ElFunctions;
 import gmm.web.binding.PathEditor;
 
 import java.beans.PropertyEditor;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -91,11 +96,22 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 * FreeMarker (ftl) configuration
 	 */
 	@Bean
-	public FreeMarkerConfigurer freemarkerConfig() {
-	    FreeMarkerConfigurer result = new FreeMarkerConfigurer();
-	    result.setTemplateLoaderPath("/WEB-INF/ftl/");
-	    return result;
+	public FreeMarkerConfigurer freemarkerConfig() throws IOException, TemplateException {
+		FreeMarkerConfigurer result = new FreeMarkerConfigurer();
 
+		// template path
+		result.setTemplateLoaderPath("/WEB-INF/ftl/");
+
+		// static access
+		BeansWrapper wrapper = new BeansWrapper();
+		TemplateHashModel statics = wrapper.getStaticModels();
+		Map<String, Object> shared = new HashMap<>();
+		for (Class<?> clazz : ElFunctions.staticClasses) {
+			shared.put(clazz.getSimpleName(), statics.get(clazz.getName()));
+		}
+		result.setFreemarkerVariables(shared);
+
+		return result;
 	}
 	
 	

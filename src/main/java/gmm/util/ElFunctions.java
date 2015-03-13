@@ -6,7 +6,7 @@ import gmm.domain.task.TaskPriority;
 import gmm.domain.task.TaskStatus;
 import gmm.domain.task.TaskType;
 import gmm.service.sort.TaskSortAttribute;
-import gmm.web.forms.WorkbenchLoadForm;
+import gmm.web.forms.LoadForm;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.objenesis.Objenesis;
@@ -16,14 +16,24 @@ import org.springframework.objenesis.instantiator.ObjectInstantiator;
 
 public class ElFunctions {
 	
-	public final static Objenesis objenesis = new ObjenesisStd();
-	public final static Map<String, Class<?>> classNameToEnum = new HashMap<>();
+	private final static Objenesis objenesis = new ObjenesisStd();
+	private final static Map<String, Class<?>> classNameToEnum = new HashMap<>();
+	
+	/**
+	 * Classes which can be called directly from jsp/ftl code:
+	 */
+	public final static Class<?>[] staticClasses = {
+		TaskStatus.class,
+		TaskPriority.class,
+		TaskSortAttribute.class,
+		TaskType.class,
+		LoadForm.LoadOperation.class
+	};
+	
 	static {
-		registerEnum(TaskStatus.class);
-		registerEnum(TaskPriority.class);
-		registerEnum(TaskSortAttribute.class);
-		registerEnum(TaskType.class);
-		registerEnum(WorkbenchLoadForm.LoadOperation.class);
+		for(Class<?> clazz : staticClasses) {
+			classNameToEnum.put(clazz.getSimpleName(), clazz);
+		}
 	}
 	
 	public static String escape(String input) {
@@ -42,10 +52,6 @@ public class ElFunctions {
 		}
 		Class<?> enumClass = classNameToEnum.get(clazz);
 		return (Enum<?>[]) enumClass.getEnumConstants();
-	}
-	
-	private static void registerEnum(Class<?> enumClass) {
-		classNameToEnum.put(enumClass.getSimpleName(), enumClass);
 	}
 	
 	/**

@@ -2,7 +2,9 @@
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
 
-<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
+<form:form id="sortForm" commandName="workbench-sortForm"
+		action="${contextUrl}/tasks/submitSort" method="POST">
+		
 	<div class="left">
 	<fmt:message key="search.first"/><span></span>
 	</div>

@@ -10,10 +10,11 @@
 </c:forEach>
 <div class="clear"></div>
 
-<form:form id="workbench-form-load" class="left" commandName="workbench-form-load">
+<form:form id="workbench-loadForm" class="left" commandName="workbench-loadForm"
+		action="${contextUrl}/tasks/submitLoad" method="POST">
 	<div>
 		Load Operation
-		<form:select path="loadOperation">
+		<form:select class="form-element" path="loadOperation">
 			<c:forEach items="${cfn:values('LoadOperation')}" var="operation">
 				<form:option value="${operation}" label="${operation.name()}"/>
 			</c:forEach>
@@ -22,10 +23,10 @@
 	
 	
 	<div>
-		<form:checkbox path="reloadOnStartup"/>
+		<form:checkbox class="form-element" path="reloadOnStartup"/>
 		Load on startup
 			
-		<form:select class="left" path="defaultStartupType">
+		<form:select class="form-element left" path="defaultStartupType">
 			<c:forEach items="${cfn:values('TaskType')}" var="loadType">
 				<c:set var="tvalue"><fmt:message key="${loadType.nameKey}"/></c:set> 
 				<form:option value="${loadType.name()}" label="${tvalue}"/>

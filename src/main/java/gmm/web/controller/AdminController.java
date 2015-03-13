@@ -56,7 +56,7 @@ public class AdminController {
 	@Autowired TaskServiceFinder taskCreator;
 	@Autowired BackupService backups;
 	
-	@ModelAttribute("task")
+	@ModelAttribute("taskForm")
 	public TaskForm getTaskFacade() {
 		TaskForm defaultFacade = new TaskForm();
 		defaultFacade.setName("%filename%");
@@ -257,7 +257,7 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importAssets (
 			@RequestParam("textures") boolean textures,
-			@ModelAttribute("task") TaskForm form) throws AjaxResponseException {
+			@ModelAttribute("taskForm") TaskForm form) throws AjaxResponseException {
 		try {
 			backups.triggerTaskBackup();
 			taskSession.notifyDataChange();

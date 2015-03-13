@@ -42,7 +42,7 @@
 							<form class="subListElement commentForm"
 						    		method="POST"
 						    		action="${request.contextPath}/tasks/submitComment/${task.getIdLink()}">
-						    	<@s.bind "comment"/>
+						    	<@s.bind "commentForm"/>
 						    	<div class="left subElementAuthor">
 						    		<div class="button commentButton commentSubmitButton"
 						    				onclick="$(this).parents('form.commentForm').submit()">Submit</div>

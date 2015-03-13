@@ -5,14 +5,14 @@
 <div class="taskForm-group">
 	<!-- ####################### PRIORITY -->
 	<div class="taskForm-element">
-		<div class="taskForm-description"><fmt:message key="${task.priority.typeKey}"/>:</div>
+		<div class="taskForm-description"><fmt:message key="${taskForm.priority.typeKey}"/>:</div>
 		<div class="taskForm-input input">
 		<form:select path="priority">
-			<c:forEach items="${task.priority.values()}" var="priority">
+			<c:forEach items="${taskForm.priority.values()}" var="priority">
 				<c:set var="pvalue">
 					<fmt:message key="${priority.nameKey}"/>
 				</c:set> 
-				<form:option value="${priority}" label="${pvalue}"/>
+				<form:option value="${priority.name()}" label="${pvalue}"/>
 			</c:forEach>
 		</form:select>
 		</div>
@@ -64,12 +64,12 @@
 <div class="taskForm-group">
 	<!-- ####################### STATUS -->
 	<div class="taskForm-element">
-		<div class="taskForm-description"><fmt:message key="${task.status.typeKey}"/>:</div>
+		<div class="taskForm-description"><fmt:message key="${taskForm.status.typeKey}"/>:</div>
 		<div class="taskForm-input input">
 		<form:select path="status">
-			<c:forEach items="${task.status.values()}" var="status">
+			<c:forEach items="${taskForm.status.values()}" var="status">
 				<c:set var="svalue"><fmt:message key="${status.nameKey}"/></c:set> 
-				<form:option value="${status}" label="${svalue}"/>
+				<form:option value="${status.name()}" label="${svalue}"/>
 			</c:forEach>
 		</form:select>
 		</div>
@@ -97,12 +97,12 @@
 <div class="taskForm-group">
 	<!-- ####################### TYPE -->
 	<div class="taskForm-element">
-		<div class="taskForm-description"><fmt:message key="${task.type.typeKey}"/>:</div>
+		<div class="taskForm-description"><fmt:message key="${taskForm.type.typeKey}"/>:</div>
 		<div class="taskForm-input input">
 			<form:select path="type">
-				<c:forEach items="${task.type.values()}" var="type">
+				<c:forEach items="${taskForm.type.values()}" var="type">
 					<c:set var="tvalue"><fmt:message key="${type.nameKey}"/></c:set> 
-					<form:option value="${type}" label="${tvalue}"/>
+					<form:option value="${type.name()}" label="${tvalue}"/>
 				</c:forEach>
 			</form:select>
 		</div>

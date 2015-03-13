@@ -14,14 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.SessionAttributes;
 /** java */
+
+
 
 
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 /* project */
+
+
 
 
 
@@ -45,7 +48,7 @@ import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
 import gmm.web.forms.TaskForm;
-import gmm.web.forms.WorkbenchLoadForm;
+import gmm.web.forms.LoadForm;
 import gmm.web.sessions.TaskSession;
 
 /**
@@ -58,7 +61,6 @@ import gmm.web.sessions.TaskSession;
  * 
  */
 @RequestMapping(value={"tasks", "/"})
-@SessionAttributes({"search", "sort", "generalFilter"})
 @PreAuthorize("hasRole('ROLE_USER')")
 @Controller
 public class TaskController {
@@ -68,36 +70,50 @@ public class TaskController {
 	@Autowired private DataAccess data;
 	@Autowired private TaskFilterService filter;
 	@Autowired private UserService users;
-	@Autowired private TaskRenderer ftlTaskRenderer;
+	@Autowired private TaskRenderer ftlRenderer;
 
-	@ModelAttribute("task")
+	@ModelAttribute("taskForm")
 	public TaskForm getTaskForm() {return new TaskForm();}
 	
-	@ModelAttribute("search")
-	public SearchForm getSearchForm() {return new SearchForm();}
-	
-	@ModelAttribute("comment")
+	@ModelAttribute("commentForm")
 	public CommentForm getCommentForm() {return new CommentForm();}
 	
-	@ModelAttribute("sort")
+	@ModelAttribute("workbench-searchForm")
+	public SearchForm getSearchForm() {return new SearchForm();}
+	
+	@ModelAttribute("workbench-sortForm")
 	public SortForm getSortForm() {return session.getSortForm();}
 	
-	@ModelAttribute("generalFilter")
+	@ModelAttribute("workbench-generalFilterForm")
 	public FilterForm getGeneralFilter() {return session.getFilterForm();}
 	
-	@ModelAttribute("workbench-form-load")
-	public WorkbenchLoadForm getWorkbenchLoadForm() {return session.getUser().getLoadForm();}
+	@ModelAttribute("workbench-loadForm")
+	public LoadForm getWorkbenchLoadForm() {return session.getUser().getLoadForm();}
 
 	/**
 	 * For FTL rendering
 	 */
 	private void populateRequest(HttpServletRequest request) {
-		request.setAttribute("task", getTaskForm());
-		request.setAttribute("search", getSearchForm());
-		request.setAttribute("comment", getCommentForm());
-		request.setAttribute("sort", getSortForm());
-		request.setAttribute("generalFilter", getGeneralFilter());
-		request.setAttribute("workbench-form-load", getWorkbenchLoadForm());
+		request.setAttribute("taskForm", getTaskForm());
+		request.setAttribute("commentForm", getCommentForm());
+		request.setAttribute("workbench-sortForm", getSortForm());
+		request.setAttribute("workbench-generalFilterForm", getGeneralFilter());
+		request.setAttribute("workbench-searchForm", getSearchForm());
+		request.setAttribute("workbench-loadForm", getWorkbenchLoadForm());
+	}
+	
+	/**
+	 * Load Settings
+	 * -----------------------------------------------------------------
+	 * Changes settings for task loading and default workbench loading on login
+	 * @param loadForm - object containing all task loading settings
+	 */
+	@RequestMapping(value="/submitLoad", method = RequestMethod.POST)
+	public String handleLoad(
+		 		@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
+
+		session.updateLoad(loadForm);
+		return "redirect:/tasks";
 	}
 	
 	/**
@@ -107,11 +123,13 @@ public class TaskController {
 	 * @param filterForm - object containing all filter information
 	 */
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
-	public String handleFilter(
-		 		@ModelAttribute("generalFilter") FilterForm filterForm) {
-
-		session.updateFilter(filterForm);
-		return "redirect:/tasks";
+	public @ResponseBody void handleFilter(
+		 		@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm
+		 		) throws AjaxResponseException {
+		try {
+			session.updateFilter(filterForm);
+		}
+		catch (Exception e) {throw new AjaxResponseException(e);}
 	}
 	
 	
@@ -123,7 +141,7 @@ public class TaskController {
 	 */
 	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
 	public String handleTasksSearch(
-		 		@ModelAttribute("search") SearchForm searchForm) {
+		 		@ModelAttribute("workbench-searchForm") SearchForm searchForm) {
 		
 		session.updateSearch(searchForm);
 		return "redirect:/tasks";
@@ -138,7 +156,7 @@ public class TaskController {
 	 */
 	@RequestMapping(value="/submitSort", method = RequestMethod.POST)
 	public String handleSorting(
-		 		@ModelAttribute("sort") SortForm sortForm) {
+		 		@ModelAttribute("workbench-sortForm") SortForm sortForm) {
 		
 		session.updateSort(sortForm);
 		return "redirect:/tasks";
@@ -193,7 +211,7 @@ public class TaskController {
 	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
 	public String handleTasksComment(
 				@PathVariable String idLink,
-				@ModelAttribute("comment") CommentForm form) {
+				@ModelAttribute("commentForm") CommentForm form) {
 		Comment comment = new Comment(session.getUser(), form.getText());
 		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
 		
@@ -204,13 +222,13 @@ public class TaskController {
 	/**
 	 * Create / Edit Task
 	 * -----------------------------------------------------------------
-	 * If the task is new, it will be added to session if its types matches the current tab.
+	 * If the task is new, it will be added to session if its types matches the current type.
 	 * @param form - object containing all task information
 	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
 	 */
 	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
 	public String handleTasksCreateEdit(
-			@ModelAttribute("task") TaskForm form,
+			@ModelAttribute("taskForm") TaskForm form,
 			@RequestParam(value="edit", defaultValue="") String idLink) throws Exception {
 		
 		Task task;
@@ -238,8 +256,6 @@ public class TaskController {
 	 * Used internally by other controller methods, which only modify the session object.
 	 * They then call this method which sends all necessary data to the lient.
 	 * 
-	 * TODO: put tab change into extra method receiving ajax request
-	 * @param tab - determines which tab will be selected on client page.
 	 * @param edit - Task ID to be made editable in task form
 	 */
 	@RequestMapping(method = RequestMethod.GET)
@@ -247,20 +263,24 @@ public class TaskController {
 			ModelMap model,
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@ModelAttribute("task") TaskForm form,
-			@RequestParam(value="edit", defaultValue="") String edit) {
+			@ModelAttribute("taskForm") TaskForm form,
+			@RequestParam(value="edit", defaultValue="") String edit) throws Exception {
 		
 		if (validateId(edit)) {
 			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
 			form = taskCreator.prepareForm(task);
 			model.addAttribute("label", task.getLabel());
-			model.addAttribute("task", form);
+			model.addAttribute("taskForm", form);
 		}
 		
 	    model.addAttribute("taskList", session.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 	    model.addAttribute("edit", edit);
+	    
+	    populateRequest(request);
+	    String filters = ftlRenderer.renderTemplate(model, "workbench_filters.ftl", request, response);
+	    model.addAttribute("workbench_filters", filters);
 	    
 	    return "tasks";
 	}
@@ -287,7 +307,7 @@ public class TaskController {
 			HttpServletResponse response) throws AjaxResponseException {
 		try {
 			populateRequest(request);
-			return ftlTaskRenderer.renderTasks(session.getTasks(), model, request, response);
+			return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
 		} catch(Exception e) {
 			throw new AjaxResponseException(e);
 		}

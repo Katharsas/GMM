@@ -68,9 +68,8 @@
 			<div id="selectedPaths" class="adminElement"><ul></ul></div>
 
 			<div id="importTaskForm" class="adminElement">
-				<form:form id="taskForm" method="POST"
-						action="admin/importAssets"
-						commandName="task">
+				<form:form id="taskForm" commandName="taskForm"
+						action="${contextUrl}/admin/importAssets" method="POST">
 					<t:all_taskForm>
 					</t:all_taskForm>
 				</form:form>

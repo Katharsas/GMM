@@ -19,7 +19,7 @@
 			<script src="<c:url value="/res/javascript/all/default.js"/>" type="text/javascript"></script>
 			<script type="text/javascript">
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
-				allVars['contextPath'] = '${pageContext.request.contextPath}';
+				allVars['contextPath'] = '${contextUrl}';
 			</script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->

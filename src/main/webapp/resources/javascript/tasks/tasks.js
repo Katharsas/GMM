@@ -4,9 +4,6 @@ var tasksVars = {
 };
 
 var tasksFuncs = {
-	"editPar" : function() {
-		return "&edit=" + (tasksVars.edit === undefined || tasksVars.edit === null ? "" : tasksVars.edit);
-	},
 	"subDir" : function() {
 		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
 	},
@@ -14,7 +11,11 @@ var tasksFuncs = {
 		return allVars.selectedTaskFile.attr("rel");
 	},
 	"refresh" : function() {
-		window.location.href = "tasks" + tasksFuncs.tabPar() + "&edit=" + tasksVars.edit;
+		var url = allVars.contextPath + "/tasks";
+		if (tasksVars.edit !== "") {
+			url += "?edit=" + tasksVars.edit;
+		}
+		window.location.href =  url;
 	}
 };
 
@@ -60,49 +61,53 @@ workbench.render = function() {
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(
-		function() {
-			// get subTab and set as active tab / others as inactivetabs
-			//TODO highlight currently selected load types
-//			tasksVars.edit = getURLParameter("edit");
+	function() {
+		// get subTab and set as active tab / others as inactivetabs
+		//TODO highlight currently selected load types
+		tasksVars.edit = getURLParameter("edit");
 //			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
 //			$activeTab.addClass("activeSubpage");
-			
-			workbench.init();
-			new TaskForm();
-			
-			//TODO sidebarmarker creation on task select
+		
+		workbench.init();
+		new TaskForm();
+		
+		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {
 //				return $('<div>').html("Marker");
 //			}, 2);
 //			SidebarMarkers.registerSidebar("#page-tabmenu-spacer", true);
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
-			
-			//TODO setup search and filters and sort
-//			// set Search according to selected search type (easy or complex)
-			setSearchVisibility($("#searchTypeSelect").val());
-//			// hide search type selector
-			$("#searchTypeSelect").hide();
-//			// hide filter submit
-//			$("#generalFiltersInvisible").hide();
-//			// hide generalFilterBody
-//			if ($("#generalFiltersHidden").is(":checked"))
-//				toggleGeneralFilters();
-//			toggleSpecificFilters();// TODO
+
+		//listener
 		
-			// listener
-			$(".submitSearchButton").click(function() {
-				$("#searchForm").submit();
-			});
-//			$(".sortFormElement").change(function() {
-//				$("#sortForm").submit();
-//			});
-//			$("#generalFiltersAllCheckbox").change(function() {
-//				switchGeneralFiltersAll($(this));
-//			});
-//			$(".generalFiltersFormElement").change(function() {
-//				submitGeneralFilters();
-//			});
+		
+		
+		// set Search according to selected search type (easy or complex)
+		setSearchVisibility($("#searchTypeSelect").val());	
+		// hide search type selector
+		$("#searchTypeSelect").hide();
+		// hide filter submit
+		$("#generalFiltersInvisible").hide();
+		// hide generalFilterBody
+		if ($("#generalFiltersHidden").is(":checked")) toggleGeneralFilters();
+	
+		//workbench listener
+		$(".submitSearchButton").click(function() {
+			$("#searchForm").submit();
+		});
+		$("form#workbench-loadForm").find(".form-element").change(function() {
+			$("form#workbench-loadForm").submit();
+		});
+		$(".sortFormElement").change(function() {
+			$("#sortForm").submit();
+		});
+		$("#generalFiltersAllCheckbox").change(function() {
+			switchGeneralFiltersAll($(this));
+		});
+		$(".generalFiltersFormElement").change(function() {
+			submitGeneralFilters();
+		});
 });
 
 
@@ -148,20 +153,12 @@ function toggleFilters($toggle, $resize) {
 }
 
 function toggleGeneralFilters() {
-	return toggleFilters($("#generalFilterBody"), $(".generalFilters"));
-}
-function toggleSpecificFilters() {
-	return toggleFilters($("#specificFilterBody"), $(".specificFilters"));
+	return toggleFilters($("#generalFilterBody"), $("#generalFilters"));
 }
 
 function switchGeneralFilters() {
 	$("#generalFiltersHidden").prop("checked", toggleGeneralFilters());
 	submitGeneralFilters();
-}
-
-function switchSpecificFilters() {
-	// TODO
-	toggleSpecificFilters();
 }
 
 function switchGeneralFiltersAll($element) {
@@ -171,7 +168,9 @@ function switchGeneralFiltersAll($element) {
 }
 
 function submitGeneralFilters() {
-	$(".generalFilters").submit();
+	$("#generalFilters").ajaxSubmit().data('jqxhr')
+		.fail(showException)
+		.done(workbench.render);
 }
 
 
@@ -197,6 +196,11 @@ function TaskForm() {
 		$type.change(function() {switchPath($type);});
 		$new.click(function() {show();});
 		$submit.click(function() {$form.submit();});
+		$cancel.click(function() {
+			//TODO reload only empty form
+			tasksVars.edit = "";
+			tasksFuncs.refresh();
+		});
 	}
 	
 	function switchPath($taskElementType) {

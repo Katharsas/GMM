@@ -2,7 +2,8 @@
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
 
-<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
+<form:form id="searchForm" commandName="workbench-searchForm"
+		action="${contextUrl}/tasks/submitSearch" method="POST">
 				
 	<form:select id="searchTypeSelect" path="easySearch">
 		<form:option value="true" label="easySearch"/>

@@ -1,6 +1,6 @@
 package gmm.domain;
 
-import gmm.web.forms.WorkbenchLoadForm;
+import gmm.web.forms.LoadForm;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class User extends NamedObject {
 	final private List<Notification> newNotifications = new LinkedList<Notification>();
 	
 	//Options & Settings
-	private WorkbenchLoadForm loadForm = new WorkbenchLoadForm();
+	private LoadForm loadForm = new LoadForm();
 	
 	//Constants
 	public final static User NULL = new User("EMPTY");
@@ -86,10 +86,10 @@ public class User extends NamedObject {
 	public List<Notification> getNewNotifications() {
 		return newNotifications;
 	}
-	public WorkbenchLoadForm getLoadForm() {
+	public LoadForm getLoadForm() {
 		return loadForm;
 	}
-	public void setLoadForm(WorkbenchLoadForm loadForm) {
+	public void setLoadForm(LoadForm loadForm) {
 		Objects.requireNonNull(loadForm);
 		this.loadForm = loadForm;
 	}
