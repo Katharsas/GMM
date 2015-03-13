@@ -9,8 +9,8 @@ import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.web.AjaxResponseException;
-import gmm.web.TaskRenderer;
-import gmm.web.TaskRenderer.TaskRenderResult;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
 
@@ -30,7 +30,7 @@ public class PublicController {
 	
 	@Autowired private LinkSession session;
 	@Autowired private DataAccess data;
-	@Autowired private TaskRenderer ftlTaskRenderer;
+	@Autowired private FtlRenderer ftlTaskRenderer;
 	
 	@ModelAttribute("comment")
 	public CommentForm getCommentForm() {return new CommentForm();}

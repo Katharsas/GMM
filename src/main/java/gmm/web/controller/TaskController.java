@@ -41,8 +41,8 @@ import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.AjaxResponseException;
-import gmm.web.TaskRenderer;
-import gmm.web.TaskRenderer.TaskRenderResult;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
@@ -70,7 +70,7 @@ public class TaskController {
 	@Autowired private DataAccess data;
 	@Autowired private TaskFilterService filter;
 	@Autowired private UserService users;
-	@Autowired private TaskRenderer ftlRenderer;
+	@Autowired private FtlRenderer ftlRenderer;
 
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskForm() {return new TaskForm();}

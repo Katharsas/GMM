@@ -34,6 +34,11 @@ import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
+/**
+ * Contains all non-web.xml, non-security settings.
+ * 
+ * @author Jan Mothes
+ */
 @Configuration
 @ComponentScan(basePackages = {"gmm", "com.technologicaloddity"})
 @EnableWebMvc
