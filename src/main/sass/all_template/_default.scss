@@ -53,7 +53,7 @@ a span{
 	height:100%;
 }
 label, .button, .clickable{
-	cursor:pointer;
+	@include cursor-clickable;
 }
 .input *{
 	font-family:Calibri, Verdana, Arial, sans-serif	!important;

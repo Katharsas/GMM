@@ -3,6 +3,8 @@
  * Provides the two static methods collapse and expand, which load and animate a tasks details.
  * Also provides the switchTask method which will collapse or expand tasks as needed automatically.
  * Depends on TweenLite library.
+ * 
+ * @author Jan Mothes
  */
 var TaskSwitcher = function(taskLoader) {	
 	this.slideDownTime = 0.5;

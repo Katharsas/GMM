@@ -86,10 +86,12 @@
 
 
 .workbench-menu-tab {
+	@include cursor-clickable;
+	min-width:5em;
+	
 	padding: 10px;
 	background-color: green;
 	float: left;
-	width: 16.667%;
 	text-align: center;
 	border-right: 2px solid #000;
 	border-bottom: 2px solid #000;
@@ -109,7 +111,7 @@
 	padding: 10px;
 	background-color: darkgreen;
 	margin-bottom: 1px;
-	min-height: 100px;
+	min-height: 120px;
 }
 
 

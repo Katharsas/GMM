@@ -82,7 +82,7 @@
 					-->
 	    			
 	    			<div id="workbench-menu">
-	    				<div class="workbench-menu-tab workbench-menu-tab-active">Load</div>
+	    				<div class="workbench-menu-tab">Load</div>
 	    				<div class="workbench-menu-tab">Sort</div>
 	    				<div class="workbench-menu-tab">Search</div>
 	    				<div class="workbench-menu-tab">Filter</div>
@@ -90,30 +90,31 @@
 	    				<div class="workbench-menu-tab workbench-menu-tab-last">Admin</div>
 	    				<div class="clear"></div>
 	    			</div>
-	    			<div id="workbench-tab-load" class="workbench-tab">
-	    				<t:workbench_load>
-	    				</t:workbench_load>
+	    			<div id="workbench-tabs">
+		    			<div id="workbench-tab-load" class="workbench-tab">
+		    				<t:workbench_load>
+		    				</t:workbench_load>
+		    			</div>
+		    			<div id="workbench-tab-sort" class="workbench-tab">
+		    				<t:workbench_sort>
+		    				</t:workbench_sort>
+		    			</div>
+		    			<div id="workbench-tab-search" class="workbench-tab">
+		    				<t:workbench_search>
+		    				</t:workbench_search>
+		    			</div>
+		    			<div id="workbench-tab-filter" class="workbench-tab">
+		    				${workbench_filters}
+		    			</div>
+		    			<div id="workbench-tab-more" class="workbench-tab">
+		    				[] Link tasks currently visible in workbench<br>
+		    				[] Edit tasks currently visible in workbench
+		    			</div>
+		    			<div id="workbench-tab-admin" class="workbench-tab">
+		    				[] Save tasks currently visible in workbench<br>
+		    				[] Delete tasks currently visible in workbench
+		    			</div>
 	    			</div>
-	    			<div id="workbench-tab-sort" class="workbench-tab">
-	    				<t:workbench_sort>
-	    				</t:workbench_sort>
-	    			</div>
-	    			<div id="workbench-tab-search" class="workbench-tab">
-	    				<t:workbench_search>
-	    				</t:workbench_search>
-	    			</div>
-	    			<div id="workbench-tab-filter" class="workbench-tab">
-	    				${workbench_filters}
-	    			</div>
-	    			<div id="workbench-tab-more" class="workbench-tab">
-	    				[] Link tasks currently visible in workbench<br>
-	    				[] Edit tasks currently visible in workbench
-	    			</div>
-	    			<div id="workbench-tab-admin" class="workbench-tab">
-	    				[] Save tasks currently visible in workbench<br>
-	    				[] Delete tasks currently visible in workbench
-	    			</div>
-	    			
 	    			<!-- 
 						workbench list
 						###############################################

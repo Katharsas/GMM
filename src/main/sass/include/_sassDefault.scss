@@ -1,5 +1,12 @@
 //------------------------------------------------------------------------------
-// This file contains general mixins with an above-average amount of logic.
+// Global styles for inclusion
+//------------------------------------------------------------------------------
+@mixin cursor-clickable {
+	cursor:pointer;
+}
+
+//------------------------------------------------------------------------------
+// General mixins with an above-average amount of logic.
 // Big loads of logic should go into javascript.
 //------------------------------------------------------------------------------
 

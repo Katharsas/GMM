@@ -1,9 +1,13 @@
 /**
- * -------------------- Queue ---------------------------------------------------------------
- * @param maxSize - Maximum number of elements in the queue. If undefined, queue size is unlimited.
- * Modifiable propety. If the size is reduced, surplus elements will not be removed.
- * @param comparator - Function which takes two elements as arguments and returns true if they are
- * considered to be the same element. Used by remove & contains function.
+ * -------------------- Queue --------------------------------------------------
+ * @param maxSize - Maximum number of elements in the queue.
+ * If undefined, queue size is unlimited. Modifiable property.
+ * If the size is reduced, surplus elements will not be removed.
+ * @param comparator - Function which takes two elements as arguments
+ * and returns true if they are considered to be the same element.
+ * Used by remove & contains function.
+ * 
+ * @author Jan Mothes
  */
 function Queue(maxSize, comparator) {
 	var queue = [];

@@ -79,7 +79,8 @@ $(document).ready(
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
 
-		//listener
+		//workbench menu setup
+		new WorkbenchTabs();
 		
 		//workbench-filter setup
 		var $filters = $("#generalFilters");
@@ -97,24 +98,21 @@ $(document).ready(
 			submitGeneralFilters();
 		});
 		
+		
 		// set Search according to selected search type (easy or complex)
-		setSearchVisibility($("#searchTypeSelect").val());	
+//		setSearchVisibility($("#searchTypeSelect").val());	
 		// hide search type selector
 		$("#searchTypeSelect").hide();
-		// hide filter submit
-		$("#generalFiltersInvisible").hide();
-		// hide generalFilterBody
-		if ($("#generalFiltersHidden").is(":checked")) toggleGeneralFilters();
 	
-		//workbench listener
+		//workbench form submit
 		$(".submitSearchButton").click(function() {
-			$("#searchForm").submit();
+			$("form#workbench-searchForm").submit();
 		});
 		$("form#workbench-loadForm").find(".form-element").change(function() {
 			$("form#workbench-loadForm").submit();
 		});
 		$(".sortFormElement").change(function() {
-			$("#sortForm").submit();
+			$("form#workbench-sortForm").submit();
 		});
 });
 
@@ -124,19 +122,19 @@ function switchListElement(element) {
 	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
 }
 
-/**
- * @param isEasySearch - String or boolean
- */
-function setSearchVisibility(isEasySearch) {
-	var $search = $(".search");
-	if (isEasySearch.toString() === "true") {
-		$search.find(".complexSearch").hide();
-		$search.find(".easySearch").show();
-	} else {
-		$search.find(".complexSearch").show();
-		$search.find(".easySearch").hide();
-	}
-}
+///**
+// * @param isEasySearch - String or boolean
+// */
+//function setSearchVisibility(isEasySearch) {
+//	var $search = $(".search");
+//	if (isEasySearch.toString() === "true") {
+//		$search.find(".complexSearch").hide();
+//		$search.find(".easySearch").show();
+//	} else {
+//		$search.find(".complexSearch").show();
+//		$search.find(".easySearch").hide();
+//	}
+//}
 
 function switchSearchType() {
 	var easySearch = $("#searchTypeSelect").val();
@@ -150,6 +148,36 @@ function submitGeneralFilters() {
 	$("#generalFilters").ajaxSubmit({url:url, type:"post"}).data('jqxhr')
 		.fail(showException)
 		.done(workbench.render);
+}
+
+/**
+ * TODO: move all workbench stuff into this and rename it
+ */
+function WorkbenchTabs() {
+	var $workbench = $("#workbench");
+	var $workbenchMenu = $workbench.find("#workbench-menu");
+	var $workbenchTabs = $workbench.find("#workbench-tabs");
+	
+	var $menuTabs = $workbenchMenu.find(".workbench-menu-tab");
+	var $tabs = $workbenchTabs.find(".workbench-tab");
+	
+	var tabWidthPercent = 100 / $menuTabs.length;
+	$menuTabs.css("width", tabWidthPercent + "%");
+	
+	$menuTabs.each(function(index, tab) {
+		var $tab = $(tab);
+		$tab.click(onTabClick(index));
+	});
+	$menuTabs.first().trigger("click");
+	
+	function onTabClick(index) {
+		return function () {
+			$menuTabs.removeClass("workbench-menu-tab-active");
+			$(this).addClass("workbench-menu-tab-active");
+			$tabs.hide();
+			$tabs.eq(index).show();
+		};
+	}
 }
 
 /**

@@ -2,6 +2,8 @@
  * -------------------- TaskLoader ----------------------------------------------------------------
  * Static (called when document ready)
  * Accepts callback which will be executed when all tasks are loaded.
+ * 
+ * @author Jan Mothes
  */
 var TaskLoader = function(url, $taskList, onLoaded) {
 //	this.tasks = undefined;

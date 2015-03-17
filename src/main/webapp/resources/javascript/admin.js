@@ -226,6 +226,8 @@ function importAssets(assetTypes) {
  * the last bundle message either indicates that the server needs a message from the client or that
  * the server has finished sending all messages or the server wants to give an update because he is
  * very slow.
+ * 
+ * @author Jan Mothes
  */
 function ResponseBundleHandler(responseBundleOption) {
 	//Namespace

@@ -1,4 +1,5 @@
 /**
+ * -------------------- SidebarMarkers -----------------------------------------
  * Allows you to create markers for elements of the list in a sidebar.
  * Markers are little GUI elements in the sidebar, which position themselves next
  * to the element they mark, if they can. If the element is not on screen, they 
