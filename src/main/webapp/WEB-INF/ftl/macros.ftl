@@ -8,6 +8,6 @@
     		${attr}="${attributes[attr]?html}"
   		</#list>
 	 	name="${s.status.expression}"
-		<#if s.status.value?? && s.status.value?string=="true">checked="true"</#if>
+		<#if s.status.value?? && s.status.value?string=="true">checked="checked"</#if>
 	<@s.closeTag/>
 </#macro>

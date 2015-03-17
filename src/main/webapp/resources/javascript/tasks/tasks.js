@@ -38,14 +38,14 @@ var workbench = {};
 workbench.init = function() {
 	workbench.taskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#workbench").find(".list-body"));
 	workbench.render();
-}
+};
 workbench.load = function(type) {
 	$.post(allVars.contextPath+"/load", { type: type })
 		.done(function() {
 			workbench.render();
 		})
 		.fail(showException);
-}
+};
 workbench.render = function() {
 	workbench.taskLoader.init();
 	//TODO find better way to reset and reload without instantiating new stuff
@@ -54,7 +54,7 @@ workbench.render = function() {
 	workbench.expandedTasks = new Queue(3, function($task1, $task2) {
 		return $task1[0] === $task2[0];
 	});
-}
+};
 
 
 /**
@@ -81,7 +81,21 @@ $(document).ready(
 
 		//listener
 		
-		
+		//workbench-filter setup
+		var $filters = $("#generalFilters");
+		var $all = $filters.find("#generalFilters-all");
+		var $checkboxes = $filters.find(".generalFilters-all-target");
+		var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
+			$all.prop("checked", areChecked);
+		});
+		$all.change(function() {
+			var isChecked = $all.prop("checked");
+			cbg.changeGroup(isChecked);
+			submitGeneralFilters();
+		});
+		$filters.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
+			submitGeneralFilters();
+		});
 		
 		// set Search according to selected search type (easy or complex)
 		setSearchVisibility($("#searchTypeSelect").val());	
@@ -102,19 +116,13 @@ $(document).ready(
 		$(".sortFormElement").change(function() {
 			$("#sortForm").submit();
 		});
-		$("#generalFiltersAllCheckbox").change(function() {
-			switchGeneralFiltersAll($(this));
-		});
-		$(".generalFiltersFormElement").change(function() {
-			submitGeneralFilters();
-		});
 });
 
 
 
 function switchListElement(element) {
 	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
-};
+}
 
 /**
  * @param isEasySearch - String or boolean
@@ -137,42 +145,40 @@ function switchSearchType() {
 	setSearchVisibility(newEasySearch);
 }
 
-function toggleFilters($toggle, $resize) {
-	if ($toggle.is(":visible")) {
-		$toggle.hide();
-		// $toggle.animate({left:'400px'},900);
-		// $toggle.hide();
-
-		$resize.css("width", "2em");
-		return true;
-	}
-	$toggle.show();
-	// $toggle.animate({left:'0px'},900);
-	$resize.css("width", "9em");
-	return false;
-}
-
-function toggleGeneralFilters() {
-	return toggleFilters($("#generalFilterBody"), $("#generalFilters"));
-}
-
-function switchGeneralFilters() {
-	$("#generalFiltersHidden").prop("checked", toggleGeneralFilters());
-	submitGeneralFilters();
-}
-
-function switchGeneralFiltersAll($element) {
-	$(".generalFiltersAllCheckBoxTarget").attr("checked",
-			$element.is(":checked"));
-	submitGeneralFilters();
-}
-
 function submitGeneralFilters() {
-	$("#generalFilters").ajaxSubmit().data('jqxhr')
+	var url = allVars.contextPath + "/tasks/submitFilter";
+	$("#generalFilters").ajaxSubmit({url:url, type:"post"}).data('jqxhr')
 		.fail(showException)
 		.done(workbench.render);
 }
 
+/**
+ * Links a controller to a group of checkboxes.
+ * 
+ * @param $checkboxGroup - all checkboxes of the controlled group
+ * @param onGroupChange - function which will get called by the CheckboxGrouper
+ * to update the controller when the checkbox group reaches complete un-/checked
+ * state by single changes. Should accept a boolean parameter (un/checked).
+ */
+function CheckboxGrouper($checkboxGroup, onGroupChange) {
+	
+	$checkboxGroup.change(function($element) {
+		if(!$checkboxGroup.is(':not(:checked)')) {
+			onGroupChange(true);
+		}
+		else if (!$checkboxGroup.is(":checked")) {
+			onGroupChange(false);
+		}
+	});
+	
+	/**
+	 * Call this when controller wants to un-/check the group.
+	 * @param isChecked - true if controller wants to check, false if uncheck
+	 */
+	this.changeGroup = function(isChecked) {
+		$checkboxGroup.prop("checked", isChecked);
+	};
+}
 
 /**
  * -------------------- TaskForm -----------------------------------------------------------------

@@ -42,6 +42,7 @@
 
 
 .list-element{
+	overflow:hidden;
 	background-color:#111;
 	margin-top:7px;
 	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
@@ -88,7 +89,7 @@
 	padding: 10px;
 	background-color: green;
 	float: left;
-	width: 25%;
+	width: 16.667%;
 	text-align: center;
 	border-right: 2px solid #000;
 	border-bottom: 2px solid #000;

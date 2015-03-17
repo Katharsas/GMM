@@ -171,7 +171,6 @@ function switchUser(idLink, userName) {
 	$.post(allVars.contextPath+"/admin/users/switch/"+idLink)
 		.done(function() {
 			var $enabled = $("#"+idLink+" .subElementUserEnabled");
-			console.log($.trim($enabled.html()));
 			if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
 				$enabled.html("&#x2610;");
 			}

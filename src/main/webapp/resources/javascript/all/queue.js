@@ -11,10 +11,10 @@ function Queue(maxSize, comparator) {
 	
 	/**
 	 * Adds an element to the queue. If the queue is full, the oldest element will be removed.
-	 * @returns the removed element or undefined, if no element was removed.
+	 * @returns the removed element or null, if no element was removed.
 	 */
 	this.add = function(task) {
-		var result = undefined;
+		var result = null;
 		if(this.maxSize !== undefined && queue.length >= this.maxSize) {
 			result = queue.pop();
 		}

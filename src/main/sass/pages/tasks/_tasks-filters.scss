@@ -1,31 +1,4 @@
-#filters {
-	overflow: hidden;
-}
-.filterGroup {
-	padding:5px;
-	border-bottom:2px solid #151515;
-}
-.generalFilters {
-	width:9em;
-	margin-left:2px;
-	margin-right:13px;
-	margin-bottom:13%;
-}
-.generalFilters .filterGroup{
-	background-color:#164054;
-}
-.generalFilters .filterBorder{
-	border-color:#151515;
-
-}
-.specificFilters{
-	width:9em;
-	margin-right:2px;
-	margin-left:13px;
-}
-.specificFilters .filterGroup{
-	background-color:#164054;
-}
-.specificFilters .filterBorder{
-	border-color:#151515;
+.generalFilters-group {
+	min-width: 140px;
+	background-color:red;
 }

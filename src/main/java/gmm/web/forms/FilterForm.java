@@ -9,7 +9,7 @@ public class FilterForm {
 	private boolean createdByMe;
 	private boolean assignedToMe;
 	private boolean all;
-	private boolean hidden;
+//	private boolean hidden;
 	private Boolean[] priority;
 	private Boolean[] taskStatus;
 
@@ -20,7 +20,7 @@ public class FilterForm {
 		createdByMe = false;
 		assignedToMe = false;
 		all = true;
-		hidden = false;
+//		hidden = false;
 		priority = ListUtil.inflateToArray(true, TaskPriority.values().length);
 		taskStatus = ListUtil.inflateToArray(true, TaskStatus.values().length);
 	}
@@ -56,10 +56,10 @@ public class FilterForm {
 	public void setAll(boolean all) {
 		this.all = all;
 	}
-	public boolean isHidden() {
-		return hidden;
-	}
-	public void setHidden(boolean hidden) {
-		this.hidden = hidden;
-	}
+//	public boolean isHidden() {
+//		return hidden;
+//	}
+//	public void setHidden(boolean hidden) {
+//		this.hidden = hidden;
+//	}
 }

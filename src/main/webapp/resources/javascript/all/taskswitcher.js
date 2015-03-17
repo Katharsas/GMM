@@ -120,7 +120,7 @@ var TaskSwitcher = function(taskLoader) {
          * Plays a slideUp animation and removes task detail DOM from page.
          */
         collapse : function($task) {
-            if($task !== undefined) {
+            if($task !== undefined && $task!== null) {
             	$task.removeClass("expanding");
             	$task.removeClass("expanded");
             	$task.addClass("collapsing");
@@ -147,7 +147,7 @@ var TaskSwitcher = function(taskLoader) {
          * Adds task detail DOM to page and plays a slideDown animation. 
          */
         expand : function($task) {
-        	if ($task !== undefined) {
+        	if ($task !== undefined && $task !== null) {
         		if(!$task.hasClass("collapsing")) {
         			taskLoader.insertBody($task);
         		}

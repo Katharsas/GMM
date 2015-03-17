@@ -34,11 +34,11 @@ var HtmlPreProcessor = function() {
 		    }, 'xml');
 
 		});
-	}
+	};
 	
 	return {
 		apply : function($range) {
 			replaceSvgImages($range);
 		}
-	}
-}
+	};
+};
