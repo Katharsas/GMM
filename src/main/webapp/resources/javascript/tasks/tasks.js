@@ -111,7 +111,7 @@ $(document).ready(
 		$("form#workbench-loadForm").find(".form-element").change(function() {
 			$("form#workbench-loadForm").submit();
 		});
-		$(".sortFormElement").change(function() {
+		$("form#workbench-sortForm").find("select, input").change(function() {
 			$("form#workbench-sortForm").submit();
 		});
 });

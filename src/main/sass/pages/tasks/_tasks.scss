@@ -8,12 +8,12 @@
 	max-width: 1080px;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 801px) {
 	#main {
 		margin-left: 200px;
 	}
 }
-@media (max-width: 799px) {
+@media (max-width: 800px) {
 	#main {
 		margin: 0px auto;
 	}
@@ -50,10 +50,9 @@
 }
 
 .list-count {
-	font-size:0.9em;
+	font-size:0.85em;
 	margin-top:3px;
-	font-weight:bold;
-	color:#000000;
+	color:#BBB;
 }
 
 // ####################################### Sidebar
@@ -80,21 +79,28 @@
 
 // ####################################### Workbench
 
-#workbenchMenu {
-	
-}
+$padding-wb-vertical: 10;
+$padding-wb-horizontal: 10;
 
+#workbench-menu {
+	margin-top: 2px;
+}
 
 .workbench-menu-tab {
 	@include cursor-clickable;
+	@include colorTheme-subpage-bright;
 	min-width:5em;
 	
-	padding: 10px;
-	background-color: green;
+	padding: #{$padding-wb-vertical}px #{$padding-wb-horizontal}px;
 	float: left;
 	text-align: center;
+	
 	border-right: 2px solid #000;
 	border-bottom: 2px solid #000;
+	
+	&:hover {
+		background-color: lighten($bgc-subpage-bright, 4%);
+	}
 }
 
 .workbench-menu-tab-last {
@@ -104,23 +110,99 @@
 .workbench-menu-tab-active {
 	padding-bottom: 12px;
 	border-bottom: none;
-	background-color: darkgreen;
+	
+	@include colorTheme-subpage-dark;
+	&:hover {
+		background-color: $bgc-subpage-dark;
+	}
 }
 
 .workbench-tab {
-	padding: 10px;
-	background-color: darkgreen;
+	padding: #{$padding-wb-horizontal}px #{$padding-wb-horizontal + 1}px;
+	padding-top: #{$padding-wb-horizontal + 2}px;
+	
+	@include colorTheme-subpage-dark;
 	margin-bottom: 1px;
-	min-height: 120px;
+	box-sizing: content-box;
+	min-height: 90px;
+	/* TODO: make height fixed*/ 
+/* 	height: 120px; */
+	
+	input, select, textarea {
+		$col: lighten($bgc-subpage-dark, 70%);
+		$col: setSaturation($col, 0.1);
+	
+		background-color:$col;
+	}
 }
 
-
-// ####################################### old tasks page content
-
-
-.filterGroup {
-	padding:5px;
+@mixin workbench-tab-button {
+	//button with background color
+/* 	$col: lighten($bgc-subpage-dark, 6%); */
+/* 	$col: setSaturation($col, 0.8); */
+	
+	//button with contrast (white) color
+	$col: lighten($bgc-subpage-dark, 63%);
+	$col: setSaturation($col, 0.1);
+	
+	@include button-color($col);
+	color:#000;
 }
+
+// ####################################### Load Tab
+
+#workbench-load-wrapper {
+	min-height:inherit;
+	
+	display:flex;
+	flex-direction:column;
+	justify-content:flex-end;
+}
+
+#workbench-load-typeButtons {
+	display:flex;
+	margin-bottom:20px;
+}
+
+.workbench-load-typeButton {
+	margin-left:15px;
+	@include workbench-tab-button;
+}
+
+#workbench-load-formWrapper {
+	display:flex;
+	justify-content:space-between;
+	
+	.form-element {
+		margin-left:5px;
+	}
+}
+
+// ####################################### Sort Tab
+
+#workbench-sort-formWrapper {
+	min-height:inherit;
+	
+	display:flex;
+	flex-direction:column;
+	justify-content:space-around;
+}
+
+#workbench-sort-primary {
+	margin-bottom:15px;
+}
+
+#workbench-sort-primary, #workbench-sort-secondary {
+	margin-left: 20px;
+}
+
+.workbench-sort-element {
+	display:inline-block;
+	margin: 0 10px;
+}
+
+// ####################################### other content
+
 
 /*Content/Body of the tasks tab*/
 
@@ -128,7 +210,7 @@
 	background-color:#333333;
 }
 
-.taskButtons {
+.taskForm-buttons {
 	margin:1em 0em;
 }
 #submitTaskButton {

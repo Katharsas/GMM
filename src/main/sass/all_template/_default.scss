@@ -98,11 +98,21 @@ input, textarea, select {
 textarea {
 	max-width:100%;
 }
+input[type="checkbox"] {
+	vertical-align: middle;
+	margin: 0px 3px;
+	margin-bottom:2px;
+}
+form {
+	margin:0;
+	padding:0;
+}
 a {text-decoration: none;}
 a:link {color:inherit;}
 a:visited {color:inherit;}
 a:active {color:inherit;}
 a:hover {}
+/*other*/
 .blocker {
 	position: fixed;
 	height:100%;

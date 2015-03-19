@@ -2,7 +2,7 @@
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
 
-<form:form id="searchForm" commandName="workbench-searchForm"
+<form:form id="workbench-searchForm" commandName="workbench-searchForm"
 		action="${contextUrl}/tasks/submitSearch" method="POST">
 				
 	<form:select id="searchTypeSelect" path="easySearch">

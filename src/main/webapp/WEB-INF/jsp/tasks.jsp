@@ -33,27 +33,25 @@
 					task form
 					###############################################
 				-->
-    			<div id="generalArea">
-					<div id="newTaskButton" class="button pageButton">
-						<fmt:message key="tasks.new"/>
+				<div id="newTaskButton" class="button">
+					<fmt:message key="tasks.new"/>
+				</div>
+				<form:form id="taskForm" method="POST"
+						action="${contextUrl}/tasks/submitTask?edit=${edit}"
+						commandName="taskForm"
+						style="display: none;">
+					<t:all_taskForm>
+					</t:all_taskForm>
+				</form:form>
+				<div class="clear"></div>
+				<div class="taskForm-buttons">
+					<div id="submitTaskButton" class="button left" style="display: none;">
+						<fmt:message key="tasks.submit"/>
 					</div>
-					<form:form id="taskForm" method="POST"
-							action="${contextUrl}/tasks/submitTask?edit=${edit}"
-							commandName="taskForm"
-							style="display: none;">
-						<t:all_taskForm>
-						</t:all_taskForm>
-					</form:form>
+					<div id="cancelTaskButton" class="button left" style="display: none;">
+						<fmt:message key="tasks.new.cancel"/>
+					</div>
 					<div class="clear"></div>
-					<div class="taskButtons">
-						<div id="submitTaskButton" class="button pageButton left" style="display: none;">
-							<fmt:message key="tasks.submit"/>
-						</div>
-						<div id="cancelTaskButton" class="button pageButton left" style="display: none;">
-							<fmt:message key="tasks.new.cancel"/>
-						</div>
-						<div class="clear"></div>
-					</div>
 				</div>
     			
     			<!-- 
@@ -63,13 +61,17 @@
     			<div id="pinned" class="list">
 	    			<div class="list-header">Pinned</div>
 	    			<div class="list-body">
-	    				<div class="list-element">Task 1</div>
+	    				<div class="list-element">
+	    					<div class="task-header">Task 1</div>
+	    				</div>
 	    			</div>
 	    		</div>
     			<div id="currentOperation" class="list">
 	    			<div class="list-header">%currentOperation%</div>
 	    			<div class="list-body">
-	    				<div class="list-element">Task 1</div>
+	    				<div class="list-element">
+	    					<div class="task-header">Task 1</div>
+	    				</div>
 	    			</div>
 	    		</div>
 	    		
@@ -85,9 +87,9 @@
 	    				<div class="workbench-menu-tab">Load</div>
 	    				<div class="workbench-menu-tab">Sort</div>
 	    				<div class="workbench-menu-tab">Search</div>
-	    				<div class="workbench-menu-tab">Filter</div>
-	    				<div class="workbench-menu-tab">More</div>
-	    				<div class="workbench-menu-tab workbench-menu-tab-last">Admin</div>
+	    				<div class="workbench-menu-tab workbench-menu-tab-last">Filter</div>
+<!-- 	    				<div class="workbench-menu-tab">More</div> -->
+<!-- 	    				<div class="workbench-menu-tab">Admin</div> -->
 	    				<div class="clear"></div>
 	    			</div>
 	    			<div id="workbench-tabs">
@@ -122,60 +124,12 @@
 	    			
 	    			<div class="list-body">
 	    				<div class="list-count center">
-							---------------------------------------- 
 							<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
-							----------------------------------------
 						</div>
 	    			</div>
 	    		</div>
+	    		
     		</div>
     	</div>
-    
-    
-<!-- 		<div class="table"> -->
-<!-- 			<div class="tr"> -->
-<!-- 				<div class="td leftColumn"> -->
-<!-- 				</div> -->
-<!-- 				<div class="td rightColumn"> -->
-<!-- New Task Area -->
-<!-- 					<div id="generalArea"> -->
-<!-- 						<div id="newTaskButton" class="button pageButton"> -->
-<%-- 							<fmt:message key="tasks.new"/> --%>
-<!-- 						</div> -->
-<%-- 						<form:form id="taskForm" method="POST" --%>
-<%-- 								action="tasks/submitTask?tab=${tab}&edit=${edit}" --%>
-<%-- 								commandName="task" --%>
-<%-- 								style="display: none;"> --%>
-<%-- 							<t:all_taskForm> --%>
-<%-- 							</t:all_taskForm> --%>
-<%-- 						</form:form> --%>
-<!-- 						<div class="clear"></div> -->
-<!-- 						<div class="taskButtons"> -->
-<!-- 							<div id="submitTaskButton" class="button pageButton left" style="display: none;"> -->
-<%-- 								<fmt:message key="tasks.submit"/> --%>
-<!-- 							</div> -->
-<!-- 							<div id="cancelTaskButton" class="button pageButton left" style="display: none;"> -->
-<%-- 								<a href="?tab=${tab}"> --%>
-<%-- 									<fmt:message key="tasks.new.cancel"/><span></span> --%>
-<!-- 								</a> -->
-<!-- 							</div> -->
-<!-- 							<div class="clear"></div> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 			<div class="tr"> -->
-<!-- 				<div class="td leftColumn"> -->
-<!-- Side Filter Area -->
-<%-- 					<t:tasks_filters> --%>
-<%-- 					</t:tasks_filters> --%>
-<!-- 				</div> -->
-<!-- 				<div class="td rightColumn"> -->
-<!-- Task List Area -->
-<%-- 					<t:tasks_lists newLine="${newLine}"> --%>
-<%-- 					</t:tasks_lists> --%>
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 		</div> -->
     </jsp:body>
 </t:all_template>

@@ -1,3 +1,5 @@
+@import 'sassDefault';
+
 //------------------------------------------------------------------------------
 // You can change basic colors here.
 //------------------------------------------------------------------------------
@@ -29,11 +31,14 @@ $c-paleBlue: #36A2D7;
 $bgc-page:	#000;
 $fgc-page:	#EEE;
 
-$bgc-subpage-bright:	#0B3F57;//blue-green
-$fgc-subpage-bright:	#EEE;
-
 $bgc-subpage-dark:	#072737;//blue-green (dark)
+//$bgc-subpage-dark:	#73132E;//pink
+//$bgc-subpage-dark:		#765D0A;//gold
 $fgc-subpage-dark:	#DDD;
+
+// $bgc-subpage-bright:	#0B3F57;//blue-green
+$bgc-subpage-bright: 	getBrightScheme($bgc-subpage-dark);
+$fgc-subpage-bright:	#EEE;
 
 $c-highlight:	$c-orange;
 
