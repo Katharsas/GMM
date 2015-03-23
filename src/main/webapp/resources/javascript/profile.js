@@ -14,17 +14,17 @@ function changePassword() {
 	var newPW1 = $dialog.find(ns+"-first").val();
 	var newPW2 = $dialog.find(ns+"-second").val();
 	
-	if(newPW1===newPW2) {
-		$.post("profile/password", {"oldPW" : oldPW, "newPW" : newPW2})
-			.done(function(error) {
-				if(error==="") {
+	if(newPW1 === newPW2) {
+		var data = {"oldPW" : oldPW, "newPW" : newPW2};
+		Ajax.post(contextUrl + "/profile/password", data)
+			.done(function(data) {
+				if(data.error === undefined || data.error === null) {
 					hideDialog($dialog);
 					alert(hideDialog, "Password change was successful!");
 				} else {
-					$error.text(error);
+					$error.text(data.error);
 				}
-			})
-			.fail(showException);
+			});
 	} else {
 		$error.text("Error: New passwords differ!");
 	}

@@ -24,10 +24,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -127,6 +129,20 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	public MultipartResolver multipartResolver() {
 		return new CommonsMultipartResolver();
 	}
+	
+//	@Bean
+//	public HandlerExceptionResolver handlerExceptionResolver() {
+//		HandlerExceptionResolver result = new ExceptionHandlerExceptionResolver();
+//		result.
+//		return result;
+//	}
+	
+//	@Bean
+//	public ExceptionHandlerExceptionResolver exceptionHandlerExceptionResolver() {
+//		ExceptionHandlerExceptionResolver resolver = new ExceptionHandlerExceptionResolver();
+//		resolver.
+//		return resolver;
+//	}
 	
 	/**
 	 * ----------------------------- Custom Beans -----------------------------

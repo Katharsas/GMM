@@ -10,11 +10,11 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 //	reloadAndInsert();
 	
 	function reloadAndInsert() {
-		$.getJSON(url).done(function(taskRenders) {
+		Ajax.get(url).done(function(taskRenders) {
 			tasks = taskRenders;
 			insertHeaders();
 			if(onLoaded !== undefined) onLoaded();
-		}).fail(showException);
+		});
 	}
 	
 	function insertHeaders() {

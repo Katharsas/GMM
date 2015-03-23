@@ -27,21 +27,29 @@ public class ProfileController {
         return "profile";
     }
 	
+	//TODO js request must accept plain text!!! otherwise jquery ll try to parse error text
 	@RequestMapping(value = "/password", method = RequestMethod.POST)
-	public @ResponseBody String changePassword(
+	public @ResponseBody PasswordChangeResult changePassword(
 			@RequestParam("oldPW") String oldPW,
 			@RequestParam("newPW") String newPW) {
 		
 		if(encoder.matches(oldPW, session.getUser().getPasswordHash())) {
 			if(newPW.length()<8) {
-				return "Error: Password too short!";
+				return new PasswordChangeResult("Error: Password too short!");
 			}
 			newPW = encoder.encode(newPW);
 			session.getUser().setPasswordHash(newPW);
-			return "";
+			return new PasswordChangeResult(null);
 		}
 		else {
-			return "Error: Wrong current password!";
+			return new PasswordChangeResult("Error: Wrong current password!");
+		}
+	}
+	
+	protected static class PasswordChangeResult {
+		public String error;
+		public PasswordChangeResult(String error) {
+			this.error = error;
 		}
 	}
 }

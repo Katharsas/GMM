@@ -11,7 +11,7 @@ var tasksFuncs = {
 		return allVars.selectedTaskFile.attr("rel");
 	},
 	"refresh" : function() {
-		var url = allVars.contextPath + "/tasks";
+		var url = contextUrl + "/tasks";
 		if (tasksVars.edit !== "") {
 			url += "?edit=" + tasksVars.edit;
 		}
@@ -36,11 +36,11 @@ var tasksFuncs = {
 var workbench = {};
 
 workbench.init = function() {
-	workbench.taskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#workbench").find(".list-body"));
+	workbench.taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
 	workbench.render();
 };
 workbench.load = function(type) {
-	$.post(allVars.contextPath+"/load", { type: type })
+	Ajax.get(contextUrl + "/tasks/load", { type: type })
 		.done(function() {
 			workbench.render();
 		})
@@ -54,6 +54,51 @@ workbench.render = function() {
 	workbench.expandedTasks = new Queue(3, function($task1, $task2) {
 		return $task1[0] === $task2[0];
 	});
+};
+workbench.initWorkbenchTabs = function() {
+	new WorkbenchTabs();
+	
+	var $loadForm = $("form#workbench-loadForm");
+	var $sortForm = $("form#workbench-sortForm");
+	var $searchForm = $("form#workbench-searchForm");
+	var $filterForm = $("form#generalFilters");
+	
+	//load form
+	$loadForm.find(".form-element").change(function() {
+		Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
+	});
+	//sort form
+	$sortForm.find("select, input").change(function() {
+		Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
+			.done(//TODO only load new sorting data
+					workbench.render);
+	});
+	//search form
+	$searchForm.find(".submitSearchButton").click(function() {
+		Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
+			.done(workbench.render);
+	});
+	//filter form
+	var submitFilterForm = function() {
+		Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
+			.done(workbench.render);
+	};
+	$filterForm.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
+		submitFilterForm();
+	});
+	//filter form (all checkbox binding)
+	(function() {
+		var $all = $filterForm.find("#generalFilters-all");
+		var $checkboxes = $filterForm.find(".generalFilters-all-target");
+		var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
+			$all.prop("checked", areChecked);
+		});
+		$all.change(function() {
+			var isChecked = $all.prop("checked");
+			cbg.changeGroup(isChecked);
+			submitFilterForm();
+		});
+	})();
 };
 
 
@@ -79,41 +124,13 @@ $(document).ready(
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
 
-		//workbench menu setup
-		new WorkbenchTabs();
-		
-		//workbench-filter setup
-		var $filters = $("#generalFilters");
-		var $all = $filters.find("#generalFilters-all");
-		var $checkboxes = $filters.find(".generalFilters-all-target");
-		var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
-			$all.prop("checked", areChecked);
-		});
-		$all.change(function() {
-			var isChecked = $all.prop("checked");
-			cbg.changeGroup(isChecked);
-			submitGeneralFilters();
-		});
-		$filters.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
-			submitGeneralFilters();
-		});
-		
+		workbench.initWorkbenchTabs();
 		
 		// set Search according to selected search type (easy or complex)
 //		setSearchVisibility($("#searchTypeSelect").val());	
 		// hide search type selector
-		$("#searchTypeSelect").hide();
+//		$("#searchTypeSelect").hide();
 	
-		//workbench form submit
-		$(".submitSearchButton").click(function() {
-			$("form#workbench-searchForm").submit();
-		});
-		$("form#workbench-loadForm").find(".form-element").change(function() {
-			$("form#workbench-loadForm").submit();
-		});
-		$("form#workbench-sortForm").find("select, input").change(function() {
-			$("form#workbench-sortForm").submit();
-		});
 });
 
 
@@ -141,13 +158,6 @@ function switchSearchType() {
 	var newEasySearch = (easySearch !== "true").toString();
 	$("#searchTypeSelect").val(newEasySearch);
 	setSearchVisibility(newEasySearch);
-}
-
-function submitGeneralFilters() {
-	var url = allVars.contextPath + "/tasks/submitFilter";
-	$("#generalFilters").ajaxSubmit({url:url, type:"post"}).data('jqxhr')
-		.fail(showException)
-		.done(workbench.render);
 }
 
 /**

@@ -1,33 +1,5 @@
 package gmm.web.controller;
 
-/** Other*/
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
-/** Annotations */
-
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-/** java */
-
-
-
-
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-/* project */
-
-
-
-
-
 
 import gmm.collections.List;
 import gmm.domain.Comment;
@@ -40,16 +12,29 @@ import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskServiceFinder;
-import gmm.web.AjaxResponseException;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
+import gmm.web.forms.LoadForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
 import gmm.web.forms.TaskForm;
-import gmm.web.forms.LoadForm;
 import gmm.web.sessions.TaskSession;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * This controller is responsible for most task-CRUD operations requested by "tasks" page.
@@ -109,11 +94,9 @@ public class TaskController {
 	 * @param loadForm - object containing all task loading settings
 	 */
 	@RequestMapping(value="/submitLoad", method = RequestMethod.POST)
-	public String handleLoad(
-		 		@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
-
+	@ResponseBody
+	public void handleLoad(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
 		session.updateLoad(loadForm);
-		return "redirect:/tasks";
 	}
 	
 	/**
@@ -123,13 +106,9 @@ public class TaskController {
 	 * @param filterForm - object containing all filter information
 	 */
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
-	public @ResponseBody void handleFilter(
-		 		@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm
-		 		) throws AjaxResponseException {
-		try {
-			session.updateFilter(filterForm);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	@ResponseBody
+	public void handleFilter(@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm) {
+		session.updateFilter(filterForm);
 	}
 	
 	
@@ -140,11 +119,9 @@ public class TaskController {
 	 * @param searchForm - object containing all search information
 	 */
 	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
-	public String handleTasksSearch(
-		 		@ModelAttribute("workbench-searchForm") SearchForm searchForm) {
-		
+	@ResponseBody
+	public void handleTasksSearch(@ModelAttribute("workbench-searchForm") SearchForm searchForm) {
 		session.updateSearch(searchForm);
-		return "redirect:/tasks";
 	}
 	
 	
@@ -155,11 +132,9 @@ public class TaskController {
 	 * @param searchForm - object containing all search information
 	 */
 	@RequestMapping(value="/submitSort", method = RequestMethod.POST)
-	public String handleSorting(
-		 		@ModelAttribute("workbench-sortForm") SortForm sortForm) {
-		
+	@ResponseBody
+	public void handleSorting(@ModelAttribute("workbench-sortForm") SortForm sortForm) {
 		session.updateSort(sortForm);
-		return "redirect:/tasks";
 	}
 	
 	
@@ -168,15 +143,12 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted
 	 */
-	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
+	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void handleTasksDelete(
-				@PathVariable String idLink) throws AjaxResponseException {
-		try {
-			data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
-			session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	public void handleTasksDelete(@PathVariable String idLink) {
+		
+		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
+		session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
 	}
 	
 	
@@ -192,6 +164,7 @@ public class TaskController {
 				@PathVariable String taskIdLink,
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
+		
 		Task task = UniqueObject.getFromIdLink(session.getTasks(), taskIdLink);
 		Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
 		if(comment.getAuthor().getId() == session.getUser().getId()) {
@@ -212,6 +185,7 @@ public class TaskController {
 	public String handleTasksComment(
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
+		
 		Comment comment = new Comment(session.getUser(), form.getText());
 		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
 		
@@ -289,14 +263,10 @@ public class TaskController {
 		return idLink != null && idLink.matches(".*[0-9]+");
 	}
 	
-	@RequestMapping(value = "/load", method = RequestMethod.POST)
-	public @ResponseBody void loadTasks(
-			@RequestParam("type") TaskType type) throws AjaxResponseException {
-		try {
-			session.loadTasks(type);
-		} catch(Exception e) {
-			throw new AjaxResponseException(e);
-		}
+	@RequestMapping(value = "/load", method = RequestMethod.GET)
+	@ResponseBody
+	public void loadTasks(@RequestParam("type") TaskType type) {
+		session.loadTasks(type);
 	}
 	
 	@RequestMapping(value = "/render", method = RequestMethod.GET)
@@ -304,12 +274,8 @@ public class TaskController {
 	public List<TaskRenderResult> taskMap(
 			ModelMap model,
 			HttpServletRequest request,
-			HttpServletResponse response) throws AjaxResponseException {
-		try {
-			populateRequest(request);
-			return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
-		} catch(Exception e) {
-			throw new AjaxResponseException(e);
-		}
+			HttpServletResponse response) throws Exception {
+		populateRequest(request);
+		return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
 	}
 }

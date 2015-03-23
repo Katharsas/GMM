@@ -32,7 +32,6 @@ import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
-import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
@@ -72,7 +71,7 @@ public class AdminController {
 		session.clearImportPaths();
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-        return "admin";
+	    return "admin";
     }
 	
 	/**
@@ -102,7 +101,7 @@ public class AdminController {
 	 * Delete all tasks <br/>
 	 * -----------------------------------------------------------------
 	 */
-	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
+	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.DELETE)
 	public @ResponseBody void deleteTasks() {
 		taskSession.notifyDataChange();
 		data.removeAll(Task.class);
@@ -117,13 +116,11 @@ public class AdminController {
 	 * Show task save files.
 	 */
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
-	public @ResponseBody String showBackups(@RequestParam("dir") Path dir) throws AjaxResponseException {
-		try {
-			Path visible = config.TASKS;
-			Path dirPath = fileService.restrictAccess(dir, visible);
-			return new FileTreeScript().html(dirPath, visible);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	public @ResponseBody String[] showBackups(@RequestParam("dir") Path dir) {
+		
+		Path visible = config.TASKS;
+		Path dirPath = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirPath, visible);
 	}
 	
 	/**
@@ -142,14 +139,12 @@ public class AdminController {
 	/**
 	 * Delete task save file.
 	 */
-	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws AjaxResponseException {	
-		try {
-			Path visible = config.TASKS;
-			dir = visible.resolve(fileService.restrictAccess(dir, visible));
-			fileService.delete(dir);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.DELETE)
+	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws Exception {	
+		
+		Path visible = config.TASKS;
+		dir = visible.resolve(fileService.restrictAccess(dir, visible));
+		fileService.delete(dir);
 	}
 	
 	/**
@@ -161,42 +156,38 @@ public class AdminController {
 	 * Start message conversation .<br/>
 	 * @see {@link #loadNextTask(String, boolean)}
 	 */
-	@RequestMapping(value = "/load", method = RequestMethod.GET)
+	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks(
-			@RequestParam(value = "dir", required = false) Path dir) throws AjaxResponseException {
-		try {
-			backups.triggerTaskBackup();
-			taskSession.notifyDataChange();
-			
-			Iterator<? extends Task> i;
-			// Load tasks from file
-			if (!(dir == null)) {
-				Path visible = config.TASKS;
-				dir = fileService.restrictAccess(dir, visible);
-				i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
-			}
-			// Load tasks from asset import
-			else {
-				i = session.getImportedTasks();
-			}
-			session.taskLoader = new BundledMessageResponses<>(i, new TaskLoaderOperations());
-			return session.taskLoader.loadFirstBundle();
+			@RequestParam(value = "dir", required = false) Path dir) throws Exception {
+		
+		backups.triggerTaskBackup();
+		taskSession.notifyDataChange();
+		
+		Iterator<? extends Task> i;
+		// Load tasks from file
+		if (!(dir == null)) {
+			Path visible = config.TASKS;
+			dir = fileService.restrictAccess(dir, visible);
+			i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
 		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+		// Load tasks from asset import
+		else {
+			i = session.getImportedTasks();
+		}
+		session.taskLoader = new BundledMessageResponses<>(i, new TaskLoaderOperations());
+		return session.taskLoader.loadFirstBundle();
 	}
 	
 	/**
 	 * Next message conversation. <br/>
 	 * Tasks will be loaded according to received user operations. <br/>
 	 */
-	@RequestMapping(value = "/load/next", method = RequestMethod.GET)
+	@RequestMapping(value = "/load/next", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadNextTask (
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
-		try {
-			return session.taskLoader.loadNextBundle(operation, doForAll);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam("doForAll") boolean doForAll) throws Exception {
+		
+		return session.taskLoader.loadNextBundle(operation, doForAll);
 	}
 	
 	/**
@@ -208,13 +199,11 @@ public class AdminController {
 	 * Show original asset folder file tree.
 	 */
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
-	public @ResponseBody String showOriginalAssets(@RequestParam("dir") Path dir) throws AjaxResponseException {
-		try {
-			Path visible = config.ASSETS_ORIGINAL;
-			dir = fileService.restrictAccess(dir, visible);
-			return new FileTreeScript().html(dir, visible);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	public @ResponseBody String[] showOriginalAssets(@RequestParam("dir") Path dir) {
+		
+		Path visible = config.ASSETS_ORIGINAL;
+		dir = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dir, visible);
 	}
 	
 	/**
@@ -225,17 +214,15 @@ public class AdminController {
 	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
 	public @ResponseBody List<String> getAssetPaths(
 			@RequestParam("dir") Path dir,
-			@RequestParam("textures") boolean textures) throws AjaxResponseException {
-		try {
-			Path visible = config.ASSETS_ORIGINAL;
-			dir = fileService.restrictAccess(dir, visible);
-			FilenameFilter filter = textures ?
-					TextureTaskService.extensions : ModelTaskService.extensions;
-			List<Path> paths = fileService.getFilePaths(visible.resolve(dir), filter);
-			session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
-			return session.getImportPaths();
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam("textures") boolean textures) {
+		
+		Path visible = config.ASSETS_ORIGINAL;
+		dir = fileService.restrictAccess(dir, visible);
+		FilenameFilter filter = textures ?
+				TextureTaskService.extensions : ModelTaskService.extensions;
+		List<Path> paths = fileService.getFilePaths(visible.resolve(dir), filter);
+		session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
+		return session.getImportPaths();
 	}
 	
 	/**
@@ -243,11 +230,9 @@ public class AdminController {
 	 * @see {@link #getAssetPaths(Path, boolean)}
 	 */
 	@RequestMapping(value = {"/import/cancel"} , method = RequestMethod.POST)
-	public @ResponseBody void cancelAssetImport() throws AjaxResponseException {
-		try {
-			session.clearImportPaths();
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+	public @ResponseBody void cancelAssetImport() {
+		
+		session.clearImportPaths();
 	}
 	
 	/**
@@ -257,27 +242,24 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importAssets (
 			@RequestParam("textures") boolean textures,
-			@ModelAttribute("taskForm") TaskForm form) throws AjaxResponseException {
-		try {
-			backups.triggerTaskBackup();
-			taskSession.notifyDataChange();
-			session.assetImporter = new BundledMessageResponses<>(
-					session.getImportPaths().iterator(), session.getAssetImportOperations(form));
-			return session.assetImporter.loadFirstBundle();
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@ModelAttribute("taskForm") TaskForm form) throws Exception {
+		
+		backups.triggerTaskBackup();
+		taskSession.notifyDataChange();
+		session.assetImporter = new BundledMessageResponses<>(
+				session.getImportPaths().iterator(), session.getAssetImportOperations(form));
+		return session.assetImporter.loadFirstBundle();
 	}
 	
 	/**
 	 * Next message conversation. <br/>
 	 * Assets will be imported according to received user operations. <br/>
 	 */
-	@RequestMapping(value = {"/importAssets/next"} , method = RequestMethod.GET)
+	@RequestMapping(value = {"/importAssets/next"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importNextAsset(
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws AjaxResponseException {
-		try {
-			return session.assetImporter.loadNextBundle(operation, doForAll);
-		} catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam("doForAll") boolean doForAll) throws Exception {
+		
+		return session.assetImporter.loadNextBundle(operation, doForAll);
 	}
 }

@@ -7,14 +7,13 @@ $(document).ready( function() {
 	var $adminBanner = $("#adminBannerTextArea");
 	$adminBanner.html(allVars.adminBanner);
 	$adminBanner.blur(function() {
-		$.post(allVars.contextPath+"/admin/changeBannerMessage", {message: $adminBanner.val()})
-			.fail(showException);
+		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
 	});
 });
 
 function refreshTaskBackups() {
 	$('#taskBackupsContainer').fileTree(
-		allFuncs.treePluginOptions(allVars.contextPath+"/admin/backups", false),
+		allFuncs.treePluginOptions(contextUrl + "/admin/backups", false),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedBackupFile");
 		},
@@ -34,12 +33,11 @@ function deleteFile() {
 	var dir = allVars.selectedBackupFile.attr('rel');
 	if(dir === undefined || dir === "") return;
 	var $confirm = confirm(function() {
-		$.post(allVars.contextPath+"/admin/deleteFile", { dir: dir })
+		Ajax.remove(contextUrl + "/admin/deleteFile", { dir: dir })
 			.done(function() {
 				refreshTaskBackups();
 				hideDialog($confirm);
-			})
-			.fail(showException);
+			});
 	},"Delete file "+dir+"?");
 }
 
@@ -47,11 +45,10 @@ function deleteAllTasks() {
 	var $confirm = confirm(function() {
 		hideDialog($confirm);
 		confirm(function() {
-			$.post(allVars.contextPath+"/admin/deleteTasks")
+			Ajax.remove(contextUrl + "/admin/deleteTasks")
 				.done(function(){
 					hideDialog($confirm);
-				})
-				.fail(showException);
+				});
 		}, "Are you really really sure?");
 	},"Delete all tasks?");
 }
@@ -62,7 +59,7 @@ function saveAllTasks() {
 
 function refreshTaskImportTree() {
 	$('#originalAssetsContainer').fileTree(
-		allFuncs.treePluginOptions(allVars.contextPath+"/admin/originalAssets", true),
+		allFuncs.treePluginOptions(contextUrl + "/admin/originalAssets", true),
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedAssetFile");
 		}
@@ -75,19 +72,20 @@ function addAssetPaths(textures) {
 	var $selectedPathsListContainer = $("#selectedPaths");
 	var $selectedPathsList = $("#selectedPaths ul");
 	$selectedPathsList.empty();
-	$.getJSON(allVars.contextPath+"/admin/getAssetPaths",
-			{ dir: dir, textures: textures }, function(paths) {
-		if(paths.length===0) {
-			cancelImport();
-			return;
-		}
-		for(var i in paths) {
-			paths[i] = paths[i].replace(new RegExp("/", 'g'), pathSep);
-			paths[i] = paths[i].replace(new RegExp("\\\\", 'g'), pathSep);
-			$selectedPathsList.append("<li>"+paths[i]+"</li>");
-		}
-		$selectedPathsListContainer.scrollTop($selectedPathsList.height());
-	});
+	var data = { dir: dir, textures: textures };
+	Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
+		.done(function(paths) {
+			if(paths.length===0) {
+				cancelImport();
+				return;
+			}
+			for(var i in paths) {
+				paths[i] = paths[i].replace(new RegExp("/", 'g'), pathSep);
+				paths[i] = paths[i].replace(new RegExp("\\\\", 'g'), pathSep);
+				$selectedPathsList.append("<li>"+paths[i]+"</li>");
+			}
+			$selectedPathsListContainer.scrollTop($selectedPathsList.height());
+		});
 	
 	if(textures) {
 		$('#importTexturesButton').show();
@@ -112,25 +110,23 @@ function hideImport() {
 }
 
 function cancelImport() {
-	$.post(allVars.contextPath+"/admin/import/cancel")
-		.done(function() {hideImport();})
-		.fail(showException);
+	Ajax.post(contextUrl + "/admin/import/cancel")
+		.done(function() {hideImport();});
 }
 
 function editUserRole(idLink, userRole) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
 	confirm(function () {
 		var role = $textField.attr("value");
-		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"role": role})
+		Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"role": role})
 			.done(function() {
 				window.location.reload();
-			})
-			.fail(showException);
+			});
 	}, "Valid roles: ROLE_USER, ROLE_ADMIN", userRole);
 }
 
 function switchAdmin(idLink) {
-	$.post(allVars.contextPath+"/admin/users/admin/"+idLink)
+	Ajax.post(contextUrl + "/admin/users/admin/"+idLink)
 		.done(function() {
 			var $role = $("#"+idLink+" .subElementUserRole");
 			if($.trim($role.html())==="[ADMIN]") {
@@ -139,36 +135,33 @@ function switchAdmin(idLink) {
 			else {
 				$role.html("[ADMIN]");
 			}
-		})
-		.fail(showException);
+		});
 }
 
 function editUserName(idLink, userName) {
 	confirm(function (name) {
-		$.post(allVars.contextPath+"/admin/users/edit/"+idLink, {"name": name})
+		Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"name": name})
 			.done(function() {
 				window.location.reload();
-			})
-			.fail(showException);
+			});
 	}, "Enter user name here:", userName);
 }
 
 function resetPassword(idLink) {
 	var $confirm = confirm(function() {
-		$.post(allVars.contextPath+"/admin/users/reset/"+idLink)
+		Ajax.post(contextUrl + "/admin/users/reset/" + idLink)
 			.done(function(data) {
 				hideDialog($confirm);
 				var $alert = alert(function() {
 					hideDialog($alert);
-					window.location.reload();},
-					"New Password:",data);
-				})
-			.fail(showException);
+					window.location.reload();
+					}, "New Password:", data[0]);
+			});
 	}, "Generate New Random Password?");
 }
 
 function switchUser(idLink, userName) {
-	$.post(allVars.contextPath+"/admin/users/switch/"+idLink)
+	Ajax.post(contextUrl + "/admin/users/switch/" + idLink)
 		.done(function() {
 			var $enabled = $("#"+idLink+" .subElementUserEnabled");
 			if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
@@ -177,21 +170,19 @@ function switchUser(idLink, userName) {
 			else {
 				$enabled.html("&#x2611;");
 			}
-		})
-		.fail(showException);
+		});
 }
 
 function saveUsers() {
-	$.post(allVars.contextPath+"/admin/users/save").fail(showException);
+	Ajax.post(contextUrl + "/admin/users/save");
 }
 
 function loadUsers() {
 	confirm(function() {
-		$.post(allVars.contextPath+"/admin/users/load")
+		Ajax.post(contextUrl + "/admin/users/load")
 			.done(function() {
 				window.location.reload();
-			})
-			.fail(showException);
+			});
 	}, "Delete all unsaved user data?");
 }
 
@@ -218,14 +209,15 @@ function importAssets(assetTypes) {
 }
 
 /**
- * -------------------- ResponseBundleHandler -----------------------------------------------------
- * Provides a way to communicate with the server when the server needs to send a lot of
- * messages to the client and the client needs to be able to respond to any of those messages.
+ * -------------------- ResponseBundleHandler ----------------------------------
+ * Provides a way to communicate with the server when the server needs to send
+ * a lot of messages to the client and the client needs to be able to respond
+ * to any of those messages.
  * 
- * To not waste requests, the messages from the server will come in bundles of dynamic size, where
- * the last bundle message either indicates that the server needs a message from the client or that
- * the server has finished sending all messages or the server wants to give an update because he is
- * very slow.
+ * To not waste requests, the messages from the server will come in bundles of
+ * dynamic size, where the last bundle message either indicates that the server
+ * needs a message from the client or that the server has finished sending all
+ * messages or the server wants to give an update because he is very slow.
  * 
  * @author Jan Mothes
  */
@@ -234,7 +226,7 @@ function ResponseBundleHandler(responseBundleOption) {
 	var ns = "#batchDialog";
 	var ResponseBundleOptions = {
 			tasks : {
-				nextURI : allVars.contextPath+"/admin/load/next",
+				nextURI : contextUrl + "/admin/load/next",
 				conflicts : ["conflict"],
 				showButtons : function(conflict, $options) {
 					$options.children(ns+"-skipButton").show();
@@ -249,12 +241,12 @@ function ResponseBundleHandler(responseBundleOption) {
 				 */
 				start : function(options) {
 					var data = options.loadAssets ? {} : {dir: options.file};
-					return $.getJSON(allVars.contextPath+"/admin/load", data);
+					return Ajax.post(contextUrl + "/admin/load", data);
 				}
 
 			},
 			assets : {
-				nextURI : allVars.contextPath+"/admin/importAssets/next",
+				nextURI : contextUrl + "/admin/importAssets/next",
 				conflicts : ["taskConflict", "folderConflict"],
 				showButtons : function(conflict, $options) {
 					$options.children(ns+"-skipButton").show();
@@ -278,7 +270,7 @@ function ResponseBundleHandler(responseBundleOption) {
 					if (assetType === "textures") textures = true;
 					else if (assetType === "models") textures = false;
 					else return undefined;
-					return $("#taskForm").ajaxSubmit({data: { textures: textures }}).data('jqxhr');
+					return Ajax.post(contextUrl + "/admin/importAssets", { textures: textures }, $("#taskForm"));
 				}
 			}
 		};
@@ -313,7 +305,7 @@ function ResponseBundleHandler(responseBundleOption) {
 		$finishedButton.hide();
 		ajaxResult = options.start(startOptions);
 		if (ajaxResult === undefined) return;
-		ajaxResult.done(reactToResults).fail(showException);
+		ajaxResult.done(reactToResults);
 		showDialog($dialog);
 	};
 	
@@ -325,9 +317,8 @@ function ResponseBundleHandler(responseBundleOption) {
 		$conflictOptions.children().hide();
 		$conflictMessage.empty();
 		var doForAll = $checkBox.is(":checked");
-		$.getJSON(options.nextURI, { operation: answer, doForAll: doForAll })
-			.done(reactToResults)
-			.fail(showException);
+		Ajax.post(options.nextURI, { operation: answer, doForAll: doForAll })
+			.done(reactToResults);
 	};
 	
 	this.finish = function () {

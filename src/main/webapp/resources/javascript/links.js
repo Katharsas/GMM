@@ -23,7 +23,7 @@ for (var func in listeners) {
  */
 $(document).ready(
 	function() {
-		TaskLoader = TaskLoader(allVars.contextPath+"/public/linkTasks/render", $("#taskList"));
+		TaskLoader = TaskLoader(contextUrl + "/public/linkTasks/render", $("#taskList"));
 		TaskSwitcher = TaskSwitcher(TaskLoader);
 		tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
 				return $task1[0] === $task2[0];

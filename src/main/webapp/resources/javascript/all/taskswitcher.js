@@ -17,13 +17,13 @@ var TaskSwitcher = function(taskLoader) {
     	var idLink = $element.attr('id');
     	var url = idLink;
     	$element.find('#assetFilesContainer').fileTree(
-    			allFuncs.treePluginOptions(allVars.contextPath + "/tasks/files/assets/" + url, false),
+    			allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + url, false),
     			function($file) {
     				tasksVars.selectedTaskFileIsAsset = true;
     				allFuncs.selectTreeElement($file, "selectedTaskFile");
     			});
     	$element.find('#wipFilesContainer').fileTree(
-    			allFuncs.treePluginOptions(allVars.contextPath + "/tasks/files/other/" + url, false),
+    			allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + url, false),
     			function($file) {
     				tasksVars.selectedTaskFileIsAsset = false;
     				allFuncs.selectTreeElement($file, "selectedTaskFile");

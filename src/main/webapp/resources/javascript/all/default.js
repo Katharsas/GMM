@@ -65,7 +65,7 @@ $(document).ready(function() {
 	
 	hideDialog();
 	//find page tab by URL and set as active tab
-	var activeTab = $("#page-tabmenu .tab a[href=\""+allVars.contextPath+"/"+fileName+"\"]").parent();
+	var activeTab = $("#page-tabmenu .tab a[href=\""+ contextUrl +"/"+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
 	
 	//setup enter keys of dialogs
@@ -142,25 +142,6 @@ function hideDialog($dialog) {
 	$dialog.removeAttr("style");
 	$dialog.hide();
 	hideOverlay();
-}
-
-/**
- * See https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#Handling_the_upload_process_for_a_file.2C_asynchronously
- * @param file - See HTML 5 File API
- */
-function sendFile(file, uri, callback) {
-    var xhr = new XMLHttpRequest();
-    var fd = new FormData();
-    
-    xhr.open("POST", uri, true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) {
-            // Handle response
-            callback(xhr.responseText);
-        }
-    };
-    fd.append('myFile', file);
-    xhr.send(fd);
 }
 
 /**
