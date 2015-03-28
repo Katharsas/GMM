@@ -1,0 +1,121 @@
+@import '../../include';
+
+
+// ####################################### Load Tab
+
+#workbench-load-wrapper {
+	min-height:inherit;
+	
+	display:flex;
+	flex-direction:column;
+	justify-content:flex-end;
+}
+
+#workbench-load-typeButtons {
+	display:flex;
+	margin-bottom:20px;
+}
+
+.workbench-load-typeButton {
+	margin-left:15px;
+	@include workbench-tab-button;
+}
+
+#workbench-load-formWrapper {
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+	
+	.form-element {
+		margin-left:5px;
+	}
+	select.form-element {
+		min-width:8em;
+	}
+}
+
+// ####################################### Sort Tab
+
+#workbench-sort-formWrapper {
+	min-height:inherit;
+	
+	display:flex;
+	flex-direction:column;
+	justify-content:space-around;
+}
+
+#workbench-sort-primary {
+	margin-bottom:15px;
+}
+
+#workbench-sort-primary, #workbench-sort-secondary {
+	margin-left: 20px;
+}
+
+.workbench-sort-element {
+	display:inline-block;
+	margin: 0 10px;
+}
+
+// ####################################### Search Tab
+
+#workbench-searchForm {
+	min-height:inherit;
+}
+
+#workbench-search-wrapper {
+	min-height:inherit;
+	display:flex;
+	flex-direction:column;
+	justify-content:space-between;
+	align-items:center;
+	
+	.form-element {
+		width:35%;
+	}
+}
+
+#workbench-search-switch {
+	align-self:flex-end;
+}
+
+.workbench-search-submit, #workbench-search-switch {
+	@include workbench-tab-button;
+}
+
+#workbench-search-easy {
+	width:100%;
+	display:flex;
+	justify-content:center;
+	margin-bottom:20px;
+	
+	> .form-element {
+		width:50%;
+		margin-right:10px;
+	}
+}
+
+#workbench-search-complex {
+	width:100%;
+	min-height:80px;
+	display:flex;
+	flex-direction:column;
+	margin-top:10px;
+	
+	.workbench-search-group {
+		display:flex;
+		width:100%;
+		margin-bottom:10px;
+	}
+	
+	.workbench-search-desc {
+		min-width:4em;
+		width:12%;
+		margin-left:2%;
+	}
+	
+	.workbench-search-submit {
+		margin-top:5px;
+		align-self:center;
+	}
+}

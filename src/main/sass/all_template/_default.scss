@@ -55,7 +55,7 @@ a span{
 label, .button, .clickable{
 	@include cursor-clickable;
 }
-.input *{
+.input input, .input textarea {
 	font-family:Calibri, Verdana, Arial, sans-serif	!important;
 	font-size:inherit		!important;
 }
@@ -66,6 +66,7 @@ submit {
 	cursor:move;
 }
 .draggable * {
+	/* TODO: remove when dialog border is implemented */
 	cursor:default;
 }
 /*Text Size*/

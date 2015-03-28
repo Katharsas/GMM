@@ -8,6 +8,7 @@ public class SearchForm {
 	private String details;
 	private String label;
 	private String assigned;
+	private String path;
 	
 	public SearchForm() {
 		setDefaultState();
@@ -20,6 +21,7 @@ public class SearchForm {
 		details="";
 		label="";
 		assigned="";
+		path="";
 	}
 
 	//Setters, Getters-------------------------------------------
@@ -64,5 +66,11 @@ public class SearchForm {
 	}
 	public void setAssigned(String assigned) {
 		this.assigned = assigned;
+	}
+	public String getPath() {
+		return path;
+	}
+	public void setPath(String path) {
+		this.path = path;
 	}
 }

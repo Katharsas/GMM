@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author Jan Mothes
  * 
  */
-@RequestMapping(value={"tasks", "/"})
+@RequestMapping(value={"tasks"})
 @PreAuthorize("hasRole('ROLE_USER')")
 @Controller
 public class TaskController {

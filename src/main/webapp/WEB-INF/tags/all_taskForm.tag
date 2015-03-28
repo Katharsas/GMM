@@ -94,9 +94,9 @@
 		</div>
 	</div>
 </div>
-<div class="taskForm-group">
+<div id="taskForm-group-type" class="taskForm-group">
 	<!-- ####################### TYPE -->
-	<div class="taskForm-element">
+	<div id="taskForm-element-type" class="taskForm-element">
 		<div class="taskForm-description"><fmt:message key="${taskForm.type.typeKey}"/>:</div>
 		<div class="taskForm-input input">
 			<form:select path="type">
@@ -108,7 +108,7 @@
 		</div>
 	</div>
 	<!-- ####################### PATH -->
-	<div class="taskForm-element">
+	<div id="taskForm-element-path" class="taskForm-element">
 		<div class="taskForm-hint">
 			<fmt:message key="all_taskForm.text"/><br/>
 			<fmt:message key="all_taskForm.text2"/><br/><br/>

@@ -6,7 +6,6 @@ import gmm.domain.task.Task;
 import gmm.domain.task.TaskPriority;
 import gmm.domain.task.TaskStatus;
 import gmm.service.filter.GmmSelection;
-import gmm.service.filter.Selection;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 
@@ -34,6 +33,10 @@ public class TaskFilterService {
 				.uniteWith()
 				.forFilter(search.getEasy())
 				.match("getName", "getAuthor", "getDetails", "getLabel", "getAssigned")
+				.ignoreNoSuchGetter(true)
+				.uniteWith()
+				.forFilter(search.getEasy())
+				.match("getAssetPath")
 				.getSelected();
 		}
 		else {
@@ -44,6 +47,9 @@ public class TaskFilterService {
 				.matching("getDetails", search.getDetails())
 				.matching("getLabel", search.getLabel())
 				.matching("getAssigned", search.getAssigned())
+				.ignoreNoSuchGetter(true)
+				.intersectWith()
+				.matching("getAssetPath", search.getPath())
 				.getSelected();
 		}
 		return selected;
@@ -59,7 +65,7 @@ public class TaskFilterService {
 	public synchronized <T extends Task, I extends Collection<T>> I filter(
 			I tasks, FilterForm filterData, User currentUser) {
 		
-		Selection<T,I> selection = new GmmSelection<T,I>(tasks, true);
+		GmmSelection<T,I> selection = new GmmSelection<T,I>(tasks, true);
 		selection.strictEqual(true);
 		
 		if (filterData.isCreatedByMe()) {

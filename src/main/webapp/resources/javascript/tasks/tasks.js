@@ -63,22 +63,47 @@ workbench.initWorkbenchTabs = function() {
 	var $searchForm = $("form#workbench-searchForm");
 	var $filterForm = $("form#generalFilters");
 	
+	//-------------------------------------------------------
 	//load form
+	//-------------------------------------------------------
 	$loadForm.find(".form-element").change(function() {
 		Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
 	});
+	
+	//-------------------------------------------------------
 	//sort form
+	//-------------------------------------------------------
 	$sortForm.find("select, input").change(function() {
 		Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
 			.done(//TODO only load new sorting data
 					workbench.render);
 	});
+	
+	//-------------------------------------------------------
 	//search form
-	$searchForm.find(".submitSearchButton").click(function() {
+	//-------------------------------------------------------
+	$searchForm.find(".workbench-search-submit").click(function() {
 		Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
 			.done(workbench.render);
 	});
+	$searchForm.find("#workbench-search-switch").click(function() {
+		setSearchType(!isEasySearch());
+	});
+	var $searchType = $("select#workbench-search-type");
+	function isEasySearch() {
+		return $searchType.val() === "true";
+	}
+	function setSearchType(isEasySearch) {
+		$searchType.val(isEasySearch.toString());
+		$searchForm.find("#workbench-search-easy").toggle(isEasySearch);
+		$searchForm.find("#workbench-search-complex").toggle(!isEasySearch);
+	}
+	//init search visibility
+	setSearchType(isEasySearch());
+	
+	//-------------------------------------------------------
 	//filter form
+	//-------------------------------------------------------
 	var submitFilterForm = function() {
 		Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
 			.done(workbench.render);
@@ -102,17 +127,15 @@ workbench.initWorkbenchTabs = function() {
 };
 
 
+
 /**
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(
 	function() {
-		// get subTab and set as active tab / others as inactivetabs
-		//TODO highlight currently selected load types
 		tasksVars.edit = getURLParameter("edit");
-//			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
-//			$activeTab.addClass("activeSubpage");
 		
+		//TODO highlight currently selected load types (in workbench init)
 		workbench.init();
 		new TaskForm();
 		
@@ -125,40 +148,13 @@ $(document).ready(
 //			SidebarMarkers.addMarker("#test2");
 
 		workbench.initWorkbenchTabs();
-		
-		// set Search according to selected search type (easy or complex)
-//		setSearchVisibility($("#searchTypeSelect").val());	
-		// hide search type selector
-//		$("#searchTypeSelect").hide();
-	
 });
-
 
 
 function switchListElement(element) {
 	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
 }
 
-///**
-// * @param isEasySearch - String or boolean
-// */
-//function setSearchVisibility(isEasySearch) {
-//	var $search = $(".search");
-//	if (isEasySearch.toString() === "true") {
-//		$search.find(".complexSearch").hide();
-//		$search.find(".easySearch").show();
-//	} else {
-//		$search.find(".complexSearch").show();
-//		$search.find(".easySearch").hide();
-//	}
-//}
-
-function switchSearchType() {
-	var easySearch = $("#searchTypeSelect").val();
-	var newEasySearch = (easySearch !== "true").toString();
-	$("#searchTypeSelect").val(newEasySearch);
-	setSearchVisibility(newEasySearch);
-}
 
 /**
  * TODO: move all workbench stuff into this and rename it
@@ -234,7 +230,7 @@ function TaskForm() {
 			show();
 			$form.find("#taskGroupType").hide();
 		}
-		var $type = $form.find("#taskElementType select");
+		var $type = $form.find("#taskForm-element-type select");
 		switchPath($type);
 		
 		$type.change(function() {switchPath($type);});
@@ -242,14 +238,16 @@ function TaskForm() {
 		$submit.click(function() {$form.submit();});
 		$cancel.click(function() {
 			//TODO reload only empty form
-			tasksVars.edit = "";
-			tasksFuncs.refresh();
+			alert(function() {
+				tasksVars.edit = "";
+				tasksFuncs.refresh();
+			}, "TODO: Reset form only");
 		});
 	}
 	
 	function switchPath($taskElementType) {
 		var selected = $taskElementType.find(":selected").val();
-		var $path = $form.find("#taskElementPath");
+		var $path = $form.find("#taskForm-element-path");
 		switch(selected) {
 			case "GENERAL":	$path.hide();break;
 			default:		$path.show();break;

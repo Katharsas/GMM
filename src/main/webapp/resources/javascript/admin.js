@@ -26,7 +26,7 @@ function refreshTaskBackups() {
 }
 
 function hideTaskFormType() {
-	$("#taskForm").find("#taskGroupType").hide();
+	$("#taskForm").find("#taskForm-group-type").hide();
 }
 
 function deleteFile() {

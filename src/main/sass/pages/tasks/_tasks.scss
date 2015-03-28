@@ -124,9 +124,7 @@ $padding-wb-horizontal: 10;
 	@include colorTheme-subpage-dark;
 	margin-bottom: 1px;
 	box-sizing: content-box;
-	min-height: 90px;
-	/* TODO: make height fixed*/ 
-/* 	height: 120px; */
+	min-height: 100px;
 	
 	input, select, textarea {
 		$col: lighten($bgc-subpage-dark, 70%);
@@ -138,8 +136,8 @@ $padding-wb-horizontal: 10;
 
 @mixin workbench-tab-button {
 	//button with background color
-/* 	$col: lighten($bgc-subpage-dark, 6%); */
-/* 	$col: setSaturation($col, 0.8); */
+	/* 	$col: lighten($bgc-subpage-dark, 6%); */
+	/* 	$col: setSaturation($col, 0.8); */
 	
 	//button with contrast (white) color
 	$col: lighten($bgc-subpage-dark, 63%);
@@ -149,57 +147,6 @@ $padding-wb-horizontal: 10;
 	color:#000;
 }
 
-// ####################################### Load Tab
-
-#workbench-load-wrapper {
-	min-height:inherit;
-	
-	display:flex;
-	flex-direction:column;
-	justify-content:flex-end;
-}
-
-#workbench-load-typeButtons {
-	display:flex;
-	margin-bottom:20px;
-}
-
-.workbench-load-typeButton {
-	margin-left:15px;
-	@include workbench-tab-button;
-}
-
-#workbench-load-formWrapper {
-	display:flex;
-	justify-content:space-between;
-	
-	.form-element {
-		margin-left:5px;
-	}
-}
-
-// ####################################### Sort Tab
-
-#workbench-sort-formWrapper {
-	min-height:inherit;
-	
-	display:flex;
-	flex-direction:column;
-	justify-content:space-around;
-}
-
-#workbench-sort-primary {
-	margin-bottom:15px;
-}
-
-#workbench-sort-primary, #workbench-sort-secondary {
-	margin-left: 20px;
-}
-
-.workbench-sort-element {
-	display:inline-block;
-	margin: 0 10px;
-}
 
 // ####################################### other content
 
