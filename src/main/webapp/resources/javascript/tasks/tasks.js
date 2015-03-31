@@ -34,6 +34,8 @@ var tasksFuncs = {
  */
 
 var Workbench = function() {
+	var that = this;
+	
 	var $workbench = $("#workbench");
 	var $workbenchMenu = $workbench.find("#workbench-menu");
 	var $workbenchTabs = $workbench.find("#workbench-tabs");
@@ -41,15 +43,16 @@ var Workbench = function() {
 	var $loadButtons = $workbenchTabs.find(".workbench-load-typeButton");
 	
 	var taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
-	var taskSwitcher;
-	var expandedTasks;
+	
+	this.expandedTasks = undefined;
+	this.taskSwitcher = undefined;
 	
 	var render = function() {
 		taskLoader.init();
 		//TODO find better way to reset and reload without instantiating new stuff
 		//TODO attach listeners to tasks on creation so the correct switcher can be called
-		taskSwitcher = TaskSwitcher(taskLoader);
-		expandedTasks = new Queue(3, function($task1, $task2) {
+		that.taskSwitcher = TaskSwitcher(taskLoader);
+		that.expandedTasks = new Queue(3, function($task1, $task2) {
 			return $task1[0] === $task2[0];
 		});
 	};
@@ -167,7 +170,9 @@ var Workbench = function() {
 	updateTasks();
 };
 
-
+function switchListElement(element) {
+	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
+}
 
 /**
  * This function is executed when document is ready for interactivity!
@@ -179,7 +184,6 @@ $(document).ready(
 		
 		workbench = new Workbench();
 		
-		
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {
 //				return $('<div>').html("Marker");
@@ -187,14 +191,7 @@ $(document).ready(
 //			SidebarMarkers.registerSidebar("#page-tabmenu-spacer", true);
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
-
-		
 });
-
-
-function switchListElement(element) {
-	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
-}
 
 /**
  * Links a controller to a group of checkboxes.
