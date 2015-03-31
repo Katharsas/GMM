@@ -91,7 +91,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 				return;
 			}
 			var $dialog = confirm(function() {
-				Ajax.remove(contextUrl + "/tasks/deleteFile/" + idLink,
+				Ajax.post(contextUrl + "/tasks/deleteFile/" + idLink,
 						{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
 					.done(function() {
 						hideDialog($dialog);
@@ -102,7 +102,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		
 		deleteTask : function(idLink, name) {
 			var $dialog = confirm(function() {
-				Ajax.remove(contextUrl + "/tasks/deleteTask/" + idLink)
+				Ajax.post(contextUrl + "/tasks/deleteTask/" + idLink)
 					.done(function() {
 						hideDialog($dialog);
 						alert(reload, "TODO: Remove task from client");

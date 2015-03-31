@@ -57,12 +57,13 @@ public class ControllerSettings {
 	public ResponseEntity<?> handleExceptions(Exception ex, HttpServletRequest request) throws Exception {
 		
 		if (ex instanceof AccessDeniedException) {
-			System.out.println("##########################################################");
-			System.out.println("  AccessDeniedException below can be ignored! ");
-			System.out.println("  User will automatically be redirected to login!");
-			System.out.println("##########################################################");
+			System.err.println("##########################################################");
+			System.err.println("  AccessDeniedException below can be ignored! ");
+			System.err.println("  User will automatically be redirected to login!");
+			System.err.println("##########################################################");
 			throw ex;
 		}
+		ex.printStackTrace();
 		HttpHeaders headers = new HttpHeaders();
 		if(users.isUserLoggedIn()) {
 			//sort MIME types from accept header field

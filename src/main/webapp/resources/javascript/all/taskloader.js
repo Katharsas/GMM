@@ -3,11 +3,15 @@
  * Static (called when document ready)
  * Accepts callback which will be executed when all tasks are loaded.
  * 
+ * TODO: "tasks" variable SCOPE ??
+ * 
  * @author Jan Mothes
  */
 var TaskLoader = function(url, $taskList, onLoaded) {
 //	this.tasks = undefined;
 //	reloadAndInsert();
+	
+	$count = $taskList.find(".list-count span");
 	
 	function reloadAndInsert() {
 		Ajax.get(url).done(function(taskRenders) {
@@ -23,6 +27,7 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 			headerString = headerString + task.header + "\n";
 		});
 		$taskList.append(headerString);
+		$count.text(tasks.length);
 	}
 	
 	return {

@@ -1,6 +1,8 @@
 package gmm.web.sessions;
 
 
+import java.util.Arrays;
+
 import javax.annotation.PostConstruct;
 
 import gmm.collections.Collection;
@@ -17,6 +19,7 @@ import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
 import gmm.web.forms.LoadForm;
+import gmm.web.forms.LoadForm.LoadOperation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -43,6 +46,9 @@ public class TaskSession {
 	//user logged into this session
 	private User user;
 	
+	//currently active task lists (any of TaskType)
+	private boolean[] selected = new boolean[TaskType.values().length];
+	
 	//task filtered by general filter (base for search)
 	private List<Task> filteredTasks;
 	
@@ -63,55 +69,96 @@ public class TaskSession {
 	
 	@PostConstruct
 	private void init() {
-		user = users.getLoggedInUser();
+		filteredTasks = new LinkedList<Task>();
+		tasks = new LinkedList<Task>();
 		sort = new SortForm();
+		generalFilter = new FilterForm();
+		
+		user = users.getLoggedInUser();
 		load = user.getLoadForm();
 		if (load == null) updateLoad(new LoadForm());
-		initializeWorkbench();
-		generalFilter = new FilterForm();
-		updateAndFilterTasks(load.getSelected());
-	}
-	
-	private void initializeWorkbench() {
-		synchronized (load) {
-			if (load.isReloadOnStartup()) {
-				if (load.getDefaultStartupType().equals(LoadForm.TYPE_NONE)) {}//load nothing
-				else {//load default type
-					TaskType type = TaskType.valueOf(load.getDefaultStartupType());
-					load.setSelected(type);
-				}
-			} else {
-				//TODO load task list from last time
-			}
+		if (load.isReloadOnStartup()) {
+			load(load.getDefaultStartupType(), LoadOperation.ONLY);
 		}
 	}
 	
 	/*--------------------------------------------------
-	 * Retrieve session information
+	 * Private Helper methods
 	 * ---------------------------------------------------*/
 	
-	public List<Task> getTasks() {
-		if (dirtyTasksFlag) {
-			updateAndFilterTasks(load.getSelected());
-			dirtyTasksFlag = false;
+	private void load(TaskType type, LoadOperation operation) {
+		switch (operation) {
+		case ADD:
+			add(type);break;
+		case ONLY:
+			only(type);break;
+		case REMOVE:
+			remove(type);break;
 		}
-		return (List<Task>) tasks.copy();
 	}
 	
-	public TaskType getCurrentTaskType() {
-		return load.getSelected();
+	/**
+	 * Add a type of tasks to the currently selected types. Will reset modifiers
+	 * like search.
+	 */
+	private void add(TaskType type) {
+		int i = type.ordinal();
+		if(!selected[i]) {
+			filteredTasks.addAll(filter(getTaskList(type)));
+			filteredTasks = sort(filteredTasks);
+			selected[i] = true;
+		}
+		tasks = (List<Task>) filteredTasks.copy();
 	}
 	
-	public User getUser() {
-		return user;
+	/**
+	 * Select only one specific type of tasks. Will reset modifiers like search.
+	 */
+	private void only(TaskType type) {
+		filteredTasks.clear();
+		Arrays.fill(selected, false);
+		add(type);
 	}
 	
-	public SortForm getSortForm() {
-		return sort;
+	/**
+	 * Remove a type of tasks from the currently selected. Will NOT reset modifiers
+	 * like search.
+	 */
+	private void remove(TaskType type) {
+		int i = type.ordinal();
+		if(selected[i]) {
+			Collection<? extends Task> toRemove = getTaskList(type);
+			filteredTasks.removeAll(toRemove);
+			selected[i] = false;
+			tasks.removeAll(toRemove);
+		}
 	}
 	
-	public FilterForm getFilterForm() {
-		return generalFilter;
+	/**
+	 * Reloads all tasks. Will reset modifiers like search.
+	 */
+	private void reload() {
+		filteredTasks.clear();
+		TaskType[] types = TaskType.values();
+		for(int i = 0; i < selected.length; i++) {
+			if(selected[i]) {
+				filteredTasks.addAll(filter(getTaskList(types[i])));
+			}
+		}
+		filteredTasks = sort(filteredTasks);
+		tasks = (List<Task>) filteredTasks.copy();
+	}
+	
+	private <T extends Task> Collection<T> filter(Collection<T> tasks) {
+		return filterService.filter(tasks, generalFilter, user);
+	}
+	
+	private <T extends Task> List<T> sort(List<T> tasks) {
+		return sortService.sort(tasks, sort);
+	}
+	
+	private Collection<? extends Task> getTaskList (TaskType type) {
+		return data.getList(type.toClass());
 	}
 	
 	/*--------------------------------------------------
@@ -120,7 +167,7 @@ public class TaskSession {
 	
 	/**
 	 * Notify that task data will change or changed.
-	 * Triggers a task data relead and refiltering on the next call of {@link #getTasks()}.
+	 * Triggers a task data reload and refiltering on the next call of {@link #getTasks()}.
 	 */
 	public void notifyDataChange(){
 		dirtyTasksFlag = true;
@@ -129,11 +176,8 @@ public class TaskSession {
 	/**
 	 * Change/update loaded tasks
 	 */
-	public void loadTasks(TaskType tab) {
-		if (!tab.equals(load.getSelected())) {
-			load.setSelected(tab);
-			updateAndFilterTasks(tab);
-		}
+	public void loadTasks(TaskType type) {
+		load(type, load.getLoadOperation());
 	}
 	
 	/**
@@ -151,7 +195,8 @@ public class TaskSession {
 	 */
 	public void updateFilter(FilterForm filter) {
 		generalFilter = filter;
-		updateAndFilterTasks(load.getSelected());
+		filteredTasks = (List<Task>) filter(filteredTasks);
+		tasks = (List<Task>) filteredTasks.copy();
 	}
 	
 	/**
@@ -166,7 +211,7 @@ public class TaskSession {
 	 */
 	public void updateSort(SortForm sort) {
 		this.sort = sort;
-		tasks = sortService.sort(tasks, sort);
+		tasks = sort(tasks);
 	}
 	
 	/**
@@ -178,28 +223,44 @@ public class TaskSession {
 	}
 	
 	/**
-	 * Add task to session data
+	 * Add task to session data. Resets modifiers like search.
 	 */
 	public void add(Task task) {
-		List<Task> single = new LinkedList<>();
-		single.add(task);
-		filteredTasks.addAll(filterService.filter(single, generalFilter, user));
-		filteredTasks = sortService.sort(filteredTasks, sort);
-		tasks = (List<Task>) filteredTasks.copy();
+		TaskType type = TaskType.fromClass(task.getClass());
+		if(selected[type.ordinal()]) {
+			List<Task> single = new LinkedList<>();
+			single.add(task);
+			filteredTasks.addAll(filter(single));
+			filteredTasks = sort(filteredTasks);
+			tasks = (List<Task>) filteredTasks.copy();
+		}
 	}
 	
 	/*--------------------------------------------------
-	 * Private Helper methods
+	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
-	private void updateAndFilterTasks(TaskType tab) {
-		filteredTasks = new LinkedList<Task>();
-		filteredTasks.addAll(filterService.filter(getTaskList(tab), generalFilter, user));
-		filteredTasks = sortService.sort(filteredTasks, sort);
-		tasks = (List<Task>) filteredTasks.copy();
+	public List<Task> getTasks() {
+		if(dirtyTasksFlag) {
+			reload();
+			dirtyTasksFlag = false;
+		}
+		return (List<Task>) tasks.copy();
 	}
 	
-	private Collection<? extends Task> getTaskList (TaskType tab) {
-		return data.getList(tab.toClass());
+	public boolean[] getSelectedTaskTypes() {
+		return selected;
+	}
+	
+	public User getUser() {
+		return user;
+	}
+	
+	public SortForm getSortForm() {
+		return sort;
+	}
+	
+	public FilterForm getFilterForm() {
+		return generalFilter;
 	}
 }

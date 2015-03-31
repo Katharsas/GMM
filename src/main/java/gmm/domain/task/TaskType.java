@@ -14,14 +14,21 @@ public enum TaskType {
 	public Class<? extends Task> toClass() {
 		return type;
 	}
-	public static TaskType fromClass(Class<? extends Task> type) {
-		TaskType[] types = TaskType.values();
-		for(int i = 0; i < types.length; i++) {
-			if(types[i].toClass().equals(type)) {
-				return types[i];
+	public static TaskType fromClass(Class<? extends Task> clazz) {
+		TaskType primaryResult = null;
+		TaskType secondaryResult = null;
+		for(TaskType type : TaskType.values()) {
+			if(type.toClass().isAssignableFrom(clazz)) {
+				if(type.toClass().equals(clazz)) primaryResult = type;
+				else secondaryResult = type;
 			}
 		}
-		throw new IllegalArgumentException("Invalid type value: "+type.getName());
+		//this check is separate to not return super type instead if equal type.
+		if (primaryResult == null) {
+			if (secondaryResult == null) {
+				throw new IllegalArgumentException("Invalid type value: "+clazz.getName());
+			} else return secondaryResult;
+		} else return primaryResult;
 	}
 	
 	private final String name = getTypeKey() + "." + this.name().toLowerCase();

@@ -58,7 +58,7 @@
 					pinned & current operation
 					###############################################
 				-->
-    			<div id="pinned" class="list">
+    			<!-- <div id="pinned" class="list">
 	    			<div class="list-header">Pinned</div>
 	    			<div class="list-body">
 	    				<div class="list-element">
@@ -73,7 +73,7 @@
 	    					<div class="task-header">Task 1</div>
 	    				</div>
 	    			</div>
-	    		</div>
+	    		</div> -->
 	    		
     			<div id="workbench" class="list">
 	    			<div class="list-header">Workbench</div>
@@ -124,7 +124,7 @@
 	    			
 	    			<div class="list-body">
 	    				<div class="list-count center">
-							<c:out value="${taskList.size()}"/> <fmt:message key="elements"/> 
+							<span></span> <fmt:message key="elements"/> 
 						</div>
 	    			</div>
 	    		</div>

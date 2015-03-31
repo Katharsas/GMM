@@ -63,11 +63,8 @@ submit {
 	font-size: inherit;
 }
 .draggable {
-	cursor:move;
-}
-.draggable * {
-	/* TODO: remove when dialog border is implemented */
-	cursor:default;
+	/* TODO enable cursor when draggables have no ui children */
+	/*cursor:move;*/
 }
 /*Text Size*/
 h1, .h1{font-size:x-large;}

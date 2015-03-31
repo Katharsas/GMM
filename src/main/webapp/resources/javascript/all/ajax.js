@@ -21,14 +21,7 @@ var Ajax = (function() {
 		}
 		return result;
 	};
-	var remove = function (url, data, $form) {
-		var settings = getAjaxDefaultSettings(url, data, {
-			type: "DELETE",
-		});
-		return (($form === undefined) ?
-				$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-				.fail(showException);
-	};
+
 	return {
 		getAjaxDefaultSettings : getAjaxDefaultSettings,
 		
@@ -63,16 +56,6 @@ var Ajax = (function() {
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
 					.fail(showException);
 		},
-		
-		/**
-		 * DELETE
-		 * --------------------------------------------------------------------
-		 * @param url - server url
-		 * @param data - data for server, pass null if you don't need it
-		 * @param $form - optional, will cause this form the be submitted
-		 */
-		remove : remove,
-		"delete" : remove,
 		
 		/**
 		 * Upload File

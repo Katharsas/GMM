@@ -143,7 +143,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted
 	 */
-	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.DELETE)
+	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleTasksDelete(@PathVariable String idLink) {
 		
@@ -213,9 +213,7 @@ public class TaskController {
 			task = taskCreator.create(type, form);
 			task = type.cast(task);
 			data.add(task);
-			if(session.getCurrentTaskType().toClass().equals(type)) {
-				session.add(task);
-			}
+			session.add(task);
 		}
 		else {
 			task = UniqueObject.getFromIdLink(session.getTasks(), idLink);
@@ -263,7 +261,13 @@ public class TaskController {
 		return idLink != null && idLink.matches(".*[0-9]+");
 	}
 	
-	@RequestMapping(value = "/load", method = RequestMethod.GET)
+	@RequestMapping(value = "/selected", method = RequestMethod.GET)
+	@ResponseBody
+	public boolean[] getSelected() {
+		return session.getSelectedTaskTypes();
+	}
+	
+	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	@ResponseBody
 	public void loadTasks(@RequestParam("type") TaskType type) {
 		session.loadTasks(type);

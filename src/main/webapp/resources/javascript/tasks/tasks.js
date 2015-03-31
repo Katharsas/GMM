@@ -33,97 +33,138 @@ var tasksFuncs = {
  * ////////////////////////////////////////////////////////////////////////////////
  */
 
-var workbench = {};
-
-workbench.init = function() {
-	workbench.taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
-	workbench.render();
-};
-workbench.load = function(type) {
-	Ajax.get(contextUrl + "/tasks/load", { type: type })
-		.done(function() {
-			workbench.render();
-		})
-		.fail(showException);
-};
-workbench.render = function() {
-	workbench.taskLoader.init();
-	//TODO find better way to reset and reload without instantiating new stuff
-	//TODO attach listeners to tasks on creation so the correct switcher can be called
-	workbench.taskSwitcher = TaskSwitcher(workbench.taskLoader);
-	workbench.expandedTasks = new Queue(3, function($task1, $task2) {
-		return $task1[0] === $task2[0];
-	});
-};
-workbench.initWorkbenchTabs = function() {
-	new WorkbenchTabs();
+var Workbench = function() {
+	var $workbench = $("#workbench");
+	var $workbenchMenu = $workbench.find("#workbench-menu");
+	var $workbenchTabs = $workbench.find("#workbench-tabs");
 	
-	var $loadForm = $("form#workbench-loadForm");
-	var $sortForm = $("form#workbench-sortForm");
-	var $searchForm = $("form#workbench-searchForm");
-	var $filterForm = $("form#generalFilters");
+	var $loadButtons = $workbenchTabs.find(".workbench-load-typeButton");
 	
-	//-------------------------------------------------------
-	//load form
-	//-------------------------------------------------------
-	$loadForm.find(".form-element").change(function() {
-		Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
-	});
+	var taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
+	var taskSwitcher;
+	var expandedTasks;
 	
-	//-------------------------------------------------------
-	//sort form
-	//-------------------------------------------------------
-	$sortForm.find("select, input").change(function() {
-		Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
-			.done(//TODO only load new sorting data
-					workbench.render);
-	});
-	
-	//-------------------------------------------------------
-	//search form
-	//-------------------------------------------------------
-	$searchForm.find(".workbench-search-submit").click(function() {
-		Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
-			.done(workbench.render);
-	});
-	$searchForm.find("#workbench-search-switch").click(function() {
-		setSearchType(!isEasySearch());
-	});
-	var $searchType = $("select#workbench-search-type");
-	function isEasySearch() {
-		return $searchType.val() === "true";
-	}
-	function setSearchType(isEasySearch) {
-		$searchType.val(isEasySearch.toString());
-		$searchForm.find("#workbench-search-easy").toggle(isEasySearch);
-		$searchForm.find("#workbench-search-complex").toggle(!isEasySearch);
-	}
-	//init search visibility
-	setSearchType(isEasySearch());
-	
-	//-------------------------------------------------------
-	//filter form
-	//-------------------------------------------------------
-	var submitFilterForm = function() {
-		Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
-			.done(workbench.render);
-	};
-	$filterForm.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
-		submitFilterForm();
-	});
-	//filter form (all checkbox binding)
-	(function() {
-		var $all = $filterForm.find("#generalFilters-all");
-		var $checkboxes = $filterForm.find(".generalFilters-all-target");
-		var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
-			$all.prop("checked", areChecked);
+	var render = function() {
+		taskLoader.init();
+		//TODO find better way to reset and reload without instantiating new stuff
+		//TODO attach listeners to tasks on creation so the correct switcher can be called
+		taskSwitcher = TaskSwitcher(taskLoader);
+		expandedTasks = new Queue(3, function($task1, $task2) {
+			return $task1[0] === $task2[0];
 		});
-		$all.change(function() {
-			var isChecked = $all.prop("checked");
-			cbg.changeGroup(isChecked);
+	};
+	var updateTasks = function() {
+		Ajax.get(contextUrl + "/tasks/selected")
+			.done(function(selected) {
+				$loadButtons.each(function(index, element) {
+					if (selected[index]) {
+						$(element).addClass("selected");
+					} else {
+						$(element).removeClass("selected");
+					}
+				});
+				render();
+			});
+	};
+	this.load = function(type) {
+		Ajax.post(contextUrl + "/tasks/load", { type: type })
+			.done(updateTasks)
+			.fail(showException);
+	};
+	var initWorkbenchTabMenu = function() {
+		var $menuTabs = $workbenchMenu.find(".workbench-menu-tab");
+		var $tabs = $workbenchTabs.find(".workbench-tab");
+		
+		var tabWidthPercent = 100 / $menuTabs.length;
+		$menuTabs.css("width", tabWidthPercent + "%");
+		
+		$menuTabs.each(function(index, tab) {
+			var $tab = $(tab);
+			$tab.click(onTabClick(index));
+		});
+		$menuTabs.first().trigger("click");
+		
+		function onTabClick(index) {
+			return function () {
+				$menuTabs.removeClass("workbench-menu-tab-active");
+				$(this).addClass("workbench-menu-tab-active");
+				$tabs.hide();
+				$tabs.eq(index).show();
+			};
+		}
+	};
+	var initWorkbenchTabs = function() {	
+		
+		var $loadForm = $workbenchTabs.find("form#workbench-loadForm");
+		var $sortForm = $workbenchTabs.find("form#workbench-sortForm");
+		var $searchForm = $workbenchTabs.find("form#workbench-searchForm");
+		var $filterForm = $workbenchTabs.find("form#generalFilters");
+		
+		//-------------------------------------------------------
+		//load form
+		//-------------------------------------------------------
+		$loadForm.find(".form-element").change(function() {
+			Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
+		});
+		
+		//-------------------------------------------------------
+		//sort form
+		//-------------------------------------------------------
+		$sortForm.find("select, input").change(function() {
+			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
+				.done(//TODO only load new sorting data
+						render);
+		});
+		
+		//-------------------------------------------------------
+		//search form
+		//-------------------------------------------------------
+		$searchForm.find(".workbench-search-submit").click(function() {
+			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
+				.done(render);
+		});
+		$searchForm.find("#workbench-search-switch").click(function() {
+			setSearchType(!isEasySearch());
+		});
+		var $searchType = $("select#workbench-search-type");
+		function isEasySearch() {
+			return $searchType.val() === "true";
+		}
+		function setSearchType(isEasySearch) {
+			$searchType.val(isEasySearch.toString());
+			$searchForm.find("#workbench-search-easy").toggle(isEasySearch);
+			$searchForm.find("#workbench-search-complex").toggle(!isEasySearch);
+		}
+		//init search visibility
+		setSearchType(isEasySearch());
+		
+		//-------------------------------------------------------
+		//filter form
+		//-------------------------------------------------------
+		var submitFilterForm = function() {
+			Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
+				.done(render);
+		};
+		$filterForm.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
 			submitFilterForm();
 		});
-	})();
+		//filter form (all checkbox binding)
+		(function() {
+			var $all = $filterForm.find("#generalFilters-all");
+			var $checkboxes = $filterForm.find(".generalFilters-all-target");
+			var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
+				$all.prop("checked", areChecked);
+			});
+			$all.change(function() {
+				var isChecked = $all.prop("checked");
+				cbg.changeGroup(isChecked);
+				submitFilterForm();
+			});
+		})();
+	};
+	initWorkbenchTabMenu();
+	initWorkbenchTabs();
+	updateTasks();
 };
 
 
@@ -134,10 +175,10 @@ workbench.initWorkbenchTabs = function() {
 $(document).ready(
 	function() {
 		tasksVars.edit = getURLParameter("edit");
-		
-		//TODO highlight currently selected load types (in workbench init)
-		workbench.init();
 		new TaskForm();
+		
+		workbench = new Workbench();
+		
 		
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {
@@ -147,43 +188,12 @@ $(document).ready(
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
 
-		workbench.initWorkbenchTabs();
+		
 });
 
 
 function switchListElement(element) {
 	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
-}
-
-
-/**
- * TODO: move all workbench stuff into this and rename it
- */
-function WorkbenchTabs() {
-	var $workbench = $("#workbench");
-	var $workbenchMenu = $workbench.find("#workbench-menu");
-	var $workbenchTabs = $workbench.find("#workbench-tabs");
-	
-	var $menuTabs = $workbenchMenu.find(".workbench-menu-tab");
-	var $tabs = $workbenchTabs.find(".workbench-tab");
-	
-	var tabWidthPercent = 100 / $menuTabs.length;
-	$menuTabs.css("width", tabWidthPercent + "%");
-	
-	$menuTabs.each(function(index, tab) {
-		var $tab = $(tab);
-		$tab.click(onTabClick(index));
-	});
-	$menuTabs.first().trigger("click");
-	
-	function onTabClick(index) {
-		return function () {
-			$menuTabs.removeClass("workbench-menu-tab-active");
-			$(this).addClass("workbench-menu-tab-active");
-			$tabs.hide();
-			$tabs.eq(index).show();
-		};
-	}
 }
 
 /**

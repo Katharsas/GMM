@@ -17,6 +17,9 @@
 				<@m.formCheckbox path=path+".createdByMe"/>
 				<@s.message "tasks.filter.created"/>
 			</label><br>
+			<label class="workbench-filter-space">
+				<input type="checkbox"/>.
+			</label><br>
 			<label>
 				<@m.formCheckbox id="generalFilters-all" path=path+".all"/>
 				<@s.message "tasks.filter.all"/>

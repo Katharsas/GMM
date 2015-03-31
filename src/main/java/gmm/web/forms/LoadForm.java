@@ -2,8 +2,6 @@ package gmm.web.forms;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.EnumUtils;
-
 import gmm.domain.task.TaskType;
 
 /**
@@ -13,24 +11,28 @@ import gmm.domain.task.TaskType;
  */
 public class LoadForm {
 	
-	private TaskType selected;//only for highlighting button
 	private LoadOperation loadOperation;
 	
+	/**
+	 * true => load defaultStartupType
+	 * false => don't load anything (useful on weak client devices to only check
+	 *   notifications for example)
+	 * Notification:
+	 *   Removed feature "load list from last login" because this goes against
+	 *   the purpose of the list to always show new tasks, also no description
+	 *   of that functionality for user => not intuitive, and hard to implement.
+	 */
 	private boolean reloadOnStartup;
-	//true => use operation to load default startup type
-	//false => load tasks which where in workbench last time
-	private String defaultStartupType;//basically NONE or TaskType enum value
-	final public static String TYPE_NONE = "NONE";
+	private TaskType defaultStartupType;
 	
 	public LoadForm() {
 		setDefaultState();
 	}
 	
 	public void setDefaultState() {
-		selected = TaskType.GENERAL;
 		loadOperation = LoadOperation.ONLY;
 		reloadOnStartup = true;
-		defaultStartupType = TaskType.GENERAL.name();
+		defaultStartupType = TaskType.GENERAL;
 	}
 	
 	/**
@@ -45,13 +47,6 @@ public class LoadForm {
 	
 	//Setters, Getters-------------------------------------------
 
-	public TaskType getSelected() {
-		return selected;
-	}
-	public void setSelected(TaskType selected) {
-		Objects.requireNonNull(selected);
-		this.selected = selected;
-	}
 	public LoadOperation getLoadOperation() {
 		return loadOperation;
 	}
@@ -65,15 +60,11 @@ public class LoadForm {
 	public void setReloadOnStartup(boolean reloadOnStartup) {
 		this.reloadOnStartup = reloadOnStartup;
 	}
-	public String getDefaultStartupType() {
+	public TaskType getDefaultStartupType() {
 		return defaultStartupType;
 	}
-	public void setDefaultStartupType(String defaultStartupType) {
+	public void setDefaultStartupType(TaskType defaultStartupType) {
 		Objects.requireNonNull(defaultStartupType);
-		boolean isType = EnumUtils.isValidEnum(TaskType.class, defaultStartupType);
-		if (!(isType || defaultStartupType.equals(TYPE_NONE))) {
-			throw new IllegalArgumentException("defaultStartupType must be TaskType or '"+TYPE_NONE+"'");
-		}
 		this.defaultStartupType = defaultStartupType;
 	}
 }

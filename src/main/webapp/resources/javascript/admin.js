@@ -10,6 +10,7 @@ $(document).ready( function() {
 		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
 	});
 });
+var ajaxChannel;
 
 function refreshTaskBackups() {
 	$('#taskBackupsContainer').fileTree(
@@ -29,11 +30,23 @@ function hideTaskFormType() {
 	$("#taskForm").find("#taskForm-group-type").hide();
 }
 
+function loadTasks() {
+	var dir = allVars.selectedBackupFile.attr('rel');
+	if(dir === undefined || dir === "") return;
+	var $confirm = confirm(function() {
+		hideDialog($confirm);
+		ajaxChannel = new ResponseBundleHandler('tasks');
+		ajaxChannel.start({loadAssets:false, file:dir}, function() {
+			refreshTaskBackups();
+		});
+	}, "Load all tasks from "+dir+"?");
+}
+
 function deleteFile() {
 	var dir = allVars.selectedBackupFile.attr('rel');
 	if(dir === undefined || dir === "") return;
 	var $confirm = confirm(function() {
-		Ajax.remove(contextUrl + "/admin/deleteFile", { dir: dir })
+		Ajax.post(contextUrl + "/admin/deleteFile", { dir: dir })
 			.done(function() {
 				refreshTaskBackups();
 				hideDialog($confirm);
@@ -45,8 +58,9 @@ function deleteAllTasks() {
 	var $confirm = confirm(function() {
 		hideDialog($confirm);
 		confirm(function() {
-			Ajax.remove(contextUrl + "/admin/deleteTasks")
+			Ajax.post(contextUrl + "/admin/deleteTasks")
 				.done(function(){
+					refreshTaskBackups();
 					hideDialog($confirm);
 				});
 		}, "Are you really really sure?");
@@ -54,7 +68,10 @@ function deleteAllTasks() {
 }
 
 function saveAllTasks() {
-	$("#saveAllTasksForm").submit();
+	Ajax.post(contextUrl + "/admin/save", $("#saveAllTasksForm"))
+		.done(function() {
+			refreshTaskBackups();
+		});
 }
 
 function refreshTaskImportTree() {
@@ -184,19 +201,6 @@ function loadUsers() {
 				window.location.reload();
 			});
 	}, "Delete all unsaved user data?");
-}
-
-var ajaxChannel;
-
-function loadTasks() {
-	var dir = allVars.selectedBackupFile.attr('rel');
-	if(dir === undefined || dir === "") return;
-	var $confirm = confirm(function() {
-		hideDialog($confirm);
-		ajaxChannel = new ResponseBundleHandler('tasks');
-		ajaxChannel.start({loadAssets:false, file:dir});
-	}, "Load all tasks from "+dir+"?");
-
 }
 
 function importAssets(assetTypes) {

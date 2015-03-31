@@ -176,7 +176,7 @@ public class TaskAssetController {
 	 * @param asset - true if file is an asset
 	 * @param dir - relative path to the deleted file
 	 */
-	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.DELETE)
+	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
 	public void handleDeleteFile(
 			@PathVariable String idLink,

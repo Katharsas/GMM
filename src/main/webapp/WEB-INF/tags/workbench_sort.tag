@@ -7,7 +7,7 @@
 		
 			<div id="workbench-sort-primary">
 				<div class="workbench-sort-element">
-					<fmt:message key="search.first"/>
+					<fmt:message key="sort.first"/>
 				</div>
 				<div class="workbench-sort-element input">
 					<form:select path="sortByPrimary">
@@ -18,14 +18,14 @@
 					</form:select>
 				</div>
 				<div class="workbench-sort-element">
-					<fmt:message key="tasks.down"/>
+					<fmt:message key="sort.down"/>
 					<form:checkbox path="sortDownPrimary"/>
 				</div>
 			</div>	
 			
 			<div id="workbench-sort-secondary">
 				<div class="workbench-sort-element">
-					<fmt:message key="search.seconde"/>
+					<fmt:message key="sort.second"/>
 				</div>
 				<div class="workbench-sort-element input">
 					<form:select path="sortBySecondary">
@@ -36,7 +36,7 @@
 					</form:select>
 				</div>
 				<div class="workbench-sort-element">
-					<fmt:message key="tasks.down"/>
+					<fmt:message key="sort.down"/>
 					<form:checkbox path="sortDownSecondary"/>
 				</div>
 			</div>

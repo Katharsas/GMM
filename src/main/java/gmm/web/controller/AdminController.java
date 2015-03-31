@@ -101,8 +101,10 @@ public class AdminController {
 	 * Delete all tasks <br/>
 	 * -----------------------------------------------------------------
 	 */
-	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.DELETE)
-	public @ResponseBody void deleteTasks() {
+	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
+	public @ResponseBody void deleteTasks() throws Exception {
+		
+		backups.triggerTaskBackup();
 		taskSession.notifyDataChange();
 		data.removeAll(Task.class);
 	}
@@ -139,7 +141,7 @@ public class AdminController {
 	/**
 	 * Delete task save file.
 	 */
-	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.DELETE)
+	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws Exception {	
 		
 		Path visible = config.TASKS;
