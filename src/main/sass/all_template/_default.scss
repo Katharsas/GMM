@@ -7,32 +7,9 @@
  */
 
 .button {
-	width: 9em;
 	position:relative;
 	padding:3px;
 	@include button-color($c-button-mid);
-}
-
-/*Tags*/
-.userTag, .labelTag {
-	border-radius: 3px;
-	max-height:18px;
-}
-
-.userTag {
-	padding-left:4px;
-	padding-right:4px;
-	
-	@include colorTheme-usertag;
-	@include indented-shadow-for-bright($bgc-usertag);
-}
-
-.labelTag {
-	padding-left:6px;
-	padding-right:6px;
-	
-	@include colorTheme-labeltag;
-	@include indented-shadow-for-color(#164054);
 }
 
 /*Floating elements & Size/Positioning*/

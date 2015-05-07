@@ -9,7 +9,10 @@
 //orange (bright)
 $c-orange: #FF4E23;
 
-//orange (flat)
+//orange (dark)
+$c-darkOrange: #E12D00;
+
+//orange (bright & flat)
 $c-flatOrange: #D35A3D;
 
 //red
@@ -20,8 +23,6 @@ $c-darkBlue: #164054;
 
 //blue (pale)
 $c-paleBlue: #36A2D7;
-
-
 
 /*
  * default & template
@@ -73,10 +74,6 @@ $fgc-batchDialog-conflict: $c-red;
 $bgc-batchDialog-list: $bgc-dialog;
 $fgc-batchDialog-list: $c-paleBlue;
 
-/*
- * 
- * #####################################
- */
 
 //------------------------------------------------------------------------------
 // Helper functions for less clutter in css. Not really necessary.

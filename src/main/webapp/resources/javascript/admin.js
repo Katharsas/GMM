@@ -68,9 +68,10 @@ function deleteAllTasks() {
 }
 
 function saveAllTasks() {
-	Ajax.post(contextUrl + "/admin/save", $("#saveAllTasksForm"))
+	Ajax.post(contextUrl + "/admin/save", {}, $("#saveAllTasksForm"))
 		.done(function() {
 			refreshTaskBackups();
+			hideDialog($("#saveAllTasksDialog"));
 		});
 }
 

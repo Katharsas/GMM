@@ -39,9 +39,9 @@ public abstract class NamedObject extends UniqueObject{
 		return name;
 	}
 
-	public void setName(String idName) {
-		Objects.requireNonNull(idName);
-		this.name = idName;
+	public void setName(String name) {
+		Objects.requireNonNull(name);
+		this.name = name;
 	}
 	
 	@Override

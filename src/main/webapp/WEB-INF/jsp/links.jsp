@@ -23,7 +23,9 @@
     </jsp:attribute>
 
     <jsp:body>
-		<div id="taskList" class="subTabbody tabbody activeSubpage">
+<!-- 		<div id="taskList" class="subTabbody tabbody activeSubpage"> -->
+<!-- 		</div> -->
+		<div id="taskList" class="list list-body">
 		</div>
     </jsp:body>
 </t:all_template>

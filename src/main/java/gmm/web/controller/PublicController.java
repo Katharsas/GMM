@@ -44,7 +44,7 @@ public class PublicController {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		
-		request.setAttribute("comment", getCommentForm());
+		request.setAttribute("commentForm", getCommentForm());
 		List<Task> tasks = session.getTaskLinks();
 		return ftlTaskRenderer.renderTasks(tasks, model, request, response);
 	}

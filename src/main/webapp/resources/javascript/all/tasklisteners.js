@@ -25,8 +25,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		},
 		
 		findSwitchCommentForm : function(element) {
-			switchCommentForm($(element).parents(".listElementBody").find(
-					".commentForm"));
+			switchCommentForm($(element).parents(".task-body").find(".commentForm"));
 		},
 		
 		switchCommentForm : function($commentForm) {

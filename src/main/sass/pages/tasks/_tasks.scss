@@ -41,12 +41,9 @@
 }
 
 
-.list-element{
-	overflow:hidden;
-	background-color:#111;
+.list-element {
 	margin-top:7px;
 	box-shadow: -1px -1px 0px #444, 1px 1px 1px #000;
-	border-left:0px solid rgba(255, 78, 35, 1);
 }
 
 .list-count {
@@ -145,6 +142,7 @@ $padding-wb-horizontal: 10;
 	
 	@include button-color($col);
 	color:#000;
+	min-width:9em;
 }
 
 
@@ -162,4 +160,8 @@ $padding-wb-horizontal: 10;
 }
 #submitTaskButton {
 	margin-right:2em;
+}
+
+#newTaskButton, #submitTaskButton, #cancelTaskButton {
+	width:9em;
 }

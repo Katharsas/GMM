@@ -28,6 +28,7 @@ $(document).ready(
 		tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
 				return $task1[0] === $task2[0];
 		});
+		TaskLoader.init();
 	}
 );
 

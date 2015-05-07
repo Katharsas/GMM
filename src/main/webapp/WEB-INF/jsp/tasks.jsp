@@ -61,7 +61,7 @@
     			<!-- <div id="pinned" class="list">
 	    			<div class="list-header">Pinned</div>
 	    			<div class="list-body">
-	    				<div class="list-element">
+	    				<div class="task">
 	    					<div class="task-header">Task 1</div>
 	    				</div>
 	    			</div>
@@ -69,7 +69,7 @@
     			<div id="currentOperation" class="list">
 	    			<div class="list-header">%currentOperation%</div>
 	    			<div class="list-body">
-	    				<div class="list-element">
+	    				<div class="task">
 	    					<div class="task-header">Task 1</div>
 	    				</div>
 	    			</div>
