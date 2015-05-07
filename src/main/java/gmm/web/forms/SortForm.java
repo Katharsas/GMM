@@ -12,9 +12,9 @@ public class SortForm {
 		setDefaultState();
 	}
 	public void setDefaultState() {
-		sortByPrimary = TaskSortAttribute.ID;
-		sortDownPrimary = true;
-		sortBySecondary = null;
+		sortByPrimary = TaskSortAttribute.CREATED;
+		sortDownPrimary = false;
+		sortBySecondary = TaskSortAttribute.TITLE;
 		sortDownSecondary = true;
 	}
 	

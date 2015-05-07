@@ -15,22 +15,24 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import freemarker.template.Configuration;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.UserService;
 
 /**
+ * Renders html content from FreeMarker templates (.ftl files).
+ * 
  * @author Jan Mothes
  */
 @Service
-public class TaskRenderer {
+public class FtlRenderer {
 	
 	@Autowired private UserService users;
 	
 	private Configuration config;
 	
 	@Autowired
-	public TaskRenderer(FreeMarkerConfigurer ftlConfig) throws IOException {
+	public FtlRenderer(FreeMarkerConfigurer ftlConfig) throws IOException {
 		config = ftlConfig.getConfiguration();
 	}
 	
@@ -52,6 +54,22 @@ public class TaskRenderer {
 	
 	/**
 	 * Request must already include all needed forms.
+	 * Renders basically any template to a String.
+	 */
+	public String renderTemplate(ModelMap model, String template,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
+		
+		populateModel(model, request, response);
+		StringWriter out = new StringWriter();
+		StringBuffer buffer = out.getBuffer();
+		config.getTemplate(template).process(model, out);
+		return buffer.toString();
+	}
+	
+	/**
+	 * Request must already include all needed forms.
+	 * Renders task to 2 html strings: taskheader and taskbody
+	 * @return WrapperObject for task html
 	 */
 	public TaskRenderResult renderTask(Task task, ModelMap model,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -62,6 +80,8 @@ public class TaskRenderer {
 	
 	/**
 	 * Request must already include all needed forms.
+	 * Renders tasks to a list with task html for JSON auto-convertion.
+	 * @see {@link #renderTask(Task, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
 	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ModelMap model,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {

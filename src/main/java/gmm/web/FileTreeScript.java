@@ -17,7 +17,7 @@ public class FileTreeScript {
 	 * 
 	 * MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION
 	 */	
-	public String html(Path relDir, Path root) {
+	public String[] html(Path relDir, Path root) {
 		
 		Path dirPath = root.resolve(relDir);
 		File dir = dirPath.toFile();
@@ -55,7 +55,6 @@ public class FileTreeScript {
 			}
 			result +=("</ul>");
 	    }
-	    return result;
+	    return new String[] {result};
 	}
-
 }

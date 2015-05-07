@@ -5,15 +5,14 @@ import java.nio.file.Path;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import gmm.domain.AssetTask;
-import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
-import gmm.web.AjaxResponseException;
 import gmm.web.FileTreeScript;
 import gmm.web.sessions.TaskSession;
 
@@ -66,14 +65,12 @@ public class TaskAssetController {
 			HttpServletResponse response,
 			@RequestParam(value="small", defaultValue="false") boolean small,
 			@RequestParam(value="ver") String version,
-			@RequestParam(value="id") String idLink) throws AjaxResponseException {
-		try {
-			setHeaderCaching(response);
-			//TODO enable reasonable caching
-			TextureTask task = UniqueObject.<TextureTask>getFromIdLink(data.<TextureTask>getList(TextureTask.class), idLink);
-			return textureService.getPreview(task, small, version);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam(value="id") String idLink) throws Exception {
+		
+		setHeaderCaching(response);
+		//TODO enable reasonable caching
+		TextureTask task = UniqueObject.<TextureTask>getFromIdLink(data.<TextureTask>getList(TextureTask.class), idLink);
+		return textureService.getPreview(task, small, version);
 	}
 	
 	/**
@@ -88,48 +85,41 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param subDir - "assets" if the files are assets
 	 * @param dir - relative path to the requested directory/file
-	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
-	public @ResponseBody String showAssetFiles(
+	public @ResponseBody String[] showAssetFiles(
 			@PathVariable String idLink,
 			@PathVariable String subDir,
-			@RequestParam("dir") Path dir) throws AjaxResponseException {
-		try {
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-			boolean isAssets = subDir.equals("assets");
-			
-			Path visible = config.ASSETS_NEW
-					.resolve(task.getAssetPath())
-					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
-			dir = fileService.restrictAccess(dir, visible);
-			return new FileTreeScript().html(dir, visible);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam("dir") Path dir) {
+
+		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		boolean isAssets = subDir.equals("assets");
+		
+		Path visible = config.ASSETS_NEW
+				.resolve(task.getAssetPath())
+				.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
+		dir = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dir, visible);
 	}
 	
 	/**
 	 * Upload File
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
-	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
-	public String handleUpload(
+	public void handleUpload(
 			HttpServletRequest request,
-			@PathVariable String idLink) throws AjaxResponseException {
-		try {
-			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-			MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
-			MultipartFile file = (MultipartFile) map.getFirst("myFile");
-			
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-			taskService.addFile(task, file);
-			
-			return file.isEmpty()? "Upload failed!" : "Upload successfull!";
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@PathVariable String idLink) throws Exception {
+		
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+		MultipartFile file = (MultipartFile) map.getFirst("file");
+		if (file.isEmpty()) throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
+		
+		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		taskService.addFile(task, file);
 	}
 	
 	/**
@@ -144,7 +134,6 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param subDir - "preview", "asset" or "other"
 	 * @param dir - relative path to the downloaded file (if preview: "original" or "newest")
-	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/download/{idLink}/{subDir}/{dir}/"},
 			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -186,19 +175,16 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param asset - true if file is an asset
 	 * @param dir - relative path to the deleted file
-	 * @throws AjaxResponseException 
 	 */
 	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
 	public void handleDeleteFile(
 			@PathVariable String idLink,
 			@RequestParam("asset") Boolean asset,
-			@RequestParam("dir") Path dir) throws AjaxResponseException {
-		try {
-			AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-			taskService.deleteFile(task, dir, asset);
-		}
-		catch (Exception e) {throw new AjaxResponseException(e);}
+			@RequestParam("dir") Path dir) throws Exception {
+		
+		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		taskService.deleteFile(task, dir, asset);
 	}
 
 }

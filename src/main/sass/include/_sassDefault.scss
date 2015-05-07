@@ -1,5 +1,13 @@
 //------------------------------------------------------------------------------
-// This file contains general mixins with an above-average amount of logic.
+// Global styles for inclusion
+//------------------------------------------------------------------------------
+@mixin cursor-clickable {
+	cursor:pointer;
+}
+
+
+//------------------------------------------------------------------------------
+// General mixins with an above-average amount of logic.
 // Big loads of logic should go into javascript.
 //------------------------------------------------------------------------------
 
@@ -26,14 +34,14 @@
 @mixin button-color($color, $gradient-width: 20%) {
 
 	$top:lighten($color, 7%);
-	$bot:darken($color, 4%);
+	$bot:darken($color, 0%);//4%
 	@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
 	box-shadow: inset 0px 1px 1px lighten($color, 20%);
 	
 	&:hover {
-		$color:lighten($color, 4%);
-		$top:lighten($color, 7%);
-		$bot:darken($color, 6%);
+		$color:lighten($color, 6%);
+		$top:lighten($color, 6%);
+		$bot:darken($color, 2%);//6%
 		@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
 		box-shadow: inset 0px 1px 1px lighten($color, 20%);
 	}
@@ -45,4 +53,53 @@
 
 @mixin indented-shadow-for-color($color) {
 	box-shadow: inset -1px -1px 0px lighten($color, 10%), inset 1px 1px 0px darken($color, 4%);
+}
+
+
+//------------------------------------------------------------------------------
+// Functions
+//------------------------------------------------------------------------------
+
+/**
+ * @param amount - 0-n, relative to original brigntness, 1 doesn't change color;
+ */
+@function setLightness($color, $amount) {
+	$original: lightness($color);
+	$result: $color;
+	
+	@if $amount >= 1 {
+		$result: lighten($color, ($amount - 1) * $original);
+	}
+	@else if $amount < 0 {
+		$result: null;
+	}
+	@else {
+		$result: darken($color, (1 - $amount) * $original);
+	}
+	@return $result;
+}
+
+/**
+ * @param amount - 0-n, relative to original saturation, 1 doesn't change color;
+ */
+@function setSaturation($color, $amount) {
+	$original: saturation($color);
+	$result: $color;
+	
+	@if $amount >= 1 {
+		$result: saturate($color, ($amount - 1) * $original);
+	}
+	@else if $amount < 0 {
+		$result: null;
+	}
+	@else {
+		$result: desaturate($color, (1 - $amount) * $original);
+	}
+	@return $result;
+}
+
+@function getBrightScheme($darkColor) {
+	$result: lighten($bgc-subpage-dark, 12%);
+	$result: setSaturation($result, 0.9);
+	@return $result;
 }

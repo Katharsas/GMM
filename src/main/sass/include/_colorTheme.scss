@@ -1,3 +1,5 @@
+@import 'sassDefault';
+
 //------------------------------------------------------------------------------
 // You can change basic colors here.
 //------------------------------------------------------------------------------
@@ -7,7 +9,10 @@
 //orange (bright)
 $c-orange: #FF4E23;
 
-//orange (flat)
+//orange (dark)
+$c-darkOrange: #E12D00;
+
+//orange (bright & flat)
 $c-flatOrange: #D35A3D;
 
 //red
@@ -19,8 +24,6 @@ $c-darkBlue: #164054;
 //blue (pale)
 $c-paleBlue: #36A2D7;
 
-
-
 /*
  * default & template
  * #####################################
@@ -29,11 +32,14 @@ $c-paleBlue: #36A2D7;
 $bgc-page:	#000;
 $fgc-page:	#EEE;
 
-$bgc-subpage-bright:	#0B3F57;//blue-green
-$fgc-subpage-bright:	#EEE;
-
 $bgc-subpage-dark:	#072737;//blue-green (dark)
+//$bgc-subpage-dark:	#73132E;//pink
+//$bgc-subpage-dark:		#765D0A;//gold
 $fgc-subpage-dark:	#DDD;
+
+// $bgc-subpage-bright:	#0B3F57;//blue-green
+$bgc-subpage-bright: 	getBrightScheme($bgc-subpage-dark);
+$fgc-subpage-bright:	#EEE;
 
 $c-highlight:	$c-orange;
 
@@ -68,10 +74,6 @@ $fgc-batchDialog-conflict: $c-red;
 $bgc-batchDialog-list: $bgc-dialog;
 $fgc-batchDialog-list: $c-paleBlue;
 
-/*
- * 
- * #####################################
- */
 
 //------------------------------------------------------------------------------
 // Helper functions for less clutter in css. Not really necessary.

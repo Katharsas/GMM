@@ -7,8 +7,8 @@ import java.util.Map;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.Asset;
-import gmm.domain.AssetTask;
+import gmm.domain.task.Asset;
+import gmm.domain.task.AssetTask;
 import gmm.service.FileService;
 import gmm.service.Spring;
 import gmm.service.data.DataAccess;

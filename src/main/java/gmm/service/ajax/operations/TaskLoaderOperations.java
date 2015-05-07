@@ -3,8 +3,8 @@ package gmm.service.ajax.operations;
 import java.util.HashMap;
 import java.util.Map;
 
-import gmm.domain.Task;
 import gmm.domain.UniqueObject;
+import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.data.DataAccess;
 

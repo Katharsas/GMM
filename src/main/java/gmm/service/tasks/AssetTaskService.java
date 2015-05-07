@@ -7,9 +7,9 @@ import java.nio.file.Paths;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
-import gmm.domain.Asset;
-import gmm.domain.AssetTask;
 import gmm.domain.User;
+import gmm.domain.task.Asset;
+import gmm.domain.task.AssetTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
@@ -20,7 +20,7 @@ import gmm.web.sessions.TaskSession;
  * 
  * @author Jan Mothes
  */
-public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> extends TaskService<T>{
+public abstract class AssetTaskService<A extends Asset, T extends AssetTask<A>> extends TaskFormService<T>{
 	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;

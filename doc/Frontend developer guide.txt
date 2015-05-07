@@ -49,7 +49,14 @@ Nothing important going on here. Javascript is in folder "src/main/webapp/resour
 4. Internationalization
 -------------------------------------------
 => Internationalized text ist stored in .properties files in folder "src/main/resources/i18n".
+=> All language files should have every key at the same line relative to each other for easy multi-file editing.
 => The language delivered is the clients choosen language (browser language settings).
 => Language text can be linked in all types of html templates using the keys from the properties files (for exact syntax examples see template source).
 => Language text cannot be used in CSS
 => Language text can be used in JS only manually currently (though that will change in future) by adding a keyname--->text mapping in a script tag in HTML templates. When Require.js gets implemented, it will maybe be possible to configure it so that text can get linked directly from any JS file.
+
+-------------------------------------------
+3. Other
+-------------------------------------------
+=> Only use HTTP request methods GET & POST because request bodies by other methods may be rejected by Tomcat.
+=> Following HTTP specs is not necessary, other protocol will be used in future anyway (WebSockets)

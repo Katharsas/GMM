@@ -15,11 +15,12 @@
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/jqueryDraggable.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/all/ajax.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/preprocessor.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/all/default.js"/>" type="text/javascript"></script>
 			<script type="text/javascript">
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
-				allVars['contextPath'] = '${pageContext.request.contextPath}';
+				var contextUrl = '${contextUrl}';
 			</script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
@@ -60,9 +61,6 @@
 			<sec:authorize access="hasRole('ROLE_USER')">
 				<div class="tab left">
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
-				</div>
-				<div class="tab left">
-					<a href="<c:url value="/tasksnew"/>">New (WIP)<span></span></a>
 				</div>
 			</sec:authorize>
 			<div id="metainfo" class="left">

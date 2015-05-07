@@ -1,8 +1,12 @@
 package gmm.util;
-import gmm.domain.TaskPriority;
-import gmm.domain.TaskStatus;
-import gmm.domain.TaskType;
+import java.util.HashMap;
+import java.util.Map;
+
+import gmm.domain.task.TaskPriority;
+import gmm.domain.task.TaskStatus;
+import gmm.domain.task.TaskType;
 import gmm.service.sort.TaskSortAttribute;
+import gmm.web.forms.LoadForm;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.springframework.objenesis.Objenesis;
@@ -12,34 +16,49 @@ import org.springframework.objenesis.instantiator.ObjectInstantiator;
 
 public class ElFunctions {
 	
+	private final static Objenesis objenesis = new ObjenesisStd();
+	private final static Map<String, Class<?>> classNameToEnum = new HashMap<>();
 	
-	public final static Objenesis objenesis = new ObjenesisStd();
+	/**
+	 * Classes which can be called directly from jsp/ftl code:
+	 */
+	public final static Class<?>[] staticClasses = {
+		TaskStatus.class,
+		TaskPriority.class,
+		TaskSortAttribute.class,
+		TaskType.class,
+		LoadForm.LoadOperation.class
+	};
+	
+	static {
+		for(Class<?> clazz : staticClasses) {
+			classNameToEnum.put(clazz.getSimpleName(), clazz);
+		}
+	}
 	
 	public static String escape(String input) {
 		return StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(input));
 	}
 	
+	/**
+	 * Returns enum values for registered enum classes.<br>
+	 * Necessary because JSP cannot call stuff on classes, only objects, and sometimes, you just
+	 * don't have a damn object or don't want to use one. Also its bad practice to call class stuff
+	 * on objects.
+	 */
 	public static Enum<?>[] values(String clazz) {
-		if (clazz.equals(TaskStatus.class.getSimpleName())) {
-			return TaskStatus.values();
+		if (!classNameToEnum.containsKey(clazz)) {
+			throw new UnsupportedOperationException("Enum class '"+clazz+"' not registered at ELFunctions!");
 		}
-		else if (clazz.equals(TaskPriority.class.getSimpleName())) {
-			return TaskPriority.values();
-		}
-		else if (clazz.equals(TaskType.class.getSimpleName())) {
-			return TaskPriority.values();
-		}
-		else if (clazz.equals(TaskSortAttribute.class.getSimpleName())) {
-			return TaskSortAttribute.values();
-		}
-		else {
-			throw new IllegalArgumentException("Argument String \""+clazz+"\" can not be matched with enum class name.");
-		}
+		Class<?> enumClass = classNameToEnum.get(clazz);
+		return (Enum<?>[]) enumClass.getEnumConstants();
 	}
 	
 	/**
-	 * This method is probably the most evil thing i have written in my live.
-	 * I beg forgiveness.
+	 * <b>Don't copy paste this stuff, cuz its evil.</b><br>
+	 * Creates ANY object from simple class name. With any i mean ANY, no restrictions.<br>
+	 * Used to call class methods on that object in JSP, because classes can't be used in JSP.<br>
+	 * Use carefully, because this is probably slow as fuck.
 	 */
 	public static <T> T instanceOfClass(String clazz) throws ClassNotFoundException {
 		@SuppressWarnings("unchecked")

@@ -12,28 +12,6 @@
 	@include button-color($c-button-mid);
 }
 
-/*Tags*/
-.userTag, .labelTag {
-	border-radius: 3px;
-	max-height:18px;
-}
-
-.userTag {
-	padding-left:4px;
-	padding-right:4px;
-	
-	@include colorTheme-usertag;
-	@include indented-shadow-for-bright($bgc-usertag);
-}
-
-.labelTag {
-	padding-left:6px;
-	padding-right:6px;
-	
-	@include colorTheme-labeltag;
-	@include indented-shadow-for-color(#164054);
-}
-
 /*Floating elements & Size/Positioning*/
 .left{float:left}
 .right{float:right}
@@ -52,9 +30,9 @@ a span{
 	height:100%;
 }
 label, .button, .clickable{
-	cursor:pointer;
+	@include cursor-clickable;
 }
-.input *{
+.input input, .input textarea {
 	font-family:Calibri, Verdana, Arial, sans-serif	!important;
 	font-size:inherit		!important;
 }
@@ -62,10 +40,8 @@ submit {
 	font-size: inherit;
 }
 .draggable {
-	cursor:move;
-}
-.draggable * {
-	cursor:default;
+	/* TODO enable cursor when draggables have no ui children */
+	/*cursor:move;*/
 }
 /*Text Size*/
 h1, .h1{font-size:x-large;}
@@ -97,11 +73,21 @@ input, textarea, select {
 textarea {
 	max-width:100%;
 }
+input[type="checkbox"] {
+	vertical-align: middle;
+	margin: 0px 3px;
+	margin-bottom:2px;
+}
+form {
+	margin:0;
+	padding:0;
+}
 a {text-decoration: none;}
 a:link {color:inherit;}
 a:visited {color:inherit;}
 a:active {color:inherit;}
 a:hover {}
+/*other*/
 .blocker {
 	position: fixed;
 	height:100%;

@@ -25,8 +25,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		},
 		
 		findSwitchCommentForm : function(element) {
-			switchCommentForm($(element).parents(".listElementBody").find(
-					".commentForm"));
+			switchCommentForm($(element).parents(".task-body").find(".commentForm"));
 		},
 		
 		switchCommentForm : function($commentForm) {
@@ -53,29 +52,26 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 		changeComment : function(comment, taskId, commentId) {
 			var $confirm = confirm(
 				function(input, textarea) {
-					var url = allVars.contextPath + "/tasks/editComment/" + taskId + "/" + commentId;
-					$.post(url, {"editedComment" : textarea}, 
-						function() {
+					var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
+					Ajax.post(url, {"editedComment" : textarea}) 
+						.done(function() {
 							hideDialog($confirm);
 							alert(reload, "TODO: Refresh task body");
-						}
-					);
+						});
 				}, "Change your comment below:", undefined, comment, 700);
 		},
 		
 		uploadFile : function(input, idLink) {
 			allVars.$overlay.show();
-			
 			var file = input.files[0];
-			var uri = allVars.contextPath + "/tasks/upload/" + idLink;
-		
-			sendFile(file, uri, function(responseText) {
-				alert(reload, "TODO: Refresh filetree");
-			});
+			Ajax.upload(contextUrl + "/tasks/upload/" + idLink, file)
+				.done(function(responseText) {
+					alert(reload, "TODO: Refresh filetree");
+				});
 		},
 		
 		downloadFromPreview : function(idLink, version) {
-			var uri = allVars.contextPath + "/tasks/download/" + idLink + "/preview/" + version + "/";
+			var uri = contextUrl + "/tasks/download/" + idLink + "/preview/" + version + "/";
 			window.open(uri);
 		},
 		
@@ -84,7 +80,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 			if (dir === undefined || dir === "") {
 				return;
 			}
-			var uri = allVars.contextPath + "/tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/";
+			var uri = contextUrl + "/tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/";
 			window.open(uri);
 		},
 		
@@ -94,24 +90,22 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 				return;
 			}
 			var $dialog = confirm(function() {
-				$.post(allVars.contextPath + "/tasks/deleteFile/" + idLink,
+				Ajax.post(contextUrl + "/tasks/deleteFile/" + idLink,
 						{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
 					.done(function() {
 						hideDialog($dialog);
 						alert(reload, "TODO: Refresh filetree");
-					})
-					.fail(showException);
+					});
 			}, "Delete " + tasksFuncs.filePath() + " ?");
 		},
 		
 		deleteTask : function(idLink, name) {
 			var $dialog = confirm(function() {
-				$.post(allVars.contextPath + "/tasks/deleteTask/" + idLink, {})
+				Ajax.post(contextUrl + "/tasks/deleteTask/" + idLink)
 					.done(function() {
 						hideDialog($dialog);
 						alert(reload, "TODO: Remove task from client");
-					})
-					.fail(showException);
+					});
 			}, "Are you sure you want to delete this task?");
 		}
 	};

@@ -1,9 +1,9 @@
 package gmm.web.forms;
 
-import gmm.domain.TaskPriority;
-import gmm.domain.TaskStatus;
-import gmm.domain.TaskType;
 import gmm.domain.User;
+import gmm.domain.task.TaskPriority;
+import gmm.domain.task.TaskStatus;
+import gmm.domain.task.TaskType;
 
 
 public class TaskForm {

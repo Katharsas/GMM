@@ -1,4 +1,6 @@
-package gmm.domain;
+package gmm.domain.task;
+
+import gmm.domain.NamedObject;
 
 public class ModelSite extends NamedObject{
 	

@@ -1,5 +1,7 @@
 package gmm.domain;
 
+import gmm.web.forms.LoadForm;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -21,10 +23,8 @@ public class User extends NamedObject {
 	final private List<Notification> oldNotifications = new LinkedList<Notification>();
 	final private List<Notification> newNotifications = new LinkedList<Notification>();
 	
-	//Options
-//	public boolean sentNotificationsToMail = false;
-//	public int daysToSaveNotifiations = 30;
-//	public int maximumSavedNotifications = 100;
+	//Options & Settings
+	private LoadForm loadForm = new LoadForm();
 	
 	//Constants
 	public final static User NULL = new User("EMPTY");
@@ -85,5 +85,12 @@ public class User extends NamedObject {
 	}
 	public List<Notification> getNewNotifications() {
 		return newNotifications;
+	}
+	public LoadForm getLoadForm() {
+		return loadForm;
+	}
+	public void setLoadForm(LoadForm loadForm) {
+		Objects.requireNonNull(loadForm);
+		this.loadForm = loadForm;
 	}
 }

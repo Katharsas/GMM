@@ -1,18 +1,9 @@
 var tasksVars = {
-	"tab" : "",
 	"edit" : "",
 	"selectedTaskFileIsAsset" : "",
-	"expandedTasks" : undefined,
-	"taskLoader" : undefined
 };
 
 var tasksFuncs = {
-	"tabPar" : function() {
-		return "?tab=" + (tasksVars.tab === undefined || tasksVars.tab === null ? "" : tasksVars.tab);
-	},
-	"editPar" : function() {
-		return "&edit=" + (tasksVars.edit === undefined || tasksVars.edit === null ? "" : tasksVars.edit);
-	},
 	"subDir" : function() {
 		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
 	},
@@ -20,7 +11,11 @@ var tasksFuncs = {
 		return allVars.selectedTaskFile.attr("rel");
 	},
 	"refresh" : function() {
-		window.location.href = "tasks" + tasksFuncs.tabPar() + "&edit=" + tasksVars.edit;
+		var url = contextUrl + "/tasks";
+		if (tasksVars.edit !== "") {
+			url += "?edit=" + tasksVars.edit;
+		}
+		window.location.href =  url;
 	}
 };
 
@@ -32,123 +27,199 @@ var tasksFuncs = {
 	}
 })();
 
-
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
  * ////////////////////////////////////////////////////////////////////////////////
  */
 
+var Workbench = function() {
+	var that = this;
+	
+	var $workbench = $("#workbench");
+	var $workbenchMenu = $workbench.find("#workbench-menu");
+	var $workbenchTabs = $workbench.find("#workbench-tabs");
+	
+	var $loadButtons = $workbenchTabs.find(".workbench-load-typeButton");
+	
+	var taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
+	
+	this.expandedTasks = undefined;
+	this.taskSwitcher = undefined;
+	
+	var render = function() {
+		taskLoader.init();
+		//TODO find better way to reset and reload without instantiating new stuff
+		//TODO attach listeners to tasks on creation so the correct switcher can be called
+		that.taskSwitcher = TaskSwitcher(taskLoader);
+		that.expandedTasks = new Queue(3, function($task1, $task2) {
+			return $task1[0] === $task2[0];
+		});
+	};
+	var updateTasks = function() {
+		Ajax.get(contextUrl + "/tasks/selected")
+			.done(function(selected) {
+				$loadButtons.each(function(index, element) {
+					if (selected[index]) {
+						$(element).addClass("selected");
+					} else {
+						$(element).removeClass("selected");
+					}
+				});
+				render();
+			});
+	};
+	this.load = function(type) {
+		Ajax.post(contextUrl + "/tasks/load", { type: type })
+			.done(updateTasks)
+			.fail(showException);
+	};
+	var initWorkbenchTabMenu = function() {
+		var $menuTabs = $workbenchMenu.find(".workbench-menu-tab");
+		var $tabs = $workbenchTabs.find(".workbench-tab");
+		
+		var tabWidthPercent = 100 / $menuTabs.length;
+		$menuTabs.css("width", tabWidthPercent + "%");
+		
+		$menuTabs.each(function(index, tab) {
+			var $tab = $(tab);
+			$tab.click(onTabClick(index));
+		});
+		$menuTabs.first().trigger("click");
+		
+		function onTabClick(index) {
+			return function () {
+				$menuTabs.removeClass("workbench-menu-tab-active");
+				$(this).addClass("workbench-menu-tab-active");
+				$tabs.hide();
+				$tabs.eq(index).show();
+			};
+		}
+	};
+	var initWorkbenchTabs = function() {	
+		
+		var $loadForm = $workbenchTabs.find("form#workbench-loadForm");
+		var $sortForm = $workbenchTabs.find("form#workbench-sortForm");
+		var $searchForm = $workbenchTabs.find("form#workbench-searchForm");
+		var $filterForm = $workbenchTabs.find("form#generalFilters");
+		
+		//-------------------------------------------------------
+		//load form
+		//-------------------------------------------------------
+		$loadForm.find(".form-element").change(function() {
+			Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
+		});
+		
+		//-------------------------------------------------------
+		//sort form
+		//-------------------------------------------------------
+		$sortForm.find("select, input").change(function() {
+			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
+				.done(//TODO only load new sorting data
+						render);
+		});
+		
+		//-------------------------------------------------------
+		//search form
+		//-------------------------------------------------------
+		$searchForm.find(".workbench-search-submit").click(function() {
+			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
+				.done(render);
+		});
+		$searchForm.find("#workbench-search-switch").click(function() {
+			setSearchType(!isEasySearch());
+		});
+		var $searchType = $("select#workbench-search-type");
+		function isEasySearch() {
+			return $searchType.val() === "true";
+		}
+		function setSearchType(isEasySearch) {
+			$searchType.val(isEasySearch.toString());
+			$searchForm.find("#workbench-search-easy").toggle(isEasySearch);
+			$searchForm.find("#workbench-search-complex").toggle(!isEasySearch);
+		}
+		//init search visibility
+		setSearchType(isEasySearch());
+		
+		//-------------------------------------------------------
+		//filter form
+		//-------------------------------------------------------
+		var submitFilterForm = function() {
+			Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
+				.done(render);
+		};
+		$filterForm.find("input[type='checkbox']").not("#generalFilters-all").change(function() {
+			submitFilterForm();
+		});
+		//filter form (all checkbox binding)
+		(function() {
+			var $all = $filterForm.find("#generalFilters-all");
+			var $checkboxes = $filterForm.find(".generalFilters-all-target");
+			var cbg = new CheckboxGrouper($checkboxes, function(areChecked) {
+				$all.prop("checked", areChecked);
+			});
+			$all.change(function() {
+				var isChecked = $all.prop("checked");
+				cbg.changeGroup(isChecked);
+				submitFilterForm();
+			});
+		})();
+	};
+	initWorkbenchTabMenu();
+	initWorkbenchTabs();
+	updateTasks();
+};
+
+function switchListElement(element) {
+	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
+}
+
 /**
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(
-		function() {
-			// get subTab and set as active tab / others as inactivetabs
-			tasksVars.edit = getURLParameter("edit");
-			var $activeTab = $(".subTabmenu .tab a[href=\"tasks" + tasksFuncs.tabPar() + "\"]").parent();
-			$activeTab.addClass("activeSubpage");
-			
-			TaskLoader = TaskLoader(allVars.contextPath+"/tasks/render", $("#listsMain"));
-			TaskSwitcher = TaskSwitcher(TaskLoader);
-			new TaskForm();
-			tasksVars.expandedTasks = new Queue(3, function($task1, $task2) {
-				return $task1[0] === $task2[0];
-			});
-			
-			// set Search according to selected search type (easy or complex)
-			setSearchVisibility($("#searchTypeSelect").val());
-			// hide search type selector
-			$("#searchTypeSelect").hide();
-			// hide filter submit
-			$("#generalFiltersInvisible").hide();
-			// hide generalFilterBody
-			if ($("#generalFiltersHidden").is(":checked"))
-				toggleGeneralFilters();
-			toggleSpecificFilters();// TODO
+	function() {
+		tasksVars.edit = getURLParameter("edit");
+		new TaskForm();
 		
-			// listener
-			$(".submitSearchButton").click(function() {
-				$("#searchForm").submit();
-			});
-			$(".sortFormElement").change(function() {
-				$("#sortForm").submit();
-			});
-			$("#generalFiltersAllCheckbox").change(function() {
-				switchGeneralFiltersAll($(this));
-			});
-			$(".generalFiltersFormElement").change(function() {
-				submitGeneralFilters();
-			});
+		workbench = new Workbench();
+		
+		//TODO sidebarmarker creation on task select
+//			SidebarMarkers = SidebarMarkers(function() {
+//				return $('<div>').html("Marker");
+//			}, 2);
+//			SidebarMarkers.registerSidebar("#page-tabmenu-spacer", true);
+//			SidebarMarkers.addMarker("#test1");
+//			SidebarMarkers.addMarker("#test2");
 });
 
-function switchListElement(element) {
-	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);
-}
-
 /**
- * @param isEasySearch - String or boolean
+ * Links a controller to a group of checkboxes.
+ * 
+ * @param $checkboxGroup - all checkboxes of the controlled group
+ * @param onGroupChange - function which will get called by the CheckboxGrouper
+ * to update the controller when the checkbox group reaches complete un-/checked
+ * state by single changes. Should accept a boolean parameter (un/checked).
  */
-function setSearchVisibility(isEasySearch) {
-	var $search = $(".search");
-	if (isEasySearch.toString() === "true") {
-		$search.find(".complexSearch").hide();
-		$search.find(".easySearch").show();
-	} else {
-		$search.find(".complexSearch").show();
-		$search.find(".easySearch").hide();
-	}
+function CheckboxGrouper($checkboxGroup, onGroupChange) {
+	
+	$checkboxGroup.change(function($element) {
+		if(!$checkboxGroup.is(':not(:checked)')) {
+			onGroupChange(true);
+		}
+		else if (!$checkboxGroup.is(":checked")) {
+			onGroupChange(false);
+		}
+	});
+	
+	/**
+	 * Call this when controller wants to un-/check the group.
+	 * @param isChecked - true if controller wants to check, false if uncheck
+	 */
+	this.changeGroup = function(isChecked) {
+		$checkboxGroup.prop("checked", isChecked);
+	};
 }
-
-function switchSearchType() {
-	var easySearch = $("#searchTypeSelect").val();
-	var newEasySearch = (easySearch !== "true").toString();
-	$("#searchTypeSelect").val(newEasySearch);
-	setSearchVisibility(newEasySearch);
-}
-
-function toggleFilters($toggle, $resize) {
-	if ($toggle.is(":visible")) {
-		$toggle.hide();
-		// $toggle.animate({left:'400px'},900);
-		// $toggle.hide();
-
-		$resize.css("width", "2em");
-		return true;
-	}
-	$toggle.show();
-	// $toggle.animate({left:'0px'},900);
-	$resize.css("width", "9em");
-	return false;
-}
-
-function toggleGeneralFilters() {
-	return toggleFilters($("#generalFilterBody"), $(".generalFilters"));
-}
-function toggleSpecificFilters() {
-	return toggleFilters($("#specificFilterBody"), $(".specificFilters"));
-}
-
-function switchGeneralFilters() {
-	$("#generalFiltersHidden").prop("checked", toggleGeneralFilters());
-	submitGeneralFilters();
-}
-
-function switchSpecificFilters() {
-	// TODO
-	toggleSpecificFilters();
-}
-
-function switchGeneralFiltersAll($element) {
-	$(".generalFiltersAllCheckBoxTarget").attr("checked",
-			$element.is(":checked"));
-	submitGeneralFilters();
-}
-
-function submitGeneralFilters() {
-	$(".generalFilters").submit();
-}
-
 
 /**
  * -------------------- TaskForm -----------------------------------------------------------------
@@ -166,17 +237,24 @@ function TaskForm() {
 			show();
 			$form.find("#taskGroupType").hide();
 		}
-		var $type = $form.find("#taskElementType select");
+		var $type = $form.find("#taskForm-element-type select");
 		switchPath($type);
 		
 		$type.change(function() {switchPath($type);});
 		$new.click(function() {show();});
 		$submit.click(function() {$form.submit();});
+		$cancel.click(function() {
+			//TODO reload only empty form
+			alert(function() {
+				tasksVars.edit = "";
+				tasksFuncs.refresh();
+			}, "TODO: Reset form only");
+		});
 	}
 	
 	function switchPath($taskElementType) {
 		var selected = $taskElementType.find(":selected").val();
-		var $path = $form.find("#taskElementPath");
+		var $path = $form.find("#taskForm-element-path");
 		switch(selected) {
 			case "GENERAL":	$path.hide();break;
 			default:		$path.show();break;

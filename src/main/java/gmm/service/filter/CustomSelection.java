@@ -51,6 +51,9 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		public Operation autoConvert(boolean autoConvertToString) {
 			return s.autoConvert(autoConvertToString)._operation;
 		}
+		public Operation ignoreNoSuchGetter(boolean ignoreMissingGetterMethods) {
+			return s.ignoreNoSuchGetter(ignoreMissingGetterMethods)._operation;
+		}
 		public I getSelected() {
 			return s.getSelected();
 		}
@@ -60,7 +63,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		public Start negateAll() {
 			return s.negateAll()._start;
 		}
-		@Override public Selection<T,I> end() {
+		@Override public CustomSelection<T,I> end() {
 			return s;
 		}
 	}
@@ -69,7 +72,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		public SecondMatching(CustomSelection<T,I> s) {
 			super(s);
 		}
-		public SecondMatching matchingType(Class<T> filter) {
+		public SecondMatching matchingType(Class<?> filter) {
 			return s.matchingType(filter)._secondMatching;
 		}
 		public SecondMatching matching(String getterMethodName, Object filter) {
@@ -82,7 +85,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		public Matching(CustomSelection<T,I> s) {
 			this.s = s;
 		}
-		public SecondMatching matchingType(Class<T> filter) {
+		public SecondMatching matchingType(Class<?> filter) {
 			return s.matchingType(filter)._secondMatching;
 		}
 		public SecondMatching matching(String getterMethodName, Object filter) {
@@ -148,6 +151,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	
 	private boolean AUTO_STRING_CONVERT = true;
 	private boolean ONLY_MATCH_EQUAL = false;
+	private boolean IGNORE_NO_SUCH_GETTER = false;
 	private boolean UNION = false;
 	private boolean REMOVE = false;
 	
@@ -196,6 +200,12 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 		return this;
 	}
 	
+	@Override
+	public CustomSelection<T, I> ignoreNoSuchGetter(boolean ignoreMissingGetterMethods) {
+		IGNORE_NO_SUCH_GETTER = ignoreMissingGetterMethods;
+		return this;
+	}
+	
 	/**
 	 * If union, matching elements need to be found in currently unselected.
 	 * If intersection, matching elements neeed to be founf in currently selected.
@@ -241,11 +251,11 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	}
 	
 	@Override
-	public CustomSelection<T,I> matchingType(final Class<T> filter) {
-		final I elements = this.getElements();
+	public CustomSelection<T,I> matchingType(final Class<?> filter) {
+		final I elements = copy(this.getElements());
 		for(T t : elements)	{
-			final Class<? extends Object> clazz = t.getClass();
-			this.applyMatching(clazz.equals(filter), t);
+			final Class<?> clazz = t.getClass();
+			this.applyMatching(filter.isAssignableFrom(clazz), t);
 		}
 		return this;
 	}
@@ -259,8 +269,16 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 			try {
 				strings.IGNORE_CASE = true;
 				strings.ALWAYS_CONTAINS_EMPTY = true;
-				Method method = t.getClass().getMethod(getterMethodName);
-				Object result = method.invoke(t);
+				
+				Object result;
+				try {
+					Method method = t.getClass().getMethod(getterMethodName);
+					result = method.invoke(t);
+				} catch (NoSuchMethodException e) {
+					if (!IGNORE_NO_SUCH_GETTER) throw e;
+					else result = null;
+				}
+				
 				boolean matching = false;
 				
 				if (filter==null && result==null) {
@@ -285,7 +303,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 			}
 			catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				System.err.println("SimpleSelection Error: Wrong getterMethodName or wrong list item!");
-				System.err.println("GetterMethod must be implemented by all list items.");
+				System.err.println("Call ignoreNoSuchGetter() option if implementation of getterMethod should be optional.");
 				e.printStackTrace();
 			}
 		}

@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import gmm.domain.Task;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.UserService;
 import gmm.web.forms.TaskForm;
 
@@ -13,7 +13,7 @@ import gmm.web.forms.TaskForm;
  * This class and implementing classes should be treated as package private.
  * The class {@link TaskServiceFinder} provides all methods of this interface.
  */
-abstract class TaskService<T extends Task> {
+abstract class TaskFormService<T extends Task> {
 
 	@Autowired private UserService users;
 	

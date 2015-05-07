@@ -11,15 +11,15 @@ import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.collections.Set;
-import gmm.domain.AssetTask;
-import gmm.domain.GeneralTask;
 import gmm.domain.Label;
 import gmm.domain.Linkable;
-import gmm.domain.ModelTask;
-import gmm.domain.Task;
-import gmm.domain.TextureTask;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.GeneralTask;
+import gmm.domain.task.ModelTask;
+import gmm.domain.task.Task;
+import gmm.domain.task.TextureTask;
 import gmm.service.UserService;
 
 @Service

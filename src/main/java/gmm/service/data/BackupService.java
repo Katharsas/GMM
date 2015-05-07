@@ -1,8 +1,9 @@
 package gmm.service.data;
 
+import gmm.collections.Collection;
 import gmm.domain.Linkable;
-import gmm.domain.Task;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,7 +62,8 @@ public class BackupService {
 	@Autowired private DataAccess data;
 	
 	FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
-	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm");
+	DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
+			.withLocale(Locale.ENGLISH);
 	
 	private DateTime lastHourlyBackup;
 	private DateTime lastDaylyBackup;
@@ -181,13 +184,16 @@ public class BackupService {
 	
 	private void createBackUp(DateTime timeStamp, Path directory, Class<? extends Linkable> type, int maxSaveFiles) throws Exception {
 		//add backup file
-		Path save = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
-		serializer.serialize(data.getList(type), save);
-		//remove files if too many
-		File[] files = directory.toFile().listFiles(xmlFilter);
-		sortByDate(files, type.getSimpleName());
-		if (files.length > maxSaveFiles) {
-			fileService.delete(files[0].toPath());
+		Collection<? extends Linkable> toSave = data.getList(type);
+		if(toSave.size() > 0) {
+			Path path = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
+			serializer.serialize(toSave, path);
+			//remove files if too many
+			File[] files = directory.toFile().listFiles(xmlFilter);
+			sortByDate(files, type.getSimpleName());
+			if (files.length > maxSaveFiles) {
+				fileService.delete(files[0].toPath());
+			}
 		}
 	}
 	
@@ -203,10 +209,12 @@ public class BackupService {
 	}
 	
 	private DateTime getDate(String filename, String type) {
-		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{4}-[a-zA-Z]{3}-[0-9]{1,2}_at_[0-9]{1,2}-[0-9]{2})\\.xml");
+		Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{4}-[a-zA-Z]{3}-[0-9]{1,2}_at_[0-9]{1,2}-[0-9]{2}-[0-9]{2})\\.xml");
 		Matcher matcher = regex.matcher(filename);
 		if(!matcher.matches()) {
-			throw new IllegalArgumentException("Filename must have form: backup_type_yyyy-mmm-dd_at_hh-mm.xml");
+			throw new IllegalArgumentException("Filename must have form: "
+					+ "backup_type_yyyy-mmm-dd_at_hh-mm-ss.xml, but is " + filename
+					+", type must be "+type);
 		}
 		return formatter.parseDateTime(matcher.group(1));
 	}

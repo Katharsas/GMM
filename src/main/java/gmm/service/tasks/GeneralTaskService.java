@@ -1,6 +1,6 @@
 package gmm.service.tasks;
 
-import gmm.domain.GeneralTask;
+import gmm.domain.task.GeneralTask;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
 
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GeneralTaskService extends TaskService<GeneralTask> {
+public class GeneralTaskService extends TaskFormService<GeneralTask> {
 
 	@Autowired private TaskSession session;
 	

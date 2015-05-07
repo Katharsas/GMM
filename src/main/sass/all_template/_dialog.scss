@@ -67,6 +67,8 @@
 #exceptionDialog-message {
 	color:$fgc-exceptionDialog-heading;
 	padding-bottom: 15px;
+	max-height:40px;
+	overflow:auto;
 }
 #exceptionDialog-instructions {
 	padding-bottom: 10px;

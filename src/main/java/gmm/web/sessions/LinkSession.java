@@ -10,8 +10,8 @@ import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.collections.Set;
-import gmm.domain.Task;
 import gmm.domain.UniqueObject;
+import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 
 @Component

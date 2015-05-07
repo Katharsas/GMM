@@ -57,11 +57,17 @@ if(jQuery) (function($){
 				function showTree(c, root) {
 					$(c).addClass('wait');
 					$(".jqueryFileTree.start").remove();
-					$.post(options.script, { dir: root })
+					Ajax.post(options.script, { dir: root })
 						.done(function(data) {
 							$(c).find('.start').html('');
-							$(c).removeClass('wait').append(data);
-							if( options.root == root ) $(c).find('UL:hidden').show(); else $(c).find('UL:hidden').slideDown({ duration: options.expandSpeed, easing: options.expandEasing });
+							$(c).removeClass('wait').append(data[0]);
+							if( options.root == root ) {
+								$(c).find('UL:hidden').show();
+							} else {
+								$(c).find('UL:hidden').slideDown({
+									duration: options.expandSpeed,
+									easing: options.expandEasing });
+							}
 							bindTree(c);
 						})
 						.fail(showException);
@@ -74,17 +80,23 @@ if(jQuery) (function($){
 							if( $parent.hasClass('collapsed') ) {
 								// Expand
 								if( !options.multiFolder ) {
-									$parent.parent().find('UL').slideUp({ duration: options.collapseSpeed, easing: options.collapseEasing });
-									$parent.parent().find('LI.directory').removeClass('expanded').addClass('collapsed');
+									$parent.parent().find('UL').slideUp({
+										duration: options.collapseSpeed,
+										easing: options.collapseEasing });
+									$parent.parent().find('LI.directory')
+										.removeClass('expanded').addClass('collapsed');
 								}
 								$parent.find('UL').remove(); // cleanup
-								showTree( $parent, $(this).attr('rel'));// removed some pointless matching and escaping, which broke inner folders
+								// removed some pointless matching and escaping, which broke inner folders
+								showTree( $parent, $(this).attr('rel'));
 								$parent.removeClass('collapsed').addClass('expanded');
 							} else {
 								// Collapse
 								$parent.find('UL').slideUp({
 									duration: options.collapseSpeed, easing: options.collapseEasing,
-									complete: function() {callbackOnCollapse($parent);}});
+									complete: function() {
+										if(callbackOnCollapse !== undefined) callbackOnCollapse($parent);}
+									});
 								$parent.removeClass('expanded').addClass('collapsed');
 							}
 							if(options.directoryClickable) {
@@ -97,7 +109,9 @@ if(jQuery) (function($){
 						}
 					});
 					// Prevent A from triggering the # on non-click events
-					if( options.folderEvent.toLowerCase != 'click' ) $(t).find('LI A').bind('click', function() { return false; });
+					if( options.folderEvent.toLowerCase != 'click' ) {
+						$(t).find('LI A').bind('click', function() { return false; });
+					}
 				}
 				
 				// Loading message

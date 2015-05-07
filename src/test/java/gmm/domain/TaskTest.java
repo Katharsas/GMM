@@ -5,11 +5,11 @@ import static org.junit.Assert.*;
 import java.util.LinkedList;
 
 import gmm.domain.Comment;
-import gmm.domain.GeneralTask;
-import gmm.domain.Task;
-import gmm.domain.TaskPriority;
-import gmm.domain.TaskStatus;
 import gmm.domain.User;
+import gmm.domain.task.GeneralTask;
+import gmm.domain.task.Task;
+import gmm.domain.task.TaskPriority;
+import gmm.domain.task.TaskStatus;
 
 import org.junit.Before;
 import org.junit.Test;

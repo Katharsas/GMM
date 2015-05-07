@@ -66,7 +66,7 @@ public interface Selection<T,I extends Iterable<T>> {
 	 * Works similar to the method {@link #matching(String, Object)}.
 	 * Matches if their type equals the given type.
 	 */
-	public abstract Selection<T,I> matchingType(Class<T> filter);
+	public abstract Selection<T,I> matchingType(Class<?> filter);
 
 	/**
 	 * An element matches, if a given method call on the element equals the given filter object.
@@ -131,6 +131,14 @@ public interface Selection<T,I extends Iterable<T>> {
 	  * Default is true.
 	  */
 	 public abstract Selection<T,I> autoConvert(boolean autoConvertToString);
+	 
+	 /**
+	  * If true, using a not existent getter method for matching will not lead
+	  * to an exception, but will cause the filter to be matched against null.
+	  * Default is false.
+	  * @param ignoreMissingGetterMethod
+	  */
+	 public abstract Selection<T,I> ignoreNoSuchGetter(boolean ignoreMissingGetterMethods);
 	 
 	 /**
 	  * @see {@link Selection#matchingGetter(String)}

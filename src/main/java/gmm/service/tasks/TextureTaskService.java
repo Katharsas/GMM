@@ -1,8 +1,8 @@
 package gmm.service.tasks;
 
-import gmm.domain.Texture;
-import gmm.domain.TextureTask;
 import gmm.domain.User;
+import gmm.domain.task.Texture;
+import gmm.domain.task.TextureTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;

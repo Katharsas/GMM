@@ -6,11 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import gmm.collections.List;
-import gmm.domain.Task;
+import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
-import gmm.web.AjaxResponseException;
-import gmm.web.TaskRenderer;
-import gmm.web.TaskRenderer.TaskRenderResult;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
 
@@ -30,7 +29,7 @@ public class PublicController {
 	
 	@Autowired private LinkSession session;
 	@Autowired private DataAccess data;
-	@Autowired private TaskRenderer ftlTaskRenderer;
+	@Autowired private FtlRenderer ftlTaskRenderer;
 	
 	@ModelAttribute("comment")
 	public CommentForm getCommentForm() {return new CommentForm();}
@@ -43,14 +42,11 @@ public class PublicController {
 	public List<TaskRenderResult> renderTasks(
 			ModelMap model, 
 			HttpServletRequest request,
-			HttpServletResponse response) throws AjaxResponseException {
-		try {
-			request.setAttribute("comment", getCommentForm());
-			List<Task> tasks = session.getTaskLinks();
-			return ftlTaskRenderer.renderTasks(tasks, model, request, response);
-		} catch(Exception e) {
-			throw new AjaxResponseException(e);
-		}
+			HttpServletResponse response) throws Exception {
+		
+		request.setAttribute("commentForm", getCommentForm());
+		List<Task> tasks = session.getTaskLinks();
+		return ftlTaskRenderer.renderTasks(tasks, model, request, response);
 	}
 	
 	/**
