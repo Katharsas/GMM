@@ -1,6 +1,8 @@
 package gmm.web.controller;
 
 
+import java.io.IOException;
+
 import gmm.collections.List;
 import gmm.domain.Comment;
 import gmm.domain.Label;
@@ -11,6 +13,7 @@ import gmm.domain.task.TaskType;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.ManualBackupService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
@@ -56,6 +59,7 @@ public class TaskController {
 	@Autowired private TaskFilterService filter;
 	@Autowired private UserService users;
 	@Autowired private FtlRenderer ftlRenderer;
+	@Autowired private ManualBackupService manualBackups;
 
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskForm() {return new TaskForm();}
@@ -281,5 +285,24 @@ public class TaskController {
 			HttpServletResponse response) throws Exception {
 		populateRequest(request);
 		return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
+	}
+	
+	/*
+	 * Workbench Admin Tab
+	 * -----------------------------------------------------------------
+	 */
+	
+	@RequestMapping(value = "workbench/admin/save", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveTasksInWorkbench(@RequestParam("name") String pathString) throws IOException {
+		manualBackups.saveTasksToXml(session.getTasks(), pathString);
+	}
+	
+	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
+	@ResponseBody
+	public void deleteTasksInWorkbench() {
+		session.notifyDataChange();
+		data.removeAll(session.getTasks());
+		session.notifyDataChange();
 	}
 }

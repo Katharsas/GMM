@@ -71,8 +71,7 @@ var Workbench = function() {
 	};
 	this.load = function(type) {
 		Ajax.post(contextUrl + "/tasks/load", { type: type })
-			.done(updateTasks)
-			.fail(showException);
+			.done(updateTasks);
 	};
 	var initWorkbenchTabMenu = function() {
 		var $menuTabs = $workbenchMenu.find(".workbench-menu-tab");
@@ -80,6 +79,8 @@ var Workbench = function() {
 		
 		var tabWidthPercent = 100 / $menuTabs.length;
 		$menuTabs.css("width", tabWidthPercent + "%");
+		
+		$menuTabs.last().addClass("workbench-menu-tab-last");
 		
 		$menuTabs.each(function(index, tab) {
 			var $tab = $(tab);
@@ -98,21 +99,20 @@ var Workbench = function() {
 	};
 	var initWorkbenchTabs = function() {	
 		
+		//-------------------------------------------------------
+		//load tab
+		//-------------------------------------------------------
 		var $loadForm = $workbenchTabs.find("form#workbench-loadForm");
-		var $sortForm = $workbenchTabs.find("form#workbench-sortForm");
-		var $searchForm = $workbenchTabs.find("form#workbench-searchForm");
-		var $filterForm = $workbenchTabs.find("form#generalFilters");
 		
-		//-------------------------------------------------------
-		//load form
-		//-------------------------------------------------------
 		$loadForm.find(".form-element").change(function() {
 			Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
 		});
 		
 		//-------------------------------------------------------
-		//sort form
+		//sort tab
 		//-------------------------------------------------------
+		var $sortForm = $workbenchTabs.find("form#workbench-sortForm");
+		
 		$sortForm.find("select, input").change(function() {
 			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
 				.done(//TODO only load new sorting data
@@ -120,8 +120,10 @@ var Workbench = function() {
 		});
 		
 		//-------------------------------------------------------
-		//search form
+		//search tab
 		//-------------------------------------------------------
+		var $searchForm = $workbenchTabs.find("form#workbench-searchForm");
+		
 		$searchForm.find(".workbench-search-submit").click(function() {
 			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
 				.done(render);
@@ -142,8 +144,10 @@ var Workbench = function() {
 		setSearchType(isEasySearch());
 		
 		//-------------------------------------------------------
-		//filter form
+		//filter tab
 		//-------------------------------------------------------
+		var $filterForm = $workbenchTabs.find("form#generalFilters");
+		
 		var submitFilterForm = function() {
 			Ajax.post(contextUrl + "/tasks/submitFilter", null, $filterForm)
 				.done(render);
@@ -164,6 +168,31 @@ var Workbench = function() {
 				submitFilterForm();
 			});
 		})();
+		
+		//-------------------------------------------------------
+		//admin tab
+		//-------------------------------------------------------
+		var $saveTasks = $("#dialog-saveTasks");
+		var $saveTasksForm = $saveTasks.find("#dialog-saveTasks-form");
+		
+		$saveTasks.find("#dialog-saveTasks-saveButton").click(function() {
+			Ajax.post(contextUrl + "/tasks/workbench/admin/save", {}, $saveTasksForm)
+				.done(function() {
+					hideDialog($("#dialog-saveTasks"));
+				});
+		});
+		$workbenchTabs.find("#workbench-admin-saveButton").click(function() {
+			showDialog($saveTasks);
+		});
+		$workbenchTabs.find("#workbench-admin-deleteButton").click(function() {
+			var $confirm = confirm(function() {
+				hideDialog($confirm);
+				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
+					.done(function(){
+						alert(render, "TODO: Remove tasks from client at all places");
+					});
+			}, "Delete all tasks currently visible in workbench?");
+		});
 	};
 	initWorkbenchTabMenu();
 	initWorkbenchTabs();

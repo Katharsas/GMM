@@ -87,9 +87,10 @@
 	    				<div class="workbench-menu-tab">Load</div>
 	    				<div class="workbench-menu-tab">Sort</div>
 	    				<div class="workbench-menu-tab">Search</div>
-	    				<div class="workbench-menu-tab workbench-menu-tab-last">Filter</div>
-<!-- 	    				<div class="workbench-menu-tab">More</div> -->
-<!-- 	    				<div class="workbench-menu-tab">Admin</div> -->
+	    				<div class="workbench-menu-tab">Filter</div>
+						<sec:authorize access="hasRole('ROLE_ADMIN')">
+	    					<div class="workbench-menu-tab">Admin</div>
+	    				</sec:authorize>
 	    				<div class="clear"></div>
 	    			</div>
 	    			<div id="workbench-tabs">
@@ -108,13 +109,9 @@
 		    			<div id="workbench-tab-filter" class="workbench-tab">
 		    				${workbench_filters}
 		    			</div>
-		    			<div id="workbench-tab-more" class="workbench-tab">
-		    				[] Link tasks currently visible in workbench<br>
-		    				[] Edit tasks currently visible in workbench
-		    			</div>
 		    			<div id="workbench-tab-admin" class="workbench-tab">
-		    				[] Save tasks currently visible in workbench<br>
-		    				[] Delete tasks currently visible in workbench
+		    				<t:workbench_admin>
+		    				</t:workbench_admin>
 		    			</div>
 	    			</div>
 	    			<!-- 

@@ -139,6 +139,7 @@ function showDialog($dialog, width, height) {
 
 function hideDialog($dialog) {
 	if ($dialog === undefined) $dialog = $(".dialog");
+	if (!$dialog.hasClass("dialog")) $dialog = $dialog.parents(".dialog");
 	$dialog.removeAttr("style");
 	$dialog.hide();
 	hideOverlay();

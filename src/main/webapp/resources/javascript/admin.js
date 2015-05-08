@@ -9,6 +9,8 @@ $(document).ready( function() {
 	$adminBanner.blur(function() {
 		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
 	});
+	
+	$("#dialog-saveTasks-saveButton").click(saveAllTasks);
 });
 var ajaxChannel;
 
@@ -68,10 +70,10 @@ function deleteAllTasks() {
 }
 
 function saveAllTasks() {
-	Ajax.post(contextUrl + "/admin/save", {}, $("#saveAllTasksForm"))
+	Ajax.post(contextUrl + "/admin/save", {}, $("#dialog-saveTasks-form"))
 		.done(function() {
 			refreshTaskBackups();
-			hideDialog($("#saveAllTasksDialog"));
+			hideDialog($("#dialog-saveTasks"));
 		});
 }
 

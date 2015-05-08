@@ -140,3 +140,15 @@
 	margin-top:10px;
 	margin-left:20px;
 }
+
+// ####################################### Admin Tab
+
+#workbench-admin {
+	display:flex;
+	align-items:baseline;
+	
+	.button {
+		@include workbench-tab-button;
+		margin-left:10px;
+	}
+}

@@ -104,7 +104,7 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 				Ajax.post(contextUrl + "/tasks/deleteTask/" + idLink)
 					.done(function() {
 						hideDialog($dialog);
-						alert(reload, "TODO: Remove task from client");
+						alert(reload, "TODO: Remove task from client at all places");
 					});
 			}, "Are you sure you want to delete this task?");
 		}

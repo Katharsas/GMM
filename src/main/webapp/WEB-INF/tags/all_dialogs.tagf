@@ -13,7 +13,7 @@
 	<div id="confirmDialog-ok" class="dialog-button button left" onclick="confirmOk()">
 		<fmt:message key="all_template.confirm"/>
 	</div>
-	<div id="confirmDialog-cancel" class="dialog-button button right" onclick="hideDialog()">
+	<div id="confirmDialog-cancel" class="dialog-button button right" onclick="hideDialog($(this))">
 		<fmt:message key="all_template.cancel"/>
 	</div>
 	<div class="clear"></div>
@@ -39,6 +39,13 @@
 		<fmt:message key="all_template.reload"/>
 	</div>
 </div>
+
+<%-- 
+##############################################
+#  Only For Admins
+##############################################
+--%>
+<sec:authorize access="hasRole('ROLE_ADMIN')">
 
 <%-- Batch Dialog --%>
 
@@ -82,4 +89,21 @@
 		<fmt:message key="admin.database.finish"/>
 	</div>
 </div>
-		
+
+<%-- Save Tasks Dialog --%>
+
+<div id="dialog-saveTasks" class="dialog draggable">
+	<form id="dialog-saveTasks-form">
+		<div class="center"><fmt:message key="admin.database.filename"/><br/><br/></div>
+		<input name="name" value="manual/example"/> .xml
+	</form><br/>
+	<div id="dialog-saveTasks-saveButton" class="dialog-button button left">
+		<fmt:message key="admin.database.save"/>
+	</div>
+	<div class="dialog-button button right" onclick="hideDialog($(this))">
+		<fmt:message key="admin.database.cancel"/>
+	</div>
+	<div class="clear"></div>
+</div>
+
+</sec:authorize>

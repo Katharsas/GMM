@@ -195,8 +195,7 @@ public class TaskSession {
 	 */
 	public void updateFilter(FilterForm filter) {
 		generalFilter = filter;
-		filteredTasks = (List<Task>) filter(filteredTasks);
-		tasks = (List<Task>) filteredTasks.copy();
+		reload();
 	}
 	
 	/**

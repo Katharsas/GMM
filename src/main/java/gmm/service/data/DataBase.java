@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import gmm.collections.Collection;
 import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
@@ -96,6 +99,17 @@ public class DataBase implements DataAccess {
 			}
 		}
 		return result;
+	}
+	
+	@Override
+	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {
+		Multimap<Class<? extends Linkable>, T> clazzToData = HashMultimap.create();
+		for(T item : data) {
+			clazzToData.put(item.getClass(), item);
+		}
+		for(Class<? extends Linkable> clazz : clazzToData.keySet()) {
+			getDataList(clazz).removeAll(clazzToData.get(clazz));
+		}
 	}
 
 	@Override

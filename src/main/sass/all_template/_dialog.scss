@@ -93,7 +93,9 @@
  */
 #batchDialog {
 	width: 650px;
-	> * {margin:7px 10px;}
+	
+	> p, > #batchDialog-listWrapper, > #batchDialog-conflictOptions,
+	> #batchDialog-finishLoadingButton {margin:7px 10px;}
 }
 #batchDialog-conflictMessage {
 	font-weight: bold;
@@ -117,3 +119,16 @@
 	margin-left: 0px;
 }
 
+/*
+ * Save Tasks Dialog
+ * #####################################
+ */
+
+#dialog-saveTasks {
+	padding:10px;
+	min-width:350px;
+	
+	input {
+		width: 90%;
+	}
+}

@@ -3,7 +3,6 @@ package gmm.web.controller;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.springframework.ui.ModelMap;
@@ -27,6 +26,7 @@ import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.BackupService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.ManualBackupService;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
@@ -45,15 +45,16 @@ import gmm.web.sessions.TaskSession;
 
 public class AdminController {
 
-	@Autowired TaskSession taskSession;
-	@Autowired AdminSession session;
+	@Autowired private TaskSession taskSession;
+	@Autowired private AdminSession session;
 	
-	@Autowired DataAccess data;
-	@Autowired DataConfigService config;
-	@Autowired FileService fileService;
-	@Autowired XMLService xmlService;
-	@Autowired TaskServiceFinder taskCreator;
-	@Autowired BackupService backups;
+	@Autowired private DataAccess data;
+	@Autowired private DataConfigService config;
+	@Autowired private FileService fileService;
+	@Autowired private XMLService xmlService;
+	@Autowired private TaskServiceFinder taskCreator;
+	@Autowired private BackupService backups;
+	@Autowired private ManualBackupService manualBackups;
 	
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskFacade() {
@@ -129,13 +130,9 @@ public class AdminController {
 	 * Save all tasks to file.
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
-	public String saveTasks(@RequestParam("name") String pathString) throws IOException
-	{
-		Path visible = config.TASKS;
-		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
-		fileService.prepareFileCreation(path);
-		xmlService.serialize(data.getList(Task.class), path);
-		return "redirect:/admin";
+	@ResponseBody
+	public void saveTasks(@RequestParam("name") String pathString) throws IOException {
+		manualBackups.saveTasksToXml(data.getList(Task.class), pathString);
 	}
 	
 	/**

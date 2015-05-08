@@ -13,6 +13,7 @@
     
     
     <jsp:body>
+    
     	<div class="groupDescriptor"><fmt:message key="admin.customization"/></div>
         <div class="adminElementGroup">
 			<div class="customizationDescription adminElement left"><fmt:message key="admin.htmlCode"/></div>
@@ -43,21 +44,8 @@
         		<div class="clear"></div>
         	</div>
         	<div id="saveDeleteTasks" class="adminElement left">
-        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialog($('#saveAllTasksDialog'))">
+        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialog($('#dialog-saveTasks'))">
         			<fmt:message key="admin.database.saveall"/>
-        		</div>
-        		<div id="saveAllTasksDialog" class="dialog draggable">
-        			<form id="saveAllTasksForm">
-        				<div class="center"><fmt:message key="admin.database.filename"/><br/><br/></div>
-        				<input name="name" value="manual/example"/> .xml
-        			</form><br/>
-        			<div class="dialog-button button left" onclick="saveAllTasks()">
-        				<fmt:message key="admin.database.save"/>
-        			</div>
-        			<div class="dialog-button button right" onclick="hideDialog()">
-        				<fmt:message key="admin.database.cancel"/>
-        			</div>
-        			<div class="clear"></div>
         		</div>
         		<div class="verticalSpace"></div>
         		<div class="button pageButton" onclick="deleteAllTasks()"><fmt:message key="admin.database.deleteall"/></div>
