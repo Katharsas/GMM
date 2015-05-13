@@ -12,6 +12,10 @@ var TaskSwitcher = function(taskLoader) {
     
 	//default is 60
 	TweenLite.ticker.fps(30);
+	
+	function getBody($task) {
+		return $task.children(":last-child");
+	}
     
     return {
 
@@ -24,7 +28,7 @@ var TaskSwitcher = function(taskLoader) {
             	$task.removeClass("expanded");
             	$task.addClass("collapsing");
             	
-            	var $body = taskLoader.getBody($task);
+            	var $body = getBody($task);
             	var tween = TweenLite.to($body, slideUpTime, {height:0,
             		onUpdate: function() {
             			if (!$task.hasClass("collapsing")) {
@@ -53,7 +57,7 @@ var TaskSwitcher = function(taskLoader) {
         		$task.removeClass("collapsed");
         		$task.addClass("expanding");
             	
-        		var $body = taskLoader.getBody($task);
+        		var $body = getBody($task);
         		
         		$body.show();
         		$body.css("height","");

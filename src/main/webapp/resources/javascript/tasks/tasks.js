@@ -33,27 +33,39 @@ var tasksFuncs = {
  * ////////////////////////////////////////////////////////////////////////////////
  */
 
+/**
+ * TODO: call delete and update methods on taskloader after deleting/editing
+ *  => route tasks listeners from tasks in workbench to workbench somehow
+ * 
+ * @author Jan Mothes
+ */
 var Workbench = function() {
 	var that = this;
 	
 	var $workbench = $("#workbench");
+	var $workbenchList = $workbench.find(".list-body");
 	var $workbenchMenu = $workbench.find("#workbench-menu");
 	var $workbenchTabs = $workbench.find("#workbench-tabs");
 	
 	var $loadButtons = $workbenchTabs.find(".workbench-load-typeButton");
+	var $count = $workbenchList.find(".list-count span");
 	
-	var taskLoader = TaskLoader(contextUrl + "/tasks/render", $("#workbench").find(".list-body"));
+	var taskListId = "workbench";
+	var taskLoader = TaskLoader();
+	taskLoader.registerTaskList(taskListId, {
+		$list : $workbenchList,
+		url : "/tasks/workbench",
+	});
 	
-	this.expandedTasks = undefined;
-	this.taskSwitcher = undefined;
+	this.taskSwitcher = TaskSwitcher(taskLoader);
+	this.expandedTasks =  new Queue(3, function($task1, $task2) {
+		return $task1[0] === $task2[0];
+	});
 	
 	var render = function() {
-		taskLoader.init();
-		//TODO find better way to reset and reload without instantiating new stuff
-		//TODO attach listeners to tasks on creation so the correct switcher can be called
-		that.taskSwitcher = TaskSwitcher(taskLoader);
-		that.expandedTasks = new Queue(3, function($task1, $task2) {
-			return $task1[0] === $task2[0];
+		taskLoader.createTaskList(taskListId, function() {
+			$count.text(taskLoader.getTaskIds.length);
+			this.expandedTasks.clear();
 		});
 	};
 	var updateTasks = function() {
@@ -189,7 +201,7 @@ var Workbench = function() {
 				hideDialog($confirm);
 				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
 					.done(function(){
-						alert(render, "TODO: Remove tasks from client at all places");
+						taskLoader.removeTasks(taskLoader.getTaskIds(taskListId));
 					});
 			}, "Delete all tasks currently visible in workbench?");
 		});

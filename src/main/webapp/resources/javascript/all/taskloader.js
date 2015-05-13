@@ -1,28 +1,121 @@
 /**
  * -------------------- TaskLoader ----------------------------------------------------------------
  * Static (called when document ready)
- * Accepts callback which will be executed when all tasks are loaded.
+ * All task lists must be registered using the taskListMap parameter object.
+ * The Taskloader can get the task lists, task data and insert the headers into dom.
  * 
- * TODO: "tasks" variable SCOPE ??
- * TODO: see preprocess method
  * 
  * @author Jan Mothes
  */
-var TaskLoader = function(url, $taskList, onLoaded) {
-	var tasks =null;
+var TaskLoader = function() {
 	
-	$count = $taskList.find(".list-count span");
+	/**
+	 * Cache, which maps task ids to task nodes:
+	 * idString => task { idString, $header, $body }
+	 */
+	var idToTaskData = {};
 	
-	function reloadAndInsertHeaders() {
-		Ajax.get(url).done(function(taskRenders) {
-			tasks = taskRenders;
-			tasks.forEach(function(task) {
-				preprocess(task);
-				$taskList.append(task.header);
-			});
-			$count.text(tasks.length);
-			if(onLoaded !== undefined) onLoaded();
+	/**
+	 * Maps a taskListId to a taskList settings object:
+	 * taskListId => { $list, url, onchange, current[] }
+	 * 
+	 * 		$list - the jquery list container for the task nodes
+	 * 		url - the part of the url which is specific for this taskList
+	 * 		onchange - callback that gets executed when task list changes
+	 * 		current - set by TaskLoader, array of currently visible tasks ids
+	 */
+	var taskListMap = {};
+	
+	/**
+	 * Get list of tasks to show, load any missing task data, reinsert headers.
+	 */
+	function create(taskListId, done) {
+		var taskList = taskListMap[taskListId];
+		
+		getCurrent(taskListId, function() {
+		loadMissingTaskData(taskListId, function() {
+		reinsertHeaders(taskListId, taskList.current);
+		});});
+	}
+	
+	/**
+	 * Update tasks from server for all task lists.
+	 */
+	function update(taskListId, idLinks, done) {
+		updateTaskData(taskListId, idLinks, function() {
+		Object.keys(taskListMap).forEach(function(taskListId) {
+			reinsertHeaders(taskListId, idLinks);
 		});
+		callIfExists(done);
+		});
+	}
+	
+	/**
+	 * Remove tasks for all task lists.
+	 */
+	function remove (idLinks) {
+		idLinks.forEach(function(id) {
+			delete idToTaskData[id];
+		});
+		Object.keys(taskListMap).forEach(function(taskListId) {
+			var taskList = taskListMap[taskListId];
+			var $tasks = taskList.$list.children(".task");
+			taskList.currrent.forEach(function(id) {
+				$tasks.remove("#"+id);
+			});
+		});
+	}
+	
+	/**
+	 * Clears task list, then reinsert headers from cache into task list.
+	 */
+	function reinsertHeaders(taskListId, idLinks) {
+		var taskList = taskListMap[taskListId];
+		taskList.$list.children(".task").remove();
+		taskList.current.forEach(function(id) {
+			taskList.$list.append(idToTaskData[id].$header.clone());
+		});
+	}
+	
+	/**
+	 * Get list of currently visible tasks
+	 */
+	function getCurrent(taskListId, done) {
+		var taskList = taskListMap[taskListId];
+		Ajax.get(contextUrl + taskList.url + "/tasks")
+			.done(function(tasks) {
+				taskList.current = tasks;
+				callIfExists(done);
+			});
+	}
+	
+	/**
+	 * Load task data for any current tasks that is not cached yet.
+	 */
+	function loadMissingTaskData(taskListId, done) {
+		var missing = [];
+		var taskList = taskListMap[taskListId];
+		taskList.current.forEach(function(id) {
+			if (!idToTaskData.hasOwnProperty(id)) {
+				missing.push(id);
+			}
+		});
+		updateTaskData(taskListId, missing, done);
+	}
+	
+	/**
+	 * Gets updated task data from server and inserts processed data into cache.
+	 */
+	function updateTaskData(taskListId, idLinks, done) {
+		var taskList = taskListMap[taskListId];
+		Ajax.post(contextUrl + taskList.url + "/render", { "idLinks[]" : idLinks })
+			.done(function (taskRenders) {
+				taskRenders.forEach(function(task) {
+					preprocess(task);
+					idToTaskData[task.idLink] = task;
+				});
+				callIfExists(done);
+			});
 	}
 	
 	/**
@@ -31,24 +124,26 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 	 * - hides bodies and inserts filetrees into asset task bodies
 	 */
 	function preprocess(task) {
-		task.header = $(task.header);
-		allVars.htmlPreProcessor.apply(task.header);
+		task.$header = $(task.header);
+		delete task.header;
+		allVars.htmlPreProcessor.apply(task.$header);
 		
 		//asynch to not block GUI
 		setTimeout(function() {
-			task.body = $(task.body);
-			allVars.htmlPreProcessor.apply(task.body);
-			task.body.hide();
-			var url = task.idLink;
-			task.body.find('#assetFilesContainer').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + url, false),
+			task.$body = $(task.body);
+			delete task.body;
+			allVars.htmlPreProcessor.apply(task.$body);
+			task.$body.hide();
+			var id = task.idLink;
+			task.$body.find('#assetFilesContainer').fileTree(
+				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
 				function($file) {
 					tasksVars.selectedTaskFileIsAsset = true;
 					allFuncs.selectTreeElement($file, "selectedTaskFile");
 				}
 			);
-			task.body.find('#wipFilesContainer').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + url, false),
+			task.$body.find('#wipFilesContainer').fileTree(
+				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
 				function($file) {
 					tasksVars.selectedTaskFileIsAsset = false;
 					allFuncs.selectTreeElement($file, "selectedTaskFile");
@@ -57,35 +152,44 @@ var TaskLoader = function(url, $taskList, onLoaded) {
 		}, 0);
 	}
 	
+	function callIfExists(callback) {
+		if (callback !== undefined) { 
+			callback();
+		}
+	}
+	
 	return {
-		init : function() {
-			$taskList.children().not(":first").remove();
-			reloadAndInsertHeaders();
+		
+		registerTaskList : function(taskListId, settings) {
+			settings.current = [];
+			taskListMap[taskListId] = settings;
 		},
 		
-		getBody : function($task) {
-			return $task.children(":last-child");
-	    },
+		createTaskList : function(taskListId, callback) {
+			create(taskListId, callback);
+		},
 		
+//		updateTask : function(taskListId, $task) {
+//			var idLink = $task.attr('id');
+//			update([idLink]);
+//		},
+		
+		removeTasks : function(idLinks) {
+			remove(idLinks);
+		},
+		
+		getTaskIds : function(taskListId) {
+			return taskListMap[taskListId].current;
+		},
+
 		/**
 		 * Insert the taskbody of the given task.
 		 * Task must not have body already!
 		 */
 		insertBody : function ($task) {
 			var idLink = $task.attr('id');
-			var $body = null;
-			tasks.some(function(task) {
-				if(task.idLink === idLink) {
-					$body = $(task.body);
-					return true;
-				}
-				return false;
-			});
-			if ($body !== null) {
-				$task.append($body);
-			} else {
-				alert(undefined, "TaskLoader# insertBody(): No body found!");
-			}
+			var task = idToTaskData[idLink];
+			$task.append(task.$body.clone());
 		},
 		
 		/**

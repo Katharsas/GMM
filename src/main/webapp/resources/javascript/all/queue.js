@@ -60,4 +60,8 @@ function Queue(maxSize, comparator) {
 	this.get = function() {
 		return queue.slice();
 	};
+	
+	this.clear = function() {
+		queue = [];
+	};
 }

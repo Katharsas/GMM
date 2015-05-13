@@ -3,6 +3,7 @@ package gmm.web.controller;
 
 import java.io.IOException;
 
+import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.Comment;
 import gmm.domain.Label;
@@ -285,6 +286,40 @@ public class TaskController {
 			HttpServletResponse response) throws Exception {
 		populateRequest(request);
 		return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
+	}
+	
+	/**
+	 * Get task data for specified ids, must be visible in workbench currently.
+	 */
+	@RequestMapping(value = "/workbench/render", method = RequestMethod.POST)
+	@ResponseBody
+	public List<TaskRenderResult> renderSelectedTasks(
+			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		
+		if(idLinks == null) return new LinkedList<>();
+		List<Task> tasks = new LinkedList<>();
+		for(Task task : session.getTasks()) {
+			boolean contains = idLinks.remove(task.getIdLink());
+			if (contains) tasks.add(task);
+		}
+		populateRequest(request);
+		return ftlRenderer.renderTasks(tasks, model, request, response);
+	}
+	
+	/**
+	 * Get list of the ids of the tasks currently visible in workbench.
+	 */
+	@RequestMapping(value = "/workbench/tasks", method = RequestMethod.GET)
+	@ResponseBody
+	public List<String> getCurrentTaskIds() throws Exception {
+		List<String> taskIds = new LinkedList<>();
+		for(Task task : session.getTasks()) {
+			taskIds.add(task.getIdLink());
+		}
+		return taskIds;
 	}
 	
 	/*

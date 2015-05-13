@@ -14,6 +14,14 @@
  */
 var TaskListeners = function(tasksVars, tasksFuncs) {
 	
+	
+//	function attachEventListeners(tasks, taskloader, taskListId) {
+//		//comments
+//		$tasks.
+//	}
+//	
+	
+	
 	var reload = function() {
 		window.location.reload();
 	};
