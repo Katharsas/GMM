@@ -16,6 +16,9 @@ import javax.servlet.ServletContext;
 
 
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DataConfigService {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired private FileService fileService;
 	@Autowired private ServletContext context;
@@ -73,10 +78,11 @@ public class DataConfigService {
 		Path wsAbsolute = base.resolve(workspace);
 		workspace = wsAbsolute;
 		
-		System.out.println("##########################################################\n");
-		System.out.println("  Registered workspace folder at: ");
-		System.out.println("  " + wsAbsolute);
-		System.out.println("\n##########################################################");
+		logger.info("\n"
+				+	"##########################################################" + "\n\n"
+				+	"  Registered workspace folder at: " + "\n"
+				+	"  " + wsAbsolute + "\n\n"
+				+	"##########################################################");
 		
 		TASKS = 			wsAbsolute.resolve(fileService.restrictAccess(tasks, wsAbsolute));
 		ASSETS_ORIGINAL = 	wsAbsolute.resolve(fileService.restrictAccess(assets_original, wsAbsolute));

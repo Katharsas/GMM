@@ -12,11 +12,16 @@ import java.util.Comparator;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,7 +31,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 public class ControllerSettings {
+	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Value("${admin.email:}")
+	private String emailAddress;
+	
+	@Autowired private MailSender mailSender;
+	
 	@Autowired private DataAccess data;
 	@Autowired private UserService users;
 	
@@ -57,13 +69,17 @@ public class ControllerSettings {
 	public ResponseEntity<?> handleExceptions(Exception ex, HttpServletRequest request) throws Exception {
 		
 		if (ex instanceof AccessDeniedException) {
-			System.err.println("##########################################################");
-			System.err.println("  AccessDeniedException below can be ignored! ");
-			System.err.println("  User will automatically be redirected to login!");
-			System.err.println("##########################################################");
+			// will be thrown by spring before redirect, logging blocked by filter
 			throw ex;
 		}
-		ex.printStackTrace();
+		logger.error("Controller threw exception:", ex);
+//		if(!emailAddress.isEmpty()) {
+//			SimpleMailMessage msg = new SimpleMailMessage();
+//			msg.setTo(emailAddress);
+//			msg.setSubject("GMM Exception occured");
+//			msg.setText(ExceptionUtils.getStackTrace(ex));
+//			mailSender.send(msg);
+//		}
 		HttpHeaders headers = new HttpHeaders();
 		if(users.isUserLoggedIn()) {
 			//sort MIME types from accept header field
@@ -75,12 +91,14 @@ public class ControllerSettings {
 				//if json, return as json
 				String firstMime = mimes[0].split(";")[0];
 				if (firstMime.equals("application/json")) {
+					logger.info("Returning exception to client as json");
 					ExceptionWrapper exceptionVO = new ExceptionWrapper(ex);
 					headers.setContentType(MediaType.APPLICATION_JSON);
 					return new ResponseEntity<ExceptionWrapper>(exceptionVO, headers, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			}
 			//if not json, return as html
+			logger.info("Returning exception to client as html page");
 			headers.setContentType(MediaType.TEXT_HTML);
 			String error = "<h1>Internal Server Error 500</h1><br>";
 			error += "Please copy the following text and send it to your server admin:<br><br>";

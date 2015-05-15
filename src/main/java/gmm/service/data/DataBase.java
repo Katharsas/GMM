@@ -2,7 +2,10 @@ package gmm.service.data;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,17 @@ import gmm.service.UserService;
 @Service
 public class DataBase implements DataAccess {
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Value("${default.user}")
+	private boolean createDefaultUser;
+	
+	@Value("${default.username}")
+	private String defaultUserName;
+	
+	@Value("${default.password}")
+	private String defaultUserPW;
+	
 	@Autowired UserService userService;
 	@Autowired PasswordEncoder encoder;
 	
@@ -45,17 +59,20 @@ public class DataBase implements DataAccess {
 	
 	@PostConstruct
 	private void init() {
-		User defaultUser = new User("admin");
-		defaultUser.setPasswordHash(encoder.encode("admin"));
-		defaultUser.setRole(User.ROLE_ADMIN);
-		defaultUser.enable(true);
-		users.add(defaultUser);
-		
-		System.out.println("##########################################################\n");
-		System.out.println("  Created default user: ");
-		System.out.println("  Username: " + defaultUser.getName());
-		System.out.println("  Password: " + "admin");
-		System.out.println("\n##########################################################");
+		if (createDefaultUser) {
+			User defaultUser = new User(defaultUserName);
+			defaultUser.setPasswordHash(encoder.encode(defaultUserPW));
+			defaultUser.setRole(User.ROLE_ADMIN);
+			defaultUser.enable(true);
+			users.add(defaultUser);
+			
+			logger.info("\n"
+					+	"##########################################################" + "\n\n"
+					+	"  Created default user: " + "\n"
+					+	"  Username: " + defaultUser.getName() + "\n"
+					+	"  Password: " + defaultUserPW + "\n\n"
+					+	"##########################################################");
+		}
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
@@ -45,6 +47,7 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	
 	private static Resource configFile = new ClassPathResource("config.properties");
+	private static Resource metaFile = new ClassPathResource("meta.properties");
 
 	/**
 	 * ----------------------------- Basic Config -----------------------------
@@ -134,6 +137,11 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	
 	@Bean
+	public MailSender mailSender() {
+		return new JavaMailSenderImpl();
+	}
+	
+	@Bean
 	public gmm.service.Spring applicationContextProvider() {
 		return new gmm.service.Spring();
 	}
@@ -144,7 +152,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public static PropertyPlaceholderConfigurer propertyConfigurer() {
 		PropertyPlaceholderConfigurer conf =  new PropertyPlaceholderConfigurer();
-		conf.setLocation(configFile);
+		conf.setLocations(configFile, metaFile);
 		return conf;
 	}
 	
@@ -154,7 +162,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public PropertiesFactoryBean config() {
 		PropertiesFactoryBean factory = new PropertiesFactoryBean();
-		factory.setLocation(configFile);
+		factory.setLocation(metaFile);
 		return factory;
 	}
 	

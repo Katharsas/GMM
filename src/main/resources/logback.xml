@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	Levels:
+	
+	ALL < TRACE < DEBUG < INFO <  WARN < ERROR < OFF
+	
+	To decide if message gets logged, root/logger level is compared with level
+	from method call. No level attribute is synonym to level OFF or INHERITED.
+ -->
+
+<!-- Enable scanning of this config file -->
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<Pattern>%d{HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
+		</encoder>
+		<filter class="gmm.web.LogAccessDeniedFilter"/>
+	</appender>
+	
+  	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>./gmm.log</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<FileNamePattern>gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
+
+			<!-- keep 30 days' worth of history -->
+			<maxHistory>30</maxHistory>			
+		</rollingPolicy>
+
+		<encoder>
+			<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n</Pattern>
+		</encoder> 	    
+  	</appender>
+  	
+  	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
+
+	<root>
+		<level value="INFO" />
+		<appender-ref ref="consoleAppender" />
+		<appender-ref ref="dailyRollingFileAppender" />
+	</root>
+  	
+<!-- 	<logger name="org.codingpedia" additivity="false"> -->
+<!-- 	    <level value="DEBUG" /> -->
+<!-- 		<appender-ref ref="dailyRollingFileAppender"/> -->
+<!-- 		<appender-ref ref="minuteRollingFileAppender"/> -->
+<!-- 		<appender-ref ref="consoleAppender" /> -->
+<!-- 	</logger> -->
+
+</configuration>
