@@ -4,7 +4,7 @@
 	<groupId>de.gothic-reloaded-mod</groupId>
 	<artifactId>gmm</artifactId>
 	<packaging>war</packaging>
-	<version>0.3.3-SNAPSHOT</version>
+	<version>0.3.4-SNAPSHOT</version>
 	<name>Gothic Mod Manager</name>
 	<url>https://github.com/Katharsas/GMM</url>
 	

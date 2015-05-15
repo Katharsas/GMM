@@ -27,10 +27,11 @@
 			<!-- keep 30 days' worth of history -->
 			<maxHistory>30</maxHistory>			
 		</rollingPolicy>
-
+		
 		<encoder>
 			<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n</Pattern>
-		</encoder> 	    
+		</encoder>
+		<filter class="gmm.web.LogAccessDeniedFilter"/>
   	</appender>
   	
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
