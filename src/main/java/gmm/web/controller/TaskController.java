@@ -187,14 +187,13 @@ public class TaskController {
 	 * @param form - object containing all comment information
 	 */
 	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
-	public String handleTasksComment(
+	@ResponseBody
+	public void handleTasksComment(
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
 		
 		Comment comment = new Comment(session.getUser(), form.getText());
 		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
-		
-		return "redirect:/tasks";
 	}
 
 	
