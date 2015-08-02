@@ -1,73 +1,10 @@
-/**
- * 
- * #### GLOBAL SCOPE FUNCTIONS ###
- * 
- * Listeners for single task element. All the functions of this object are probably going to get
- * mapped to global scope by higher code (until listener data is moved to data attributes and 
- * listeners are bound by javascript code).
- * 
- * Dependencies:
- * 	allVars
- * 	tasksFuncs.selectedTaskFileIsAsset
- * 	tasksFuncs.filePath
- * 	tasksVars.selectedTaskFileIsAsset
- */
-var TaskListeners = function(tasksVars, tasksFuncs) {
-	
-	
-//	function attachEventListeners(tasks, taskloader, taskListId) {
-//		//comments
-//		$tasks.
-//	}
-//	
-	
-	
+//TODO convert to event listener attaching below
+var GlobalTaskListeners = function(tasksVars, tasksFuncs) {
 	var reload = function() {
 		window.location.reload();
 	};
 	
 	return {
-		switchDeleteQuestion : function(element) {
-			var $delete = $(element).parent().parent().children(".elementDelete");
-			$delete.toggle();
-		},
-		
-		findSwitchCommentForm : function(element) {
-			switchCommentForm($(element).parents(".task-body").find(".commentForm"));
-		},
-		
-		switchCommentForm : function($commentForm) {
-			if ($commentForm.is(":visible")) {
-				hideCommentForm($commentForm);
-			} else {
-				showCommentForm($commentForm);
-			}
-		},
-		
-		hideCommentForm : function($commentForm) {
-			var $elementComments = $commentForm.parent();
-			if ($elementComments.is(":visible:blank")) {
-				$elementComments.hide();
-			}
-			$commentForm.hide();
-		},
-		
-		showCommentForm : function ($commentForm) {
-			$commentForm.parent().show();
-			$commentForm.show();
-		},
-		
-		changeComment : function(comment, taskId, commentId) {
-			var $confirm = confirm(
-				function(input, textarea) {
-					var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
-					Ajax.post(url, {"editedComment" : textarea}) 
-						.done(function() {
-							hideDialog($confirm);
-							alert(reload, "TODO: Refresh task body");
-						});
-				}, "Change your comment below:", undefined, comment, 700);
-		},
 		
 		uploadFile : function(input, idLink) {
 			allVars.$overlay.show();
@@ -107,14 +44,105 @@ var TaskListeners = function(tasksVars, tasksFuncs) {
 			}, "Delete " + tasksFuncs.filePath() + " ?");
 		},
 		
-		deleteTask : function(idLink, name) {
-			var $dialog = confirm(function() {
-				Ajax.post(contextUrl + "/tasks/deleteTask/" + idLink)
+		
+	};
+};
+
+
+/**
+ * ------------- TaskEventBindings ---------------------------------------------
+ * Provides methods to bind all needed listeners to task header or body
+ * 
+ * Dependencies:
+ * 	allVars
+ * 	tasksFuncs.selectedTaskFileIsAsset
+ * 	tasksFuncs.filePath
+ * 	tasksVars.selectedTaskFileIsAsset
+ */
+var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
+	
+	var hideCommentForm = function($commentForm) {
+		var $elementComments = $commentForm.parent();
+		if ($elementComments.is(":visible:blank")) {
+			$elementComments.hide();
+		}
+		$commentForm.hide();
+	};
+	
+	var showCommentForm = function ($commentForm) {
+		$commentForm.parent().show();
+		$commentForm.show();
+	};
+	
+	var changeComment = function(comment, taskId, commentId, $task) {
+		var $confirm = confirm(
+			function(input, textarea) {
+				var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
+				Ajax.post(url, {"editedComment" : textarea}) 
 					.done(function() {
-						hideDialog($dialog);
-						alert(reload, "TODO: Remove task from client at all places");
+						hideDialog($confirm);
+						onchange($task);
 					});
-			}, "Are you sure you want to delete this task?");
+			}, "Change your comment below:", undefined, comment, 700);
+	};
+	
+	var deleteTask = function(taskId, $task) {
+		var $confirm = confirm(function() {
+			Ajax.post(contextUrl + "/tasks/deleteTask/" + taskId)
+				.done(function() {
+					hideDialog($confirm);
+					onremove($task);
+				});
+		}, "Are you sure you want to delete this task?");
+	};
+	
+	var reload = function() {
+		window.location.reload();
+	};
+	
+	return {
+		
+		//TODO bind to list instead of each task
+		bindHeader : function($task) {
+			$task.children(".task-header").click(function() {
+				onswitch($(this).parent(".task"));
+			});
+		},
+		
+		/**
+		 * @param $body - Complete body part of a task, bind functions to this (or its children).
+		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
+		 */
+		bindBody : function(id, $task, $body) {
+			
+			//comments
+			var $comments = $body.find(".task-comments");
+			var $form = $comments.children("form.task-comments-form");
+			var $operations = $body.find(".task-body-footer").children(".task-operations");
+			//show comment edit dialog
+			$comments.on("click", ".task-comment-editButton", function(event) {
+				var $comment = $(this).parent(".task-comment");
+				var $text = $comment.children(".task-comment-text");
+				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task);
+			});
+			//show/hide new comment form
+			$operations.find(".task-operations-switchComment").click(function(event) {
+				if ($form.is(":visible")) hideCommentForm($form);
+				else showCommentForm($form);
+			});
+			//submit new comment
+			$form.find(".task-comment-form-submitButton").click(function(event) {
+				var url = contextUrl + "/tasks/submitComment/" + id;
+				Ajax.post(url, {}, $form)
+					.done(function() {
+						onchange($task);
+					});
+			});
+			
+			//delete task
+			$operations.find(".task-operations-deleteTask").click(function(event) {
+				deleteTask(id, $task);
+			});
 		}
 	};
 };

@@ -5,9 +5,9 @@ package gmm.web.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
-import gmm.service.data.DataAccess;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @RequestMapping("public")
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class PublicController {
 	
 	@Autowired private LinkSession session;
-	@Autowired private DataAccess data;
 	@Autowired private FtlRenderer ftlTaskRenderer;
 	
 	@ModelAttribute("comment")
@@ -37,22 +37,41 @@ public class PublicController {
 	/**
 	 * Serves task data to client ajax code.
 	 */
-	@RequestMapping(value = "/linkTasks/render", method = RequestMethod.GET)
+	@RequestMapping(value = "/linkedTasks/renderTaskData", method = RequestMethod.POST)
 	@ResponseBody
 	public List<TaskRenderResult> renderTasks(
+			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
 			ModelMap model, 
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		
+		if(idLinks == null) return new LinkedList<>();
+		List<Task> tasks = new LinkedList<>();
+		for(Task task : session.getTaskLinks()) {
+			boolean contains = idLinks.remove(task.getIdLink());
+			if (contains) tasks.add(task);
+		}
 		request.setAttribute("commentForm", getCommentForm());
-		List<Task> tasks = session.getTaskLinks();
 		return ftlTaskRenderer.renderTasks(tasks, model, request, response);
+	}
+	
+	/**
+	 * Get list of the ids of the linked tasks.
+	 */
+	@RequestMapping(value = "/linkedTasks/currentTaskIds", method = RequestMethod.GET)
+	@ResponseBody
+	public List<String> getCurrentTaskIds() throws Exception {
+		List<String> taskIds = new LinkedList<>();
+		for(Task task : session.getTaskLinks()) {
+			taskIds.add(task.getIdLink());
+		}
+		return taskIds;
 	}
 	
 	/**
 	 * Stores ids and waits for client ajax code to do more stuff.
 	 */
-	@RequestMapping(value = "/linkTasks/{ids}/{key}", method = RequestMethod.GET)
+	@RequestMapping(value = "/link/{ids}/{key}", method = RequestMethod.GET)
 	public String showTasks(ModelMap model, 
 			@PathVariable String ids,
 			@PathVariable String key) {

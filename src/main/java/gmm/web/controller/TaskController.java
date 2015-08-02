@@ -11,8 +11,6 @@ import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
-import gmm.service.TaskFilterService;
-import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.ManualBackupService;
 import gmm.service.tasks.TaskServiceFinder;
@@ -57,8 +55,6 @@ public class TaskController {
 	@Autowired private TaskServiceFinder taskCreator;
 	@Autowired private TaskSession session;
 	@Autowired private DataAccess data;
-	@Autowired private TaskFilterService filter;
-	@Autowired private UserService users;
 	@Autowired private FtlRenderer ftlRenderer;
 	@Autowired private ManualBackupService manualBackups;
 
@@ -277,20 +273,10 @@ public class TaskController {
 		session.loadTasks(type);
 	}
 	
-	@RequestMapping(value = "/render", method = RequestMethod.GET)
-	@ResponseBody
-	public List<TaskRenderResult> taskMap(
-			ModelMap model,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		populateRequest(request);
-		return ftlRenderer.renderTasks(session.getTasks(), model, request, response);
-	}
-	
 	/**
 	 * Get task data for specified ids, must be visible in workbench currently.
 	 */
-	@RequestMapping(value = "/workbench/render", method = RequestMethod.POST)
+	@RequestMapping(value = "/workbench/renderTaskData", method = RequestMethod.POST)
 	@ResponseBody
 	public List<TaskRenderResult> renderSelectedTasks(
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
@@ -311,7 +297,7 @@ public class TaskController {
 	/**
 	 * Get list of the ids of the tasks currently visible in workbench.
 	 */
-	@RequestMapping(value = "/workbench/tasks", method = RequestMethod.GET)
+	@RequestMapping(value = "/workbench/currentTaskIds", method = RequestMethod.GET)
 	@ResponseBody
 	public List<String> getCurrentTaskIds() throws Exception {
 		List<String> taskIds = new LinkedList<>();

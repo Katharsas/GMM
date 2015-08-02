@@ -30,7 +30,6 @@ import gmm.service.data.ManualBackupService;
 import gmm.service.data.XMLService;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
-import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
@@ -52,7 +51,6 @@ public class AdminController {
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	@Autowired private XMLService xmlService;
-	@Autowired private TaskServiceFinder taskCreator;
 	@Autowired private BackupService backups;
 	@Autowired private ManualBackupService manualBackups;
 	

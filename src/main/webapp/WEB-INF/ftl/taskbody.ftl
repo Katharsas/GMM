@@ -5,57 +5,53 @@
     <div class="task-body-content">
 		<!-- AssetPath -->
 	    <#if !(task.getType().name() == "GENERAL")>
-	    	<div class="elementPath elementContent">
+	    	<div class="elementPath task-content">
 	    		File Path: &#160; &#160; ${task.getAssetPath().toString()?html}
     		</div>
 	    </#if>
 		<!-- Details -->
-		<div class="elementDetails elementContent">
+		<div class="task-details task-content">
 			${task.getDetails()?html?replace(newLine,'<br>')}
 				    	
 <#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
 				    
 		</div>
 <!-- Comments & Comment Form-->
-		<div class="elementComments">
+		<div class="task-comments">
 			<#list task.getComments() as comment>
-				<div id="comment_${comment.getIdLink()}" class="subListElement">
-			    	<div class="left subElementAuthor elementContent">
+				<div id="${comment.getIdLink()}" class="task-comment">
+			    	<div class="task-comment-author left task-content">
 			    		<div class="userTag left">
 			    			${comment.getAuthor().getName()?html}
 		    			</div>
 			    	</div>
 					<#if isUserLoggedIn && comment.getAuthor().getIdLink() == principal.getIdLink()>
-				    	<div class="right button commentEditButton"
-				    			onclick="changeComment('${comment.getText()?js_string?html}', '${task.getIdLink()}', '${comment.getIdLink()}')">
+				    	<div class="task-comment-editButton right button">
 							<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
 							<#--<@s.message "edit"/>-->
 						</div>
 					</#if>
-			    	<div class="left subElementText elementContent">
+			    	<div class="task-comment-text left task-content">
 			    		${comment.getText()?html?replace(newLine,'<br>')}
 			    	</div>
 			    	<div class="clear"></div>
 			    </div>
 			</#list>
 			<#if isUserLoggedIn>
-				<form class="subListElement commentForm" style="display:none;"
-			    		method="POST"
-			    		action="${request.contextPath}/tasks/submitComment/${task.getIdLink()}">
+				<form class="task-comments-form subListElement" style="display:none;">
 			    	<@s.bind "commentForm"/>
-			    	<div class="left subElementAuthor">
-			    		<div class="button commentButton commentSubmitButton"
-			    				onclick="$(this).parents('form.commentForm').submit()">Submit</div>
+			    	<div class="task-comment-author left">
+			    		<div class="task-comment-form-submitButton button">Submit</div>
 			    	</div>
-			    	<div class="subElementText input">
-			    		<textarea class="commentTextArea" rows="2" cols="1" name="text"></textarea>
+			    	<div class="task-comment-text input">
+			    		<textarea class="task-comments-form-textArea" rows="2" cols="1" name="text"></textarea>
 			    	</div>
 			    </form>
 			</#if>
 	    </div>
 <!-- TexturePreview -->
 	    <#if task.getType().name() == 'TEXTURE'>
-	    	<div class="elementPreview elementContent">
+	    	<div class="elementPreview task-content">
 		    	<table>
 	    			<colgroup>
 				       <col span="1" style="width: 49%;">
@@ -65,7 +61,7 @@
 					<tr class="subPreviewDescriptor">
 				    	<#if task.originalAsset?has_content>
 				    		<#assign asset = task.originalAsset/>
-					    	<td class="subPreviewHalf leftHalf elementButton button"
+					    	<td class="subPreviewHalf leftHalf task-button button"
 					    			onclick="downloadFromPreview('${task.getIdLink()}', 'original')">
 					    		<span class="left" style="font-weight:bold">Original:</span>
 					    		<span class="right">
@@ -80,7 +76,7 @@
 				    	<td></td>
 				    	<#if task.newestAsset?has_content>
 				    		<#assign asset = task.newestAsset/>
-					    	<td class="subPreviewHalf leftHalf elementButton button"
+					    	<td class="subPreviewHalf leftHalf task-button button"
 					    			onclick="downloadFromPreview('${task.getIdLink()}', 'newest')">
 					    		<span class="left" style="font-weight:bold">Newest:</span>
 					    		<span class="right">
@@ -119,7 +115,7 @@
 	    </#if>
 <!-- Files -->
 		<#if !(task.getType().name() == 'GENERAL')>
-			<div class="elementFiles elementContent">
+			<div class="elementFiles task-content">
 				<#if isUserLoggedIn>
 					<div class="subElementAssets left">
 						<div class="subFilesDescriptor">
@@ -164,38 +160,38 @@
     <div class="task-body-footer">
     	<div class="task-operations">
 	    	<#if isUserLoggedIn>
-			    <div class="left elementButton button" onclick="findSwitchCommentForm(this)">
+			    <div class="task-operations-switchComment left task-button button">
 		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/bubble.svg">
 		    		<@s.message "to.comment"/>
 		    	</div>
-		    	<div class="left elementButton button">
-			    	<a href="${request.contextPath}/public/linkTasks/${task.getId()}/${task.getLinkKey()}">
+		    	<div class="left task-button button">
+			    	<a href="${request.contextPath}/public/link/${task.getId()}/${task.getLinkKey()}">
 		    			<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/link.svg">
 			    		Link <span></span>
 			    	</a>
 			    </div>
 		    </#if>
 		    <#if !isUserLoggedIn>
-		    	<div class="left elementButton button">
+		    	<div class="left task-button button">
 			    	<a href="${request.contextPath}/public/login">Login<span></span></a>
 			    </div>
 		    </#if>
-		    <div class="elementAuthorDate right">
-	    		<div class=" elementContent right">
+		    <div class="task-authorDate right">
+	    		<div class="task-content right">
 	    			${task.getAuthor().getName()?html}<br/>
 		    		${task.getFormattedCreationDate()?html}
 	    		</div>
-	    		<div class="elementContent right">
+	    		<div class="task-content right">
 	    			<@s.message "author"/>:&#160;&#160;<br/>
 		    		<@s.message "created"/>:&#160;&#160;
 	    		</div>
 	    	</div>
 	    	<#if isUserLoggedIn>
-		    	<div class="right elementButton button" onclick="deleteTask('${task.getIdLink()}','${task.getName()?js_string?html}')">
+		    	<div class="task-operations-deleteTask right task-button button">
 		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/delete.svg">
 		    		<@s.message "delete"/>
 		    	</div>
-		    	<div class="right elementButton button">
+		    	<div class="right task-button button">
 					<a href="${request.contextPath}/tasks?edit=${task.getIdLink()}">
 						<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
 						<@s.message "edit"/><span></span>

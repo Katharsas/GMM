@@ -17,12 +17,16 @@ var TaskLoader = function() {
 	
 	/**
 	 * Maps a taskListId to a taskList settings object:
-	 * taskListId => { $list, url, onchange, current[] }
+	 * taskListId => { $list, url, onchange, current[], eventListeners }
 	 * 
 	 * 		$list - the jquery list container for the task nodes
 	 * 		url - the part of the url which is specific for this taskList
 	 * 		onchange - callback that gets executed when task list changes
 	 * 		current - set by TaskLoader, array of currently visible tasks ids
+	 * 		eventBinders - callbacks that add event bindings to tasks {
+	 * 			bindHeader : function($task),
+	 * 			bindBody : function(id, $body)
+	 * 		}
 	 */
 	var taskListMap = {};
 	
@@ -42,7 +46,7 @@ var TaskLoader = function() {
 	 * Update tasks from server for all task lists.
 	 */
 	function update(taskListId, idLinks, done) {
-		updateTaskData(taskListId, idLinks, function() {
+		updateCacheTaskData(taskListId, idLinks, function() {
 		Object.keys(taskListMap).forEach(function(taskListId) {
 			reinsertHeaders(taskListId, idLinks);
 		});
@@ -54,13 +58,18 @@ var TaskLoader = function() {
 	 * Remove tasks for all task lists.
 	 */
 	function remove (idLinks) {
+		//delete from cache
 		idLinks.forEach(function(id) {
 			delete idToTaskData[id];
 		});
+		//delete from current & from list itself
 		Object.keys(taskListMap).forEach(function(taskListId) {
 			var taskList = taskListMap[taskListId];
 			var $tasks = taskList.$list.children(".task");
-			taskList.currrent.forEach(function(id) {
+			idLinks.forEach(function(id) {
+				taskList.current.forEach(function(currentId, index) {
+					if(id === currentId) taskList.current.splice(index, 1);
+				});
 				$tasks.remove("#"+id);
 			});
 		});
@@ -68,12 +77,15 @@ var TaskLoader = function() {
 	
 	/**
 	 * Clears task list, then reinsert headers from cache into task list.
+	 * ALL tasks are replaced to update order changes correctly.
 	 */
 	function reinsertHeaders(taskListId, idLinks) {
 		var taskList = taskListMap[taskListId];
 		taskList.$list.children(".task").remove();
 		taskList.current.forEach(function(id) {
-			taskList.$list.append(idToTaskData[id].$header.clone());
+			var $header = idToTaskData[id].$header.clone();
+			taskList.eventBinders.bindHeader($header);
+			taskList.$list.append($header);
 		});
 	}
 	
@@ -82,7 +94,7 @@ var TaskLoader = function() {
 	 */
 	function getCurrent(taskListId, done) {
 		var taskList = taskListMap[taskListId];
-		Ajax.get(contextUrl + taskList.url + "/tasks")
+		Ajax.get(contextUrl + taskList.url + "/currentTaskIds")
 			.done(function(tasks) {
 				taskList.current = tasks;
 				callIfExists(done);
@@ -100,15 +112,15 @@ var TaskLoader = function() {
 				missing.push(id);
 			}
 		});
-		updateTaskData(taskListId, missing, done);
+		updateCacheTaskData(taskListId, missing, done);
 	}
 	
 	/**
 	 * Gets updated task data from server and inserts processed data into cache.
 	 */
-	function updateTaskData(taskListId, idLinks, done) {
+	function updateCacheTaskData(taskListId, idLinks, done) {
 		var taskList = taskListMap[taskListId];
-		Ajax.post(contextUrl + taskList.url + "/render", { "idLinks[]" : idLinks })
+		Ajax.post(contextUrl + taskList.url + "/renderTaskData", { "idLinks[]" : idLinks })
 			.done(function (taskRenders) {
 				taskRenders.forEach(function(task) {
 					preprocess(task);
@@ -169,10 +181,19 @@ var TaskLoader = function() {
 			create(taskListId, callback);
 		},
 		
-//		updateTask : function(taskListId, $task) {
-//			var idLink = $task.attr('id');
-//			update([idLink]);
-//		},
+		setTaskEventBinders : function(taskListId, eventBinders) {
+			taskListMap[taskListId].eventBinders = eventBinders;
+		},
+		
+		updateTask : function(taskListId, $task) {
+			var idLink = $task.attr('id');
+			update(taskListId, [idLink]);
+		},
+		
+		removeTask : function($task) {
+			var idLink = $task.attr('id');
+			remove([idLink]);
+		},
 		
 		removeTasks : function(idLinks) {
 			remove(idLinks);
@@ -186,10 +207,12 @@ var TaskLoader = function() {
 		 * Insert the taskbody of the given task.
 		 * Task must not have body already!
 		 */
-		insertBody : function ($task) {
+		insertBody : function (taskListId, $task) {
 			var idLink = $task.attr('id');
 			var task = idToTaskData[idLink];
-			$task.append(task.$body.clone());
+			var $body = task.$body.clone();
+			taskListMap[taskListId].eventBinders.bindBody(idLink, $task, $body);
+			$task.append($body);
 		},
 		
 		/**

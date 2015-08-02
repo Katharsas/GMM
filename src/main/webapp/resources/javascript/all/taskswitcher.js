@@ -6,7 +6,8 @@
  * 
  * @author Jan Mothes
  */
-var TaskSwitcher = function(taskLoader) {	
+var TaskSwitcher = function(taskListId, taskLoader) {	
+	
 	this.slideDownTime = 0.5;
     this.slideUpTime = 0.5;
     
@@ -51,7 +52,7 @@ var TaskSwitcher = function(taskLoader) {
         	if ($task !== undefined && $task !== null) {
         		
         		if(!$task.hasClass("collapsing")) {
-        			taskLoader.insertBody($task);
+        			taskLoader.insertBody(taskListId, $task);
         		}
         		$task.removeClass("collapsing");
         		$task.removeClass("collapsed");

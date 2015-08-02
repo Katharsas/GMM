@@ -45,10 +45,26 @@ String.prototype.nl2br = function(is_xhtml) {
     return (this + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
 };
 
+/**
+ * Unescapes & trims html text to javascript text (including convertion of <br> tags to newLine).
+ */
 function htmlDecode(input){
 	var e = document.createElement('div');
 	e.innerHTML = input;
-	return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+	var result = "";
+	for (var i = 0; i < e.childNodes.length; i++) {
+		//if type = text, add text
+		if (e.childNodes[i].nodeType === 3) {
+			result += e.childNodes[i].nodeValue;
+		//if type = node, check for <br> node
+		} else if (e.childNodes[i].nodeType === 1) {
+			if (e.childNodes[i].tagName === "BR") {
+				result += "\n";
+			}
+		}
+	}
+	result = result.replace(/\s\s+/g, ' ');
+	return result.trim();
 }
 
 /*

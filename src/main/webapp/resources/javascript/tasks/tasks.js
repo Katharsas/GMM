@@ -21,7 +21,7 @@ var tasksFuncs = {
 
 //add listeners to global scope
 (function() {
-	var ls = TaskListeners(tasksVars, tasksFuncs);
+	var ls = GlobalTaskListeners(tasksVars, tasksFuncs);
 	for (var func in ls) {
 		window[func] = ls[func];
 	}
@@ -57,10 +57,23 @@ var Workbench = function() {
 		url : "/tasks/workbench",
 	});
 	
-	this.taskSwitcher = TaskSwitcher(taskLoader);
-	this.expandedTasks =  new Queue(3, function($task1, $task2) {
+	var taskSwitcher = TaskSwitcher(taskListId, taskLoader);
+	var expandedTasks =  new Queue(3, function($task1, $task2) {
 		return $task1[0] === $task2[0];
 	});
+	
+	var taskBinders = TaskEventBindings(tasksVars, tasksFuncs,
+		function($task) {
+			taskSwitcher.switchTask($task, expandedTasks);
+		},
+		function($task) {
+			taskLoader.updateTask(taskListId, $task);
+		},
+		function($task) {
+			taskLoader.removeTask($task);
+		}
+	);
+	taskLoader.setTaskEventBinders(taskListId, taskBinders);
 	
 	var render = function() {
 		taskLoader.createTaskList(taskListId, function() {
