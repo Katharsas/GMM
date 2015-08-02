@@ -8,6 +8,11 @@ $.expr[':'].blank = function(obj) {
 $.fn.isEmpty = function() {
 	return this.length < 1;
 };
+$.fn.onEnter = function(eventHandler) {
+	this.keypress(function(event) {
+		if (event.keyCode === 13) eventHandler(event);
+	});
+};
 
 var fileName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
 var paramString = window.location.search.substring(1);

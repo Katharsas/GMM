@@ -59,7 +59,3 @@ $(document).ready(
 		render();
 	}
 );
-
-function switchListElement(element) {
-	TaskSwitcher.switchTask($(element).parent().first(), tasksVars.expandedTasks);
-}

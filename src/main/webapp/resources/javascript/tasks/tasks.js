@@ -224,10 +224,6 @@ var Workbench = function() {
 	updateTasks();
 };
 
-function switchListElement(element) {
-	workbench.taskSwitcher.switchTask($(element).parent().first(), workbench.expandedTasks);
-}
-
 /**
  * This function is executed when document is ready for interactivity!
  */

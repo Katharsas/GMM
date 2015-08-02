@@ -1,0 +1,41 @@
+@import '../include';
+
+#login {
+	max-width:540px;
+	margin:0 auto;
+	background-color: $bgc-subpage-dark;
+	padding:20px;
+	padding-bottom:50px;
+}
+
+#login-logoutMessage {
+	background-color: $bgc-subpage-bright;
+	margin-bottom:50px;
+}
+
+#login-welcomeMessage {
+	margin-bottom:15px;
+}
+
+#login-gmmName {
+	font-weight:bold;
+	color:#999;
+}
+
+#login-form-inputs {
+	border-color: $bgc-subpage-bright;
+	padding:7px 10px;
+	margin-bottom:10px;
+	
+	& > * {
+		margin:7px 0;
+	}
+	
+	& input {
+		width:100%;
+	}
+}
+
+#login-error {
+	background-color: $c-red;
+}

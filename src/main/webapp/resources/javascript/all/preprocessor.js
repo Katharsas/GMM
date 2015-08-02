@@ -28,7 +28,7 @@ var HtmlPreProcessor = function() {
 		 */
 		$range.find('img.svg').each(function(){
 			
-		    var $img = jQuery(this);
+		    var $img = $(this);
 		    var imgURL = $img.attr('src');
 		    
 		    //look into cache
@@ -66,9 +66,23 @@ var HtmlPreProcessor = function() {
 		});
 	};
 	
+	/**
+	 * Makes all buttons focusable and binds click event to enter key.
+	 */
+	var prepareButtons = function($range) {
+		$range.find(".button").each(function(){
+			var $button = $(this);
+			$button.attr("tabindex", "0");
+			$button.onEnter(function() {
+				$button.click();
+			});
+		});
+	};
+	
 	return {
 		apply : function($range) {
 			replaceSvgImages($range);
+			prepareButtons($range);
 		}
 	};
 };

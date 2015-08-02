@@ -38,7 +38,8 @@
 	@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
 	box-shadow: inset 0px 1px 1px lighten($color, 20%);
 	
-	&:hover {
+	&:hover, &:focus {
+		outline: none;
 		$color:lighten($color, 6%);
 		$top:lighten($color, 6%);
 		$bot:darken($color, 2%);//6%
