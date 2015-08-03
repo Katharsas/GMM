@@ -1,71 +1,64 @@
 /* //////////////////////////////////////////////////
  * Preview
  * //////////////////////////////////////////////////*/
-.elementPreview table {
+.task-preview {
 	width: 100%;
 	table-layout:fixed;
 	border-spacing: 5px;
 }
-.subPreviewDescriptor {
+.task-preview-buttons {
 }
-.subPreviewImage {
+.task-preview-images {
 	width:100%;
 }
-.subPreviewHalf {
-	background-color: #333;
-}
-.subPreviewImage .subPreviewHalf {
+.task-preview-image {
 	box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
 	padding:10px 0;
+	
+	background-color: #333;
+	&:hover {
+		background-color: #393939;
+	}
+	a {
+		display:block;
+	}
+	img {
+		border:1px dotted #666;
+		max-width:90%;
+	}
 }
-.subPreviewImage .subPreviewHalf:hover {
-	background-color: #393939;
-}
-.subPreviewImage .subPreviewHalf a {
-	display:block;
-}
-.subPreviewImage .subPreviewHalf img {
-	border:1px dotted #666;
-	max-width:90%;
-}
-
-
 
 /* //////////////////////////////////////////////////
  * Asset file manager
  * //////////////////////////////////////////////////*/
  
-.elementDetails, .elementComments, .elementPreview, .elementFiles, .elementPath {
+.task-details, .task-comments, .task-preview, .task-files, .task-assetPath {
 	margin:15px 5px;
 }
-.elementPath {
+.task-assetPath {
 	color:#AAA;
 	margin-top:5px;
 	font-size: 0.8em;
 }
 
-.subElementAssets {
-}
-.subElementWip {
-}
-.subElementAssets, .subElementWip {
+.task-files-assets, .task-files-other {
 	width: 50%;
 }
-.subFilesDescriptor {
+.task-files-description {
 	padding:4px;
 	padding-left:10px;
 	background-color: #333;
 }
-.subElementFileOperations {
+.task-files-assets-tree, .task-files-other-tree {
+	padding:5px;
+	padding-left:10px;
+}
+.task-files-operations {
 	background-color: #333;
 	margin-top:10px;
 	padding:4px 2px;
 }
-.subFilesContainer {
-	padding:5px;
-	padding-left:10px;
-}
-.subElementButton {
+.task-files-button {
 	border: 1px solid #555;
 	min-width:5em;
 	font-size: 0.85em;
@@ -73,7 +66,7 @@
 	padding:2px 8px;
 	background-color: #666;
 }
-.selectedTaskFile {
+.task-files-selected {
 	background-color:#A82709;
 	font-weight: bold;
 }

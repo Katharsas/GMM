@@ -61,10 +61,10 @@
 	max-width:100%;
 }
 .task-id {
-	margin-right:7px;
+	margin-right:2px;
 	color:#6D6D6D;
-	font-size:0.7rem;
-	min-width:1.2em;
+	font-size:0.66rem;
+	min-width:2.1em;
 	text-align:right;
 }
 .task-label {
@@ -171,6 +171,7 @@ svg.buttonIcon * {
 
 .task-comment-text {
 	padding-left:5px;
+	margin-top: 2px;
 }
 .task-comments-form .task-comment-text{
 	width:auto;

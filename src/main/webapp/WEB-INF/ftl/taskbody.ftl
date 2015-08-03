@@ -5,12 +5,12 @@
     <div class="task-body-content">
 		<!-- AssetPath -->
 	    <#if !(task.getType().name() == "GENERAL")>
-	    	<div class="elementPath task-content">
+	    	<div class="task-assetPath">
 	    		File Path: &#160; &#160; ${task.getAssetPath().toString()?html}
     		</div>
 	    </#if>
 		<!-- Details -->
-		<div class="task-details task-content">
+		<div class="task-details">
 			${task.getDetails()?html?replace(newLine,'<br>')}
 				    	
 <#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
@@ -20,7 +20,7 @@
 		<div class="task-comments">
 			<#list task.getComments() as comment>
 				<div id="${comment.getIdLink()}" class="task-comment">
-			    	<div class="task-comment-author left task-content">
+			    	<div class="task-comment-author left">
 			    		<div class="userTag left">
 			    			${comment.getAuthor().getName()?html}
 		    			</div>
@@ -31,14 +31,14 @@
 							<#--<@s.message "edit"/>-->
 						</div>
 					</#if>
-			    	<div class="task-comment-text left task-content">
+			    	<div class="task-comment-text left">
 			    		${comment.getText()?html?replace(newLine,'<br>')}
 			    	</div>
 			    	<div class="clear"></div>
 			    </div>
 			</#list>
 			<#if isUserLoggedIn>
-				<form class="task-comments-form subListElement" style="display:none;">
+				<form class="task-comments-form task-comment" style="display:none;">
 			    	<@s.bind "commentForm"/>
 			    	<div class="task-comment-author left">
 			    		<div class="task-comment-form-submitButton button">Submit</div>
@@ -51,17 +51,17 @@
 	    </div>
 <!-- TexturePreview -->
 	    <#if task.getType().name() == 'TEXTURE'>
-	    	<div class="elementPreview task-content">
-		    	<table>
+<!-- 	    	<div> -->
+		    	<table class="task-preview">
 	    			<colgroup>
 				       <col span="1" style="width: 49%;">
 				       <col span="1" style="width: 2%;">
 				       <col span="1" style="width: 49%;">
 				    </colgroup>
-					<tr class="subPreviewDescriptor">
+					<tr class="task-preview-buttons">
 				    	<#if task.originalAsset?has_content>
 				    		<#assign asset = task.originalAsset/>
-					    	<td class="subPreviewHalf leftHalf task-button button"
+					    	<td class="task-preview-button-original task-button button"
 					    			onclick="downloadFromPreview('${task.getIdLink()}', 'original')">
 					    		<span class="left" style="font-weight:bold">Original:</span>
 					    		<span class="right">
@@ -76,7 +76,7 @@
 				    	<td></td>
 				    	<#if task.newestAsset?has_content>
 				    		<#assign asset = task.newestAsset/>
-					    	<td class="subPreviewHalf leftHalf task-button button"
+					    	<td class="task-preview-button-newest task-button button"
 					    			onclick="downloadFromPreview('${task.getIdLink()}', 'newest')">
 					    		<span class="left" style="font-weight:bold">Newest:</span>
 					    		<span class="right">
@@ -89,10 +89,10 @@
 				    	<#else><td></td>
 				    	</#if>
 			    	</tr>
-			    	<tr class="subPreviewImage center">
+			    	<tr class="task-preview-images center">
 			    		<#if task.originalAsset?has_content>
 			    			<#assign asset = task.originalAsset/>
-				    		<td class="subPreviewHalf leftHalf">
+				    		<td class="task-preview-image clickable">
 				    			<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
 				    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
 					    		</a>
@@ -102,7 +102,7 @@
 				    	<td></td>
 				    	<#if task.newestAsset?has_content>
 				    		<#assign asset = task.newestAsset/>
-					    	<td class="subPreviewHalf rightHalf clickable">
+					    	<td class="task-preview-image clickable">
 					    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
 					    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}">
 					    		</a>
@@ -111,39 +111,39 @@
 				    	</#if>
 			    	</tr>
 				</table>
-			</div>
+<!-- 			</div> -->
 	    </#if>
 <!-- Files -->
 		<#if !(task.getType().name() == 'GENERAL')>
-			<div class="elementFiles task-content">
+			<div class="task-files">
 				<#if isUserLoggedIn>
-					<div class="subElementAssets left">
-						<div class="subFilesDescriptor">
+					<div class="task-files-assets left">
+						<div class="task-files-description">
 							Assets
 						</div>
-						<div id="assetFilesContainer" class="subFilesContainer"></div>
+						<div class="task-files-assets-tree"></div>
 					</div>
-					<div class="subElementWip right">
-						<div class="subFilesDescriptor">
+					<div class="task-files-other right">
+						<div class="task-files-description">
 							Other
 						</div>
-						<div id="wipFilesContainer" class="subFilesContainer"></div>
+						<div class="task-files-other-tree"></div>
 					</div>
 					<div class="clear"></div>
 <!-- File Operations -->
-					<div class="subElementFileOperations">
+					<div class="task-files-operations">
 						<#if isUserLoggedIn>
 							<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
-							<div class="button subElementButton left" onclick="$('#${task.getIdLink()}-upload').click()">
+							<div class="button task-files-button left" onclick="$('#${task.getIdLink()}-upload').click()">
 								Upload
 							</div>
 						</#if>
 	<#-- 					<a id="${task.getIdLink()}-download" href="#">Link</a> -->
-						<div class="button subElementButton left" onclick="downloadFile('${task.getIdLink()}')">
+						<div class="button task-files-button left" onclick="downloadFile('${task.getIdLink()}')">
 							Download
 						</div>
 						<#if isUserLoggedIn>
-						<div class="button subElementButton right" onclick="confirmDeleteFile('${task.getIdLink()}')">
+						<div class="button task-files-button right" onclick="confirmDeleteFile('${task.getIdLink()}')">
 							Delete
 						</div>
 						</#if>
@@ -177,11 +177,11 @@
 			    </div>
 		    </#if>
 		    <div class="task-authorDate right">
-	    		<div class="task-content right">
+	    		<div class="right">
 	    			${task.getAuthor().getName()?html}<br/>
 		    		${task.getFormattedCreationDate()?html}
 	    		</div>
-	    		<div class="task-content right">
+	    		<div class="right">
 	    			<@s.message "author"/>:&#160;&#160;<br/>
 		    		<@s.message "created"/>:&#160;&#160;
 	    		</div>

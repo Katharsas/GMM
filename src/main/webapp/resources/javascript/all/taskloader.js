@@ -83,7 +83,7 @@ var TaskLoader = function() {
 		var taskList = taskListMap[taskListId];
 		taskList.$list.children(".task").remove();
 		taskList.current.forEach(function(id) {
-			var $header = idToTaskData[id].$header.clone();
+			var $header = idToTaskData[id].$header.clone(true, true);
 			taskList.eventBinders.bindHeader($header);
 			taskList.$list.append($header);
 		});
@@ -147,18 +147,18 @@ var TaskLoader = function() {
 			allVars.htmlPreProcessor.apply(task.$body);
 			task.$body.hide();
 			var id = task.idLink;
-			task.$body.find('#assetFilesContainer').fileTree(
+			task.$body.find('.task-files-assets-tree').fileTree(
 				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
 				function($file) {
 					tasksVars.selectedTaskFileIsAsset = true;
-					allFuncs.selectTreeElement($file, "selectedTaskFile");
+					allFuncs.selectTreeElement($file, "task-files-selected");
 				}
 			);
-			task.$body.find('#wipFilesContainer').fileTree(
+			task.$body.find('.task-files-other-tree').fileTree(
 				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
 				function($file) {
 					tasksVars.selectedTaskFileIsAsset = false;
-					allFuncs.selectTreeElement($file, "selectedTaskFile");
+					allFuncs.selectTreeElement($file, "task-files-selected");
 				}
 			);
 		}, 0);
@@ -210,7 +210,7 @@ var TaskLoader = function() {
 		insertBody : function (taskListId, $task) {
 			var idLink = $task.attr('id');
 			var task = idToTaskData[idLink];
-			var $body = task.$body.clone();
+			var $body = task.$body.clone(true, true);
 			taskListMap[taskListId].eventBinders.bindBody(idLink, $task, $body);
 			$task.append($body);
 		},

@@ -8,7 +8,7 @@ var tasksFuncs = {
 		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
 	},
 	"filePath" : function() {
-		return allVars.selectedTaskFile.attr("rel");
+		return allVars["task-files-selected"].attr("rel");
 	},
 	"refresh" : function() {
 		var url = contextUrl + "/tasks";

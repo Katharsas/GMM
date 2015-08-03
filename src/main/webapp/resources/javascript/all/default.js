@@ -19,7 +19,7 @@ var paramString = window.location.search.substring(1);
 
 
 var allVars = {
-	"selectedTaskFile":$(),
+	"task-files-selected":$(),
 	"selectedAssetFile":$(),
 	"selectedBackupFile":$(),
 	"taskBackgroundColor":"#111",
