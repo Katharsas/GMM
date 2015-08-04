@@ -61,8 +61,7 @@
 					<tr class="task-preview-buttons">
 				    	<#if task.originalAsset?has_content>
 				    		<#assign asset = task.originalAsset/>
-					    	<td class="task-preview-button-original task-button button"
-					    			onclick="downloadFromPreview('${task.getIdLink()}', 'original')">
+					    	<td class="task-preview-button-original task-button button">
 					    		<span class="left" style="font-weight:bold">Original:</span>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
@@ -76,8 +75,7 @@
 				    	<td></td>
 				    	<#if task.newestAsset?has_content>
 				    		<#assign asset = task.newestAsset/>
-					    	<td class="task-preview-button-newest task-button button"
-					    			onclick="downloadFromPreview('${task.getIdLink()}', 'newest')">
+					    	<td class="task-preview-button-newest task-button button">
 					    		<span class="left" style="font-weight:bold">Newest:</span>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
@@ -93,7 +91,7 @@
 			    		<#if task.originalAsset?has_content>
 			    			<#assign asset = task.originalAsset/>
 				    		<td class="task-preview-image clickable">
-				    			<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=original&id=${task.getIdLink()}">
+				    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
 				    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
 					    		</a>
 					    	</td>
@@ -103,8 +101,8 @@
 				    	<#if task.newestAsset?has_content>
 				    		<#assign asset = task.newestAsset/>
 					    	<td class="task-preview-image clickable">
-					    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}">
-					    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}">
+					    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+					    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 					    		</a>
 					    	</td>
 					    <#else><td></td>
@@ -133,17 +131,16 @@
 <!-- File Operations -->
 					<div class="task-files-operations">
 						<#if isUserLoggedIn>
-							<input id="${task.getIdLink()}-upload" type="file" style="display:none;" onchange="uploadFile(this,'${task.getIdLink()}')"/>
-							<div class="button task-files-button left" onclick="$('#${task.getIdLink()}-upload').click()">
+							<input class="task-files-uploadInput" type="file" style="display:none;"/>
+							<div class="task-files-button-upload button left">
 								Upload
 							</div>
 						</#if>
-	<#-- 					<a id="${task.getIdLink()}-download" href="#">Link</a> -->
-						<div class="button task-files-button left" onclick="downloadFile('${task.getIdLink()}')">
+						<div class="task-files-button-download button left">
 							Download
 						</div>
 						<#if isUserLoggedIn>
-						<div class="button task-files-button right" onclick="confirmDeleteFile('${task.getIdLink()}')">
+						<div class="task-files-button-delete button right">
 							Delete
 						</div>
 						</#if>

@@ -6,7 +6,12 @@ import gmm.service.data.DataConfigService;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Objects;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
@@ -25,6 +30,11 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	private final Path assetPath;
 	private A originalAsset = null;
 	private A newestAsset = null;
+	
+	//used for caching of newest preview
+	private DateTime newestAssetLastUpdate = null;
+	private final static DateTimeFormatter formatter = 
+			DateTimeFormat.forPattern("MM-dd-HH-mm-ss").withLocale(Locale.ENGLISH);
 	
 	//Methods--------------------------------------------
 	public AssetTask(User author, Path assetPath) throws Exception {
@@ -74,5 +84,11 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	public void setNewestAsset(A newestAsset) throws IOException {
 		Objects.requireNonNull(config);
 		this.newestAsset = newestAsset;
+		this.newestAssetLastUpdate = DateTime.now();
+	}
+	
+	public String getNewestAssetNocache() {
+		if (newestAssetLastUpdate == null) return "";
+		else return newestAssetLastUpdate.toString(formatter);
 	}
 }

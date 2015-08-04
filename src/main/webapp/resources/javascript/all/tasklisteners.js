@@ -1,54 +1,3 @@
-//TODO convert to event listener attaching below
-var GlobalTaskListeners = function(tasksVars, tasksFuncs) {
-	var reload = function() {
-		window.location.reload();
-	};
-	
-	return {
-		
-		uploadFile : function(input, idLink) {
-			allVars.$overlay.show();
-			var file = input.files[0];
-			Ajax.upload(contextUrl + "/tasks/upload/" + idLink, file)
-				.done(function(responseText) {
-					alert(reload, "TODO: Refresh filetree");
-				});
-		},
-		
-		downloadFromPreview : function(idLink, version) {
-			var uri = contextUrl + "/tasks/download/" + idLink + "/preview/" + version + "/";
-			window.open(uri);
-		},
-		
-		downloadFile : function(idLink) {
-			var dir = tasksFuncs.filePath();
-			if (dir === undefined || dir === "") {
-				return;
-			}
-			var uri = contextUrl + "/tasks/download/" + idLink + "/" + tasksFuncs.subDir() + "/" + dir + "/";
-			window.open(uri);
-		},
-		
-		confirmDeleteFile : function(idLink) {
-			var dir = tasksFuncs.filePath();
-			if (dir === undefined || dir === "") {
-				return;
-			}
-			var $dialog = confirm(function() {
-				Ajax.post(contextUrl + "/tasks/deleteFile/" + idLink,
-						{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
-					.done(function() {
-						hideDialog($dialog);
-						alert(reload, "TODO: Refresh filetree");
-					});
-			}, "Delete " + tasksFuncs.filePath() + " ?");
-		},
-		
-		
-	};
-};
-
-
 /**
  * ------------- TaskEventBindings ---------------------------------------------
  * Provides methods to bind all needed listeners to task header or body
@@ -86,18 +35,9 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 			}, "Change your comment below:", undefined, comment, 700);
 	};
 	
-	var deleteTask = function(taskId, $task) {
-		var $confirm = confirm(function() {
-			Ajax.post(contextUrl + "/tasks/deleteTask/" + taskId)
-				.done(function() {
-					hideDialog($confirm);
-					onremove($task);
-				});
-		}, "Are you sure you want to delete this task?");
-	};
-	
-	var reload = function() {
-		window.location.reload();
+	var downloadFromPreview = function(taskId, version) {
+		var uri = contextUrl + "/tasks/download/" + taskId + "/preview/" + version + "/";
+		window.open(uri);
 	};
 	
 	return {
@@ -115,23 +55,28 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 		 */
 		bindBody : function(id, $task, $body) {
 			
+			/* -------------------------------------------------------
+			 * GENERAL TASK
+			 * -------------------------------------------------------
+			 */
+			
 			//comments
 			var $comments = $body.find(".task-comments");
 			var $form = $comments.children("form.task-comments-form");
 			var $operations = $body.find(".task-body-footer").children(".task-operations");
 			//show comment edit dialog
-			$comments.on("click", ".task-comment-editButton", function(event) {
+			$comments.on("click", ".task-comment-editButton", function() {
 				var $comment = $(this).parent(".task-comment");
 				var $text = $comment.children(".task-comment-text");
 				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task);
 			});
 			//show/hide new comment form
-			$operations.find(".task-operations-switchComment").click(function(event) {
+			$operations.find(".task-operations-switchComment").click(function() {
 				if ($form.is(":visible")) hideCommentForm($form);
 				else showCommentForm($form);
 			});
 			//submit new comment
-			$form.find(".task-comment-form-submitButton").click(function(event) {
+			$form.find(".task-comment-form-submitButton").click(function() {
 				var url = contextUrl + "/tasks/submitComment/" + id;
 				Ajax.post(url, {}, $form)
 					.done(function() {
@@ -140,9 +85,76 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 			});
 			
 			//delete task
-			$operations.find(".task-operations-deleteTask").click(function(event) {
-				deleteTask(id, $task);
+			$operations.find(".task-operations-deleteTask").click(function() {
+				var $confirm = confirm(function() {
+					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
+						.done(function() {
+							hideDialog($confirm);
+							onremove($task);
+						});
+				}, "Are you sure you want to delete this task?");
 			});
+			
+			/* -------------------------------------------------------
+			 * ASSET TASK
+			 * -------------------------------------------------------
+			 */
+			
+			var $files = $body.find(".task-files");
+			if ($files.length > 0) {
+				var $preview = $body.find(".task-preview");
+				var $fileOps = $files.find(".task-files-operations");
+				
+				//download from preview
+				$preview.find(".task-preview-button-original").click(function() {
+					downloadFromPreview(id, 'original');
+				});
+				$preview.find(".task-preview-button-newest").click(function() {
+					downloadFromPreview(id, 'newest');
+				});
+				
+				//upload
+				var $inputFile = $fileOps.find(".task-files-uploadInput");
+				//upload when a file is chosen (on hidden input tag)
+				$inputFile.change(function() {
+					allVars.$overlay.show();
+					var file = $inputFile[0].files[0];
+					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
+						.done(function(responseText) {
+							//TODO refresh filetree only
+							alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+						});
+				});
+				//bind triggering of filechooser to button
+				$fileOps.find(".task-files-button-upload").click(function() {
+					$inputFile.click();
+				});
+				
+				//download
+				$fileOps.find(".task-files-button-download").click(function() {
+					var dir = tasksFuncs.filePath();
+					if (dir === undefined || dir === "") return;
+					var uri = contextUrl + "/tasks/download/" + id + "/" + tasksFuncs.subDir() + "/" + dir + "/";
+					window.open(uri);
+				});
+				
+				//delete
+				$fileOps.find(".task-files-button-delete").click(function() {
+					var dir = tasksFuncs.filePath();
+					if (dir === undefined || dir === "") {
+						return;
+					}
+					var $dialog = confirm(function() {
+						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
+								{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
+							.done(function() {
+								hideDialog($dialog);
+								//TODO refresh filetree only
+								alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+							});
+					}, "Delete " + tasksFuncs.filePath() + " ?");
+				});
+			}
 		}
 	};
 };

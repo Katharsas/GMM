@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-
 public class BackupService {
 	
 	protected final Path backupPath = Paths.get("autoBackups");
@@ -61,8 +60,8 @@ public class BackupService {
 	@Autowired private XMLService serializer;
 	@Autowired private DataAccess data;
 	
-	FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
-	DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
+	private final FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
+	private final DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
 			.withLocale(Locale.ENGLISH);
 	
 	private DateTime lastHourlyBackup;

@@ -12,12 +12,6 @@ var tasksFuncs = {
 	}
 };
 
-//add listeners to global scope
-var listeners = GlobalTaskListeners(tasksVars, tasksFuncs);
-for (var func in listeners) {
-	window[func] = listeners[func];
-}
-
 /**
  * This function is executed when document is ready for interactivity!
  */

@@ -19,14 +19,6 @@ var tasksFuncs = {
 	}
 };
 
-//add listeners to global scope
-(function() {
-	var ls = GlobalTaskListeners(tasksVars, tasksFuncs);
-	for (var func in ls) {
-		window[func] = ls[func];
-	}
-})();
-
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS

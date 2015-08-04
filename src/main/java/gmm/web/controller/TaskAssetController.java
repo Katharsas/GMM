@@ -1,6 +1,7 @@
 package gmm.web.controller;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +17,9 @@ import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 import gmm.web.sessions.TaskSession;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
@@ -43,14 +47,25 @@ public class TaskAssetController {
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
-	private void setHeaderCaching(HttpServletResponse response) {
-//		Calendar date = new GregorianCalendar(3000, 1, 1);
-//		SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyy hh:mm:ss z", Locale.US);
-//		
+	private final DateTimeFormatter expiresFormatter = 
+			DateTimeFormat.forPattern("EEE, dd MMM yyy hh:mm:ss z").withLocale(Locale.US);
+	
+	/**
+	 * Sets caching settings for AssetTask preview images.
+	 * The image links will change whenever the images change, but they are only
+	 * unique for 4 weeks because they append the date without year/month.
+	 * @see {@link AssetTask#getNewestAssetNocache()}
+	 */
+	private void setPreviewCaching(HttpServletResponse response) {
 		response.setHeader("Cache-Control", "Public");
-//		response.setHeader("Max-Age", "2629000");
-//		response.setHeader("Pragma", "");
-//		response.setHeader("Expires", formatter.format(date.getTime()));
+		response.setHeader("Max-Age", "2419200");//cache 4 weeks
+		response.setHeader("Expires", DateTime.now().plusYears(2).toString(expiresFormatter));
+		response.setHeader("Pragma", "");
+		
+		// disable caching for testing purposes:
+//		response.setHeader("Cache-Control", "no-cache");
+//		response.setHeader("Pragma", "no-cache");
+//		response.setHeader("Expires", "0");
 	}
 	
 	/**
@@ -67,8 +82,7 @@ public class TaskAssetController {
 			@RequestParam(value="ver") String version,
 			@RequestParam(value="id") String idLink) throws Exception {
 		
-		setHeaderCaching(response);
-		//TODO enable reasonable caching
+		setPreviewCaching(response);
 		TextureTask task = UniqueObject.<TextureTask>getFromIdLink(data.<TextureTask>getList(TextureTask.class), idLink);
 		return textureService.getPreview(task, small, version);
 	}
