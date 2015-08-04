@@ -26,7 +26,7 @@ public enum TaskSortAttribute {
 	TITLE(new Comparator<Task>() {
 		@Override
 		public int compare(Task task0, Task task1) {
-			return task0.getName().compareTo(task1.getName());
+			return task0.getName().compareToIgnoreCase(task1.getName());
 		}
 		
 	}),
@@ -39,7 +39,7 @@ public enum TaskSortAttribute {
 	AUTHOR(new Comparator<Task>() {
 		@Override
 		public int compare(Task task0, Task task1) {
-			return task0.getAuthor().getName().compareTo(task1.getAuthor().getName());
+			return task0.getAuthor().getName().compareToIgnoreCase(task1.getAuthor().getName());
 		}
 	}),
 	ASSIGNED(new Comparator<Task>() {
@@ -71,7 +71,7 @@ public enum TaskSortAttribute {
 			if (task0 instanceof AssetTask && task1 instanceof AssetTask) {
 				Path p1 = ((AssetTask<?>) task0).getAssetPath();
 				Path p2 = ((AssetTask<?>) task1).getAssetPath();
-				return p1.toString().compareTo(p2.toString());
+				return p1.toString().compareToIgnoreCase(p2.toString());
 			}
 			if (task0 instanceof AssetTask) return -1;
 			if (task1 instanceof AssetTask) return 1;
