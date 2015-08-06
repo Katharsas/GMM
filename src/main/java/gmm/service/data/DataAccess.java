@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
+import gmm.domain.task.Task;
 
 @Service
 public interface DataAccess {
@@ -16,4 +17,21 @@ public interface DataAccess {
 	public <T extends Linkable> void removeAll(Collection<T> data);
 	public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
+	
+	public static interface TaskUpdateCallback {
+		public <T extends Task> void onAdd(T task);
+		public <T extends Task> void onAddAll(Iterable<T> tasks);
+		public <T extends Task> void onRemove(T task);
+		public <T extends Task> void onRemoveAll(Iterable<T> tasks);
+	}
+	
+	/**
+	 * Register to get method calls on task data changes.
+	 * Unregistering is unnecessary. All implementations of DataAccess must
+	 * use weak references to reference the callback objects.
+	 * 
+	 * Important: DOES NOT HOLD A (STRONG) REFERENCE TO onUpdate object.
+	 * => Caller must hold reference until it can be destroyed.
+	 */
+	public void registerForUpdates(TaskUpdateCallback onUpdate);
 }

@@ -1,5 +1,8 @@
 package gmm.service.data;
 
+import java.util.Collections;
+import java.util.WeakHashMap;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -52,6 +55,28 @@ public class DataBase implements DataAccess {
 	final private Set<Label> taskLabels = new HashSet<>();
 	final private CombinedData combined;
 	
+	final private java.util.Set<TaskUpdateCallback> weakCallbacks =
+			Collections.newSetFromMap(new WeakHashMap<TaskUpdateCallback, Boolean>());
+	
+	/**
+	 * DEAR GOD THIS IS UGLY.
+	 */
+	final private TaskUpdateCallback callbacks = new TaskUpdateCallback() {
+		@Override public <T extends Task> void onRemoveAll(Iterable<T> tasks) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onRemoveAll(tasks);}
+		}
+		@Override public <T extends Task> void onRemove(T task) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onRemove(task);}
+		}
+		
+		@Override public <T extends Task> void onAddAll(Iterable<T> tasks) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks);}
+		}
+		@Override public <T extends Task> void onAdd(T task) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
+		}
+	};
+	
 	@Autowired
 	private DataBase(CombinedData combined) {
 		this.combined = combined;
@@ -100,7 +125,9 @@ public class DataBase implements DataAccess {
 	public synchronized <T extends Linkable> boolean add(T data) {
 		boolean result = getDataList(data.getClass()).add(data);
 		if(data instanceof Task) {
-			taskLabels.add(new Label(((Task)data).getLabel()));
+			Task task = (Task) data;
+			taskLabels.add(new Label(task.getLabel()));
+			callbacks.onAdd(task);
 		}
 		return result;
 	}
@@ -110,10 +137,15 @@ public class DataBase implements DataAccess {
 		Collection<T> collection = getDataList(clazz);
 		boolean result =  collection.addAll(data);
 		
+		//cant use instanceof with Class objects
 		if(Task.class.isAssignableFrom(clazz)) {
-			for (T task : data) {
-				taskLabels.add(new Label(((Task)task).getLabel()));
+			//cant make eclipse see safety of this
+			@SuppressWarnings("unchecked")
+			Collection<Task> tasks = (Collection<Task>) data;
+			for (Task task : tasks) {
+				taskLabels.add(new Label(task.getLabel()));
 			}
+			callbacks.onAddAll(tasks);
 		}
 		return result;
 	}
@@ -121,17 +153,28 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {
 		Multimap<Class<? extends Linkable>, T> clazzToData = HashMultimap.create();
+		Collection<Task> tasks  = new HashSet<>();
 		for(T item : data) {
-			clazzToData.put(item.getClass(), item);
+			Class<? extends Linkable> clazz = item.getClass();
+			if (Task.class.isAssignableFrom(clazz)) {
+				tasks.add((Task) item);
+			}
+			clazzToData.put(clazz, item);
 		}
 		for(Class<? extends Linkable> clazz : clazzToData.keySet()) {
 			getDataList(clazz).removeAll(clazzToData.get(clazz));
 		}
+		callbacks.onRemoveAll(tasks);
 	}
 
 	@Override
 	public synchronized <T extends Linkable> boolean remove(T data) {
-		return getDataList(data.getClass()).remove(data);
+		boolean removed = getDataList(data.getClass()).remove(data);
+		if (removed && data instanceof Task) {
+			Task task = (Task) data;
+			callbacks.onRemove(task);
+		}
+		return removed;
 	}
 	
 	@Override
@@ -168,7 +211,7 @@ public class DataBase implements DataAccess {
 					throw new UnsupportedOperationException();
 			}
 		} catch (UnsupportedOperationException e) {
-			System.err.println("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
+			logger.error("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -194,5 +237,12 @@ public class DataBase implements DataAccess {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void registerForUpdates(TaskUpdateCallback onUpdate) {
+		weakCallbacks.add(onUpdate);
+		if (weakCallbacks.size() > 20)
+			logger.error("Memory leak: Callback objects not getting garbage collected!");
 	}
 }

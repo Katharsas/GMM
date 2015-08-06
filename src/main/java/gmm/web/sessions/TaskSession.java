@@ -14,6 +14,7 @@ import gmm.domain.task.TaskType;
 import gmm.service.TaskFilterService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataAccess.TaskUpdateCallback;
 import gmm.service.sort.TaskSortService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
@@ -32,12 +33,39 @@ import org.springframework.stereotype.Component;
  * Manages the session flow/logic on the Tasks page of the GMM.
  * It basically remembers the state the session is in and treats changes accordingly.
  * 
- * @author Jan
+ * @author Jan Mothes
  */
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class TaskSession {
 
+	/**
+	 * TODO: Actually push this stuff to client
+	 * TODO: more finegrained callbacks to preserve as much caching as possible
+	 * TODO: TaskSession should not update caches or anything if it gets called
+	 * from its Client Controller. Instead callbacks should do all the work.
+	 * Actually the TaskController could directly call DataAccess on data changes,
+	 * DataAccess will call all TaskSession to do the appropriate thing respectivly.
+	 */
+	private class UpdateCallback implements TaskUpdateCallback {
+		@Override
+		public <T extends Task> void onAdd(T task) {
+			dirtyTasksFlag = true;
+		}
+		@Override
+		public <T extends Task> void onAddAll(Iterable<T> tasks) {
+			dirtyTasksFlag = true;
+		}
+		@Override
+		public <T extends Task> void onRemove(T task) {
+			dirtyTasksFlag = true;
+		}
+		@Override
+		public <T extends Task> void onRemoveAll(Iterable<T> tasks) {
+			dirtyTasksFlag = true;
+		}
+	}
+	
 	@Autowired DataAccess data;
 	@Autowired UserService users;
 	@Autowired TaskFilterService filterService;
@@ -67,8 +95,15 @@ public class TaskSession {
 	//triggers a data reload when set to true
 	private boolean dirtyTasksFlag = false;
 	
+	//needed to prevent from getting garbage collected
+	//needs to die with this object
+	private UpdateCallback strongReference;
+	
 	@PostConstruct
 	private void init() {
+		strongReference = new UpdateCallback();
+		data.registerForUpdates(strongReference);
+		
 		filteredTasks = new LinkedList<Task>();
 		tasks = new LinkedList<Task>();
 		sort = new SortForm();
