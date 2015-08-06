@@ -1,4 +1,4 @@
-package gmm.service.data;
+package gmm.service.data.backup;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
+import gmm.service.data.DataConfigService;
+import gmm.service.data.XMLService;
 
 @Service
 public class ManualBackupService {

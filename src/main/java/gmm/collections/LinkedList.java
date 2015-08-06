@@ -15,4 +15,16 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	public LinkedList<E> copy() {
 		return new LinkedList<E>(this);
 	}
+	
+	@Override
+	public String toString() {
+		if (this.size() == 1) return this.iterator().next().toString();
+		else {
+			String result = "";	
+			for (E e : this) {
+				result += "\n" + e.toString();
+			}
+			return result;
+		}
+	}
 }

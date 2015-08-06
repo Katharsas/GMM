@@ -12,7 +12,7 @@ import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
 import gmm.service.data.DataAccess;
-import gmm.service.data.ManualBackupService;
+import gmm.service.data.backup.ManualBackupService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
@@ -321,7 +321,6 @@ public class TaskController {
 	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteTasksInWorkbench() {
-		session.notifyDataChange();
 		data.removeAll(session.getTasks());
 		session.notifyDataChange();
 	}

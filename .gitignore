@@ -164,7 +164,7 @@ Generated_Code/
 # Backup & report files from converting an old project file to a newer
 # Visual Studio version. Backup files are not needed, because we have git ;-)
 _UpgradeReport_Files/
-Backup*/
+# Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
 
@@ -225,7 +225,9 @@ pip-log.txt
 ## Custom
 #############
 
-src/main/webapp/WEB-INF/data
-builds/
-blender/
-src/main/webapp/resources/css/compiled
+/src/main/webapp/WEB-INF/data
+/src/main/webapp/WEB-INF/dataTesting/tasks/autoBackups
+/src/main/webapp/WEB-INF/dataTesting/users/autoBackups
+/builds/
+/blender/
+/src/main/webapp/resources/css/compiled
