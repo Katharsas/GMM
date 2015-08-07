@@ -123,7 +123,8 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> boolean add(T data) {
-		boolean result = getDataList(data.getClass()).add(data);
+		@SuppressWarnings("unchecked")
+		boolean result = this.<T>getDataList((Class<T>)data.getClass()).add(data);
 		if(data instanceof Task) {
 			Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
@@ -200,7 +201,7 @@ public class DataBase implements DataAccess {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Linkable> Collection<T> getDataList(Class<? extends T> clazz) {
+	private <T extends Linkable> Collection<T> getDataList(Class<T> clazz) {
 		try {
 			switch(clazz.getSimpleName()) {
 				case "User":

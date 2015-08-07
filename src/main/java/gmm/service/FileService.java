@@ -101,7 +101,7 @@ public class FileService {
 			this.extensions = extensions;
 		}
 		@Override
-		public boolean accept(File _, String name) {
+		public boolean accept(File __, String name) {
 			for(String ext : this.extensions) {
 				if(strings.endsWith(name, "." + ext)) return name.charAt(0) != '.';
 			}

@@ -88,6 +88,23 @@ public class TaskController {
 		request.setAttribute("workbench-loadForm", getWorkbenchLoadForm());
 	}
 	
+	/*
+	 * Workbench Admin Tab
+	 * -----------------------------------------------------------------
+	 */
+	
+	@RequestMapping(value = "workbench/admin/save", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveTasksInWorkbench(@RequestParam("name") String pathString) throws IOException {
+		manualBackups.saveTasksToXml(session.getTasks(), pathString);
+	}
+	
+	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
+	@ResponseBody
+	public void deleteTasksInWorkbench() {
+		data.removeAll(session.getTasks());
+	}
+	
 	/**
 	 * Load Settings
 	 * -----------------------------------------------------------------
@@ -302,22 +319,5 @@ public class TaskController {
 			taskIds.add(task.getIdLink());
 		}
 		return taskIds;
-	}
-	
-	/*
-	 * Workbench Admin Tab
-	 * -----------------------------------------------------------------
-	 */
-	
-	@RequestMapping(value = "workbench/admin/save", method = RequestMethod.POST)
-	@ResponseBody
-	public void saveTasksInWorkbench(@RequestParam("name") String pathString) throws IOException {
-		manualBackups.saveTasksToXml(session.getTasks(), pathString);
-	}
-	
-	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
-	@ResponseBody
-	public void deleteTasksInWorkbench() {
-		data.removeAll(session.getTasks());
 	}
 }

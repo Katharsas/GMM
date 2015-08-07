@@ -101,8 +101,7 @@ public class BackupService implements ServletContextListener {
 	 */
 	private class ConditionalBackupExecutor extends BackupExecutor {
 		private final BoolSupplier condition;
-		 ConditionalBackupExecutor(
-				BoolSupplier condition, String subDir, int maxBackups) {
+		 ConditionalBackupExecutor(String subDir, int maxBackups, BoolSupplier condition) {
 			 super(subDir, maxBackups);
 			 this.condition = condition;
 		 }
@@ -140,22 +139,21 @@ public class BackupService implements ServletContextListener {
 	public BackupService() {
 		
 		// timed backups
-		monthlyBackup = new ConditionalBackupExecutor(new BoolSupplier(){
-			@Override
-			public boolean get(DateTime now) {
-				return Months.monthsBetween(monthlyBackup.last(), now).getMonths() >= 1;}
-		},"monthly", 6);
-		
-		daylyBackup = new ConditionalBackupExecutor(new BoolSupplier(){
-			@Override public boolean get(DateTime now) {
-				return Days.daysBetween(daylyBackup.last(), now).getDays() >= 1;}
-		},"dayly", 7);
-		
-		hourlyBackup = new ConditionalBackupExecutor(new BoolSupplier(){
-			@Override public boolean get(DateTime now) {
-				return Hours.hoursBetween(hourlyBackup.last(), now).getHours() >= 1;}
-		},"hourly", 24);
-		
+		monthlyBackup = new ConditionalBackupExecutor("monthly", 6, now -> {
+				Months duration = Months.monthsBetween(BackupService.this.monthlyBackup.last(), now);
+				return duration.getMonths() >= 1;
+			}
+		);
+		daylyBackup = new ConditionalBackupExecutor("dayly", 7, now -> {
+				Days duration = Days.daysBetween(BackupService.this.daylyBackup.last(), now);
+				return duration.getDays() >= 1;
+			}
+		);
+		hourlyBackup = new ConditionalBackupExecutor("hourly", 24, now -> {
+				Hours duration = Hours.hoursBetween(BackupService.this.hourlyBackup.last(), now);
+				return duration.getHours() >= 1;
+			}
+		);
 		// triggered backups
 		triggeredBackup = new BackupExecutor("triggered", 100);
 	}

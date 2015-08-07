@@ -22,6 +22,8 @@ import gmm.web.forms.SortForm;
 import gmm.web.forms.LoadForm;
 import gmm.web.forms.LoadForm.LoadOperation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -60,6 +62,7 @@ public class TaskSession {
 				filteredTasks.addAll(filter(tasks));
 				filteredTasks = sort(filteredTasks);
 				TaskSession.this.tasks = filteredTasks.copy();
+				notifyClient();
 			}
 		}
 		@Override
@@ -71,13 +74,19 @@ public class TaskSession {
 		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
 			filteredTasks.removeAll(tasks);
 			tasks.removeAll(tasks);
+			notifyClient();
+		}
+		private void notifyClient() {
+			
 		}
 	}
 	
-	@Autowired DataAccess data;
-	@Autowired UserService users;
-	@Autowired TaskFilterService filterService;
-	@Autowired TaskSortService sortService;
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired private DataAccess data;
+	@Autowired private UserService users;
+	@Autowired private TaskFilterService filterService;
+	@Autowired private TaskSortService sortService;
 	
 	//user logged into this session
 	private User user;
@@ -102,11 +111,14 @@ public class TaskSession {
 	
 	//needed to prevent from getting garbage collected
 	//needs to die with this object
-	private UpdateCallback strongReference;
+	private final UpdateCallback strongReference;
+	
+	public TaskSession() {
+		 strongReference = new UpdateCallback();
+	}
 	
 	@PostConstruct
 	private void init() {
-		strongReference = new UpdateCallback();
 		data.registerForUpdates(strongReference);
 		
 		filteredTasks = new LinkedList<Task>();

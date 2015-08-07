@@ -7,8 +7,6 @@ import java.util.List;
 import gmm.domain.task.Asset;
 import gmm.domain.task.AssetTask;
 import gmm.domain.task.Task;
-import gmm.service.UserService;
-import gmm.service.data.DataAccess;
 import gmm.web.forms.TaskForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class TaskServiceFinder {
 	
-	@Autowired private UserService users;
-	@Autowired private DataAccess data;
 	@Autowired private List<TaskFormService<?>> taskServices;
 	
 	private TaskFormService<?> currentService = null;
@@ -74,13 +70,13 @@ public class TaskServiceFinder {
 	
 	public <E extends Asset, T extends AssetTask<E>> void addFile(T task, MultipartFile file) throws IOException {
 		@SuppressWarnings("unchecked")
-		AssetTaskService<E, T> taskService = getAssetService(task.getClass());
+		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getAssetService(task.getClass());
 		taskService.addFile(file, task);
 	}
 	
 	public <E extends Asset, T extends AssetTask<E>> void deleteFile(T task, Path relativeFile, boolean isAsset) throws IOException {
 		@SuppressWarnings("unchecked")
-		AssetTaskService<E, T> taskService = getAssetService(task.getClass());
+		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getAssetService(task.getClass());
 		taskService.deleteFile(task, relativeFile, isAsset);
 	}
 }
