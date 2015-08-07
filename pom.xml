@@ -285,6 +285,27 @@
 
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.6</version>
+				
+				<executions>
+					<execution>
+						<id>default-war</id>
+						<phase>package</phase>
+						<configuration>
+							<warSourceExcludes>
+								WEB-INF/data/assets/**,
+								WEB-INF/data/tasks/**,
+								WEB-INF/data/users/**,
+								WEB-INF/dataTesting/**
+							</warSourceExcludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		
+			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<configuration>
@@ -302,9 +323,9 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-								<path>/GMM</path>                              
-                                <attachartifactclassifier>exec-war</attachartifactclassifier>
-                                <attachartifactclassifiertype>jar</attachartifactclassifiertype>
+							<path>/GMM</path>                              
+							<attachartifactclassifier>exec-war</attachartifactclassifier>
+							<attachartifactclassifiertype>jar</attachartifactclassifiertype>
 						</configuration>
 					</execution>
 				</executions>
