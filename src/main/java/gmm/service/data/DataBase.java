@@ -62,15 +62,15 @@ public class DataBase implements DataAccess {
 	 * DEAR GOD THIS IS UGLY.
 	 */
 	final private TaskUpdateCallback callbacks = new TaskUpdateCallback() {
-		@Override public <T extends Task> void onRemoveAll(Iterable<T> tasks) {
+		@Override public <T extends Task> void onRemoveAll(Collection<T> tasks) {
 			for(TaskUpdateCallback c : weakCallbacks) {c.onRemoveAll(tasks);}
 		}
 		@Override public <T extends Task> void onRemove(T task) {
 			for(TaskUpdateCallback c : weakCallbacks) {c.onRemove(task);}
 		}
 		
-		@Override public <T extends Task> void onAddAll(Iterable<T> tasks) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks);}
+		@Override public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> clazz) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks, clazz);}
 		}
 		@Override public <T extends Task> void onAdd(T task) {
 			for(TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
@@ -133,21 +133,27 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> boolean addAll(Class<T> clazz, Collection<? extends T> data) {
+	public synchronized <T extends Linkable> boolean addAll(Class<T> clazz, Collection<T> data) {
 		Collection<T> collection = getDataList(clazz);
 		boolean result =  collection.addAll(data);
-		
-		//cant use instanceof with Class objects
-		if(Task.class.isAssignableFrom(clazz)) {
-			//cant make eclipse see safety of this
-			@SuppressWarnings("unchecked")
-			Collection<Task> tasks = (Collection<Task>) data;
-			for (Task task : tasks) {
-				taskLabels.add(new Label(task.getLabel()));
-			}
-			callbacks.onAddAll(tasks);
-		}
+		specialTreatmentCheck(clazz, data);
 		return result;
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <T extends Linkable> void specialTreatmentCheck(Class<T> clazz, Collection<T> data) {
+		//check if T subclass of Task (cant use instanceof with classes)
+		if(Task.class.isAssignableFrom(clazz)) {
+			//Compiler can't see safety of this, so trick him:
+			specialTreatmentForTasks((Class) clazz, (Collection) data);
+		}
+	}
+	
+	private <T extends Task> void specialTreatmentForTasks(Class<T> clazz, Collection<T> tasks) {
+		for (Task task : tasks) {
+			taskLabels.add(new Label(task.getLabel()));
+		}
+		callbacks.onAddAll(tasks, clazz);
 	}
 	
 	@Override

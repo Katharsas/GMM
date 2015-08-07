@@ -34,7 +34,6 @@ import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
-import gmm.web.sessions.TaskSession;
 
 
 @Controller
@@ -44,7 +43,6 @@ import gmm.web.sessions.TaskSession;
 
 public class AdminController {
 
-	@Autowired private TaskSession taskSession;
 	@Autowired private AdminSession session;
 	
 	@Autowired private DataAccess data;
@@ -104,7 +102,6 @@ public class AdminController {
 	public @ResponseBody void deleteTasks() throws Exception {
 		
 		backups.triggerTaskBackup();
-		taskSession.notifyDataChange();
 		data.removeAll(Task.class);
 	}
 	
@@ -158,8 +155,6 @@ public class AdminController {
 			@RequestParam(value = "dir", required = false) Path dir) throws Exception {
 		
 		backups.triggerTaskBackup();
-		taskSession.notifyDataChange();
-		
 		Iterator<? extends Task> i;
 		// Load tasks from file
 		if (!(dir == null)) {
@@ -242,7 +237,6 @@ public class AdminController {
 			@ModelAttribute("taskForm") TaskForm form) throws Exception {
 		
 		backups.triggerTaskBackup();
-		taskSession.notifyDataChange();
 		session.assetImporter = new BundledMessageResponses<>(
 				session.getImportPaths().iterator(), session.getAssetImportOperations(form));
 		return session.assetImporter.loadFirstBundle();

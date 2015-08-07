@@ -41,28 +41,36 @@ public class TaskSession {
 
 	/**
 	 * TODO: Actually push this stuff to client
-	 * TODO: more finegrained callbacks to preserve as much caching as possible
-	 * TODO: TaskSession should not update caches or anything if it gets called
-	 * from its Client Controller. Instead callbacks should do all the work.
-	 * Actually the TaskController could directly call DataAccess on data changes,
-	 * DataAccess will call all TaskSession to do the appropriate thing respectivly.
+	 * 
+	 * Updates session caches when task data changes.
 	 */
 	private class UpdateCallback implements TaskUpdateCallback {
 		@Override
 		public <T extends Task> void onAdd(T task) {
-			dirtyTasksFlag = true;
+			List<T> single = new LinkedList<>();
+			single.add(task);
+			@SuppressWarnings("unchecked")
+			Class<T> clazz = (Class<T>) task.getClass();
+			onAddAll(single, clazz);
 		}
 		@Override
-		public <T extends Task> void onAddAll(Iterable<T> tasks) {
-			dirtyTasksFlag = true;
+		public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> clazz) {
+			TaskType type = TaskType.fromClass(clazz);
+			if(selected[type.ordinal()]) {
+				filteredTasks.addAll(filter(tasks));
+				filteredTasks = sort(filteredTasks);
+				TaskSession.this.tasks = filteredTasks.copy();
+			}
 		}
 		@Override
 		public <T extends Task> void onRemove(T task) {
-			dirtyTasksFlag = true;
+			filteredTasks.remove(task);
+			tasks.remove(task);
 		}
 		@Override
-		public <T extends Task> void onRemoveAll(Iterable<T> tasks) {
-			dirtyTasksFlag = true;
+		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
+			filteredTasks.removeAll(tasks);
+			tasks.removeAll(tasks);
 		}
 	}
 	
@@ -91,9 +99,6 @@ public class TaskSession {
 	
 	//current task load settings
 	private LoadForm load;
-	
-	//triggers a data reload when set to true
-	private boolean dirtyTasksFlag = false;
 	
 	//needed to prevent from getting garbage collected
 	//needs to die with this object
@@ -201,14 +206,6 @@ public class TaskSession {
 	 * ---------------------------------------------------*/
 	
 	/**
-	 * Notify that task data will change or changed.
-	 * Triggers a task data reload and refiltering on the next call of {@link #getTasks()}.
-	 */
-	public void notifyDataChange(){
-		dirtyTasksFlag = true;
-	}
-	
-	/**
 	 * Change/update loaded tasks
 	 */
 	public void loadTasks(TaskType type) {
@@ -248,37 +245,11 @@ public class TaskSession {
 		tasks = sort(tasks);
 	}
 	
-	/**
-	 * Remove task from session data.
-	 */
-	public void remove(Task task) {
-		filteredTasks.remove(task);
-		tasks.remove(task);
-	}
-	
-	/**
-	 * Add task to session data. Resets modifiers like search.
-	 */
-	public void add(Task task) {
-		TaskType type = TaskType.fromClass(task.getClass());
-		if(selected[type.ordinal()]) {
-			List<Task> single = new LinkedList<>();
-			single.add(task);
-			filteredTasks.addAll(filter(single));
-			filteredTasks = sort(filteredTasks);
-			tasks = (List<Task>) filteredTasks.copy();
-		}
-	}
-	
 	/*--------------------------------------------------
 	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
 	public List<Task> getTasks() {
-		if(dirtyTasksFlag) {
-			reload();
-			dirtyTasksFlag = false;
-		}
 		return (List<Task>) tasks.copy();
 	}
 	

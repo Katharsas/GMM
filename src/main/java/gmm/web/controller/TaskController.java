@@ -147,9 +147,7 @@ public class TaskController {
 	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleTasksDelete(@PathVariable String idLink) {
-		
 		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
-		session.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
 	}
 	
 	
@@ -213,7 +211,6 @@ public class TaskController {
 			task = taskCreator.create(type, form);
 			task = type.cast(task);
 			data.add(task);
-			session.add(task);
 		}
 		else {
 			task = UniqueObject.getFromIdLink(session.getTasks(), idLink);
@@ -322,6 +319,5 @@ public class TaskController {
 	@ResponseBody
 	public void deleteTasksInWorkbench() {
 		data.removeAll(session.getTasks());
-		session.notifyDataChange();
 	}
 }
