@@ -35,7 +35,7 @@
 	<div id="exceptionDialog-traceWrapper">
 		<pre id="exceptionDialog-trace"></pre>
 	</div>
-	<div id="exceptionDialog-reloadButton" class="button" onclick="window.location.reload()">
+	<div id="exceptionDialog-reloadButton" class="button" onclick="window.location.href='<c:url value="/tasks"/>';">
 		<fmt:message key="all_template.reload"/>
 	</div>
 </div>

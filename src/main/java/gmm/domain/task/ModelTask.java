@@ -9,7 +9,6 @@ import gmm.domain.User;
 public class ModelTask extends AssetTask<Model> {
 
 	final private List<TextureTask> textures = new LinkedList<TextureTask>();
-	final private List<ModelSite> sites = new LinkedList<ModelSite>();
 	private int originalFaceCount;
 	private int newFaceCount;
 	
@@ -35,9 +34,6 @@ public class ModelTask extends AssetTask<Model> {
 
 	public List<TextureTask> getTextures() {
 		return textures;
-	}
-	public List<ModelSite> getSites() {
-		return sites;
 	}
 
 	@Override

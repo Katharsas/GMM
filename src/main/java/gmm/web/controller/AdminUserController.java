@@ -47,16 +47,22 @@ public class AdminUserController {
 			@RequestParam(value="name", required=false) String name,
 			@RequestParam(value="role", required=false) String role) {
 		
+		User exists = User.getFromName(users.get(), name);
 		if(idLink.equals("new")) {
-			User user = new User(name);
-			if(users.get().contains(user)) {
-				throw new UnsupportedOperationException("A user with this name does already exist!");
+			User newUser = new User(name);
+			if (exists != null) {
+				throw new IllegalArgumentException("Can't add user. A user with this name already exists!");
 			}
-			data.add(user);
+			data.add(newUser);
 		}
 		else {
 			User user = users.getByIdLink(idLink);
-			if(name != null) user.setName(name);
+			if(name != null) {
+				if (exists != null && user != exists) {
+					throw new IllegalArgumentException("Can't change name. Another user with this name already exists!");
+				}
+				user.setName(name);
+			}
 			if(role != null) user.setRole(role);
 		}
 	}

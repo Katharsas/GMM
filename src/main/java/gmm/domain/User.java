@@ -2,6 +2,7 @@ package gmm.domain;
 
 import gmm.web.forms.LoadForm;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +40,27 @@ public class User extends NamedObject {
 	 */
 	public User(String name) {
 		super(name);
+	}
+	
+	/**
+	 * Returns the first user from a collection who has the same name as this user.
+	 * Ignores case of letters in name.
+	 */
+	public static User getFromName(Collection<User> c, String name) {
+		Objects.requireNonNull(c);
+		for(User user : c) {
+			if(user.getName().equalsIgnoreCase(name)) return user;
+		}
+		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return getIdLink();
+	}
+	
+	public String toStringDebug() {
+		return "[Name: " + getName() + " Id:" + getId() + "]";
 	}
 	
 	//Setters, Getters---------------------------------------

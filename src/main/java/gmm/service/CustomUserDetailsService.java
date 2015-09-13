@@ -2,7 +2,6 @@ package gmm.service;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
-import gmm.domain.NamedObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 	public UserDetails loadUserByUsername(String name)
 			throws UsernameNotFoundException {
 		
-		gmm.domain.User user = NamedObject.getFromName(users.get(), name);
+		gmm.domain.User user = gmm.domain.User.getFromName(users.get(), name);
 		if(user == null || user.getPasswordHash() == null || !user.isEnabled()) {
 			throw new UsernameNotFoundException("Could not find User with name "+name);
 		}

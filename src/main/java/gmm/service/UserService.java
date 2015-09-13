@@ -1,7 +1,6 @@
 package gmm.service;
 
 import gmm.collections.Collection;
-import gmm.domain.NamedObject;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
@@ -32,7 +31,7 @@ public class UserService {
 	}
 	
 	public User get(String name) {
-		return NamedObject.getFromName(data.<User>getList(User.class), name);
+		return User.getFromName(data.<User>getList(User.class), name);
 	}
 	
 	public User getByIdLink(String idLink) {
