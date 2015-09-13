@@ -3,9 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Calculator App Using Spring 4 WebSocket</title>
-<!--     <script src="resources/sockjs-0.3.4.js"></script> -->
-<!--     <script src="resources/stomp.js"></script> -->
+    <title>STOMP Test Using Spring 4 WebSocket</title>
     <script src="<c:url value="/res/javascript/lib/stomp.js"/>" type="text/javascript"></script>
     <script type="text/javascript">
         var stompClient = null; 
@@ -16,14 +14,17 @@
             document.getElementById('calResponse').innerHTML = '';
         }
         function connect() {
-        	var uri = "ws://localhost:8080/GMM/add";
+        	var uri = "ws://localhost:8080/GMM/chat";
             var socket = new WebSocket(uri);
 			stompClient = Stomp.over(socket);
             stompClient.connect({}, function(frame) {
                 setConnected(true);
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/showResult', function(calResult){
-                	showResult(JSON.parse(calResult.body).result);
+                stompClient.subscribe('/user/queue/echoResult', function(answer){
+                	showResult(answer.body);
+                });
+                stompClient.subscribe('/topic/allResult', function(answer){
+                	showResult(answer.body);
                 });
             });
         }
@@ -32,10 +33,13 @@
             setConnected(false);
             console.log("Disconnected");
         }
-        function sendNum() {
-            var num1 = document.getElementById('num1').value;
-            var num2 = document.getElementById('num2').value;
-            stompClient.send("/calcApp/add", {}, JSON.stringify({ 'num1': num1, 'num2': num2 }));
+        function sendEcho() {
+            var chatInput = document.getElementById('num1').value;
+            stompClient.send("/app/chat/echo", {}, chatInput);
+        }
+        function sendAll() {
+            var chatInput = document.getElementById('num1').value;
+            stompClient.send("/app/chat/all", {}, chatInput);
         }
         function showResult(message) {
             var response = document.getElementById('calResponse');
@@ -55,9 +59,9 @@
         <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button><br/><br/>
     </div>
     <div id="calculationDiv">
-        <label>Number One:</label><input type="text" id="num1" /><br/>
-        <label>Number Two:</label><input type="text" id="num2" /><br/><br/>
-        <button id="sendNum" onclick="sendNum();">Send to Add</button>
+        <label>Message:</label><input type="text" id="num1" /><br/>
+        <button id="sendEcho" onclick="sendEcho();">Echo</button><br/>
+        <button id="sendAll" onclick="sendAll();">ToAll</button>
         <p id="calResponse"></p>
     </div>
 </div>

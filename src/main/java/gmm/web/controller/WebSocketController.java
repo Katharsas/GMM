@@ -1,9 +1,15 @@
 package gmm.web.controller;
 
+import java.security.Principal;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import gmm.service.UserService;
 
 /**
  * from tutorial:
@@ -15,43 +21,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class WebSocketController {
 	
-	@MessageMapping("/add")
-	@SendTo("/topic/showResult")
-	public Result addNum(CalcInput input) throws Exception {
-        Thread.sleep(2000);
-        Result result = new Result(input.getNum1()+"+"+input.getNum2()+"="+(input.getNum1()+input.getNum2())); 
-        return result;
+	@Autowired UserService users;
+//	@Autowired SimpMessageSendingOperations sender;
+	
+	@MessageMapping("/chat/echo")
+	@SendToUser("/queue/echoResult")
+	public String sendEcho(String message, Principal p) throws Exception {
+        return "To "+p.getName()+": "+message;
+        //to send to a specific user return void and use SimpMessageSendingOperations
+    }
+	
+	@MessageMapping("/chat/all")
+	@SendTo("/topic/allResult")
+	public String sendAll(String message, Principal p) throws Exception {
+        return "To all: "+message;
     }
 
 	@RequestMapping("/start")
 	public String start() {
 		return "start";
-	}
-	
-	public static class CalcInput {
-	    private int num1;
-	    private int num2;
-		public int getNum1() {
-			return num1;
-		}
-		public void setNum1(int num1) {
-			this.num1 = num1;
-		}
-		public int getNum2() {
-			return num2;
-		}
-		public void setNum2(int num2) {
-			this.num2 = num2;
-		}    
-	}
-	
-	public static class Result {
-	    private String result;
-	    public Result(String result) {
-	        this.result = result;
-	    }
-		public String getResult() {
-			return result;
-		}
 	}
 }
