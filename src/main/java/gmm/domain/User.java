@@ -46,7 +46,7 @@ public class User extends NamedObject {
 	 * Returns the first user from a collection who has the same name as this user.
 	 * Ignores case of letters in name.
 	 */
-	public static User getFromName(Collection<User> c, String name) {
+	public static User getFromName(Collection<? extends User> c, String name) {
 		Objects.requireNonNull(c);
 		for(User user : c) {
 			if(user.getName().equalsIgnoreCase(name)) return user;

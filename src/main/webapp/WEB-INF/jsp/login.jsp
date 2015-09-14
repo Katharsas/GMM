@@ -23,6 +23,7 @@
 			<span class="h3">Login</span>
 			<form id="loginForm" action="<c:url value="/login"/>" method="POST">
 				<fieldset id="login-form-inputs">
+				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 					<div class="input">
 						<input type="text" id="username" name="username" autofocus="autofocus"/><br>
 					</div>

@@ -10,6 +10,9 @@
 		<!-- Stuff -->
 			<title><fmt:message key="all_template.GMMtasks"/></title>
 			<meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+			<meta name="_csrf" content="${_csrf.token}"/>
+			<!-- default header name is X-CSRF-TOKEN -->
+			<meta name="_csrf_header" content="${_csrf.headerName}"/>
 		<!-- Javascript -->
 			<script src="<c:url value="/res/javascript/lib/jquery-2.1.1.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->

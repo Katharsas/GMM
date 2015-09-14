@@ -5,12 +5,20 @@
  * @author Jan Mothes
  */
 var Ajax = (function() {
+	//CSRF tokens must be included into POST/PUT/DELETE to GMM
+	//Just throwing it into every request that goes to GMM.
+	var token = $("meta[name='_csrf']").attr("content");
+	var header = $("meta[name='_csrf_header']").attr("content");
+	
 	var getAjaxDefaultSettings = function(url, data, settings) {
 		if (url === undefined || url === null) return undefined;
 		var result = {
 			url: url,
 			headers: {accept:"application/json,*/*;q=0.8"},
 		};
+		if (url.startsWith(contextUrl)) {
+			result.headers[header] = token;
+		}
 		if (data !== undefined && data !== null) {
 			result.data = data;
 		}
