@@ -27,12 +27,10 @@ HTML is generated server-side from templates (templates allow to put variables/l
 2. CSS
 -------------------------------------------
 CSS is generated with the preprocessor SASS
-=> compiles .scss files from folder: "src/main/sass" -----> to .css files in folder "src/main/webapp/resources/css/compiled"
+=> compiles .scss files from folder: "src/main/frontend/sass" -----> to .css files in folder "src/main/webapp/resources/css/compiled"
 => SASS files (.scss) are very similar to real .css files, but allow things like variables, imports, nested selectors or functions/logic. This also makes it possible to automatically minify the compiled .css files.
 => See website with syntax, guides & docs: http://sass-lang.com/
 => Files are compiled whenever you change a .scss file or start a complete maven build.
-=> This thing is a memory hog, so make sure Eclipse has enough or disable the automatic compilation on file change:
-Search for line "<runOnIncremental>true</runOnIncremental>" in pom.xml file and change to false (don't accidentally commit).
 => Basic folder structure:
 - Files in all_template folder belong to the html template file "all_template.tag".
 - Files in shared folder are used by some but not all pages.
@@ -43,7 +41,11 @@ Search for line "<runOnIncremental>true</runOnIncremental>" in pom.xml file and 
 -------------------------------------------
 3. Javascript (JS)
 -------------------------------------------
-Nothing important going on here. Javascript is in folder "src/main/webapp/resources/javascript".
+As the JS code is getting migrated to ES 6 modules, it needs to get compiled back to ES 5 with the javascript library Babel
+=> old ES 5 javascript code is in folder "src/main/webapp/resources/javascript"
+=> Babel compiles new ES 6 files from folder: "src/main/frontend/javascript" ----> to folder "src/main/webapp/resources/javascript/compiled"
+=> see website wtih docs: https://babeljs.io/
+=> Files are compiled whenever you change a ES 6 file or start a complete maven build.
 
 -------------------------------------------
 4. Internationalization
@@ -59,4 +61,4 @@ Nothing important going on here. Javascript is in folder "src/main/webapp/resour
 3. Other
 -------------------------------------------
 => Only use HTTP request methods GET & POST because request bodies by other methods may be rejected by Tomcat.
-=> Following HTTP specs is not necessary, other protocol will be used in future anyway (WebSockets)
+=> Following HTTP specs is not necessary, other protocol will be used in far future anyway (WebSockets)

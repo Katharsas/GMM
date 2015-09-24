@@ -348,26 +348,6 @@
 						</dependency>
 					</dependencies>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.6</version>
-				</plugin>
-				<plugin>
-				    <groupId>nl.geodienstencentrum.maven</groupId>
-				    <artifactId>sass-maven-plugin</artifactId>
-				    <version>2.1</version>
-				</plugin>
-				<plugin>
-				    <groupId>org.apache.maven.plugins</groupId>
-				    <artifactId>maven-antrun-plugin</artifactId>
-				    <version>1.8</version>
-				</plugin>
 				<!-- Enable execution of sass plugin -->
 				<!-- Enable execution of antrun plugin for creating css folder -->
 				<plugin>
@@ -422,11 +402,64 @@
 		</resources>
 
 		<plugins>
+			
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>0.0.26</version>
+				<configuration>
+					<workingDirectory>src/main/frontend</workingDirectory>
+				</configuration>
+				<executions>
+					<!-- Config from: https://github.com/eirslett/frontend-maven-plugin -->
+					<execution>
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+						<!-- optional: default phase is "generate-resources" -->
+						<phase>generate-resources</phase>
+						<configuration>
+							<nodeVersion>v4.1.1</nodeVersion>
+							<npmVersion>3.3.3</npmVersion>
+							<nodeDownloadRoot>https://nodejs.org/dist/</nodeDownloadRoot>
+							<npmDownloadRoot>http://registry.npmjs.org/npm/-/</npmDownloadRoot>
+							<!-- changing this (default is workingDirectory) will not update the called dir => broken -->
+							<!-- Dont use target, because that causes redownload whenever maven is cleaned -->
+							<!-- <installDirectory>.</installDirectory> -->
+						</configuration>
+					</execution>
+					<execution>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<!-- optional: default phase is "generate-resources" -->
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>gulp build</id>
+						<goals>
+							<goal>gulp</goal>
+						</goals>
+						<!-- optional: the default phase is "generate-resources" -->
+						<phase>generate-resources</phase>
+						<configuration>
+							<srcdir>src/main/frontend</srcdir>
+							<outputdir>src/main/webapp/resources</outputdir>
+							<arguments>build</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.6</version>
-				
 				<executions>
 					<execution>
 						<id>default-war</id>
@@ -452,7 +485,6 @@
 					<username>admin</username>
 					<password>jdfA-.4*sad+BV5</password>
 				</configuration>
-
 				<executions>
 					<execution>
 						<id>tomcat-run</id>
@@ -472,6 +504,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -482,43 +515,16 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
 				<configuration>
 					<encoding>ISO-8859-1</encoding>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>nl.geodienstencentrum.maven</groupId>
-				<artifactId>sass-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>compileScss</id>
-						<phase>compile</phase>
-						<goals>
-							<goal>update-stylesheets</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<resources>
-						<resource>
-							<source>
-								<directory>${basedir}/src/main/sass</directory>
-							</source>
-							<destination>${basedir}/src/main/webapp/resources/css/compiled</destination>
-						</resource>
-					</resources>
-					<sassOptions>
-						<style>:expanded</style>
-<!-- 						<style>:compressed</style> -->
-<!-- 						<sourcemap>:none</sourcemap> -->
-					</sassOptions>
 				</configuration>
 			</plugin>
 			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>generate-sources</id>

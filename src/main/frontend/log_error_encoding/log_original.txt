@@ -1,0 +1,36 @@
+﻿[INFO] Running 'npm install --color=false' in C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend
+[INFO] C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend
+[INFO] â””â”€â”¬ gulp@3.9.0 
+[INFO]   â”œâ”€â”€ archy@1.0.0 
+[INFO]   â”œâ”€â”¬ chalk@1.1.1 
+[INFO]   â”‚ â”œâ”€â”€ ansi-styles@2.1.0 
+[INFO]   â”‚ â”œâ”€â”€ escape-string-regexp@1.0.3 
+[INFO]   â”‚ â”œâ”€â”¬ has-ansi@2.0.0 
+[INFO]   â”‚ â”‚ â””â”€â”€ ansi-regex@2.0.0 
+[INFO]   â”‚ â”œâ”€â”€ strip-ansi@3.0.0 
+[INFO]   â”‚ â””â”€â”€ supports-color@2.0.0 
+[INFO]   â”œâ”€â”€ deprecated@0.0.1 
+[INFO]   â”œâ”€â”¬ gulp-util@3.0.6 
+[INFO]   â”‚ â”œâ”€â”€ array-differ@1.0.0 
+[INFO]   â”‚ â”œâ”€â”€ array-uniq@1.0.2 
+[INFO]   â”‚ â”œâ”€â”€ beeper@1.1.0 
+[INFO]   â”‚ â”œâ”€â”¬ dateformat@1.0.11 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ get-stdin@5.0.0 
+[INFO]   â”‚ â”‚ â””â”€â”¬ meow@3.3.0 
+[INFO]   â”‚ â”‚   â”œâ”€â”¬ camelcase-keys@1.0.0 
+[INFO]   â”‚ â”‚   â”‚ â”œâ”€â”€ camelcase@1.2.1 
+[INFO]   â”‚ â”‚   â”‚ â””â”€â”€ map-obj@1.0.1 
+[INFO]   â”‚ â”‚   â””â”€â”¬ indent-string@1.2.2 
+[INFO]   â”‚ â”‚     â”œâ”€â”€ get-stdin@4.0.1 
+[INFO]   â”‚ â”‚     â””â”€â”¬ repeating@1.1.3 
+[INFO]   â”‚ â”‚       â””â”€â”¬ is-finite@1.0.1 
+[INFO]   â”‚ â”‚         â””â”€â”€ number-is-nan@1.0.0 
+[INFO]   â”‚ â”œâ”€â”€ lodash._reescape@3.0.0 
+[INFO]   â”‚ â”œâ”€â”€ lodash._reevaluate@3.0.0 
+[INFO]   â”‚ â”œâ”€â”€ lodash._reinterpolate@3.0.0 
+[INFO]   â”‚ â”œâ”€â”¬ lodash.template@3.6.2 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ lodash._basecopy@3.0.1 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ lodash._basetostring@3.0.1 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ lodash._basevalues@3.0.0 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ lodash._isiterateecall@3.0.9 
+[INFO]   â”‚ â”‚ â”œâ”€â”€ lodash.escape@3.0.0 

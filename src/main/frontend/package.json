@@ -1,0 +1,18 @@
+{
+	"comments": {
+		"fs": "file utils",
+		"path": "path utils",
+		"gulp": "build script framework",
+		"gulp-babel": "ES6 -> ES5 compiler",
+		"gulp-sass": "SASS -> CSS compiler",
+		"gulp-watch": "file change trigger"
+	},
+	"devDependencies": {
+		"fs": "0.0.2",
+		"path": "^0.11.14",
+		"gulp": "^3.9.0",
+		"gulp-babel": "^5.2.1",
+		"gulp-sass": "^2.0.4",
+		"gulp-watch": "^4.3.5"
+	}
+}

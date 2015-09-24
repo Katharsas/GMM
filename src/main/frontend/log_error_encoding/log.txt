@@ -1,0 +1,122 @@
+[INFO] Running 'npm install --color=false' in C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend
+[INFO] C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend
+[INFO] └─┬ gulp@3.9.0 
+[INFO]   ├── archy@1.0.0 
+[INFO]   ├─┬ chalk@1.1.1 
+[INFO]   │ ├── ansi-styles@2.1.0 
+[INFO]   │ ├── escape-string-regexp@1.0.3 
+[INFO]   │ ├─┬ has-ansi@2.0.0 
+[INFO]   │ │ └── ansi-regex@2.0.0 
+[INFO]   │ ├── strip-ansi@3.0.0 
+[INFO]   │ └── supports-color@2.0.0 
+[INFO]   ├── deprecated@0.0.1 
+[INFO]   ├─┬ gulp-util@3.0.6 
+[INFO]   │ ├── array-differ@1.0.0 
+[INFO]   │ ├── array-uniq@1.0.2 
+[INFO]   │ ├── beeper@1.1.0 
+[INFO]   │ ├─┬ dateformat@1.0.11 
+[INFO]   │ │ ├── get-stdin@5.0.0 
+[INFO]   │ │ └─┬ meow@3.3.0 
+[INFO]   │ │   ├─┬ camelcase-keys@1.0.0 
+[INFO]   │ │   │ ├── camelcase@1.2.1 
+[INFO]   │ │   │ └── map-obj@1.0.1 
+[INFO]   │ │   └─┬ indent-string@1.2.2 
+[INFO]   │ │     ├── get-stdin@4.0.1 
+[INFO]   │ │     └─┬ repeating@1.1.3 
+[INFO]   │ │       └─┬ is-finite@1.0.1 
+[INFO]   │ │         └── number-is-nan@1.0.0 
+[INFO]   │ ├── lodash._reescape@3.0.0 
+[INFO]   │ ├── lodash._reevaluate@3.0.0 
+[INFO]   │ ├── lodash._reinterpolate@3.0.0 
+[INFO]   │ ├─┬ lodash.template@3.6.2 
+[INFO]   │ │ ├── lodash._basecopy@3.0.1 
+[INFO]   │ │ ├── lodash._basetostring@3.0.1 
+[INFO]   │ │ ├── lodash._basevalues@3.0.0 
+[INFO]   │ │ ├── lodash._isiterateecall@3.0.9 
+[INFO]   │ │ ├── lodash.escape@3.0.0 
+[INFO]   │ │ ├─┬ lodash.keys@3.1.2 
+[INFO]   │ │ │ ├── lodash._getnative@3.9.1 
+[INFO]   │ │ │ ├── lodash.isarguments@3.0.4 
+[INFO]   │ │ │ └── lodash.isarray@3.0.4 
+[INFO]   │ │ ├── lodash.restparam@3.6.1 
+[INFO]   │ │ └── lodash.templatesettings@3.1.0 
+[INFO]   │ ├─┬ multipipe@0.1.2 
+[INFO]   │ │ └─┬ duplexer2@0.0.2 
+[INFO]   │ │   └── readable-stream@1.1.13 
+[INFO]   │ ├── object-assign@3.0.0 
+[INFO]   │ ├── replace-ext@0.0.1 
+[INFO]   │ ├─┬ through2@2.0.0 
+[INFO]   │ │ ├─┬ readable-stream@2.0.2 
+[INFO]   │ │ │ ├── core-util-is@1.0.1 
+[INFO]   │ │ │ ├── inherits@2.0.1 
+[INFO]   │ │ │ ├── isarray@0.0.1 
+[INFO]   │ │ │ ├── process-nextick-args@1.0.3 
+[INFO]   │ │ │ ├── string_decoder@0.10.31 
+[INFO]   │ │ │ └── util-deprecate@1.0.1 
+[INFO]   │ │ └── xtend@4.0.0 
+[INFO]   │ └─┬ vinyl@0.5.3 
+[INFO]   │   ├── clone@1.0.2 
+[INFO]   │   └── clone-stats@0.0.1 
+[INFO]   ├── interpret@0.6.6 
+[INFO]   ├─┬ liftoff@2.2.0 
+[INFO]   │ ├── extend@2.0.1 
+[INFO]   │ ├─┬ findup-sync@0.3.0 
+[INFO]   │ │ └─┬ glob@5.0.14 
+[INFO]   │ │   ├── inflight@1.0.4 
+[INFO]   │ │   └── path-is-absolute@1.0.0 
+[INFO]   │ ├── flagged-respawn@0.3.1 
+[INFO]   │ ├── rechoir@0.6.2 
+[INFO]   │ └── resolve@1.1.6 
+[INFO]   ├── minimist@1.2.0 
+[INFO]   ├─┬ orchestrator@0.3.7 
+[INFO]   │ ├─┬ end-of-stream@0.1.5 
+[INFO]   │ │ └─┬ once@1.3.2 
+[INFO]   │ │   └── wrappy@1.0.1 
+[INFO]   │ ├── sequencify@0.0.7 
+[INFO]   │ └── stream-consume@0.1.0 
+[INFO]   ├── pretty-hrtime@1.0.0 
+[INFO]   ├── semver@4.3.6 
+[INFO]   ├─┬ tildify@1.1.1 
+[INFO]   │ └── os-homedir@1.0.1 
+[INFO]   ├─┬ v8flags@2.0.10 
+[INFO]   │ └── user-home@1.1.1 
+[INFO]   └─┬ vinyl-fs@0.3.14 
+[INFO]     ├─┬ defaults@1.0.2 
+[INFO]     │ └── clone@0.1.19 
+[INFO]     ├─┬ glob-stream@3.1.18 
+[INFO]     │ ├── glob@4.5.3 
+[INFO]     │ ├─┬ glob2base@0.0.12 
+[INFO]     │ │ └── find-index@0.1.1 
+[INFO]     │ ├─┬ minimatch@2.0.10 
+[INFO]     │ │ └─┬ brace-expansion@1.1.0 
+[INFO]     │ │   ├── balanced-match@0.2.0 
+[INFO]     │ │   └── concat-map@0.0.1 
+[ERROR] npm WARN EPACKAGEJSON C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend No description
+[INFO]     │ ├── ordered-read-streams@0.1.0 
+[ERROR] npm WARN EPACKAGEJSON C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend No repository field.
+[INFO]     │ ├─┬ through2@0.6.5 
+[ERROR] npm WARN EPACKAGEJSON C:\Users\Jan\Eigene Repositories\GMM\src\main\frontend No license field.
+[INFO]     │ │ └── readable-stream@1.0.33 
+[INFO]     │ └── unique-stream@1.0.0 
+[INFO]     ├─┬ glob-watcher@0.0.6 
+[INFO]     │ └─┬ gaze@0.5.1 
+[INFO]     │   └─┬ globule@0.1.0 
+[INFO]     │     ├─┬ glob@3.1.21 
+[INFO]     │     │ ├── graceful-fs@1.2.3 
+[INFO]     │     │ └── inherits@1.0.2 
+[INFO]     │     ├── lodash@1.0.2 
+[INFO]     │     └─┬ minimatch@0.2.14 
+[INFO]     │       ├── lru-cache@2.7.0 
+[INFO]     │       └── sigmund@1.0.1 
+[INFO]     ├── graceful-fs@3.0.8 
+[INFO]     ├─┬ mkdirp@0.5.1 
+[INFO]     │ └── minimist@0.0.8 
+[INFO]     ├─┬ strip-bom@1.0.0 
+[INFO]     │ ├── first-chunk-stream@1.0.0 
+[INFO]     │ └── is-utf8@0.2.0 
+[INFO]     ├─┬ through2@0.6.5 
+[INFO]     │ └── readable-stream@1.0.33 
+[INFO]     └─┬ vinyl@0.4.6 
+[INFO]       └── clone@0.2.0 
+[INFO] 
+[INFO] 
