@@ -1,4 +1,7 @@
-import $ from "./lib/jquery";
+/* jshint esnext:true */
+import $ from "../lib/jquery";
+import Dialogs from "./dialogs";
+import { contextUrl } from "./default";
 
 /**
  * Ajax
@@ -35,7 +38,6 @@ export default (function() {
 	};
 
 	return {
-		getAjaxDefaultSettings : getAjaxDefaultSettings,
 		
 		/**
 		 * POST
@@ -50,7 +52,7 @@ export default (function() {
 			});
 			return (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(showException);
+					.fail(Dialogs.showException);
 		},
 		
 		/**
@@ -66,7 +68,7 @@ export default (function() {
 			});
 			return (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(showException);
+					.fail(Dialogs.showException);
 		},
 		
 		/**
@@ -78,12 +80,12 @@ export default (function() {
 		upload : function(url, file) {
 			var formData = new FormData();
 			formData.append('file', file);
-			var settings = Ajax.getAjaxDefaultSettings(url, formData, {
+			var settings = getAjaxDefaultSettings(url, formData, {
 		    	processData: false,
 		    	contentType: false,
 		    	type: "POST"
 			});
-			return $.ajax(settings).fail(showException);
+			return $.ajax(settings).fail(Dialogs.showException);
 		}
 	};
 })();
