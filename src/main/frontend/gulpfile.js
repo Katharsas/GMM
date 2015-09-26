@@ -5,12 +5,17 @@
  * Commented out watch code, could prove useful at some point.
  */
 
+var notify = require("gulp-notify");
+
 var gulp = require('gulp');
-var babel = require("gulp-babel");
 var sass = require("gulp-sass");
-//var files = require('fs');
+var sourcemaps = require("gulp-sourcemaps");
+
+var browserify = require('browserify');
+var babelify = require('babelify');
+var source = require('vinyl-source-stream');
+
 //var path = require('path');
-//var watch = require('gulp-watch');
 
 /**
  * ########################
@@ -20,9 +25,9 @@ var sass = require("gulp-sass");
 
 //JavaScript
 
-var jsDir = "javascript/";
+var jsDir = "javascript/example/";
 var jsDest = "../webapp/resources/javascript/compiled/";
-var jsFilter = "**/*.js";
+//var jsFilter = "**/*.js";
 
 //SASS
 
@@ -36,72 +41,37 @@ var sassFilter = "**/*.scss";
  * ########################
  */
 
-gulp.task('build-js', function () {
-	return gulp
-		.src(jsDir + jsFilter)
-		.pipe(babel())
+function handleErrors() {
+	var args = Array.prototype.slice.call(arguments);
+	notify.onError({
+		title: "Compile Error",
+		message: "<%= error.message %>"
+	}).apply(this, args);
+	this.emit("end"); // Keep gulp from hanging on this task
+}
+
+function buildScript(file) {
+	var props = {entries: [jsDir + file], debug: true};
+	var bundler = browserify(props);
+	bundler.transform(babelify);
+	var stream = bundler.bundle();
+	return stream.on("error", handleErrors)
+		.pipe(source("bundle_" + file))
 		.pipe(gulp.dest(jsDest));
+}
+
+gulp.task("build-js", function () {
+	//multiple files: http://fettblog.eu/gulp-browserify-multiple-bundles/
+	return buildScript("consumer.js");
 });
 
 gulp.task('build-sass', function () {
 	return gulp
 		.src(sassDir + sassFilter)
+		.pipe(sourcemaps.init())
 		.pipe(sass().on('error', sass.logError))
+		.pipe(sourcemaps.write())
 		.pipe(gulp.dest(sassDest));
 });
 
 gulp.task('build', ['build-js', 'build-sass']);
-
-
-//gulp.task('watch-scripts', function () {
-//	var options = {
-//		unlink: '-'.red + 'Removed',
-//		add: '+'.green + 'Added',
-//		change: '*'.cyan + 'Changed'
-//	};
-//
-//	return watch(config.src.scripts.dir + config.src.scripts.files, function (vinyl) {
-//		vinyl.path = vinyl.path.replace(new RegExp('\\' + path.sep, 'g'), '/');
-//		var to = vinyl.path.split(config.src.scripts.dir)[1].split('.');
-//		var ext = to.pop();
-//		to = to.join('.');
-//		var toPath = to.split('/');
-//		toPath.pop()
-//
-//		console.log(options[vinyl.event] + ' ' + to.magenta + '...');
-//
-//		if (vinyl.event === 'unlink') {
-//			files.unlinkSync("js/" + to + ".js");
-//		} else {
-//			gulp.src(config.src.scripts.dir + to + "." + ext)
-//				.pipe(scriptsCompiler())
-//				.pipe(gulp.dest(config.dist.scripts + toPath));
-//		}
-//	});
-//});
-//
-//gulp.task('watch-styles', function () {
-//	var options = {
-//		unlink: '-'.red + 'Removed',
-//		add: '+'.green + 'Added',
-//		change: '*'.cyan + 'Changed'
-//	};
-//
-//	return watch(config.src.styles.dir + config.src.styles.files, function (vinyl) {
-//		vinyl.path = vinyl.path.replace(new RegExp('\\' + path.sep, 'g'), '/');
-//		var to = vinyl.path.split(config.src.styles.dir)[1].split('.');
-//		to.pop();
-//		to = to.join('.');
-//		var toPath = to.split('/');
-//		toPath.pop()
-//
-//		console.log(options[vinyl.event] + ' ' + to.magenta + '...');
-//
-//		gulp
-//			.src(config.src.styles.dir + config.src.styles.start)
-//			.pipe(stylesCompiler())
-//			.pipe(gulp.dest(config.dist.styles))
-//	});
-//});
-//
-//gulp.task('watch', ['watch-scripts', 'watch-styles']);

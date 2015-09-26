@@ -5,6 +5,7 @@
 		"gulp": "build script framework",
 		"gulp-babel": "ES6 -> ES5 compiler",
 		"gulp-sass": "SASS -> CSS compiler",
+		"gulp-sourcemaps": "source maps for sass & js",
 		"gulp-watch": "file change trigger"
 	},
 	"devDependencies": {
@@ -13,6 +14,14 @@
 		"gulp": "^3.9.0",
 		"gulp-babel": "^5.2.1",
 		"gulp-sass": "^2.0.4",
+		"gulp-sourcemaps": "^1.5.2",
+		"browserify": "^11.2.0",
+		"babelify": "^6.3.0",
+		"stripify": "^3.0.0",
+		"vinyl-transform": "^1.0.0",
+		"vinyl-source-stream": "^1.1.0",
+		"through2": "^2.0.0",
+		"gulp-notify": "^2.2.0",
 		"gulp-watch": "^4.3.5"
 	}
 }

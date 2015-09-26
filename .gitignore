@@ -234,3 +234,4 @@ pip-log.txt
 /builds/
 /blender/
 /src/main/webapp/resources/css/compiled
+/src/main/webapp/resources/javascript/compiled
