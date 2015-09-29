@@ -30,6 +30,7 @@ var tasksFuncs = {
 };
 
 tasksVars.tab = global.tasksHTML.tab;
+global.tasksVars = tasksVars;
 
 /*
  * ////////////////////////////////////////////////////////////////////////////////

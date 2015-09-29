@@ -27,7 +27,6 @@ public class ProfileController {
         return "profile";
     }
 	
-	//TODO js request must accept plain text!!! otherwise jquery ll try to parse error text
 	@RequestMapping(value = "/password", method = RequestMethod.POST)
 	public @ResponseBody PasswordChangeResult changePassword(
 			@RequestParam("oldPW") String oldPW,

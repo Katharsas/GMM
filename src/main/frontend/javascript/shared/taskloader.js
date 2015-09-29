@@ -157,14 +157,14 @@ export default (function() {
 			task.$body.find('.task-files-assets-tree').fileTree(
 				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
 				function($file) {
-					tasksVars.selectedTaskFileIsAsset = true;
+					global.tasksVars.selectedTaskFileIsAsset = true;
 					allFuncs.selectTreeElement($file, "task-files-selected");
 				}
 			);
 			task.$body.find('.task-files-other-tree').fileTree(
 				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
 				function($file) {
-					tasksVars.selectedTaskFileIsAsset = false;
+					global.tasksVars.selectedTaskFileIsAsset = false;
 					allFuncs.selectTreeElement($file, "task-files-selected");
 				}
 			);

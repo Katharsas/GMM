@@ -92,7 +92,7 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 			
 			//delete task
 			$operations.find(".task-operations-deleteTask").click(function() {
-				var $confirm = confirm(function() {
+				var $confirm = Dialogs.confirm(function() {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 						.done(function() {
 							Dialogs.hideDialog($confirm);
@@ -128,7 +128,7 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 						.done(function(responseText) {
 							//TODO refresh filetree only
-							alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+							Dialogs.alert(function(){onchange($task);}, "TODO: Refresh filetree only");
 						});
 				});
 				//bind triggering of filechooser to button
@@ -150,13 +150,13 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 					if (dir === undefined || dir === "") {
 						return;
 					}
-					var $dialog = confirm(function() {
+					var $dialog = Dialogs.confirm(function() {
 						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
 								{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
 							.done(function() {
 								Dialogs.hideDialog($dialog);
 								//TODO refresh filetree only
-								alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+								Dialogs.alert(function(){onchange($task);}, "TODO: Refresh filetree only");
 							});
 					}, "Delete " + tasksFuncs.filePath() + " ?");
 				});
