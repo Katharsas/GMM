@@ -11,7 +11,7 @@ import { contextUrl } from "./default";
  * 
  * @author Jan Mothes
  */
-export default (function() {
+var Ajax = (function() {
 	//CSRF tokens must be included into POST/PUT/DELETE to GMM
 	//Just throwing it into every request that goes to GMM.
 	var token = $("meta[name='_csrf']").attr("content");
@@ -89,3 +89,5 @@ export default (function() {
 		}
 	};
 })();
+export default Ajax;
+global.Ajax = Ajax;

@@ -1,5 +1,8 @@
 /* jshint esnext:true */
 import $ from "../lib/jquery";
+import empty from "./jqueryFileTree";
+import empty2 from "./jqueryDraggable";
+import Ajax from "./ajax";
 import Dialogs from "./dialogs";
 import HtmlPreProcessor from "./preprocessor";
 
@@ -18,8 +21,7 @@ $.fn.onEnter = function(eventHandler) {
 };
 
 var fileName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
-//var paramString = window.location.search.substring(1);
-
+var paramString = window.location.search.substring(1);
 
 var allVars = {
 	"task-files-selected":$(),
@@ -28,6 +30,7 @@ var allVars = {
 	"taskBackgroundColor":"#111",
 	"$htmlElement":$("html")
 };
+
 var allFuncs = {
 	"selectTreeElement":
 		function($newFile, marker) {
@@ -47,6 +50,11 @@ var allFuncs = {
 			};
 		}
 };
+
+allVars.adminBanner = global.allVars.adminBanner;
+global.allVars = allVars;//TODO: remove it unused from html
+
+var contextUrl = global.contextUrl;//TODO: remove if unused in HTML
 
 String.prototype.nl2br = function(is_xhtml) {   
     var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
@@ -75,10 +83,6 @@ function htmlDecode(input){
 	return result.trim();
 }
 
-var contextUrl = global.contextUrl;
-
-export { contextUrl, allVars, allFuncs };
-
 /*
  * ////////////////////////////////////////////////////////////////////////////////
  * FUNCTIONS
@@ -104,6 +108,12 @@ $(document).ready(function() {
 	});
 	$(".draggable").fixedDraggable();
 	
+	$("#page-tabmenu #logout").click(function()  {
+		Ajax.post( contextUrl + "/logout");
+		//TODO: remove if logout works
+//		window.location.href = contextUrl + "/login?logout";
+	});
+	
 	allVars.adminBanner = htmlDecode(allVars.adminBanner);
 	var $adminBanner = $("#customAdminBanner");
 	if ($adminBanner.length > 0) {
@@ -118,17 +128,19 @@ $(document).ready(function() {
 /*
  * Get value of URL parameter "sParam"
  */
-//function getURLParameter(sParam)
-//{
-//    var sURLVariables = paramString.split('&');
-//    for (var i = 0; i < sURLVariables.length; i++)
-//    {
-//        var sParameterName = sURLVariables[i].split('=');
-//        if (sParameterName[0] == sParam) 
-//        {
-//            return sParameterName[1];
-//        }
-//    }
-//    return "";
-//}
+function getURLParameter(sParam)
+{
+    var sURLVariables = paramString.split('&');
+    for (var i = 0; i < sURLVariables.length; i++)
+    {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam)
+        {
+            return sParameterName[1];
+        }
+    }
+    return "";
+}
 
+export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter };
+export default {};

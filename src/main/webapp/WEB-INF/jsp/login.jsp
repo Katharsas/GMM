@@ -5,7 +5,7 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
-		<script src="<c:url value="/res/javascript/login.js"/>" type="text/javascript"></script>
+		<script src="<c:url value="/res/javascript/compiled/login.bundle.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
 		<link href="<c:url value="/res/css/compiled/login.css"/>" media="screen" rel="stylesheet" type="text/css" />

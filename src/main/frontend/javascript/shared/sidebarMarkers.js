@@ -1,3 +1,6 @@
+/* jshint esnext:true */
+import $ from "../lib/jquery";
+
 /**
  * -------------------- SidebarMarkers -----------------------------------------
  * Allows you to create markers for elements of the list in a sidebar.
@@ -17,7 +20,7 @@
  * @see http://jsfiddle.net/Ldmy2uzo/3/ (author Florian Reuschel)
  * @author Jan Mothes
  */
-var SidebarMarkers = function(markerFactory, markerMargin) {
+export default function(markerFactory, markerMargin) {
 	//static sidebars, id to jQuery mapping, used to caluclate height offset
 	const topBars = {};
 	const bottomBars = {};
@@ -151,11 +154,11 @@ var SidebarMarkers = function(markerFactory, markerMargin) {
 			
 			//remove from arrays/maps
 			var index = ids.indexOf(id);
-			array.splice(index, 1);
+			ids.splice(index, 1);
 			delete elements[id];
 			
 			//unbind reposition method
 			$(window).off("onscroll", handlers[id]);
 		}
 	};
-};
+}

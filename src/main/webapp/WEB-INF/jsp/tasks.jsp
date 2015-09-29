@@ -5,21 +5,15 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
+		<script type="text/javascript">
+    		var tasksHTML = {};
+    		tasksHTML['tab'] = '${fn:escapeXml(cfn:escapeJS(tab))}';
+		</script>
 		<script src="<c:url value="/res/javascript/lib/three.min.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/OrbitControls.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/TweenLite.min.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/CSSPlugin.min.js"/>" type="text/javascript"></script>
-    	
-    	<script src="<c:url value="/res/javascript/all/jqueryFileTree.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/queue.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/taskloader.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/taskswitcher.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/tasklisteners.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/sidebarMarkers.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/tasks/tasks.js"/>" type="text/javascript"></script>
-    	<script type="text/javascript">
-			tasksVars['tab'] = '${fn:escapeXml(cfn:escapeJS(tab))}';
-		</script>
+    	<script src="<c:url value="/res/javascript/compiled/tasks.bundle.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
 		<link href="<c:url value="/res/css/compiled/tasks.css"/>" media="screen" rel="stylesheet" type="text/css" />

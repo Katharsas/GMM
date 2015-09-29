@@ -1,3 +1,11 @@
+/* jshint esnext:true */
+import $ from "./lib/jquery";
+import Queue from "./shared/queue";
+import TaskLoader from "./shared/taskloader";
+import TaskSwitcher from "./shared/taskswitcher";
+import TaskEventBindings from "./shared/tasklisteners";
+import { allVars } from "./shared/default";
+
 var tasksVars = {
 	"selectedTaskFileIsAsset" : "",
 	"expandedTasks" : undefined,
@@ -18,7 +26,7 @@ var tasksFuncs = {
 $(document).ready(
 	function() {
 		var taskListId = "linked";
-		var taskLoader = TaskLoader();
+		var taskLoader = TaskLoader;
 		taskLoader.registerTaskList(taskListId, {
 			$list : $("#taskList"),
 			url : "/public/linkedTasks",

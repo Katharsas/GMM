@@ -1,3 +1,13 @@
+/* jshint esnext:true */
+import $ from "./lib/jquery";
+import Ajax from "./shared/ajax";
+import Dialogs from "./shared/dialogs";
+import Queue from "./shared/queue";
+import TaskLoader from "./shared/taskloader";
+import TaskSwitcher from "./shared/taskswitcher";
+import TaskEventBindings from "./shared/tasklisteners";
+import { contextUrl, allVars, getURLParameter } from "./shared/default";
+
 var tasksVars = {
 	"edit" : "",
 	"selectedTaskFileIsAsset" : "",
@@ -18,6 +28,8 @@ var tasksFuncs = {
 		window.location.href =  url;
 	}
 };
+
+tasksVars.tab = global.tasksHTML.tab;
 
 /*
  * ////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +55,7 @@ var Workbench = function() {
 	var $count = $workbenchList.find(".list-count span");
 	
 	var taskListId = "workbench";
-	var taskLoader = TaskLoader();
+	var taskLoader = TaskLoader;
 	taskLoader.registerTaskList(taskListId, {
 		$list : $workbenchList,
 		url : "/tasks/workbench",
@@ -195,15 +207,15 @@ var Workbench = function() {
 		$saveTasks.find("#dialog-saveTasks-saveButton").click(function() {
 			Ajax.post(contextUrl + "/tasks/workbench/admin/save", {}, $saveTasksForm)
 				.done(function() {
-					hideDialog($("#dialog-saveTasks"));
+					Dialogs.hideDialog($("#dialog-saveTasks"));
 				});
 		});
 		$workbenchTabs.find("#workbench-admin-saveButton").click(function() {
-			showDialog($saveTasks);
+			Dialogs.showDialog($saveTasks);
 		});
 		$workbenchTabs.find("#workbench-admin-deleteButton").click(function() {
 			var $confirm = confirm(function() {
-				hideDialog($confirm);
+				Dialogs.hideDialog($confirm);
 				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
 					.done(function(){
 						taskLoader.removeTasks(taskLoader.getTaskIds(taskListId));
@@ -224,7 +236,8 @@ $(document).ready(
 		tasksVars.edit = getURLParameter("edit");
 		new TaskForm();
 		
-		workbench = new Workbench();
+		var workbench = new Workbench();
+		global.workbench = workbench;
 		
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {

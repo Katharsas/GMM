@@ -1,3 +1,6 @@
+/* jshint esnext:true */
+import TweenLite from "../lib/tweenLite";
+
 /**
  * -------------------- TaskSwitcher -------------------------------------------------------------
  * Provides the two static methods collapse and expand, which load and animate a tasks details.
@@ -6,10 +9,10 @@
  * 
  * @author Jan Mothes
  */
-var TaskSwitcher = function(taskListId, taskLoader) {	
+export default function(taskListId, taskLoader) {	
 	
-	this.slideDownTime = 0.5;
-    this.slideUpTime = 0.5;
+	var slideDownTime = 0.5;
+    var slideUpTime = 0.5;
     
 	//default is 60
 	TweenLite.ticker.fps(30);
@@ -101,4 +104,4 @@ var TaskSwitcher = function(taskListId, taskLoader) {
             this.expand($expand);
         }
     };
-};
+}

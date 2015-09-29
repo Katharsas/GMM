@@ -1,3 +1,9 @@
+/* jshint esnext:true */
+import $ from "../lib/jquery";
+import Ajax from "./ajax";
+import Dialogs from "./dialogs";
+import { contextUrl, allVars, htmlDecode } from "./default";
+
 /**
  * ------------- TaskEventBindings ---------------------------------------------
  * Provides methods to bind all needed listeners to task header or body
@@ -8,7 +14,7 @@
  * 	tasksFuncs.filePath
  * 	tasksVars.selectedTaskFileIsAsset
  */
-var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
+export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 	
 	var hideCommentForm = function($commentForm) {
 		var $elementComments = $commentForm.parent();
@@ -24,12 +30,12 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 	};
 	
 	var changeComment = function(comment, taskId, commentId, $task) {
-		var $confirm = confirm(
+		var $confirm = Dialogs.confirm(
 			function(input, textarea) {
 				var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
 				Ajax.post(url, {"editedComment" : textarea}) 
 					.done(function() {
-						hideDialog($confirm);
+						Dialogs.hideDialog($confirm);
 						onchange($task);
 					});
 			}, "Change your comment below:", undefined, comment, 700);
@@ -89,7 +95,7 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 				var $confirm = confirm(function() {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 						.done(function() {
-							hideDialog($confirm);
+							Dialogs.hideDialog($confirm);
 							onremove($task);
 						});
 				}, "Are you sure you want to delete this task?");
@@ -148,7 +154,7 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
 								{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
 							.done(function() {
-								hideDialog($dialog);
+								Dialogs.hideDialog($dialog);
 								//TODO refresh filetree only
 								alert(function(){onchange($task);}, "TODO: Refresh filetree only");
 							});
@@ -157,4 +163,4 @@ var TaskEventBindings = function(tasksVars, tasksFuncs, onswitch, onchange, onre
 			}
 		}
 	};
-};
+}

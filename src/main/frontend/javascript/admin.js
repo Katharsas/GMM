@@ -18,7 +18,6 @@ $(document).ready( function() {
 	
 	$("#dialog-saveTasks-saveButton").click(saveAllTasks);
 });
-var ajaxChannel;
 
 function refreshTaskBackups() {
 	$('#taskBackupsContainer').fileTree(
@@ -41,10 +40,10 @@ function hideTaskFormType() {
 function loadTasks() {
 	var dir = allVars.selectedBackupFile.attr('rel');
 	if(dir === undefined || dir === "") return;
-	var $confirm = confirm(function() {
+	var $confirm = Dialogs.confirm(function() {
 		Dialogs.hideDialog($confirm);
-		ajaxChannel = new ResponseBundleHandler('tasks');
-		ajaxChannel.start({loadAssets:false, file:dir}, function() {
+		global.ajaxChannel = new ResponseBundleHandler('tasks');
+		global.ajaxChannel.start({loadAssets:false, file:dir}, function() {
 			refreshTaskBackups();
 		});
 	}, "Load all tasks from "+dir+"?");
@@ -224,11 +223,11 @@ function loadUsers() {
 global.loadUsers = loadUsers;
 
 function importAssets(assetTypes) {
-	ajaxChannel = new ResponseBundleHandler("assets");
-	ajaxChannel.start(assetTypes,
+	global.ajaxChannel = new ResponseBundleHandler("assets");
+	global.ajaxChannel.start(assetTypes,
 			function() {
-		ajaxChannel = new ResponseBundleHandler('tasks');
-		ajaxChannel.start({loadAssets:true});
+		global.ajaxChannel = new ResponseBundleHandler('tasks');
+		global.ajaxChannel.start({loadAssets:true});
 	});
 }
 global.importAssets = importAssets;

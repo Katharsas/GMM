@@ -4,8 +4,7 @@
 <t:all_template>
 
 	<jsp:attribute name="js">
-    	<script src="<c:url value="/res/javascript/admin.js"/>" type="text/javascript"></script>
-    	<script src="<c:url value="/res/javascript/all/jqueryFileTree.js"/>" type="text/javascript"></script>
+    	<script src="<c:url value="/res/javascript/compiled/admin.bundle.js"/>" type="text/javascript"></script>
     </jsp:attribute>
 	<jsp:attribute name="css">
 		<link href="<c:url value="/res/css/compiled/admin.css"/>" media="screen" rel="stylesheet" type="text/css" />

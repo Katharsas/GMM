@@ -72,10 +72,12 @@ gulp.task("build-js", function () {
 	//multiple files: http://fettblog.eu/gulp-browserify-multiple-bundles/
 	return buildScript(
 		[
-//		 "shared/ajax.js",
 //		 "example/consumer.js",
+		 "tasks.js",
+		 "links.js",
 		 "admin.js",
-		 "profile.js"]
+		 "profile.js",
+		 "login.js"]
 	);
 });
 

@@ -6,7 +6,7 @@ import { allVars } from "./default";
  * Dialogs
  * --------------------------------------------------------------------
  */
-export default function() {
+var Dialogs = (function() {
 	
 	/**
 	 * @param width - int: Width of the dialog (default is min-width from css).
@@ -26,35 +26,91 @@ export default function() {
 		$dialog.css("min-height", height+"px");
 	};
 	
+	var showOverlay = function() {
+		allVars.$overlay.show();
+	};
+	var hideOverlay = function() {
+		allVars.$overlay.hide();
+	};
+	
+	/**
+	 * Show a confirmation dialog to the user.
+	 * 
+	 * @param onConfirm - Function: callback executes when user hits confirm button (ok).
+	 * @param message - String: message to show in the dialog.
+	 * @param hasCancel - boolean: if true, a cancel button will be shown, which closes the dialog.
+	 * @param inputDefault - String: If defined, a form input tag will be shown with the argument as its value/text.
+	 * @param textareaDefault - String: If defined, a form textarea tag will be shown with the argument as its value/text.
+	 * @param width - int: Width of the dialog (default is min-width from css).
+	 * @param height - int: Height of the dialog (default is min-width from css).
+	 */
+	var showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, textareaDefault, width, height) {
+		showOverlay();
+		//apply elements and texts to dialog
+		var $confirmDialog = $("#confirmDialog");
+		$confirmDialog.find("#confirmDialog-message").text(message);
+		var $input = $confirmDialog.find("#confirmDialog-input");
+		var $textarea = $confirmDialog.find("#confirmDialog-textarea");
+		allVars.onConfirmCallback = function() {
+			onConfirm($input.val(), $textarea.val());
+		};
+		var $cancelButton = $confirmDialog.find("#confirmDialog-cancel");
+		if(inputDefault !== undefined) {
+			$input.attr("value", inputDefault);
+			$input.show();
+		}
+		else {
+			$input.hide();
+		}
+		if(textareaDefault !== undefined) {
+			$textarea.text(textareaDefault);
+			$textarea.show();
+		}
+		else {
+			$textarea.hide();
+		}
+		if(hasCancel) {
+			$cancelButton.show();
+		}
+		else {
+			$cancelButton.hide();
+		}
+		//set width and height & center
+		setDialogDimensions($confirmDialog, width, height);
+		centerDialog($confirmDialog, width, height);
+		//show
+		$confirmDialog.show();
+		if(inputDefault !== undefined) {
+			$input.select();
+		}
+		return $confirmDialog;
+	};
+	
+	
+	var showDialog = function($dialog, width, height) {
+		showOverlay();
+		centerDialog($dialog, width, height);
+		$dialog.show();
+	};
+	
+	var hideDialog = function($dialog) {
+		if ($dialog === undefined) $dialog = $(".dialog");
+		if (!$dialog.hasClass("dialog")) $dialog = $dialog.parents(".dialog");
+		$dialog.removeAttr("style");
+		$dialog.hide();
+		hideOverlay();
+	};
+	
 	return {
-		showOverlay: function() {
-			allVars.$overlay.show();
-		},
-		
-		hideOverlay: function() {
-			allVars.$overlay.hide();
-		},
-		
-		showDialog: function($dialog, width, height) {
-			this.showOverlay();
-			centerDialog($dialog, width, height);
-			$dialog.show();
-		},
-		
-		hideDialog: function($dialog) {
-			if ($dialog === undefined) $dialog = $(".dialog");
-			if (!$dialog.hasClass("dialog")) $dialog = $dialog.parents(".dialog");
-			$dialog.removeAttr("style");
-			$dialog.hide();
-			this.hideOverlay();
-		},
+		showDialog: showDialog,
+		hideDialog: hideDialog,
 		
 		/**
 		 * Show a confirmation dialog to the user.
 		 * @see showConfirmMessage
 		 */
 		confirm: function(onConfirm, message, textInputDefault, textAreaDefault, width, height) {
-			return this.showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault, width, height);
+			return showConfirmDialog(onConfirm, message, true, textInputDefault, textAreaDefault, width, height);
 		},
 		
 		/**
@@ -62,80 +118,32 @@ export default function() {
 		 * @see showConfirmMessage
 		 */
 		alert: function(onConfirm, message, textInputDefault, textAreaDefault) {
-			var $dialog = this.showConfirmDialog(
+			var $dialog = showConfirmDialog(
 				function(){
-					this.hideDialog($dialog);
+					hideDialog($dialog);
 					onConfirm();
 				}, message, false, textInputDefault, textAreaDefault);
 			return $dialog;
 		},
 		
-		/**
-		 * Show a confirmation dialog to the user.
-		 * 
-		 * @param onConfirm - Function: callback executes when user hits confirm button (ok).
-		 * @param message - String: message to show in the dialog.
-		 * @param hasCancel - boolean: if true, a cancel button will be shown, which closes the dialog.
-		 * @param inputDefault - String: If defined, a form input tag will be shown with the argument as its value/text.
-		 * @param textareaDefault - String: If defined, a form textarea tag will be shown with the argument as its value/text.
-		 * @param width - int: Width of the dialog (default is min-width from css).
-		 * @param height - int: Height of the dialog (default is min-width from css).
-		 */
-		showConfirmDialog: function(onConfirm, message, hasCancel, inputDefault, textareaDefault, width, height) {
-			this.showOverlay();
-			//apply elements and texts to dialog
-			var $confirmDialog = $("#confirmDialog");
-			$confirmDialog.find("#confirmDialog-message").text(message);
-			var $input = $confirmDialog.find("#confirmDialog-input");
-			var $textarea = $confirmDialog.find("#confirmDialog-textarea");
-			allVars.onConfirmCallback = function() {
-				onConfirm($input.val(), $textarea.val());
-			};
-			var $cancelButton = $confirmDialog.find("#confirmDialog-cancel");
-			if(inputDefault !== undefined) {
-				$input.attr("value", inputDefault);
-				$input.show();
-			}
-			else {
-				$input.hide();
-			}
-			if(textareaDefault !== undefined) {
-				$textarea.text(textareaDefault);
-				$textarea.show();
-			}
-			else {
-				$textarea.hide();
-			}
-			if(hasCancel) {
-				$cancelButton.show();
-			}
-			else {
-				$cancelButton.hide();
-			}
-			//set width and height & center
-			setDialogDimensions($confirmDialog, width, height);
-			centerDialog($confirmDialog, width, height);
-			//show
-			$confirmDialog.show();
-			if(inputDefault !== undefined) {
-				$input.select();
-			}
-			return $confirmDialog;
-		},
-		
 		showException: function(jqXHR) {
-			this.hideDialog();
-			this.showOverlay();
+			hideDialog();
+			showOverlay();
 			
 			var exception = $.parseJSON(jqXHR.responseText);
 			var $exceptionDialog = $("#exceptionDialog");
 			$exceptionDialog.find("#exceptionDialog-message").text(exception.message);
 			$exceptionDialog.find("#exceptionDialog-trace").text(exception.stackTrace);
-			this.showDialog($exceptionDialog);
+			showDialog($exceptionDialog);
 		},
 		
 		confirmOk: function() {
 			allVars.onConfirmCallback();
 		}
 	};
-}
+})();
+//TODO: remove if unsed in HTML
+global.showDialog = Dialogs.showDialog;
+global.hideDialog = Dialogs.hideDialog;
+global.confirmOk = Dialogs.confirmOk;
+export default Dialogs;
