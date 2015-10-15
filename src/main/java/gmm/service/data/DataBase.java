@@ -198,6 +198,7 @@ public class DataBase implements DataAccess {
 		else {
 			getDataList(clazz).clear();
 		}
+		//TODO call callbacks!!!
 	}
 	
 	@SuppressWarnings("unchecked")

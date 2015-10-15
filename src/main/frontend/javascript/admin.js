@@ -4,11 +4,97 @@ import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";
 import { contextUrl, allVars, allFuncs } from "./shared/default";
 
+var Database = function() {
+	var $database = $("#database");
+	
+	/**
+	 * Refreshes the file tree showing task save files.
+	 */
+	var refreshDatabaseFileTree = function() {
+		$database.find("#database-fileTreeContainer").fileTree(
+			allFuncs.treePluginOptions(contextUrl + "/admin/backups", false),
+			function($file) {
+				allFuncs.selectTreeElement($file, "selectedBackupFile");
+			},
+			function($dir) {
+				var $selected = allVars.selectedBackupFile;
+				if ($selected === undefined || $selected.isEmpty()) return;
+				if (!$selected.is(':visible')) allVars.selectedBackupFile = $();
+			}
+		);
+	};
+	
+	//load file
+	$database.find("#database-loadFile").click(function() {
+		var dir = allVars.selectedBackupFile.attr('rel');
+		if(dir === undefined || dir === "") return;
+		var $confirm = Dialogs.confirm(function() {
+			Dialogs.hideDialog($confirm);
+			global.ajaxChannel = new ResponseBundleHandler('tasks');
+			global.ajaxChannel.start({loadAssets:false, file:dir}, function() {
+				refreshDatabaseFileTree();
+			});
+		}, "Load all tasks from "+dir+"?");
+	});
+	
+	//delete file
+	$database.find("#database-deleteFile").click(function() {
+		var dir = allVars.selectedBackupFile.attr('rel');
+		if(dir === undefined || dir === "") return;
+		var $confirm = Dialogs.confirm(function() {
+			Ajax.post(contextUrl + "/admin/deleteFile", { dir: dir })
+				.done(function() {
+					refreshDatabaseFileTree();
+					Dialogs.hideDialog($confirm);
+				});
+		},"Delete file "+dir+"?");
+	});
+	
+	//save all tasks
+	$database.find("#database-saveAll").click(function() {
+		Dialogs.showDialog($('#dialog-saveTasks'));
+	});
+	$("#dialog-saveTasks-saveButton").click(function() {
+		Ajax.post(contextUrl + "/admin/save", {}, $("#dialog-saveTasks-form"))
+			.done(function() {
+				refreshDatabaseFileTree();
+				Dialogs.hideDialog($("#dialog-saveTasks"));
+			});
+	});
+	
+	//delete all tasks
+	$database.find("#database-deleteAll").click(function() {
+		var $confirm = Dialogs.confirm(function() {
+			Dialogs.hideDialog($confirm);
+			Dialogs.confirm(function() {
+				Ajax.post(contextUrl + "/admin/deleteTasks")
+					.done(function(){
+						refreshDatabaseFileTree();
+						Dialogs.hideDialog($confirm);
+					});
+			}, "Are you really really sure?");
+		},"Delete all tasks?");
+	});
+	
+	refreshDatabaseFileTree();
+};
+
+var AssetImport = function() {
+	var $assets = $("#assets");
+	
+	$assets.find("#taskForm").find("#taskForm-group-type").hide();
+	
+	$assets.find('#assets-fileTreeContainer').fileTree(
+		allFuncs.treePluginOptions(contextUrl + "/admin/originalAssets", true),
+		function($file) {
+			allFuncs.selectTreeElement($file, "selectedAssetFile");
+		}
+	);
+	
+};
+
 $(document).ready( function() {
 	hideImport();
-	hideTaskFormType();
-	refreshTaskBackups();
-	refreshTaskImportTree();
 	
 	var $adminBanner = $("#adminBannerTextArea");
 	$adminBanner.html(allVars.adminBanner);
@@ -16,83 +102,9 @@ $(document).ready( function() {
 		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
 	});
 	
-	$("#dialog-saveTasks-saveButton").click(saveAllTasks);
+	Database();
+	AssetImport();
 });
-
-function refreshTaskBackups() {
-	$('#taskBackupsContainer').fileTree(
-		allFuncs.treePluginOptions(contextUrl + "/admin/backups", false),
-		function($file) {
-			allFuncs.selectTreeElement($file, "selectedBackupFile");
-		},
-		function($dir) {
-			var $selected = allVars.selectedBackupFile;
-			if ($selected === undefined || $selected.isEmpty()) return;
-			if (!$selected.is(':visible')) allVars.selectedBackupFile = $();
-		}
-	);
-}
-
-function hideTaskFormType() {
-	$("#taskForm").find("#taskForm-group-type").hide();
-}
-
-function loadTasks() {
-	var dir = allVars.selectedBackupFile.attr('rel');
-	if(dir === undefined || dir === "") return;
-	var $confirm = Dialogs.confirm(function() {
-		Dialogs.hideDialog($confirm);
-		global.ajaxChannel = new ResponseBundleHandler('tasks');
-		global.ajaxChannel.start({loadAssets:false, file:dir}, function() {
-			refreshTaskBackups();
-		});
-	}, "Load all tasks from "+dir+"?");
-}
-global.loadTasks = loadTasks;
-
-function deleteFile() {
-	var dir = allVars.selectedBackupFile.attr('rel');
-	if(dir === undefined || dir === "") return;
-	var $confirm = Dialogs.confirm(function() {
-		Ajax.post(contextUrl + "/admin/deleteFile", { dir: dir })
-			.done(function() {
-				refreshTaskBackups();
-				Dialogs.hideDialog($confirm);
-			});
-	},"Delete file "+dir+"?");
-}
-global.deleteFile = deleteFile;
-
-function deleteAllTasks() {
-	var $confirm = Dialogs.confirm(function() {
-		Dialogs.hideDialog($confirm);
-		Dialogs.confirm(function() {
-			Ajax.post(contextUrl + "/admin/deleteTasks")
-				.done(function(){
-					refreshTaskBackups();
-					Dialogs.hideDialog($confirm);
-				});
-		}, "Are you really really sure?");
-	},"Delete all tasks?");
-}
-global.deleteAllTasks = deleteAllTasks;
-
-function saveAllTasks() {
-	Ajax.post(contextUrl + "/admin/save", {}, $("#dialog-saveTasks-form"))
-		.done(function() {
-			refreshTaskBackups();
-			Dialogs.hideDialog($("#dialog-saveTasks"));
-		});
-}
-
-function refreshTaskImportTree() {
-	$('#originalAssetsContainer').fileTree(
-		allFuncs.treePluginOptions(contextUrl + "/admin/originalAssets", true),
-		function($file) {
-			allFuncs.selectTreeElement($file, "selectedAssetFile");
-		}
-	);
-}
 
 function addAssetPaths(textures) {
 	var pathSep = "&#160;&#160;►&#160;";

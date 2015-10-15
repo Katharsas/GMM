@@ -29,32 +29,32 @@
         </div>
     
     	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
-        <div class="adminElementGroup">
+        <div id="database" class="adminElementGroup">
         	<div id="loadTasks" class="adminElement left">
         	    <div class="adminElement hint"><fmt:message key="admin.database.message"/></div>
-        		<div id="taskBackupsContainer" class="adminElement"></div>
+        		<div id="database-fileTreeContainer" class="adminElement"></div>
         		<br/>
-        		<div class="button pageButton left" onclick="loadTasks()">
+        		<div id="database-loadFile" class="button pageButton left">
         			<fmt:message key="admin.database.load"/>
         		</div>
-        		<div class="button pageButton left" onclick="deleteFile()">
+        		<div id="database-deleteFile" class="button pageButton left">
         			<fmt:message key="admin.database.deletefile"/>
         		</div>
         		<div class="clear"></div>
         	</div>
-        	<div id="saveDeleteTasks" class="adminElement left">
-        		<div id="saveAllTasksButton" class="button pageButton" onclick="showDialog($('#dialog-saveTasks'))">
+        	<div id="save" class="adminElement left">
+        		<div id="database-saveAll" class="button pageButton">
         			<fmt:message key="admin.database.saveall"/>
         		</div>
         		<div class="verticalSpace"></div>
-        		<div class="button pageButton" onclick="deleteAllTasks()"><fmt:message key="admin.database.deleteall"/></div>
+        		<div id="database-deleteAll" class="button pageButton"><fmt:message key="admin.database.deleteall"/></div>
 			</div>
 			<div class="clear"></div>
         </div>
         
         <div class="groupDescriptor"><fmt:message key="admin.importAssets"/></div>
-        <div class="adminElementGroup">
-			<div id="originalAssetsContainer" class="adminElement"></div>
+        <div id="assets" class="adminElementGroup">
+			<div id="assets-fileTreeContainer" class="adminElement"></div>
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>
 			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)"><fmt:message key="admin.database.addmeshes"/></div>
 			<div class="clear"></div>

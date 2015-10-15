@@ -1,7 +1,6 @@
 /* jshint esnext:true */
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
-import Dialogs from "./dialogs";
 
 // jQuery File Tree Plugin
 //
@@ -73,7 +72,6 @@ $.extend($.fn, {
 						}
 						bindTree(c);
 					})
-					.fail(Dialogs.showException);
 			}
 			
 			function bindTree(t) {
