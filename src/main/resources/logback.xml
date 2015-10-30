@@ -35,10 +35,10 @@
   	</appender>
   	
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
-<!-- 	<logger name="org.springframework" level="DEBUG"/> -->
+<!-- 	<logger name="org.springframework" level="WARN"/> -->
 
 	<root>
-		<level value="INFO" />
+		<level value="DEBUG" />
 		<appender-ref ref="consoleAppender" />
 		<appender-ref ref="dailyRollingFileAppender" />
 	</root>

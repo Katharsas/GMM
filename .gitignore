@@ -226,7 +226,6 @@ pip-log.txt
 #############
 
 /node
-/src/main/frontend/node
 /src/main/frontend/node_modules
 /src/main/webapp/WEB-INF/data
 /src/main/webapp/WEB-INF/dataTesting/tasks/autoBackups

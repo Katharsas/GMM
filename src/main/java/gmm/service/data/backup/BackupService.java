@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Saves names are contructed like:
@@ -175,7 +176,18 @@ public class BackupService implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		triggeredBackup.execute(DateTime.now(), true, true);
+		//Spring is not active anymore
+		// => exceptions must be catched manually, DI must be invoked (autowiring)
+		try {
+			WebApplicationContextUtils
+	        .getRequiredWebApplicationContext(sce.getServletContext())
+	        .getAutowireCapableBeanFactory()
+	        .autowireBean(this);
+			triggeredBackup.execute(DateTime.now(), true, true);
+		}
+		catch (Exception e) {
+			logger.error(e.getMessage(), e);;
+		}
 	}
 	
 	public void triggerTaskBackup() {
@@ -234,6 +246,7 @@ public class BackupService implements ServletContextListener {
 		if(toSave.size() > 0) {
 			Path path = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
 			try {
+				logger.info("Creating Backup for type '" + type.getSimpleName() + "' at " + path);
 				serializer.serialize(toSave, path);
 				//remove files if too many
 				File[] files = directory.toFile().listFiles(xmlFilter);
@@ -242,7 +255,7 @@ public class BackupService implements ServletContextListener {
 					fileService.delete(files[0].toPath());
 				}
 			} catch (IOException e) {
-				logger.error("Creating Backup for type '" + type.getSimpleName() + "' at " + path, e);
+				logger.error("Failed to create backup for type '" + type.getSimpleName() + "' at " + path, e);
 			}
 		}
 	}
