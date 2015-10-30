@@ -246,7 +246,7 @@ public class BackupService implements ServletContextListener {
 		if(toSave.size() > 0) {
 			Path path = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
 			try {
-				logger.info("Creating Backup for type '" + type.getSimpleName() + "' at " + path);
+				logger.info("Creating backup for type '" + type.getSimpleName() + "' at " + path);
 				serializer.serialize(toSave, path);
 				//remove files if too many
 				File[] files = directory.toFile().listFiles(xmlFilter);

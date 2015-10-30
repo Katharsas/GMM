@@ -35,7 +35,7 @@
   	</appender>
   	
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
-<!-- 	<logger name="org.springframework" level="WARN"/> -->
+	<logger name="org.springframework" level="WARN"/>
 
 	<root>
 		<level value="DEBUG" />
