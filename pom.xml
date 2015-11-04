@@ -409,24 +409,23 @@
 				<version>0.0.26</version>
 				<configuration>
 					<workingDirectory>src/main/frontend</workingDirectory>
+					<installDirectory>.</installDirectory>
 				</configuration>
 				<executions>
 					<!-- Config from: https://github.com/eirslett/frontend-maven-plugin -->
+					<!-- phase optional for all executions: default phase is "generate-resources" -->
+					<!--  disable some of the following executions to improve build speed -->
 					<execution>
 						<id>install node and npm</id>
 						<goals>
 							<goal>install-node-and-npm</goal>
 						</goals>
-						<!-- optional: default phase is "generate-resources" -->
 						<phase>generate-resources</phase>
 						<configuration>
 							<nodeVersion>v4.1.1</nodeVersion>
 							<npmVersion>3.3.3</npmVersion>
 							<nodeDownloadRoot>https://nodejs.org/dist/</nodeDownloadRoot>
 							<npmDownloadRoot>http://registry.npmjs.org/npm/-/</npmDownloadRoot>
-							<!-- changing this (default is workingDirectory) will not update the called dir => broken -->
-							<!-- Dont use target, because that causes redownload whenever maven is cleaned -->
-							<!-- <installDirectory>.</installDirectory> -->
 						</configuration>
 					</execution>
 					<execution>
@@ -434,7 +433,6 @@
 						<goals>
 							<goal>npm</goal>
 						</goals>
-						<!-- optional: default phase is "generate-resources" -->
 						<phase>generate-resources</phase>
 						<configuration>
 							<arguments>install</arguments>
@@ -445,7 +443,6 @@
 						<goals>
 							<goal>gulp</goal>
 						</goals>
-						<!-- optional: the default phase is "generate-resources" -->
 						<phase>generate-resources</phase>
 						<configuration>
 							<srcdir>src/main/frontend</srcdir>
@@ -481,24 +478,9 @@
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<configuration>
 					<path>/GMM</path>
+					<port>8080</port>
 					<encoding>UTF-8</encoding>
-					<username>admin</username>
-					<password>jdfA-.4*sad+BV5</password>
 				</configuration>
-				<executions>
-					<execution>
-						<id>tomcat-run</id>
-						<goals>
-							<goal>exec-war-only</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<path>/GMM</path>                              
-							<attachartifactclassifier>exec-war</attachartifactclassifier>
-							<attachartifactclassifiertype>jar</attachartifactclassifiertype>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 
 			<plugin>
