@@ -12,6 +12,8 @@ public interface DataAccess {
 	public <T extends Linkable> Collection<T> getList(Class<T> clazz);
 	public <T extends Linkable> boolean add(T data);
 	public <T extends Linkable> boolean remove(T data);
+	public <T extends Linkable> boolean addAll(Collection<T> data);
+	@Deprecated
 	public <T extends Linkable> boolean addAll(Class<T> clazz, Collection<T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public <T extends Linkable> void removeAll(Collection<T> data);
@@ -20,7 +22,7 @@ public interface DataAccess {
 	
 	public static interface TaskUpdateCallback {
 		public <T extends Task> void onAdd(T task);
-		public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> type);
+		public <T extends Task> void onAddAll(Collection<T> tasks);
 		public <T extends Task> void onRemove(T task);
 		public <T extends Task> void onRemoveAll(Collection<T> tasks);
 	}

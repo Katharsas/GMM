@@ -8,7 +8,7 @@ import gmm.domain.User;
 
 public class ModelTask extends AssetTask<Model> {
 
-	final private List<TextureTask> textures = new LinkedList<TextureTask>();
+	final private List<TextureTask> textures = new LinkedList<>(TextureTask.class);
 	private int originalFaceCount;
 	private int newFaceCount;
 	

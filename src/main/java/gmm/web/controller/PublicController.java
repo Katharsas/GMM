@@ -45,8 +45,8 @@ public class PublicController {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		
-		if(idLinks == null) return new LinkedList<>();
-		List<Task> tasks = new LinkedList<>();
+		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
+		List<Task> tasks = new LinkedList<>(Task.class);
 		for(Task task : session.getTaskLinks()) {
 			boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
@@ -61,7 +61,7 @@ public class PublicController {
 	@RequestMapping(value = "/linkedTasks/currentTaskIds", method = RequestMethod.GET)
 	@ResponseBody
 	public List<String> getCurrentTaskIds() throws Exception {
-		List<String> taskIds = new LinkedList<>();
+		List<String> taskIds = new LinkedList<>(String.class);
 		for(Task task : session.getTaskLinks()) {
 			taskIds.add(task.getIdLink());
 		}

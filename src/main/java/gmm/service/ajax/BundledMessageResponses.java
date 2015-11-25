@@ -58,7 +58,7 @@ public class BundledMessageResponses<T> {
 	}
 	
 	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) throws Exception {
-		List<MessageResponse> results = new LinkedList<>();
+		List<MessageResponse> results = new LinkedList<>(MessageResponse.class);
 		MessageResponse result = loadNext(operation, doForAllFlag);
 		boolean loadNext = result.status.equals(success);
 		results.add(result);

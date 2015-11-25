@@ -87,7 +87,7 @@ public class FtlRenderer {
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		populateModel(model, request, response);
-		List<TaskRenderResult> renderedTasks = new LinkedList<>();
+		List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
 		
 		for(Task task : tasks) {
 			TaskRenderResult result = renderSingleTask(task, model);

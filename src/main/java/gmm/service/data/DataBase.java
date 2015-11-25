@@ -30,6 +30,7 @@ import gmm.domain.task.ModelTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.TextureTask;
 import gmm.service.UserService;
+import gmm.util.Util;
 
 @Service
 public class DataBase implements DataAccess {
@@ -48,11 +49,11 @@ public class DataBase implements DataAccess {
 	@Autowired UserService userService;
 	@Autowired PasswordEncoder encoder;
 	
-	final private List<User> users = new LinkedList<>();
-	final private Set<GeneralTask> generalTasks = new HashSet<>();
-	final private Set<TextureTask> textureTasks = new HashSet<>();
-	final private Set<ModelTask> modelTasks = new HashSet<>();
-	final private Set<Label> taskLabels = new HashSet<>();
+	final private List<User> users = new LinkedList<>(User.class);
+	final private Set<GeneralTask> generalTasks = new HashSet<>(GeneralTask.class);
+	final private Set<TextureTask> textureTasks = new HashSet<>(TextureTask.class);
+	final private Set<ModelTask> modelTasks = new HashSet<>(ModelTask.class);
+	final private Set<Label> taskLabels = new HashSet<>(Label.class);
 	final private CombinedData combined;
 	
 	final private java.util.Set<TaskUpdateCallback> weakCallbacks =
@@ -68,9 +69,8 @@ public class DataBase implements DataAccess {
 		@Override public <T extends Task> void onRemove(T task) {
 			for(TaskUpdateCallback c : weakCallbacks) {c.onRemove(task);}
 		}
-		
-		@Override public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> clazz) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks, clazz);}
+		@Override public <T extends Task> void onAddAll(Collection<T> tasks) {
+			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks);}
 		}
 		@Override public <T extends Task> void onAdd(T task) {
 			for(TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
@@ -104,14 +104,14 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> Collection<T> getList(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
-			Collection<T> allTasks = new HashSet<>();
+			Collection<T> allTasks = new HashSet<>(clazz);
 			allTasks.addAll((Collection<T>)generalTasks);
 			allTasks.addAll((Collection<T>) textureTasks);
 			allTasks.addAll((Collection<T>) modelTasks);
 			return allTasks;
 		}
 		else if(clazz.equals(AssetTask.class)) {
-			Collection<T> assetTasks = new HashSet<>();
+			Collection<T> assetTasks = new HashSet<>(clazz);
 			assetTasks.addAll((Collection<T>) textureTasks);
 			assetTasks.addAll((Collection<T>) modelTasks);
 			return assetTasks;
@@ -135,32 +135,27 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> boolean addAll(Class<T> clazz, Collection<T> data) {
-		Collection<T> collection = getDataList(clazz);
+		return addAll(data);
+	}
+	
+	@Override
+	public synchronized <T extends Linkable> boolean addAll(Collection<T> data) {
+		Collection<T> collection = getDataList(data.getGenericType());
 		boolean result =  collection.addAll(data);
-		specialTreatmentCheck(clazz, data);
+		if(Task.class.isAssignableFrom(data.getGenericType())) {
+			Collection<Task> tasks = Util.upCast(data, Task.class);
+			for (Task task : tasks) {
+				taskLabels.add(new Label(task.getLabel()));
+			}
+			callbacks.onAddAll(tasks);
+		}
 		return result;
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T extends Linkable> void specialTreatmentCheck(Class<T> clazz, Collection<T> data) {
-		//check if T subclass of Task (cant use instanceof with classes)
-		if(Task.class.isAssignableFrom(clazz)) {
-			//Compiler can't see safety of this, so trick him:
-			specialTreatmentForTasks((Class) clazz, (Collection) data);
-		}
-	}
-	
-	private <T extends Task> void specialTreatmentForTasks(Class<T> clazz, Collection<T> tasks) {
-		for (Task task : tasks) {
-			taskLabels.add(new Label(task.getLabel()));
-		}
-		callbacks.onAddAll(tasks, clazz);
 	}
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {
 		Multimap<Class<? extends Linkable>, T> clazzToData = HashMultimap.create();
-		Collection<Task> tasks  = new HashSet<>();
+		Collection<Task> tasks  = new HashSet<>(Task.class);
 		for(T item : data) {
 			Class<? extends Linkable> clazz = item.getClass();
 			if (Task.class.isAssignableFrom(clazz)) {
@@ -186,6 +181,10 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
+		if(Task.class.isAssignableFrom(clazz)) {
+			Collection<Task> tasks = Util.upCast(getList(clazz), Task.class);
+			callbacks.onRemoveAll(tasks);
+		}
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
 			textureTasks.clear();

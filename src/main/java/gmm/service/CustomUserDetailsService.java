@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 	}
 	
 	private Set<GrantedAuthority> getAuthorities(gmm.domain.User user) {
-		Set<GrantedAuthority> auths = new HashSet<>();
+		Set<GrantedAuthority> auths = new HashSet<>(GrantedAuthority.class);
 		switch (user.getRole()) {
 		case "ROLE_ADMIN":
 			auths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
