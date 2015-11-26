@@ -1,9 +1,9 @@
 package gmm.service.ajax;
 
+import java.util.Iterator;
+
 import gmm.collections.List;
 import gmm.service.ajax.operations.MessageResponseOperations;
-
-import java.util.Iterator;
 
 /**
  * 
@@ -22,10 +22,10 @@ public class MockedResponseBundleHandler<T> {
 	 * @throws IllegalStateException if a response contains a conflict
 	 */
 	public void processResponses(Iterator<T> elements, MessageResponseOperations<T> ops) throws Exception {
-		BundledMessageResponses<T> responses = new BundledMessageResponses<T>(elements, ops);
+		final BundledMessageResponses<T> responses = new BundledMessageResponses<>(elements, ops);
 		List<MessageResponse> list = responses.loadFirstBundle();
 		while(true) {
-			String status = list.get(list.size()-1).status;
+			final String status = list.get(list.size()-1).getStatus();
 			if (status.equals(BundledMessageResponses.finished)) {
 				break;
 			}
@@ -33,7 +33,7 @@ public class MockedResponseBundleHandler<T> {
 				throw new IllegalStateException("Conflict response returned by BundledMessageResponses.\n"
 						+ "The caller of this method must garantee that no conflicts occur!");
 			}
-			list = responses.loadNextBundle(BundledMessageResponses.defaultOp, false);
+			list = responses.loadNextBundle(BundledMessageResponses.nextElementOp, false);
 		}
 	}
 }

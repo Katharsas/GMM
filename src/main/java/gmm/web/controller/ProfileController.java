@@ -29,15 +29,15 @@ public class ProfileController {
 	
 	@RequestMapping(value = "/password", method = RequestMethod.POST)
 	public @ResponseBody PasswordChangeResult changePassword(
-			@RequestParam("oldPW") String oldPW,
-			@RequestParam("newPW") String newPW) {
+			@RequestParam("oldPW") String oldPw,
+			@RequestParam("newPW") String newPw) {
 		
-		if(encoder.matches(oldPW, session.getUser().getPasswordHash())) {
-			if(newPW.length()<8) {
+		if(encoder.matches(oldPw, session.getUser().getPasswordHash())) {
+			if(newPw.length() < 8) {
 				return new PasswordChangeResult("Error: Password too short!");
 			}
-			newPW = encoder.encode(newPW);
-			session.getUser().setPasswordHash(newPW);
+			String newPwHash = encoder.encode(newPw);
+			session.getUser().setPasswordHash(newPwHash);
 			return new PasswordChangeResult(null);
 		}
 		else {

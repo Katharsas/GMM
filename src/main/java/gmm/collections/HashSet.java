@@ -10,11 +10,17 @@ public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 		this.genericType = clazz;
 	}
 	
+	public HashSet(Collection<E> set) {
+		super(set);
+		this.genericType = set.getGenericType();
+	}
+	
 	public HashSet(Class<E> clazz) {
 		super();
 		this.genericType = clazz;
 	}
 	
+	@Override
 	public HashSet<E> copy() {
 		return new HashSet<E>(genericType, this);
 	}
@@ -29,7 +35,7 @@ public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 		if (this.size() == 1) return this.iterator().next().toString();
 		else {
 			String result = "";	
-			for (E e : this) {
+			for (final E e : this) {
 				result += "\n" + e.toString();
 			}
 			return result;

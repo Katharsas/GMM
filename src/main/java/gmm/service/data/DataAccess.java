@@ -13,8 +13,6 @@ public interface DataAccess {
 	public <T extends Linkable> boolean add(T data);
 	public <T extends Linkable> boolean remove(T data);
 	public <T extends Linkable> boolean addAll(Collection<T> data);
-	@Deprecated
-	public <T extends Linkable> boolean addAll(Class<T> clazz, Collection<T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public <T extends Linkable> void removeAll(Collection<T> data);
 	public boolean hasIds(long[] id);

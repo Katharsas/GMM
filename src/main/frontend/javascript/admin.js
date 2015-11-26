@@ -142,6 +142,7 @@ function cancelImport() {
 	Ajax.post(contextUrl + "/admin/import/cancel")
 		.done(function() {hideImport();});
 }
+global.cancelImport = cancelImport;
 
 function editUserRole(idLink, userRole) {
 	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");

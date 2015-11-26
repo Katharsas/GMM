@@ -6,17 +6,6 @@ import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import gmm.domain.UniqueObject;
-import gmm.domain.task.AssetTask;
-import gmm.domain.task.TextureTask;
-import gmm.service.FileService;
-import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
-import gmm.service.tasks.TaskServiceFinder;
-import gmm.service.tasks.TextureTaskService;
-import gmm.web.FileTreeScript;
-import gmm.web.sessions.TaskSession;
-
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -33,6 +22,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
+import gmm.domain.UniqueObject;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.TextureTask;
+import gmm.service.FileService;
+import gmm.service.data.DataAccess;
+import gmm.service.data.DataConfigService;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.service.tasks.TextureTaskService;
+import gmm.web.FileTreeScript;
+import gmm.web.sessions.TaskSession;
 
 @Controller
 @RequestMapping("tasks")
@@ -83,7 +83,7 @@ public class TaskAssetController {
 			@RequestParam(value="id") String idLink) throws Exception {
 		
 		setPreviewCaching(response);
-		TextureTask task = UniqueObject.<TextureTask>getFromIdLink(data.<TextureTask>getList(TextureTask.class), idLink);
+		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
 		return textureService.getPreview(task, small, version);
 	}
 	
@@ -106,14 +106,14 @@ public class TaskAssetController {
 			@PathVariable String subDir,
 			@RequestParam("dir") Path dir) {
 
-		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		boolean isAssets = subDir.equals("assets");
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final boolean isAssets = subDir.equals("assets");
 		
-		Path visible = config.ASSETS_NEW
+		final Path visible = config.ASSETS_NEW
 				.resolve(task.getAssetPath())
 				.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
-		dir = fileService.restrictAccess(dir, visible);
-		return new FileTreeScript().html(dir, visible);
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirRelative, visible);
 	}
 	
 	/**
@@ -127,12 +127,12 @@ public class TaskAssetController {
 			HttpServletRequest request,
 			@PathVariable String idLink) throws Exception {
 		
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
-		MultipartFile file = (MultipartFile) map.getFirst("file");
+		final MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		final MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+		final MultipartFile file = map.getFirst("file");
 		if (file.isEmpty()) throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
 		
-		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		taskService.addFile(task, file);
 	}
 	
@@ -156,29 +156,29 @@ public class TaskAssetController {
 			@PathVariable final String idLink,
 			@PathVariable final String subDir,
 			@PathVariable final String dir) {
-		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		Path filePath;
-		Path base;
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final Path relative;
+		final Path base;
 		if(subDir.equals("preview")) {
 			if(dir.equals("original")) {
 				base = config.ASSETS_ORIGINAL;
-				filePath = task.getOriginalAssetPath();
+				relative = task.getOriginalAssetPath();
 			}
 			else if(dir.equals("newest")) {
 				base = config.ASSETS_NEW;
-				filePath = task.getNewestAssetPath();
+				relative = task.getNewestAssetPath();
 			}
 			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
 		}
 		else if (subDir.equals("asset") || subDir.equals("other") ){
-			boolean isAssets = subDir.equals("asset");
+			final boolean isAssets = subDir.equals("asset");
 			base = config.ASSETS_NEW;
-			filePath = task.getAssetPath()
+			relative = task.getAssetPath()
 					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER)
 					.resolve(dir);
 		}
 		else throw new IllegalArgumentException("Sub directory '"+subDir+"' is invalid. Valid values are 'preview', 'asset' and 'other'");
-		filePath = base.resolve(fileService.restrictAccess(filePath, base));
+		final Path filePath = base.resolve(fileService.restrictAccess(relative, base));
 		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
 		return new FileSystemResource(filePath.toFile());
 	}
@@ -197,7 +197,7 @@ public class TaskAssetController {
 			@RequestParam("asset") Boolean asset,
 			@RequestParam("dir") Path dir) throws Exception {
 		
-		AssetTask<?> task = (AssetTask<?>) UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		taskService.deleteFile(task, dir, asset);
 	}
 
