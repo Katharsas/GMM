@@ -1,15 +1,15 @@
 package gmm.service.ajax;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.service.ajax.operations.MessageResponseOperations;
 import gmm.service.ajax.operations.MessageResponseOperations.Conflict;
 import gmm.service.ajax.operations.MessageResponseOperations.Operation;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Provides a way to communicate with the client when the server needs to send a lot of
@@ -43,7 +43,7 @@ public class BundledMessageResponses<T> {
 	private final Iterator<? extends T> elements;
 	private T currentlyLoaded;
 	
-	protected static final String defaultOp = "default";
+	protected static final String nextElementOp = "default";
 	protected static final String success = "success";
 	protected static final String finished = "finished";
 	
@@ -54,68 +54,67 @@ public class BundledMessageResponses<T> {
 	}
 	
 	public List<MessageResponse> loadFirstBundle() throws Exception {
-		return loadNextBundle(defaultOp, false);
+		return loadNextBundle(nextElementOp, false);
 	}
 	
 	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) throws Exception {
-		List<MessageResponse> results = new LinkedList<>();
+		final List<MessageResponse> results = new LinkedList<>(MessageResponse.class);
 		MessageResponse result = loadNext(operation, doForAllFlag);
-		boolean loadNext = result.status.equals(success);
+		boolean loadNext = result.getStatus().equals(success);
 		results.add(result);
-		long timeStamp = System.currentTimeMillis();
+		final long timeStamp = System.currentTimeMillis();
 		while(loadNext) {
-			result = loadNext(defaultOp, false);
+			result = loadNext(nextElementOp, false);
 			results.add(result);
-			long duration = System.currentTimeMillis() - timeStamp;
-			loadNext = result.status.equals(success) && duration < 2000;
+			final long duration = System.currentTimeMillis() - timeStamp;
+			loadNext = result.getStatus().equals(success) && duration < 2000;
 		}
 		return results;
 	}
 	
-	private MessageResponse loadNext(String operation, boolean doForAllFlag) throws Exception {
-		MessageResponse result = new MessageResponse();
-		boolean needOperation;
-		
+	private MessageResponse loadNext(String answerOp, boolean doForAllFlag) throws Exception {
 		//If the user wants to process a new element, we try to do so.
-		if(operation.equals(defaultOp)) {
-			if (!elements.hasNext()) {
-				//Loading finished, user will stop sending requests!
-				result.status = finished;
-				return result;
-			}
-			//We try to add the next element. If a conflict occurs, we may need to ask the user.
+		if(answerOp.equals(nextElementOp)) {
+			return processNewElement();
+		}
+		//Else, he gave an answer on how to handle the last (conflicting) element.
+		else {
+			if(doForAllFlag) doForAlls.put(currentConflict, answerOp);
+			return resolveConflict(answerOp);
+		}
+	}
+	
+	private MessageResponse processNewElement() throws Exception {
+		//If loading finished, user should stop sending requests!
+		if (!elements.hasNext()) {
+			return new MessageResponse(finished, null);
+		} else {
+			//We try to add the next element, which may cause a conflict.
 			currentlyLoaded = elements.next();
 			currentConflict = ops.onLoad(currentlyLoaded);
-			needOperation = !currentConflict.equals(MessageResponseOperations.NO_CONFLICT);
+			final boolean isConflict = !currentConflict.equals(MessageResponseOperations.NO_CONFLICT);
 			
-			//we only need a new operation for a conflict, if the user never answered "doForAll".
-			if(needOperation && doForAlls.containsKey(currentConflict)) {
-				operation = doForAlls.get(currentConflict);
-				needOperation = false;
+			// If conflict, we either use a previously given doForAll operation or ask the user.
+			if(isConflict) {
+				if (doForAlls.containsKey(currentConflict)) {
+					return resolveConflict(doForAlls.get(currentConflict));
+				} else {
+					final String status = currentConflict.getStatus();
+					final String message = currentConflict.getMessage(currentlyLoaded);
+					return new MessageResponse(status, message);
+				}	
 			}
-		}
-		//Else, he gave an answer on how to handle the last (conflicting) element (and maybe "doForAll").
-		else {
-			needOperation = false;
-			if(doForAllFlag) {
-				doForAlls.put(currentConflict, operation);
-			}
-		}
-		
-		//If we have an operation now, we use it.
-		if(!needOperation) {
-			result.status = success;
-			if(operation.equals(defaultOp)) {
-				result.message = ops.onDefault(currentlyLoaded);}
+			//If not, we just add/process the new element and tell the user everything is fine.
 			else {
-				result.message = doOperation(operation, currentlyLoaded);}
+				final String message = ops.onDefault(currentlyLoaded);
+				return new MessageResponse(success, message);
+			}
 		}
-		//If not, we need to get an operation from the user. The user will then give us an answer.
-		else{
-			result.status = currentConflict.getStatus();
-			result.message = currentConflict.getMessage(currentlyLoaded);
-		}
-		return result;
+	}
+	
+	private MessageResponse resolveConflict(String operation) throws Exception {
+		final String message = doOperation(operation, currentlyLoaded);
+		return new MessageResponse(success, message);
 	}
 	
 	private final String doOperation(String operationType, T element) throws Exception {

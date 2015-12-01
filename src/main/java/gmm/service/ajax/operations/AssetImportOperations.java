@@ -49,7 +49,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 	public AssetImportOperations(TaskForm form, Class<E> clazz) {
 		this.form = form;
 		this.clazz = clazz;
-		this.tempData = new LinkedList<>();
+		this.tempData = new LinkedList<>(clazz);
 	}
 	
 	private final Conflict<String> taskConflict = new Conflict<String>() {

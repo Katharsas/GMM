@@ -20,7 +20,7 @@ public class LinkSession {
 
 	@Autowired private DataAccess data;
 	
-	List<Task> tasks = new LinkedList<>();
+	List<Task> tasks = new LinkedList<>(Task.class);
 	
 	/**
 	 * @param ids - String of task id/ids seperated by comma.
@@ -39,7 +39,7 @@ public class LinkSession {
 		}
 		//if multiple, check key from mapping
 		else {
-			Set<Long> idSet = new HashSet<>();
+			Set<Long> idSet = new HashSet<>(Long.class);
 			for (String id : idArray) {
 				idSet.add(Long.parseLong(id));
 			}

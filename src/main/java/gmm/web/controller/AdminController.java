@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
-import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,10 +25,10 @@ import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
 import gmm.service.data.backup.BackupService;
 import gmm.service.data.backup.ManualBackupService;
-import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
@@ -54,7 +54,7 @@ public class AdminController {
 	
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskFacade() {
-		TaskForm defaultFacade = new TaskForm();
+		final TaskForm defaultFacade = new TaskForm();
 		defaultFacade.setName("%filename%");
 		return defaultFacade;
 	}
@@ -116,8 +116,8 @@ public class AdminController {
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showBackups(@RequestParam("dir") Path dir) {
 		
-		Path visible = config.TASKS;
-		Path dirPath = fileService.restrictAccess(dir, visible);
+		final Path visible = config.TASKS;
+		final Path dirPath = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dirPath, visible);
 	}
 	
@@ -136,9 +136,9 @@ public class AdminController {
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws Exception {	
 		
-		Path visible = config.TASKS;
-		dir = visible.resolve(fileService.restrictAccess(dir, visible));
-		fileService.delete(dir);
+		final Path visible = config.TASKS;
+		final Path dirAbsolute = visible.resolve(fileService.restrictAccess(dir, visible));
+		fileService.delete(dirAbsolute);
 	}
 	
 	/**
@@ -158,9 +158,9 @@ public class AdminController {
 		Iterator<? extends Task> i;
 		// Load tasks from file
 		if (!(dir == null)) {
-			Path visible = config.TASKS;
-			dir = fileService.restrictAccess(dir, visible);
-			i = xmlService.deserialize(visible.resolve(dir), Task.class).iterator();
+			final Path visible = config.TASKS;
+			final Path dirRelative = fileService.restrictAccess(dir, visible);
+			i = xmlService.deserialize(visible.resolve(dirRelative), Task.class).iterator();
 		}
 		// Load tasks from asset import
 		else {
@@ -193,9 +193,9 @@ public class AdminController {
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showOriginalAssets(@RequestParam("dir") Path dir) {
 		
-		Path visible = config.ASSETS_ORIGINAL;
-		dir = fileService.restrictAccess(dir, visible);
-		return new FileTreeScript().html(dir, visible);
+		final Path visible = config.ASSETS_ORIGINAL;
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirRelative, visible);
 	}
 	
 	/**
@@ -208,11 +208,11 @@ public class AdminController {
 			@RequestParam("dir") Path dir,
 			@RequestParam("textures") boolean textures) {
 		
-		Path visible = config.ASSETS_ORIGINAL;
-		dir = fileService.restrictAccess(dir, visible);
-		FilenameFilter filter = textures ?
+		final Path visible = config.ASSETS_ORIGINAL;
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		final FilenameFilter filter = textures ?
 				TextureTaskService.extensions : ModelTaskService.extensions;
-		List<Path> paths = fileService.getFilePaths(visible.resolve(dir), filter);
+		final List<Path> paths = fileService.getFilePaths(visible.resolve(dirRelative), filter);
 		session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
 		return session.getImportPaths();
 	}

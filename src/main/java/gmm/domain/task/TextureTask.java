@@ -8,7 +8,7 @@ import gmm.domain.User;
 
 public class TextureTask extends AssetTask<Texture> {
 	
-	final public Set<ModelTask> models = new HashSet<ModelTask>();
+	final public Set<ModelTask> models = new HashSet<>(ModelTask.class);
 	
 	public TextureTask(User author, Path assetPath) throws Exception {
 		super(author, assetPath);

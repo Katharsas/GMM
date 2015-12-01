@@ -30,6 +30,7 @@ import gmm.domain.task.ModelTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.TextureTask;
 import gmm.service.UserService;
+import gmm.util.Util;
 
 @Service
 public class DataBase implements DataAccess {
@@ -48,11 +49,11 @@ public class DataBase implements DataAccess {
 	@Autowired UserService userService;
 	@Autowired PasswordEncoder encoder;
 	
-	final private List<User> users = new LinkedList<>();
-	final private Set<GeneralTask> generalTasks = new HashSet<>();
-	final private Set<TextureTask> textureTasks = new HashSet<>();
-	final private Set<ModelTask> modelTasks = new HashSet<>();
-	final private Set<Label> taskLabels = new HashSet<>();
+	final private List<User> users = new LinkedList<>(User.class);
+	final private Set<GeneralTask> generalTasks = new HashSet<>(GeneralTask.class);
+	final private Set<TextureTask> textureTasks = new HashSet<>(TextureTask.class);
+	final private Set<ModelTask> modelTasks = new HashSet<>(ModelTask.class);
+	final private Set<Label> taskLabels = new HashSet<>(Label.class);
 	final private CombinedData combined;
 	
 	final private java.util.Set<TaskUpdateCallback> weakCallbacks =
@@ -63,17 +64,16 @@ public class DataBase implements DataAccess {
 	 */
 	final private TaskUpdateCallback callbacks = new TaskUpdateCallback() {
 		@Override public <T extends Task> void onRemoveAll(Collection<T> tasks) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onRemoveAll(tasks);}
+			for(final TaskUpdateCallback c : weakCallbacks) {c.onRemoveAll(tasks);}
 		}
 		@Override public <T extends Task> void onRemove(T task) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onRemove(task);}
+			for(final TaskUpdateCallback c : weakCallbacks) {c.onRemove(task);}
 		}
-		
-		@Override public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> clazz) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks, clazz);}
+		@Override public <T extends Task> void onAddAll(Collection<T> tasks) {
+			for(final TaskUpdateCallback c : weakCallbacks) {c.onAddAll(tasks);}
 		}
 		@Override public <T extends Task> void onAdd(T task) {
-			for(TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
+			for(final TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
 		}
 	};
 	
@@ -85,7 +85,7 @@ public class DataBase implements DataAccess {
 	@PostConstruct
 	private void init() {
 		if (createDefaultUser) {
-			User defaultUser = new User(defaultUserName);
+			final User defaultUser = new User(defaultUserName);
 			defaultUser.setPasswordHash(encoder.encode(defaultUserPW));
 			defaultUser.setRole(User.ROLE_ADMIN);
 			defaultUser.enable(true);
@@ -100,33 +100,34 @@ public class DataBase implements DataAccess {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public synchronized <T extends Linkable> Collection<T> getList(Class<T> clazz) {
-		if(clazz.equals(Task.class)) {
-			Collection<T> allTasks = new HashSet<>();
-			allTasks.addAll((Collection<T>)generalTasks);
-			allTasks.addAll((Collection<T>) textureTasks);
-			allTasks.addAll((Collection<T>) modelTasks);
-			return allTasks;
+		final Collection<T> data;
+		// if abstract
+		if (clazz.isAssignableFrom(AssetTask.class)) {
+			data = new HashSet<>(clazz);
+			data.addAll(Util.castBound(textureTasks, clazz));
+			data.addAll(Util.castBound(modelTasks, clazz));
+			if (clazz.isAssignableFrom(Task.class)) {
+				data.addAll(Util.castBound(generalTasks, clazz));
+				if (!clazz.equals(Task.class)) {
+					final String errorMessage =
+							"A list for type '"+clazz.getSimpleName()+"' cannot be composed!";
+					logger.error(errorMessage);
+					throw new IllegalArgumentException(errorMessage);
+				}
+			}
+		} else {
+			data = getDataList(clazz).copy();
 		}
-		else if(clazz.equals(AssetTask.class)) {
-			Collection<T> assetTasks = new HashSet<>();
-			assetTasks.addAll((Collection<T>) textureTasks);
-			assetTasks.addAll((Collection<T>) modelTasks);
-			return assetTasks;
-		}
-		else {
-			return (Collection<T>) this.<T>getDataList(clazz).copy();
-		}
+		return data;
 	}
 
 	@Override
 	public synchronized <T extends Linkable> boolean add(T data) {
-		@SuppressWarnings("unchecked")
-		boolean result = this.<T>getDataList((Class<T>)data.getClass()).add(data);
+		final boolean result = getDataList(Util.classOf(data)).add(data);
 		if(data instanceof Task) {
-			Task task = (Task) data;
+			final Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
 			callbacks.onAdd(task);
 		}
@@ -134,41 +135,31 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> boolean addAll(Class<T> clazz, Collection<T> data) {
-		Collection<T> collection = getDataList(clazz);
-		boolean result =  collection.addAll(data);
-		specialTreatmentCheck(clazz, data);
+	public synchronized <T extends Linkable> boolean addAll(Collection<T> data) {
+		final Collection<T> collection = getDataList(data.getGenericType());
+		final boolean result =  collection.addAll(data);
+		if(Task.class.isAssignableFrom(data.getGenericType())) {
+			final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
+			for (final Task task : tasks) {
+				taskLabels.add(new Label(task.getLabel()));
+			}
+			callbacks.onAddAll(tasks);
+		}
 		return result;
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T extends Linkable> void specialTreatmentCheck(Class<T> clazz, Collection<T> data) {
-		//check if T subclass of Task (cant use instanceof with classes)
-		if(Task.class.isAssignableFrom(clazz)) {
-			//Compiler can't see safety of this, so trick him:
-			specialTreatmentForTasks((Class) clazz, (Collection) data);
-		}
-	}
-	
-	private <T extends Task> void specialTreatmentForTasks(Class<T> clazz, Collection<T> tasks) {
-		for (Task task : tasks) {
-			taskLabels.add(new Label(task.getLabel()));
-		}
-		callbacks.onAddAll(tasks, clazz);
 	}
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {
-		Multimap<Class<? extends Linkable>, T> clazzToData = HashMultimap.create();
-		Collection<Task> tasks  = new HashSet<>();
-		for(T item : data) {
-			Class<? extends Linkable> clazz = item.getClass();
+		final Multimap<Class<? extends Linkable>, T> clazzToData = HashMultimap.create();
+		final Collection<Task> tasks  = new HashSet<>(Task.class);
+		for(final T item : data) {
+			final Class<? extends Linkable> clazz = item.getClass();
 			if (Task.class.isAssignableFrom(clazz)) {
 				tasks.add((Task) item);
 			}
 			clazzToData.put(clazz, item);
 		}
-		for(Class<? extends Linkable> clazz : clazzToData.keySet()) {
+		for(final Class<? extends Linkable> clazz : clazzToData.keySet()) {
 			getDataList(clazz).removeAll(clazzToData.get(clazz));
 		}
 		callbacks.onRemoveAll(tasks);
@@ -176,9 +167,9 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> boolean remove(T data) {
-		boolean removed = getDataList(data.getClass()).remove(data);
+		final boolean removed = getDataList(data.getClass()).remove(data);
 		if (removed && data instanceof Task) {
-			Task task = (Task) data;
+			final Task task = (Task) data;
 			callbacks.onRemove(task);
 		}
 		return removed;
@@ -186,6 +177,10 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
+		if(Task.class.isAssignableFrom(clazz)) {
+			final Collection<? extends Task> tasks = Util.castBound(getList(clazz), Task.class);
+			callbacks.onRemoveAll(tasks);
+		}
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
 			textureTasks.clear();
@@ -201,27 +196,25 @@ public class DataBase implements DataAccess {
 		//TODO call callbacks!!!
 	}
 	
-	@SuppressWarnings("unchecked")
 	private <T extends Linkable> Collection<T> getDataList(Class<T> clazz) {
-		try {
-			switch(clazz.getSimpleName()) {
-				case "User":
-					return (Collection<T>) users;
-				case "GeneralTask":
-					return (Collection<T>) generalTasks;
-				case "TextureTask":
-					return (Collection<T>) textureTasks;
-				case "ModelTask":
-					return (Collection<T>) modelTasks;
-				case "Label":
-					return (Collection<T>) taskLabels;
-				default:
-					throw new UnsupportedOperationException();
-			}
-		} catch (UnsupportedOperationException e) {
-			logger.error("\nDatabase Error: Request for class type: "+clazz.getSimpleName()+" not implemented!\n");
-			throw new UnsupportedOperationException();
+		final Collection<?> data;
+		if (clazz.equals(User.class))
+			data = users;
+		else if (clazz.equals(GeneralTask.class))
+			data = generalTasks;
+		else if (clazz.equals(TextureTask.class))
+			data = textureTasks;
+		else if (clazz.equals(ModelTask.class))
+			data = modelTasks;
+		else if (clazz.equals(Label.class))
+			data = taskLabels;
+		else {
+			final String errorMessage =
+					"A list of type '"+clazz.getSimpleName()+"' does not exist!";
+			logger.error(errorMessage);
+			throw new IllegalArgumentException(errorMessage);
 		}
+		return Util.cast(data, clazz);
 	}
 
 	@Override
@@ -239,8 +232,8 @@ public class DataBase implements DataAccess {
 	}
 	
 	private boolean exists(Collection<? extends UniqueObject> c, long[] ids) {
-		for(UniqueObject u : c) {
-			for (long id : ids) {
+		for(final UniqueObject u : c) {
+			for (final long id : ids) {
 				if(u.getId() == id) return true;
 			}
 		}
@@ -250,6 +243,7 @@ public class DataBase implements DataAccess {
 	@Override
 	public void registerForUpdates(TaskUpdateCallback onUpdate) {
 		weakCallbacks.add(onUpdate);
+		//TODO delete when tested with more than 20 sessions
 		if (weakCallbacks.size() > 20)
 			logger.error("Memory leak: Callback objects not getting garbage collected!");
 	}

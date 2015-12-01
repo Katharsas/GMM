@@ -3,17 +3,26 @@ package gmm.collections;
 public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	private static final long serialVersionUID = -857844793375508167L;
 	
-	public LinkedList(java.util.Collection<? extends E> list) {
+	private Class<E> genericType;
+	
+	public LinkedList(Class<E> clazz, java.util.Collection<? extends E> list) {
 		super(list);
+		this.genericType = clazz;
+	}
+	
+	public LinkedList(Collection<E> list) {
+		super(list);
+		this.genericType = (Class<E>) list.getGenericType();
 	}
 
-	public LinkedList() {
+	public LinkedList(Class<E> clazz) {
 		super();
+		this.genericType = clazz;
 	}
 
 	@Override
 	public LinkedList<E> copy() {
-		return new LinkedList<E>(this);
+		return new LinkedList<E>(genericType, this);
 	}
 	
 	@Override
@@ -26,5 +35,10 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 			}
 			return result;
 		}
+	}
+
+	@Override
+	public Class<E> getGenericType() {
+		return genericType;
 	}
 }

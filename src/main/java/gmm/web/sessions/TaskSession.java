@@ -16,6 +16,7 @@ import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.TaskUpdateCallback;
 import gmm.service.sort.TaskSortService;
+import gmm.util.Util;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
@@ -49,15 +50,13 @@ public class TaskSession {
 	private class UpdateCallback implements TaskUpdateCallback {
 		@Override
 		public <T extends Task> void onAdd(T task) {
-			List<T> single = new LinkedList<>();
+			List<T> single = new LinkedList<T>(Util.classOf(task));
 			single.add(task);
-			@SuppressWarnings("unchecked")
-			Class<T> clazz = (Class<T>) task.getClass();
-			onAddAll(single, clazz);
+			onAddAll(single);
 		}
 		@Override
-		public <T extends Task> void onAddAll(Collection<T> tasks, Class<T> clazz) {
-			TaskType type = TaskType.fromClass(clazz);
+		public <T extends Task> void onAddAll(Collection<T> tasks) {
+			TaskType type = TaskType.fromClass(tasks.getGenericType());
 			if(selected[type.ordinal()]) {
 				filteredTasks.addAll(filter(tasks));
 				filteredTasks = sort(filteredTasks);
@@ -73,7 +72,7 @@ public class TaskSession {
 		@Override
 		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
 			filteredTasks.removeAll(tasks);
-			tasks.removeAll(tasks);
+			TaskSession.this.tasks.removeAll(tasks);
 			notifyClient();
 		}
 		private void notifyClient() {
@@ -121,8 +120,8 @@ public class TaskSession {
 	private void init() {
 		data.registerForUpdates(strongReference);
 		
-		filteredTasks = new LinkedList<Task>();
-		tasks = new LinkedList<Task>();
+		filteredTasks = new LinkedList<>(Task.class);
+		tasks = new LinkedList<>(Task.class);
 		sort = new SortForm();
 		generalFilter = new FilterForm();
 		

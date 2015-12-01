@@ -46,7 +46,7 @@ public class FileService {
 	}
 	
 	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
-		List<String> relPaths = new LinkedList<>();
+		List<String> relPaths = new LinkedList<>(String.class);
 		for (Path path : paths) {
 			relPaths.add(visible.relativize(path).toString());
 		}
@@ -60,7 +60,7 @@ public class FileService {
 	 * @param fileExtensions - Filters the files by file extension.
 	 */
 	public List<Path> getFilePaths(Path path, FilenameFilter filter) {
-		List<Path> filePaths = new LinkedList<>();
+		List<Path> filePaths = new LinkedList<>(Path.class);
 		File root = path.toFile();
 		if (root.exists()) {
 			List<File> files = getFilesRecursive(root, filter);
@@ -72,7 +72,7 @@ public class FileService {
 	}
 	
 	private List<File> getFilesRecursive(File dir, FilenameFilter filter) {
-		List<File> list = new LinkedList<>();
+		List<File> list = new LinkedList<>(File.class);
 		if(dir.isFile()) {
 			if(filter == null || filter.accept(dir, dir.getName())) list.add(dir);
 		}

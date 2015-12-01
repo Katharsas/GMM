@@ -32,7 +32,7 @@ public class AdminSession {
 	public BundledMessageResponses<String> assetImporter;
 	
 	private AssetImportOperations<? extends Asset, ? extends AssetTask<?>> importOperations;
-	private final List<String> importFilePaths = new LinkedList<>();
+	private final List<String> importFilePaths = new LinkedList<>(String.class);
 	private boolean areTexturePaths = true;
 	
 	public void addImportPaths(Collection<String> paths, boolean areTexturePaths) {
