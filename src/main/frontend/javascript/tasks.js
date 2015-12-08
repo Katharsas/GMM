@@ -215,7 +215,7 @@ var Workbench = function() {
 			Dialogs.showDialog($saveTasks);
 		});
 		$workbenchTabs.find("#workbench-admin-deleteButton").click(function() {
-			var $confirm = confirm(function() {
+			var $confirm = Dialogs.confirm(function() {
 				Dialogs.hideDialog($confirm);
 				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
 					.done(function(){
@@ -301,7 +301,7 @@ function TaskForm() {
 		$submit.click(function() {$form.submit();});
 		$cancel.click(function() {
 			//TODO reload only empty form
-			alert(function() {
+			Dialogs.alert(function() {
 				tasksVars.edit = "";
 				tasksFuncs.refresh();
 			}, "TODO: Reset form only");
