@@ -5,6 +5,7 @@
 <%@attribute name="css" fragment="true" %>
 
 <%-- Template Start --%>
+<!DOCTYPE html>
 <html>
 	<head>
 		<!-- Stuff -->

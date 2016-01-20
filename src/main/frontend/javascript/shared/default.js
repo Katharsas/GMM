@@ -109,9 +109,10 @@ $(document).ready(function() {
 	$(".draggable").fixedDraggable();
 	
 	$("#page-tabmenu #logout").click(function()  {
-		Ajax.post( contextUrl + "/logout");
-		//TODO: remove if logout works
-//		window.location.href = contextUrl + "/login?logout";
+		Ajax.post( contextUrl + "/logout")
+			.done(function() {
+				window.location.reload();
+			});
 	});
 	
 	allVars.adminBanner = htmlDecode(allVars.adminBanner);
