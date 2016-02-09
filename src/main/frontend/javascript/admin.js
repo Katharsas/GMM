@@ -104,6 +104,7 @@ $(document).ready( function() {
 	
 	Database();
 	AssetImport();
+	UserManager();
 });
 
 function addAssetPaths(textures) {
@@ -156,84 +157,108 @@ function cancelImport() {
 }
 global.cancelImport = cancelImport;
 
-function editUserRole(idLink, userRole) {
-	var $textField = $("#confirmDialog").find("#confirmDialogTextInput");
-	Dialogs.confirm(function () {
-		var role = $textField.attr("value");
-		Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"role": role})
+/**
+ * -------------------- UserManaer --------------------------------------------------------------
+ * Registers event listeners for user list and buttons.
+ */
+var UserManager = function() {
+	var $users = $("#admin-users");
+	
+	var callWithUser = function($child, callback) {
+		var $user = $child.closest(".admin-user");
+		var idLink = $user.attr("id");
+		callback($user, idLink, $child);
+	};
+	// single user
+	//-----------------------------------------------------------------
+	var switchUser = function($user, idLink, $enabled) {
+		Ajax.post(contextUrl + "/admin/users/switch/" + idLink)
 			.done(function() {
-				window.location.reload();
+				if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
+					$user.addClass("disabled");
+					$enabled.html("&#x2610;");
+				}
+				else {
+					$user.removeClass("disabled");
+					$enabled.html("&#x2611;");
+				}
 			});
-	}, "Valid roles: ROLE_USER, ROLE_ADMIN", userRole);
-}
-global.editUserRole = editUserRole;
-
-function switchAdmin(idLink) {
-	Ajax.post(contextUrl + "/admin/users/admin/"+idLink)
-		.done(function() {
-			var $role = $("#"+idLink+" .subElementUserRole");
-			if($.trim($role.html())==="[ADMIN]") {
-				$role.html("&nbsp;");
-			}
-			else {
-				$role.html("[ADMIN]");
-			}
-		});
-}
-global.switchAdmin = switchAdmin;
-
-function editUserName(idLink, userName) {
-	Dialogs.confirm(function (name) {
-		Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"name": name})
+	};
+	$users.on("click", ".admin-user-enabled", function() {
+		var $child = $(this);
+		callWithUser($child, switchUser);
+	});
+	//-----------------------------------------------------------------
+	var switchAdmin = function($user, idLink, $role) {
+		Ajax.post(contextUrl + "/admin/users/admin/" + idLink)
 			.done(function() {
-				window.location.reload();
+				if($.trim($role.html())==="[ADMIN]") {
+					$role.html("&nbsp;");
+				}
+				else {
+					$role.html("[ADMIN]");
+				}
 			});
-	}, "Enter user name here:", userName);
-}
-global.editUserName = editUserName;
-
-function resetPassword(idLink) {
-	var $confirm = Dialogs.confirm(function() {
-		Ajax.post(contextUrl + "/admin/users/reset/" + idLink)
-			.done(function(data) {
-				Dialogs.hideDialog($confirm);
-				var $alert = Dialogs.alert(function() {
-					Dialogs.hideDialog($alert);
+	};
+	$users.on("click", ".admin-user-role", function() {
+		var $child = $(this);
+		callWithUser($child, switchAdmin);
+	});
+	//-----------------------------------------------------------------
+	var editUserName = function($user, idLink) {
+		var userName = $user === null ? "" : $user.find(".admin-user-name").attr("data-name");
+		Dialogs.confirm(function (changedName) {
+			Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"name": changedName})
+				.done(function() {
 					window.location.reload();
-					}, "New Password:", data[0]);
-			});
-	}, "Generate New Random Password?");
-}
-global.resetPassword = resetPassword;
-
-function switchUser(idLink, userName) {
-	Ajax.post(contextUrl + "/admin/users/switch/" + idLink)
-		.done(function() {
-			var $enabled = $("#"+idLink+" .subElementUserEnabled");
-			if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
-				$enabled.html("&#x2610;");
-			}
-			else {
-				$enabled.html("&#x2611;");
-			}
-		});
-}
-global.switchUser = switchUser;
-
-function saveUsers() {
-	Ajax.post(contextUrl + "/admin/users/save");
-}
-global.saveUsers = saveUsers;
-
-function loadUsers() {
-	Dialogs.confirm(function() {
-		Ajax.post(contextUrl + "/admin/users/load")
+				});
+		}, "Enter user name here:", userName);
+	};
+	$users.on("click", ".admin-user-buttonRename", function() {
+		var $child = $(this);
+		callWithUser($child, editUserName);
+	});
+	//-----------------------------------------------------------------
+	var resetPassword = function($user, idLink) {
+		var $confirm = Dialogs.confirm(function() {
+			Ajax.post(contextUrl + "/admin/users/reset/" + idLink)
+				.done(function(data) {
+					Dialogs.hideDialog($confirm);
+					var $alert = Dialogs.alert(function() {
+						Dialogs.hideDialog($alert);
+						window.location.reload();
+						}, "New Password:", data[0]);
+				});
+		}, "Generate New Random Password?");
+	};
+	$users.on("click", ".admin-user-buttonReset", function() {
+		var $child = $(this);
+		callWithUser($child, resetPassword);
+	});
+	
+	// all users buttons
+	//-----------------------------------------------------------------
+	$(".admin-users-new").on("click", function() {
+		console.log("test");
+		editUserName(null, "new");
+	});
+	$(".admin-users-save").on("click", function() {
+		Ajax.post(contextUrl + "/admin/users/save")
 			.done(function() {
-				window.location.reload();
+				Dialogs.alert(null, "Users saved!");
 			});
-	}, "Delete all unsaved user data?");
-}
-global.loadUsers = loadUsers;
+	});
+	$(".admin-users-load").on("click", function() {
+		Dialogs.confirm(function() {
+			Ajax.post(contextUrl + "/admin/users/load")
+				.done(function() {
+					window.location.reload();
+				});
+		}, "Delete all unsaved user data?");
+	});
+};
+
+
 
 function importAssets(assetTypes) {
 	global.ajaxChannel = new ResponseBundleHandler("assets");

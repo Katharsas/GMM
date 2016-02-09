@@ -13,9 +13,9 @@
     
     <jsp:body>
     
-    	<div class="groupDescriptor"><fmt:message key="admin.customization"/></div>
-        <div class="adminElementGroup">
-			<div class="customizationDescription adminElement left"><fmt:message key="admin.htmlCode"/></div>
+    	<div class="admin-groupDesc"><fmt:message key="admin.customization"/></div>
+        <div class="admin-group">
+			<div class="admin-inner customizationDescription left"><fmt:message key="admin.htmlCode"/></div>
 			<c:if test="${combinedData.isCustomAdminBannerActive()}">
 				<div  class="button pageButton right"><a href="admin/deactivateBanner"><fmt:message key="admin.deactivate"/><span></span></a></div>
 			</c:if>
@@ -23,16 +23,16 @@
 				<div  class="button pageButton right"><a href="admin/activateBanner"><fmt:message key="admin.activate"/><span></span></a></div>
 			</c:if>
         	<div class="clear"></div>
-        	<div class="adminElement">
+        	<div class="admin-inner">
         		<textarea id="adminBannerTextArea" ></textarea>
         	</div>
         </div>
     
-    	<div class="groupDescriptor"><fmt:message key="admin.database"/></div>
-        <div id="database" class="adminElementGroup">
-        	<div id="loadTasks" class="adminElement left">
-        	    <div class="adminElement hint"><fmt:message key="admin.database.message"/></div>
-        		<div id="database-fileTreeContainer" class="adminElement"></div>
+    	<div class="admin-groupDesc"><fmt:message key="admin.database"/></div>
+        <div class="admin-group" id="database">
+        	<div class="admin-inner left" id="loadTasks" >
+        	    <div class="admin-inner hint"><fmt:message key="admin.database.message"/></div>
+        		<div id="database-fileTreeContainer" class="admin-inner"></div>
         		<br/>
         		<div id="database-loadFile" class="button pageButton left">
         			<fmt:message key="admin.database.load"/>
@@ -42,7 +42,7 @@
         		</div>
         		<div class="clear"></div>
         	</div>
-        	<div id="save" class="adminElement left">
+        	<div id="save" class="admin-inner left">
         		<div id="database-saveAll" class="button pageButton">
         			<fmt:message key="admin.database.saveall"/>
         		</div>
@@ -52,15 +52,15 @@
 			<div class="clear"></div>
         </div>
         
-        <div class="groupDescriptor"><fmt:message key="admin.importAssets"/></div>
-        <div id="assets" class="adminElementGroup">
-			<div id="assets-fileTreeContainer" class="adminElement"></div>
+        <div class="admin-groupDesc"><fmt:message key="admin.importAssets"/></div>
+        <div class="admin-group" id="assets">
+			<div class="admin-inner" id="assets-fileTreeContainer"></div>
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>
 			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)"><fmt:message key="admin.database.addmeshes"/></div>
 			<div class="clear"></div>
-			<div id="selectedPaths" class="adminElement"><ul></ul></div>
+			<div id="selectedPaths" class="admin-inner"><ul></ul></div>
 
-			<div id="importTaskForm" class="adminElement">
+			<div id="importTaskForm" class="admin-inner">
 				<form:form id="taskForm" commandName="taskForm">
 					<t:all_taskForm>
 					</t:all_taskForm>
@@ -76,41 +76,40 @@
 			</div>
 		</div>
 		
-		<div class="groupDescriptor">
+		<div class="admin-groupDesc">
 			<fmt:message key="admin.database.useraccounts"/>
 		</div>
-		<div class="adminElementGroup">
+		<div class="admin-group">
 			<br/>
-			<c:forEach items="${users}" var="user">
-				<div id="${user.getIdLink()}" class="elementUser">
-					<div class="subElementUserEnabled clickable left" onclick="switchUser('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
-						${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
+			<div class="admin-inner" id="admin-users">
+				<c:forEach items="${users}" var="user">
+					<div id="${user.getIdLink()}" class="admin-user ${user.isEnabled() ? '' : 'disabled'}">
+						<div class="admin-user-enabled clickable left">
+							${user.isEnabled() ? '&#x2611;' : '&#x2610;'}
+						</div>
+						<div class="admin-user-role clickable left">
+							${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
+						</div>
+						<div class="admin-user-name left" data-name="${fn:escapeXml(user.getName())}">
+							${fn:escapeXml(user.getName())}
+						</div>
+						<div class="admin-user-password left">
+							${user.getPasswordHash()==null ? '(Disabled - Needs Password)' : '&nbsp;'}
+						</div>
+						<div class="admin-user-buttonReset button right">
+							<fmt:message key="admin.database.resetpassword"/>
+						</div>
+						<div class="admin-user-buttonRename button right">
+							<fmt:message key="admin.database.editname"/>
+						</div>
+						<div class="clear"></div>
 					</div>
-					<div class="subElementUserRole clickable left"  onclick="switchAdmin('${user.getIdLink()}')">
-						${user.getRole().equals('ROLE_ADMIN') ? '[ADMIN]' : '&nbsp;'}
-					</div>
-					<div class="subElementUserName left">
-						${fn:escapeXml(user.getName())}
-					</div>
-					<div class="subElementUserPassword left">
-						${user.getPasswordHash()==null ? '(Disabled - Needs Password)' : '&nbsp;'}
-					</div>
-<%-- 					<div class="button listButton right" onclick="editUserRole('${user.getIdLink()}','${user.getRole()}')"> --%>
-<!-- 						Change Role -->
-<!-- 					</div> -->
-					<div class="button listButton right" onclick="resetPassword('${user.getIdLink()}')">
-						<fmt:message key="admin.database.resetpassword"/>
-					</div>
-					<div class="button listButton right" onclick="editUserName('${user.getIdLink()}','${cfn:escapeJS(user.getName())}')">
-						<fmt:message key="admin.database.editname"/>
-					</div>
-					<div class="clear"></div>
-				</div>
-			</c:forEach>
-			<br/>
-			<div class="button pageButton left" onclick="editUserName('new','')"><fmt:message key="admin.database.newuser"/></div>
-			<div class="button pageButton right" onclick="saveUsers()"><fmt:message key="admin.database.saveuser"/></div>
-			<div class="button pageButton right" onclick="loadUsers()"><fmt:message key="admin.database.loaduser"/></div>
+				</c:forEach>
+				<br/>
+			</div>
+			<div class="admin-users-new button pageButton left"><fmt:message key="admin.database.newuser"/></div>
+			<div class="admin-users-save button pageButton right"><fmt:message key="admin.database.saveuser"/></div>
+			<div class="admin-users-load button pageButton right"><fmt:message key="admin.database.loaduser"/></div>
 		</div>
 			
 	</jsp:body>

@@ -1,28 +1,32 @@
+@import '../include';
+
+//------------------------------------------------------------------------------
+// general stuff
+//------------------------------------------------------------------------------
+
 .pageButton {
 	min-width:9em;
 }
-.listButton {
-	min-width:5em;
-	border:1px solid #555;
-	margin:3px 5px;
-}
-.adminElementGroup, .groupDescriptor {
+
+.admin-group, .admin-groupDesc {
 	margin:0 auto;
 	padding:5px 20px;
 	max-width:850px;
 }
-.adminElementGroup {
-	background-color:#072737;
+.admin-group {
 	overflow: hidden;
+	
+	@include colorTheme-subpage-dark;
 }
-.adminElement, .pageButton{
+.admin-inner, .pageButton{
 	margin:12px 10px;
 }
 
-.groupDescriptor {
+.admin-groupDesc {
 	margin-top:30px;
 	color: white;
-	background-color:#164054;
+	
+	@include colorTheme-subpage-bright;
 }
 .hint {
 	font-size:0.8em;
@@ -72,34 +76,53 @@
 	background-color:#164054;
 }
 
-.elementUser {
-	background-color:#164054;
+//------------------------------------------------------------------------------
+// user accounts
+//------------------------------------------------------------------------------
+
+.admin-user {
+	$border: 1px solid $fgc-subpage-dark;
+	border-bottom: $border;
+	
+	@include colorTheme-subpage-dark;
+	
+	&:first-child {
+		border-top: $border;
+	}
+	&.disabled {
+		background-color: setSaturation($bgc-subpage-dark, 0.4);
+		color: setLightness($fgc-subpage-dark, 0.6);
+	}
+	&:hover, &.disabled:hover {
+		@include colorTheme-subpage-bright;
+	}
+	
+	.button {
+		min-width:5em;
+		margin:4px 5px;
+		padding-left: 5px;
+		padding-right: 5px;
+	}
 }
-.elementUser:hover {
-	background-color:#072737;
-}
-.elementUser:hover .listButton {
-	border-color: #999;
-	color:#BBB;
-}
-.elementUser:hover .listButton:hover {
-	color:#FFF;
-}
-.subElementUserName {
+.admin-user-name {
+	word-wrap: break-word;
+	max-width:100%;
 	padding:7px;
 	font-weight: bold;
 }
-.subElementUserRole {
-	min-width:5em;
+.admin-user-role {
+	min-width:4.5em;
 	padding:7px;
-	color:#999;
+	color:$c-darkOrange;
 }
-.subElementUserEnabled {
+.admin-user-enabled {
 	margin-left:5px;
+	margin-right:5px;
 	padding-top:2px;
 	font-size:1.4em;
 }
-.subElementUserPassword {
+.admin-user-password {
 	padding:7px;
-	color:#A82709;
+	color: $c-darkOrange;
+	font-weight:bold;
 }

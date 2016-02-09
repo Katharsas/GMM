@@ -52,7 +52,7 @@ var Dialogs = (function() {
 		var $input = $confirmDialog.find("#confirmDialog-input");
 		var $textarea = $confirmDialog.find("#confirmDialog-textarea");
 		allVars.onConfirmCallback = function() {
-			onConfirm($input.val(), $textarea.val());
+			if(onConfirm !== null) onConfirm($input.val(), $textarea.val());
 		};
 		var $cancelButton = $confirmDialog.find("#confirmDialog-cancel");
 		if(inputDefault !== undefined) {
@@ -121,7 +121,7 @@ var Dialogs = (function() {
 			var $dialog = showConfirmDialog(
 				function(){
 					hideDialog($dialog);
-					onConfirm();
+					if (onConfirm !== null) onConfirm();
 				}, message, false, textInputDefault, textAreaDefault);
 			return $dialog;
 		},

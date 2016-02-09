@@ -151,7 +151,6 @@ public class BackupService implements ServletContextListener {
 		monthlyBackup.execute(now, true, true);
 		hourlyBackup.execute(now, true, true);
 		daylyBackup.execute(now, false, true);
-		throw new IllegalStateException("Test");
 	}
 	
 	@Override
