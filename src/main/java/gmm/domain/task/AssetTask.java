@@ -1,10 +1,5 @@
 package gmm.domain.task;
 
-import gmm.domain.User;
-import gmm.service.Spring;
-import gmm.service.data.DataConfigService;
-
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Objects;
@@ -14,6 +9,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
+
+import gmm.domain.User;
+import gmm.service.Spring;
+import gmm.service.data.DataConfigService;
 
 /**
  * After creation & after loading the path configuration must be injected by calling {@link #setConfig(DataConfigService)}.
@@ -37,13 +36,13 @@ public abstract class AssetTask<A extends Asset> extends Task {
 			DateTimeFormat.forPattern("MM-dd-HH-mm-ss").withLocale(Locale.ENGLISH);
 	
 	//Methods--------------------------------------------
-	public AssetTask(User author, Path assetPath) throws Exception {
+	public AssetTask(User author, Path assetPath) {
 		super(author);
 		this.assetPath = assetPath;
 	}
 	
 	@Override
-	public void onLoad() throws Exception {
+	public void onLoad() {
 		this.config = Spring.get(DataConfigService.class);
 	}
 	
@@ -69,7 +68,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		return originalAsset;
 	}
 
-	public void setOriginalAsset(A originalAsset) throws IOException {
+	public void setOriginalAsset(A originalAsset) {
 		Objects.requireNonNull(config);
 		this.originalAsset = originalAsset;
 	}
@@ -81,7 +80,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		return newestAsset;
 	}
 	
-	public void setNewestAsset(A newestAsset) throws IOException {
+	public void setNewestAsset(A newestAsset) {
 		Objects.requireNonNull(config);
 		this.newestAsset = newestAsset;
 		this.newestAssetLastUpdate = DateTime.now();

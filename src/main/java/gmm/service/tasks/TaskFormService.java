@@ -1,7 +1,5 @@
 package gmm.service.tasks;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import gmm.domain.User;
@@ -17,21 +15,21 @@ abstract class TaskFormService<T extends Task> {
 
 	@Autowired private UserService users;
 	
-	public abstract Class<T> getTaskType();
-	public abstract T create(TaskForm form) throws Exception ;
+	public abstract Class<? extends T> getTaskType();
+	public abstract T create(TaskForm form) ;
 	
-	public void edit(T task, TaskForm form) throws IOException {
+	public void edit(T task, TaskForm form) {
 		task.setName(form.getName());
 		task.setPriority(form.getPriority());
 		task.setTaskStatus(form.getStatus());
 		task.setDetails(form.getDetails());
 		task.setLabel(form.getLabel());
-		User assigned = form.getAssigned().equals("") ? null : users.get(form.getAssigned());
+		final User assigned = form.getAssigned().equals("") ? null : users.get(form.getAssigned());
 		task.setAssigned(assigned);
 	}
 	
 	public TaskForm prepareForm(T task) {
-		TaskForm form = new TaskForm();
+		final TaskForm form = new TaskForm();
 		form.setName(task.getName());
 		form.setDetails(task.getDetails());
 		form.setLabel(task.getLabel());

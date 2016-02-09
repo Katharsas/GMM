@@ -54,4 +54,9 @@ public class Util {
 					+"> to Collection<"+to.getCanonicalName()+">!");
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<? extends T> getClass(T t) {
+		return (Class<? extends T>) t.getClass();
+	}
 }

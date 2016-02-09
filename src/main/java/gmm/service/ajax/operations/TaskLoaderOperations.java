@@ -28,7 +28,7 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 	
 	@Override
 	public Map<String, Operation<Task>> getOperations() {
-		Map<String, Operation<Task>> map = new HashMap<>();
+		final Map<String, Operation<Task>> map = new HashMap<>();
 		
 		map.put("skip", new Operation<Task>() {
 			@Override public String execute(Task element) {
@@ -52,7 +52,7 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 		return map;
 	}
 	
-	@Override public Conflict<Task> onLoad(Task t) throws Exception {
+	@Override public Conflict<Task> onLoad(Task t) {
 		t.onLoad();
 		UniqueObject.updateCounter(t);
 		if (data.hasIds(new long[]{t.getId()})) return conflict;

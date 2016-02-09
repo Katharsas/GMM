@@ -1,17 +1,20 @@
 package gmm.service;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Service;
+
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.util.StringUtil;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.springframework.stereotype.Service;
 
 /**
  * Service for all kind of write/read File operations.
@@ -46,8 +49,8 @@ public class FileService {
 	}
 	
 	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
-		List<String> relPaths = new LinkedList<>(String.class);
-		for (Path path : paths) {
+		final List<String> relPaths = new LinkedList<>(String.class);
+		for (final Path path : paths) {
 			relPaths.add(visible.relativize(path).toString());
 		}
 		return relPaths;
@@ -58,40 +61,31 @@ public class FileService {
 	 * This includes files inside directories inside the given directory.
 	 * 
 	 * @param fileExtensions - Filters the files by file extension.
+	 * @throws IOException 
 	 */
-	public List<Path> getFilePaths(Path path, FilenameFilter filter) {
-		List<Path> filePaths = new LinkedList<>(Path.class);
-		File root = path.toFile();
-		if (root.exists()) {
-			List<File> files = getFilesRecursive(root, filter);
-			for (File f : files) {
-				filePaths.add(f.toPath());
+	public List<Path> getFilesRecursive(Path path, PathFilter filter) {
+		final List<Path> filePaths = new LinkedList<>(Path.class);
+		if (path.toFile().exists()) {
+			try(Stream<Path> stream = Files.walk(path)) {
+				stream
+					.filter(Files::isRegularFile)
+					.filter(filter)
+					.collect(Collectors.toCollection(()-> filePaths));
+			} catch (final IOException e) {
+				throw new UncheckedIOException(e);
 			}
 		}
 		return filePaths;
 	}
 	
-	private List<File> getFilesRecursive(File dir, FilenameFilter filter) {
-		List<File> list = new LinkedList<>(File.class);
-		if(dir.isFile()) {
-			if(filter == null || filter.accept(dir, dir.getName())) list.add(dir);
-		}
-		else if(dir.isDirectory()) {
-			for (File f : dir.listFiles()) {
-				if(f.isDirectory()) list.addAll(getFilesRecursive(f, filter));
-				else if(filter == null || filter.accept(f, f.getName())) list.add(f);
-			}
-		}
-		return list;
-	}
+	public static interface PathFilter extends Predicate<Path> {}
 	
-
 	/**
-	 * A Filter that only accepts extensions specified on contruction.
-	 * Does not accept hidden files (unix).
+	 * A Filter that only accepts extensions specified on construction.
+	 * Does not accept hidden files (unix) or directories.
 	 * @author Jan
 	 */
-	public static class FileExtensionFilter implements FilenameFilter {
+	public static class FileExtensionFilter implements PathFilter {
 		private final static StringUtil strings = new StringUtil().ignoreCase();
 		private final String[] extensions;
 		/**
@@ -101,8 +95,11 @@ public class FileService {
 			this.extensions = extensions;
 		}
 		@Override
-		public boolean accept(File __, String name) {
-			for(String ext : this.extensions) {
+		public boolean test(Path entry) {
+			return test(entry.getFileName().toString());
+		}
+		public boolean test(String name) {
+			for(final String ext : this.extensions) {
 				if(strings.endsWith(name, "." + ext)) return name.charAt(0) != '.';
 			}
 			return false;
@@ -113,67 +110,34 @@ public class FileService {
 	 * Deletes the given file or directory and all empty parent directories.
 	 * So if a file is the only file in a folder, the folder will be deleted too.
 	 */
-	public synchronized void delete(Path path) throws IOException {
-		Path parent = path.getParent();
-		if (path.toFile().isDirectory()) clearDirectory(path);
-		Files.delete(path);
-		if(parent.toFile().list().length == 0) {
-			delete(parent);
-		}
-	}
-	
-	/**
-	 * Deletes everything in this directory recursively.
-	 */
-	private void clearDirectory(Path path) throws IOException {
-		if (path.toFile().isDirectory()) {
-			for (File f : path.toFile().listFiles()) {
-				if (f.isDirectory()) clearDirectory(f.toPath());
-				Files.delete(f.toPath());
-			}
-		}
-	}
-	
-	/**
-	 * Creates necessary parent directories for this file.
-	 */
-	public void prepareFileCreation(Path path) throws IOException {
-		Path parent = path.getParent();
+	public synchronized void delete(Path path) {
 		try {
-			if(!parent.toFile().exists()) {
-				createDirectory(parent);
-			}
-		} catch (Exception e) {
-			throw new IOException("Could not prepare directories for " + path, e);
+			FileUtils.forceDelete(path.toFile());
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not recursivly delete directory " + path, e);
 		}
 	}
 	
 	/**
 	 * Creates a directory and any necessary parent directories.
 	 */
-	public synchronized void createDirectory(Path dir) throws IOException {
-		if(!dir.toFile().exists()) {
-			Path parent = dir.getParent();
-			if(!parent.toFile().exists()) {
-				createDirectory(parent);
-			}
-			try {
-				Files.createDirectory(dir);
-			} catch (IOException e) {
-				throw new IOException("Could not create directory at " + dir, e);
-			}
+	public synchronized void createDirectory(Path path) {
+		try {
+			FileUtils.forceMkdir(path.toFile());
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not create directory " + path, e);
 		}
 	}
 	
 	/**
 	 * Creates a directory and any necessary parent directories.
 	 */
-	public synchronized void createFile(Path path, byte[] data) throws IOException {
-		prepareFileCreation(path);
+	public synchronized void createFile(Path path, byte[] data) {
+		createDirectory(path.getParent());
 		try {
 			Files.write(path, data);
-		} catch (IOException e) {
-			throw new IOException("Could not write data to file at " + path.toString(), e);
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not write data to file at " + path.toString(), e);
 		}
 	}
 	

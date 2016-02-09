@@ -1,10 +1,5 @@
 package gmm.domain.task;
 
-import gmm.domain.Comment;
-import gmm.domain.NamedObject;
-import gmm.domain.User;
-import gmm.service.converters.UserReferenceConverter;
-
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.LinkedList;
@@ -13,6 +8,11 @@ import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
+
+import gmm.domain.Comment;
+import gmm.domain.NamedObject;
+import gmm.domain.User;
+import gmm.service.converters.UserReferenceConverter;
 
 public abstract class Task extends NamedObject{
 	
@@ -43,7 +43,7 @@ public abstract class Task extends NamedObject{
 	final private List<Task> dependencyFor = new LinkedList<Task>();
 	
 	//Methods--------------------------------------------------------
-	public Task(User author) throws Exception {
+	public Task(User author) {
 		super();
 		Objects.requireNonNull(author);
 		this.author = author;
@@ -107,7 +107,7 @@ public abstract class Task extends NamedObject{
 		return dependencyFor;
 	}
 
-	public void onLoad() throws Exception {
+	public void onLoad(){
 	}
 	public abstract TaskType getType();
 }

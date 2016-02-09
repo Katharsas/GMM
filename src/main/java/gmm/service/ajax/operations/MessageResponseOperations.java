@@ -18,7 +18,7 @@ import gmm.service.ajax.MessageResponse;
 public abstract class MessageResponseOperations<T> {
 	
 	public static interface Operation<T> {
-		public String execute(T element) throws Exception;
+		public String execute(T element);
 	}
 	public static interface Conflict<T> {
 		public String getStatus();
@@ -42,11 +42,11 @@ public abstract class MessageResponseOperations<T> {
 	 * @return {@link #NO_CONFLICT} if no conflict occured, otherwise the conflict which occured.
 	 * @throws Exception 
 	 */
-	public abstract Conflict<T> onLoad(T element) throws Exception;
+	public abstract Conflict<T> onLoad(T element);
 	
 	/**
 	 * Executed when no conflict occured on the last element processed.
 	 * @return MessageResponse message
 	 */
-	public abstract String onDefault(T element) throws Exception;
+	public abstract String onDefault(T element);
 }

@@ -10,7 +10,7 @@ public class TextureTask extends AssetTask<Texture> {
 	
 	final public Set<ModelTask> models = new HashSet<>(ModelTask.class);
 	
-	public TextureTask(User author, Path assetPath) throws Exception {
+	public TextureTask(User author, Path assetPath) {
 		super(author, assetPath);
 	}
 

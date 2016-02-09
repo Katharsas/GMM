@@ -19,7 +19,7 @@
 	</appender>
 	
   	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>./gmm.log</File>
+		<File>${catalina.base}/logs/gmm.log</File>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- daily rollover -->
 			<FileNamePattern>gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
@@ -38,7 +38,7 @@
 	<logger name="org.springframework" level="WARN"/>
 
 	<root>
-		<level value="DEBUG" />
+		<level value="INFO" />
 		<appender-ref ref="consoleAppender" />
 		<appender-ref ref="dailyRollingFileAppender" />
 	</root>

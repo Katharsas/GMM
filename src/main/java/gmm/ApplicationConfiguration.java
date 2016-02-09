@@ -1,11 +1,5 @@
 package gmm;
 
-import freemarker.ext.beans.BeansWrapper;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateHashModel;
-import gmm.util.ElFunctions;
-import gmm.web.binding.PathEditor;
-
 import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,6 +19,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
@@ -37,6 +32,12 @@ import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
+import freemarker.ext.beans.BeansWrapper;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateHashModel;
+import gmm.util.ElFunctions;
+import gmm.web.binding.PathEditor;
+
 /**
  * Contains all non-web.xml, non-security settings.
  * 
@@ -45,6 +46,7 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 @Configuration
 @ComponentScan(basePackages = {"gmm", "com.technologicaloddity"})
 @EnableWebMvc
+@EnableScheduling
 @Import({ WebSocketConfiguration.class })
 public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	
@@ -57,7 +59,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	
 	@Bean
 	public RequestMappingHandlerMapping requestMappingHandlerMapping() {
-		RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
+		final RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
 		mapping.setUseSuffixPatternMatch(false);
 		mapping.setUseTrailingSlashMatch(false);
 		return mapping;
@@ -68,7 +70,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public MessageSource messageSource() {
-		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		final ResourceBundleMessageSource source = new ResourceBundleMessageSource();
 		source.setBasename("i18n.messages");
 		return source;
 	}
@@ -86,7 +88,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public ViewResolver jspViewResolver() {
-		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+		final InternalResourceViewResolver resolver = new InternalResourceViewResolver();
 		resolver.setOrder(255);
 		resolver.setViewClass(JstlView.class);
 		resolver.setPrefix("/WEB-INF/jsp/");
@@ -95,7 +97,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	}
 	@Bean
 	public ViewResolver ftlViewResolver() {
-	    FreeMarkerViewResolver resolver = new FreeMarkerViewResolver();
+	    final FreeMarkerViewResolver resolver = new FreeMarkerViewResolver();
 	    resolver.setOrder(0);
 	    resolver.setCache(true);
 //	    resolver.setPrefix("");
@@ -107,16 +109,16 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public FreeMarkerConfigurer freemarkerConfig() throws IOException, TemplateException {
-		FreeMarkerConfigurer result = new FreeMarkerConfigurer();
+		final FreeMarkerConfigurer result = new FreeMarkerConfigurer();
 
 		// template path
 		result.setTemplateLoaderPath("/WEB-INF/ftl/");
 
 		// static access
-		BeansWrapper wrapper = new BeansWrapper();
-		TemplateHashModel statics = wrapper.getStaticModels();
-		Map<String, Object> shared = new HashMap<>();
-		for (Class<?> clazz : ElFunctions.staticClasses) {
+		final BeansWrapper wrapper = new BeansWrapper();
+		final TemplateHashModel statics = wrapper.getStaticModels();
+		final Map<String, Object> shared = new HashMap<>();
+		for (final Class<?> clazz : ElFunctions.staticClasses) {
 			shared.put(clazz.getSimpleName(), statics.get(clazz.getName()));
 		}
 		result.setFreemarkerVariables(shared);
@@ -153,7 +155,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public static PropertyPlaceholderConfigurer propertyConfigurer() {
-		PropertyPlaceholderConfigurer conf =  new PropertyPlaceholderConfigurer();
+		final PropertyPlaceholderConfigurer conf =  new PropertyPlaceholderConfigurer();
 		conf.setLocations(configFile, metaFile);
 		return conf;
 	}
@@ -163,7 +165,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public PropertiesFactoryBean config() {
-		PropertiesFactoryBean factory = new PropertiesFactoryBean();
+		final PropertiesFactoryBean factory = new PropertiesFactoryBean();
 		factory.setLocation(metaFile);
 		return factory;
 	}
@@ -173,8 +175,8 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	 */
 	@Bean
 	public static CustomEditorConfigurer editorConfigurer() {
-		CustomEditorConfigurer conf = new CustomEditorConfigurer();
-		Map<Class<?>, Class<? extends PropertyEditor>>  map = new HashMap<>();
+		final CustomEditorConfigurer conf = new CustomEditorConfigurer();
+		final Map<Class<?>, Class<? extends PropertyEditor>>  map = new HashMap<>();
 		
 		map.put(Path.class, PathEditor.class);
 		

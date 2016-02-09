@@ -1,15 +1,9 @@
 package gmm.service.tasks;
 
-import gmm.domain.User;
-import gmm.domain.task.Texture;
-import gmm.domain.task.TextureTask;
-import gmm.service.FileService;
-import gmm.service.FileService.FileExtensionFilter;
-import gmm.service.data.DataConfigService;
-
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import javax.annotation.PostConstruct;
@@ -20,13 +14,21 @@ import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import gmm.domain.User;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.Texture;
+import gmm.domain.task.TextureTask;
+import gmm.service.FileService;
+import gmm.service.FileService.FileExtensionFilter;
+import gmm.service.data.DataConfigService;
+
 /**
  * Should maybe be joined with {@link TextureAssetService} after Mesh implementation.
  * 
  * @author Jan
  */
 @Service
-public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
+public class TextureTaskService extends AssetTaskService<Texture> {
 
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
@@ -39,7 +41,7 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	@PostConstruct
 	private void init() {
 		//register TGA loader plugin
-		IIORegistry registry = IIORegistry.getDefaultInstance();
+		final IIORegistry registry = IIORegistry.getDefaultInstance();
 		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
 	}
 	
@@ -48,34 +50,49 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
-	public void createPreview(Path sourceFile, TextureTask task, boolean isOriginal) throws IOException {
+	public void createPreview(Path sourceFile, AssetTask<Texture> task, boolean isOriginal) {
 		if(!sourceFile.toFile().exists()) {
 			return;
 		}
-		Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
+		final Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
 		Path targetFile;
-		String version = isOriginal ? "original" : "newest";
-		BufferedImage image = ImageIO.read(sourceFile.toFile());
-		Texture asset = isOriginal ? task.getOriginalAsset() : task.getNewestAsset();
+		final String version = isOriginal ? "original" : "newest";
+		BufferedImage image = readImage(sourceFile);
+		final Texture asset = isOriginal ? task.getOriginalAsset() : task.getNewestAsset();
 		asset.setDimensions(image.getHeight(), image.getWidth());
 		
 		//full preview 
 		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_full.png");
-		fileService.prepareFileCreation(targetFile);
-		ImageIO.write(image, "png", targetFile.toFile());
+		writeImage(image, targetFile);
 		
 		//small preview
 		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_small.png");
 		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 			image = Scalr.resize(image, SMALL_SIZE);
 		}
-		fileService.prepareFileCreation(targetFile);
-		ImageIO.write(image, "png", targetFile.toFile());
+		writeImage(image, targetFile);
+	}
+	
+	private BufferedImage readImage(Path file) {
+		try {
+			return ImageIO.read(file.toFile());
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not read image at '" + file + "'!", e);
+		}
+	}
+	
+	private void writeImage(BufferedImage image, Path targetFile) {
+		fileService.createDirectory(targetFile.getParent());
+		try {
+			ImageIO.write(image, "png", targetFile.toFile());
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not write image to '" + targetFile + ".png'!", e);
+		}
 	}
 	
 	@Override
-	public void deletePreview(Path taskFolder) throws IOException {
-		Path preview = taskFolder.resolve(config.SUB_PREVIEW);
+	public void deletePreview(Path taskFolder) {
+		final Path preview = taskFolder.resolve(config.SUB_PREVIEW);
 		Path previewFile;
 		previewFile = preview.resolve("newest_full.png");
 		if(previewFile.toFile().exists()) {
@@ -98,7 +115,7 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	}
 
 	@Override
-	protected TextureTask createNew(Path assetPath, User user) throws Exception {
+	protected TextureTask createNew(Path assetPath, User user) {
 		return new TextureTask(user, assetPath);
 	}
 	
@@ -111,9 +128,9 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 	 * Returns a texture preview image (png) as byte array.
 	 */
 	public byte[] getPreview(TextureTask task, boolean small, String version) throws IOException {
-		String imageName = version + "_" + (small ? "small" : "full") + ".png";		
+		final String imageName = version + "_" + (small ? "small" : "full") + ".png";		
 		
-		Path imagePath = config.ASSETS_NEW
+		final Path imagePath = config.ASSETS_NEW
 				.resolve(task.getAssetPath())
 				.resolve(config.SUB_PREVIEW)
 				.resolve(imageName);
@@ -121,10 +138,10 @@ public class TextureTaskService extends AssetTaskService<Texture, TextureTask> {
 		if(!imagePath.toFile().exists()) {
 			return null;
 		}
-		BufferedImage image = ImageIO.read(imagePath.toFile());
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		final BufferedImage image = ImageIO.read(imagePath.toFile());
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ImageIO.write(image, "png", out);
-		byte[] bytes = out.toByteArray();
+		final byte[] bytes = out.toByteArray();
 		return bytes;
 	}
 }

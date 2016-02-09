@@ -1,17 +1,17 @@
 package gmm.service.tasks;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-
-import gmm.domain.task.Asset;
-import gmm.domain.task.AssetTask;
-import gmm.domain.task.Task;
-import gmm.web.forms.TaskForm;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import gmm.domain.task.Asset;
+import gmm.domain.task.AssetTask;
+import gmm.domain.task.Task;
+import gmm.util.Util;
+import gmm.web.forms.TaskForm;
 
 @Service
 public class TaskServiceFinder {
@@ -21,15 +21,15 @@ public class TaskServiceFinder {
 	private TaskFormService<?> currentService = null;
 	private Class<?> currentType = null;
 	
-	public <E extends Asset, T extends AssetTask<E>> void register(AssetTaskService<E,T> creator) {
+	public <E extends Asset, T extends AssetTask<E>> void register(AssetTaskService<E> creator) {
 		taskServices.add(creator);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Task> TaskFormService<T> getService(Class<T> type) {
+	private <T extends Task> TaskFormService<T> getService(Class<? extends T> type) {
 		if (!type.equals(currentType)) {
 			currentType = type;
-			for (TaskFormService<?> service : taskServices) {
+			for (final TaskFormService<?> service : taskServices) {
 				if (service.getTaskType().equals(type)) {
 					currentService = service;
 				}
@@ -39,21 +39,20 @@ public class TaskServiceFinder {
 		return (TaskFormService<T>) currentService;
 	}
 	
-	public <T extends Task> T create(Class<T> type, TaskForm form) throws Exception {
+	public <T extends Task> T create(Class<T> type, TaskForm form) {
 		final T task = getService(type).create(form);
 		return task;
 	}
 	
-	public <T extends Task, E extends T> void edit(T task, TaskForm form) throws IOException {
+	public <T extends Task, E extends T> void edit(T task, TaskForm form) {
 		@SuppressWarnings("unchecked")
-		Class<T> clazz = (Class<T>) task.getClass();
+		final Class<T> clazz = (Class<T>) task.getClass();
 		final TaskFormService<T> taskService = getService(clazz);
 		taskService.edit(task, form);
 	}
 	
 	public <T extends Task> TaskForm prepareForm(T task) {
-		@SuppressWarnings("unchecked")
-		Class<T> clazz = (Class<T>) task.getClass();
+		final Class<? extends T> clazz =  Util.getClass(task);
 		final TaskFormService<T> taskService = getService(clazz);
 		return taskService.prepareForm(task);
 	}
@@ -62,21 +61,19 @@ public class TaskServiceFinder {
 		return getService(type);
 	}
 	
-	public <E extends Asset, T extends AssetTask<E>> AssetTaskService<E, T> getAssetService(Class<T> type) {
+	public <E extends Asset> AssetTaskService<E> getAssetService(Class<? extends AssetTask<E>> type) {
 		@SuppressWarnings("unchecked")
-		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getService(type);
+		final AssetTaskService<E> taskService = (AssetTaskService<E>) getService(type);
 		return taskService;
 	}
 	
-	public <E extends Asset, T extends AssetTask<E>> void addFile(T task, MultipartFile file) throws IOException {
-		@SuppressWarnings("unchecked")
-		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getAssetService(task.getClass());
+	public <E extends Asset> void addFile(AssetTask<E> task, MultipartFile file) {
+		final AssetTaskService<E> taskService = getAssetService(Util.getClass(task));
 		taskService.addFile(file, task);
 	}
 	
-	public <E extends Asset, T extends AssetTask<E>> void deleteFile(T task, Path relativeFile, boolean isAsset) throws IOException {
-		@SuppressWarnings("unchecked")
-		AssetTaskService<E, T> taskService = (AssetTaskService<E, T>) getAssetService(task.getClass());
+	public <E extends Asset> void deleteFile(AssetTask<E> task, Path relativeFile, boolean isAsset) {
+		final AssetTaskService<E> taskService = getAssetService(Util.getClass(task));
 		taskService.deleteFile(task, relativeFile, isAsset);
 	}
 }

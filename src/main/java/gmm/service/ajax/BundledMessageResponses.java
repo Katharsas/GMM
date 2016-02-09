@@ -1,6 +1,5 @@
 package gmm.service.ajax;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class BundledMessageResponses<T> {
 	protected static final String success = "success";
 	protected static final String finished = "finished";
 	
-	public BundledMessageResponses(Iterator<? extends T> elements, MessageResponseOperations<T> ops) throws IOException {
+	public BundledMessageResponses(Iterator<? extends T> elements, MessageResponseOperations<T> ops) {
 		this.elements = elements;
 		this.ops = ops;
 		operations = ops.getOperations();
@@ -57,7 +56,7 @@ public class BundledMessageResponses<T> {
 		return loadNextBundle(nextElementOp, false);
 	}
 	
-	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) throws Exception {
+	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) {
 		final List<MessageResponse> results = new LinkedList<>(MessageResponse.class);
 		MessageResponse result = loadNext(operation, doForAllFlag);
 		boolean loadNext = result.getStatus().equals(success);
@@ -72,7 +71,7 @@ public class BundledMessageResponses<T> {
 		return results;
 	}
 	
-	private MessageResponse loadNext(String answerOp, boolean doForAllFlag) throws Exception {
+	private MessageResponse loadNext(String answerOp, boolean doForAllFlag) {
 		//If the user wants to process a new element, we try to do so.
 		if(answerOp.equals(nextElementOp)) {
 			return processNewElement();
@@ -84,7 +83,7 @@ public class BundledMessageResponses<T> {
 		}
 	}
 	
-	private MessageResponse processNewElement() throws Exception {
+	private MessageResponse processNewElement() {
 		//If loading finished, user should stop sending requests!
 		if (!elements.hasNext()) {
 			return new MessageResponse(finished, null);
@@ -112,12 +111,12 @@ public class BundledMessageResponses<T> {
 		}
 	}
 	
-	private MessageResponse resolveConflict(String operation) throws Exception {
+	private MessageResponse resolveConflict(String operation) {
 		final String message = doOperation(operation, currentlyLoaded);
 		return new MessageResponse(success, message);
 	}
 	
-	private final String doOperation(String operationType, T element) throws Exception {
+	private final String doOperation(String operationType, T element) {
 		return operations.get(operationType).execute(element);
 	}
 }

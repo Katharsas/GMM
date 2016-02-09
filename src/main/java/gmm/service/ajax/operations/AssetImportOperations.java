@@ -71,16 +71,16 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 
 	@Override
 	public Map<String, Operation<String>> getOperations() {
-		Map<String, Operation<String>> map = new HashMap<>();
+		final Map<String, Operation<String>> map = new HashMap<>();
 		map.put("skip", new Operation<String>() {
 			@Override public String execute(String assetPath) {
 				return "Skipping import for conflicting path \""+assetPath+"\"";
 			}
 		});
 		map.put("overwriteTaskAquireData", new Operation<String>() {
-			@Override public String execute(String assetPath) throws Exception {
-				E newTask = create(assetPath);
-				T asset = conflictingTask.getNewestAsset();
+			@Override public String execute(String assetPath) {
+				final E newTask = create(assetPath);
+				final T asset = conflictingTask.getNewestAsset();
 				if (asset != null && conflictingTask.getNewestAssetPath().toFile().isFile()) {
 					newTask.setNewestAsset(asset);
 				}
@@ -90,7 +90,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 			}
 		});
 		map.put("overwriteTaskDeleteData", new Operation<String>() {
-			@Override public String execute(String assetPath) throws Exception {
+			@Override public String execute(String assetPath) {
 				data.remove(conflictingTask);
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
 				tempData.add(create(assetPath));
@@ -98,13 +98,13 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 			}
 		});
 		map.put("aquireData", new Operation<String>() {
-			@Override public String execute(String assetPath) throws Exception {
+			@Override public String execute(String assetPath) {
 				tempData.add(create(assetPath));
 				return "Aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("deleteData", new Operation<String>() {
-			@Override public String execute(String assetPath) throws Exception {
+			@Override public String execute(String assetPath) {
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
 				tempData.add(create(assetPath));
 				return "Deleting existing data for path \""+assetPath+"\" !";
@@ -113,7 +113,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		return map;
 	}
 	
-	private E create(String assetPath) throws Exception {
+	private E create(String assetPath) {
 		form.setAssetPath(assetPath);
 		return creator.create(clazz, form);
 	}
@@ -125,7 +125,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_NEW);
 
 		// full AssetTask conflict
-		for (AssetTask<?> t : data.getList(AssetTask.class)) {
+		for (final AssetTask<?> t : data.getList(AssetTask.class)) {
 			if (t.getAssetPath().equals(assetPath)) {
 				conflictingTask = (AssetTask<T>) t;
 				return taskConflict;
@@ -139,7 +139,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 	}
 
 	@Override
-	public String onDefault(String assetPath) throws Exception {
+	public String onDefault(String assetPath) {
 		tempData.add(create(assetPath));
 		return "Successfully imported asset at \""+assetPath+"\"";
 	}

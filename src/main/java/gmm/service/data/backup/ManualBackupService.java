@@ -21,9 +21,8 @@ public class ManualBackupService {
 	@Autowired private FileService fileService;
 	
 	public void saveTasksToXml(Collection<? extends Task> tasks, String pathString) throws IOException {
-		Path visible = config.TASKS;
-		Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
-		fileService.prepareFileCreation(path);
+		final Path visible = config.TASKS;
+		final Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		xmlService.serialize(tasks, path);
 	}
 }

@@ -5,7 +5,7 @@ import gmm.domain.User;
 
 public class GeneralTask extends Task {
 
-	public GeneralTask(User author) throws Exception {
+	public GeneralTask(User author) {
 		super(author);
 	}
 

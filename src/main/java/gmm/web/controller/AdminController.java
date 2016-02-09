@@ -1,6 +1,5 @@
 package gmm.web.controller;
 
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -21,6 +20,7 @@ import gmm.domain.Label;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
+import gmm.service.FileService.PathFilter;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.TaskLoaderOperations;
@@ -134,7 +134,7 @@ public class AdminController {
 	 * Delete task save file.
 	 */
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) throws Exception {	
+	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) {	
 		
 		final Path visible = config.TASKS;
 		final Path dirAbsolute = visible.resolve(fileService.restrictAccess(dir, visible));
@@ -210,9 +210,9 @@ public class AdminController {
 		
 		final Path visible = config.ASSETS_ORIGINAL;
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
-		final FilenameFilter filter = textures ?
+		final PathFilter filter = textures ?
 				TextureTaskService.extensions : ModelTaskService.extensions;
-		final List<Path> paths = fileService.getFilePaths(visible.resolve(dirRelative), filter);
+		final List<Path> paths = fileService.getFilesRecursive(visible.resolve(dirRelative), filter);
 		session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
 		return session.getImportPaths();
 	}

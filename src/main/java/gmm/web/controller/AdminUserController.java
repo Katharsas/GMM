@@ -103,7 +103,6 @@ public class AdminUserController {
 	public @ResponseBody void saveUsers() throws IOException {
 		
 		final Path path = config.USERS.resolve("users.xml");
-		fileService.prepareFileCreation(path);
 		xmlService.serialize(users.get(), path);
 	}
 	
