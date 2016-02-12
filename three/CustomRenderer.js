@@ -76,7 +76,7 @@ function CustomRenderer() {
 			scene.add(mesh);
 		};
 		var loader = new THREE.JSONLoader();
-		loader.load('./ship.js', callbackFinished);
+		loader.load('./testData_plat.js', callbackFinished);
 	};
 
 	var render = function() {

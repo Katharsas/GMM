@@ -41,6 +41,19 @@ import socketserver
 
 class MyRequestHandler(socketserver.BaseRequestHandler):
 	
+	# protocol:
+	
+	# conversion mode start
+	CONVERSION_START = "CONVERSION_START"
+	# conversion mode end
+	CONVERSION_END = "CONVERSION_END"	
+	# if in conversion mode, you will receive {
+		CONVERSION_FROM = "FROM"
+		# followed by 3DS path followed by
+		CONVERSION_TO = "TO"
+		# followed by JSON target path
+	# } any number of times until conversion end
+	
 	def myInit(self):
 		self.init = None
 		self.endSignal = "\n"
@@ -87,12 +100,23 @@ class MyRequestHandler(socketserver.BaseRequestHandler):
 		Handles a complete client connection.
 		After this method returns, client cannot send without new connection.
 		"""
-		result = self.getStringFromClient()
-		uprint(result)
-		self.request.sendall(result.encode(self.encoding))
-		result = self.getStringFromClient()
-		uprint(result)
-		self.request.sendall(result.encode(self.encoding))
+		current = self.getStringFromClient()
+		uprint(current)
+		if current == CONVERSION_START:
+			current = self.getStringFromClient()
+			while current == CONVERSION_FROM:
+				# get from path
+				# get to
+				# get to path
+				# convert
+				# get
+			uprint(current)
+			if current == CONVERSION_END:
+				self.request.sendall("Conversion success!".encode(self.encoding))
+			else:
+				uprint("Protocol Violation!")
+		else:
+			uprint("Protocol Violation!")
 		return
 
 # if __name__ == "__main__":

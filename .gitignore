@@ -231,6 +231,7 @@ pip-log.txt
 /src/main/webapp/WEB-INF/dataTesting/tasks/autoBackups
 /src/main/webapp/WEB-INF/dataTesting/users/autoBackups
 /builds/
-/blender/
 /src/main/webapp/resources/css/compiled
 /src/main/webapp/resources/javascript/compiled
+
+blender/

@@ -109,12 +109,13 @@ public class FileService {
 	/**
 	 * Deletes the given file or directory and all empty parent directories.
 	 * So if a file is the only file in a folder, the folder will be deleted too.
+	 * @param path - must not be null and corresponding file/folder must exist
 	 */
 	public synchronized void delete(Path path) {
 		try {
 			FileUtils.forceDelete(path.toFile());
 		} catch (final IOException e) {
-			throw new UncheckedIOException("Could not recursivly delete directory " + path, e);
+			throw new UncheckedIOException("Could not recursivly delete file or directory " + path, e);
 		}
 	}
 	
