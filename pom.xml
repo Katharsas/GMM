@@ -426,14 +426,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.6</version>
-				<configuration>
-					<webResources>
-						<resource>
-							<directory>src/main/python</directory>
-							<targetPath>WEB-INF/python</targetPath>
-						</resource>
-					</webResources>
-				</configuration>
 				<executions>
 					<execution>
 						<id>default-war</id>
@@ -459,6 +451,20 @@
 					<port>8080</port>
 					<encoding>UTF-8</encoding>
 				</configuration>
+				<!-- Enable Hot Reload -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>run-embedded</id> -->
+<!-- 						<goals> -->
+<!-- 							<goal>run</goal> -->
+<!-- 						</goals> -->
+<!-- 						<phase>pre-integration-test</phase> -->
+<!-- 						<configuration> -->
+<!-- 							<useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader> -->
+<!-- 							<contextFile>${project.basedir}/tomcat/context.xml</contextFile> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
 			</plugin>
 
 			<plugin>

@@ -12,13 +12,13 @@ hasattr(bpy.types, "EXPORT_OT_three")
 try:
 	bpy.ops.wm.addon_enable(module="io_three")
 except ImportError:
-	print("Threejs export addon not found")
+	print("Threejs export addon not found!")
 	
 #Kerrax
 try:
 	bpy.ops.wm.addon_enable(module="KrxImpExp")
 except ImportError:
-	print("Kerrax import/export addon not found")
+	print("Kerrax import/export addon not found!")
 
 # Folgende Objekte sollten vorhanden & nutzbar sein:
 #	EXPORT_SCENE_OT_krx3dsexp

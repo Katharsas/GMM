@@ -33,6 +33,7 @@ public class ModelTaskService extends AssetTaskService<Model> {
 		final Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
 		final String version = isOriginal ? "original" : "newest";
 		final Path target = taskFolder.resolve(config.SUB_PREVIEW).resolve(version + ".js");
+		fileService.createDirectory(target.getParent());
 		python.createPreview(sourceFile, target);
 	}
 	
