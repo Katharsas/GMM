@@ -7,7 +7,7 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 public class Texture extends Asset {
 	
 	@XStreamAsAttribute
-	int height, width;
+	private int height, width;
 	
 	public Texture(Path relative) {
 		super(relative);

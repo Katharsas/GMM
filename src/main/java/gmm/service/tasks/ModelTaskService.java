@@ -12,6 +12,7 @@ import gmm.domain.task.ModelTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
+import gmm.service.tasks.PythonTCPSocket.MeshData;
 
 @Service
 public class ModelTaskService extends AssetTaskService<Model> {
@@ -34,7 +35,9 @@ public class ModelTaskService extends AssetTaskService<Model> {
 		final String version = isOriginal ? "original" : "newest";
 		final Path target = taskFolder.resolve(config.SUB_PREVIEW).resolve(version + ".js");
 		fileService.createDirectory(target.getParent());
-		python.createPreview(sourceFile, target);
+		MeshData meshData = python.createPreview(sourceFile, target);
+		final Model asset = isOriginal ? task.getOriginalAsset() : task.getNewestAsset();
+		asset.setPolyCount(meshData.getPolygonCount());
 	}
 	
 	@Override

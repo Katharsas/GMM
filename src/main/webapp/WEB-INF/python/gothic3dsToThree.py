@@ -3,7 +3,7 @@
 # e.g.:
 # blender --background --python ../../src/main/python/test.py
 
-import sys, bpy, os, tempfile, socket, socketserver, threading
+import sys, bpy, os, tempfile, socket, socketserver, threading, json
 
 # consoles suck dick and python throws up if you print unicode without this (WHY?)
 def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
@@ -67,7 +67,10 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 	CONVERSION_FROM = "FROM"
 		# followed by 3DS path followed by
 	CONVERSION_TO = "TO"
-		# followed by JSON target path
+		# followed by JSON target path and then answer
+	CONVERSION_SUCCESS = "SUCCESS"
+		# followed by JSON answer
+		# { polygonCount: x }
 	# } any number of times until conversion end
 	
 	# MAKE SURE YOU USE ENDSIGNAL EXACTLY TO SEPERATE STRINGS!
@@ -113,12 +116,10 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 				self.byteBuffer += self.request.recv(512)
 			except socket.timeout:
 				pass
-# 				uprint("Timed out on recv.")
 			result = self.next()
 		return result
 	
 	def assertProtocol(self, received, *eitherExpected):
-# 		uprint("Conversion protocol message received: " + received)
 		match = False
 		for expected in eitherExpected:
 			if received == expected:
@@ -136,13 +137,22 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 		self.assertProtocol(self.getStringFromClient(), self.CONVERSION_START)
 		current = self.getStringFromClient()
 		while current == self.CONVERSION_FROM:
+			# get original path
 			originalPath = self.getStringFromClient()
+			# get target path
 			self.assertProtocol(self.getStringFromClient(), self.CONVERSION_TO)
 			targetPath = self.getStringFromClient()
-			self.convertFiles(originalPath, targetPath)
+			# convert & get data
+			jsonAnswer = self.convertFiles(originalPath, targetPath)
+			# send success
+			success = self.CONVERSION_SUCCESS + self.endSignal
+			self.request.sendall(success.encode(self.encoding))
+			# send data
+			jsonString = json.dumps(jsonAnswer) + self.endSignal
+			self.request.sendall(jsonString.encode(self.encoding))
+			# repeat
 			current = self.getStringFromClient()
 		self.assertProtocol(current, self.CONVERSION_FROM, self.CONVERSION_END)
-		self.request.sendall("Conversion success!".encode(self.encoding))
 		return
 	
 	def convertFiles(selfs, original, target):
@@ -153,9 +163,17 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 		bpy.ops.object.mode_set(mode='OBJECT')
 		bpy.ops.object.select_all(action='SELECT')
 		bpy.ops.object.delete()
-		# import/export
+		# import
 		bpy.ops.import_scene.krx3dsimp(filepath = original, quiet = True)
+		# remember mesh
+		meshObject = bpy.context.object
+		# export
 		bpy.ops.export.three(filepath = target)
+		# get data from mesh
+		meshData = meshObject.data
+		jsonAnswer = {}
+		jsonAnswer["polygonCount"] = len(meshData.polygons)
+		return jsonAnswer
 
 def main():
 	if blenderPluginsEnabled() == False:
@@ -164,10 +182,6 @@ def main():
 	
 	adress = ("localhost", 8090)
 	server = socketserver.TCPServer(adress, ConversionRequestHandler)
-	# ip, port = server.server_address
-	
-	# server.serve_forever() 
-	# keeps running until Ctrl-Console
 
 	server.handle_request()
 	server.server_close()

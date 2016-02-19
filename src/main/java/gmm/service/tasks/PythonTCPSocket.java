@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import gmm.service.data.DataConfigService;
 
 /**
@@ -58,10 +60,19 @@ public class PythonTCPSocket {
 	 */
 	private static class ConversionResult {
 		public final boolean success;
+		public final MeshData meshData;
 		public final RuntimeException exception;
-		public ConversionResult(boolean success, RuntimeException exception) {
+		public ConversionResult(boolean success, MeshData meshData, RuntimeException exception) {
 			this.success = success;
+			this.meshData = meshData;
 			this.exception = exception;
+		}
+	}
+	
+	protected static class MeshData {
+		private int polygonCount;
+		public int getPolygonCount() {
+			return polygonCount;
 		}
 	}
 	
@@ -71,6 +82,8 @@ public class PythonTCPSocket {
 	private volatile ConversionResult result = null;
 	private AtomicBoolean threadIsAlive = new AtomicBoolean(false);
 	
+	private final Runnable convertion = new PythonRunnable();
+	
 	/**
 	 * Convert original (3DS file) to JSON and save converted file at target.
 	 * This is not an async method, it blocks until the file has been converted, event though
@@ -79,7 +92,7 @@ public class PythonTCPSocket {
 	 * @param original - original 3DS file
 	 * @param target - target path for converted file containing JSON
 	 */
-	public synchronized void createPreview(Path original, Path target) {
+	public synchronized MeshData createPreview(Path original, Path target) {
 		final long startTime = System.currentTimeMillis();
 		result = null; // delete last result
 		next = new AssetConversionPaths(original, target);
@@ -95,6 +108,7 @@ public class PythonTCPSocket {
 			logger.info("==> Conversion duration: "+duration+" ms");
 		}
 		if (!result.success) throw result.exception;
+		else return result.meshData;
 	}
 	
 	private void initThreadIfNotRunning() {
@@ -123,7 +137,9 @@ public class PythonTCPSocket {
 	 * 
 	 * @author Jan Mothes
 	 */
-	private final Runnable convertion = new Runnable() {
+	private class PythonRunnable implements Runnable {
+		
+		private ObjectMapper jackson = new ObjectMapper();
 		
 		private static final int port = 8090;
 		private static final int tryReconnectCount = 10;
@@ -134,6 +150,7 @@ public class PythonTCPSocket {
 		private static final String conversionEnd = "CONVERSION_END";
 		private static final String conversionFrom = "FROM";
 		private static final String conversionTo = "TO";
+		private static final String conversionSuccess = "SUCCESS";
 		
 		@Override
 		public void run() {
@@ -144,7 +161,7 @@ public class PythonTCPSocket {
 					connectAndSend();
 				}
 				catch(RuntimeException e) {
-					result = new ConversionResult(false, e); 
+					result = new ConversionResult(false, null, e); 
 					PythonTCPSocket.this.notify();
 				}
 				logger.info("Internal thread: exiting...");
@@ -211,15 +228,13 @@ public class PythonTCPSocket {
 					flush();
 				}
 			};
+			socket.setSoTimeout(60000); // never wait more than 1 minute
 			w.println(conversionStart);
-			retrievePathsAndSend(w);
+			retrievePathsAndSend(w, r);
 			w.println(conversionEnd);
-			socket.setSoTimeout(60000);
-			// python server will send something to notify success
-			r.readLine(); 
 		}
 		
-		private void retrievePathsAndSend(PrintWriter toPython) {
+		private void retrievePathsAndSend(PrintWriter toPython, BufferedReader fromPython) {
 			while (true) {
 				while (next == null) { // wait until caller gives us next element
 					final long startTime = System.currentTimeMillis();
@@ -235,15 +250,26 @@ public class PythonTCPSocket {
 					} catch (InterruptedException e1) {}
 				}
 				RuntimeException goneWrong = null;
+				MeshData meshData = null;
 				try {
 					sendPaths(toPython, next);
+					try {
+						String success = fromPython.readLine();
+						if (!success.equals(conversionSuccess)) {
+							throw new IOException("Conversion protocol violation!");
+						}
+						String jsonString = fromPython.readLine();
+						meshData = jackson.readValue(jsonString, MeshData.class);
+					} catch (IOException e) {
+						throw new UncheckedIOException(e);
+					}
 				}
 				catch(RuntimeException e) {
 					goneWrong = e; // record any exception
 					// will be rethrown by thread that caused convertion
 				}
 				next = null; // reset next
-				result = new ConversionResult(goneWrong == null, goneWrong); 
+				result = new ConversionResult(goneWrong == null, meshData, goneWrong); 
 				PythonTCPSocket.this.notify(); // wake up waiting caller
 			}
 		}

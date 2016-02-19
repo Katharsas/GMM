@@ -4,7 +4,7 @@ package gmm.domain.task;
 public enum TaskType {
 	GENERAL(GeneralTask.class), 
 	TEXTURE(TextureTask.class),
-	MODEL(ModelTask.class);
+	MESH(ModelTask.class);
 	
 	private Class<? extends Task> type;
 	

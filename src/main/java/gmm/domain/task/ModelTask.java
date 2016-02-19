@@ -38,6 +38,6 @@ public class ModelTask extends AssetTask<Model> {
 
 	@Override
 	public TaskType getType() {
-		return TaskType.MODEL;
+		return TaskType.MESH;
 	}
 }

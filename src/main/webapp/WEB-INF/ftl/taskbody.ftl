@@ -51,65 +51,134 @@
 	    </div>
 <!-- TexturePreview -->
 	    <#if task.getType().name() == 'TEXTURE'>
-<!-- 	    	<div> -->
-		    	<table class="task-preview">
-	    			<colgroup>
-				       <col span="1" style="width: 49%;">
-				       <col span="1" style="width: 2%;">
-				       <col span="1" style="width: 49%;">
-				    </colgroup>
-					<tr class="task-preview-buttons">
-				    	<#if task.originalAsset?has_content>
-				    		<#assign asset = task.originalAsset/>
-					    	<td class="task-preview-button-original task-button button">
-					    		<span class="left" style="font-weight:bold">Original:</span>
-					    		<span class="right">
-					    			${asset.width} x ${asset.height}
-					    		</span>
-					    		<div class="clear"></div>
-					    		<span class="left">${asset.fileName?html}</span>
-					    		<span class="right">${asset.sizeInKB} KB</span>
-					    	</td>
-				    	<#else><td></td>
-				    	</#if>
-				    	<td></td>
-				    	<#if task.newestAsset?has_content>
-				    		<#assign asset = task.newestAsset/>
-					    	<td class="task-preview-button-newest task-button button">
-					    		<span class="left" style="font-weight:bold">Newest:</span>
-					    		<span class="right">
-					    			${asset.width} x ${asset.height}
-					    		</span>
-					    		<div class="clear"></div>
-					    		<span class="left">${asset.fileName?html}</span>
-					    		<span class="right">${asset.sizeInKB} KB</span>
-					    	</td>
-				    	<#else><td></td>
-				    	</#if>
-			    	</tr>
-			    	<tr class="task-preview-images center">
-			    		<#if task.originalAsset?has_content>
-			    			<#assign asset = task.originalAsset/>
-				    		<td class="task-preview-image clickable">
-				    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
-				    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
-					    		</a>
-					    	</td>
-					    <#else><td></td>
-				    	</#if>
-				    	<td></td>
-				    	<#if task.newestAsset?has_content>
-				    		<#assign asset = task.newestAsset/>
-					    	<td class="task-preview-image clickable">
-					    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-					    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-					    		</a>
-					    	</td>
-					    <#else><td></td>
-				    	</#if>
-			    	</tr>
-				</table>
-<!-- 			</div> -->
+	    	<table class="task-preview">
+    			<colgroup>
+			       <col span="1" style="width: 49%;">
+			       <col span="1" style="width: 2%;">
+			       <col span="1" style="width: 49%;">
+			    </colgroup>
+				<tr class="task-preview-buttons">
+			    	<#if task.originalAsset?has_content>
+			    		<#assign asset = task.originalAsset/>
+				    	<td class="task-preview-button-original task-button button">
+				    		<span class="left" style="font-weight:bold">Original:</span>
+				    		<span class="right">
+				    			${asset.width} x ${asset.height}
+				    		</span>
+				    		<div class="clear"></div>
+				    		<span class="left">${asset.fileName?html}</span>
+				    		<span class="right">${asset.sizeInKB} KB</span>
+				    	</td>
+			    	<#else><td></td>
+			    	</#if>
+			    	<td></td>
+			    	<#if task.newestAsset?has_content>
+			    		<#assign asset = task.newestAsset/>
+				    	<td class="task-preview-button-newest task-button button">
+				    		<span class="left" style="font-weight:bold">Newest:</span>
+				    		<span class="right">
+				    			${asset.width} x ${asset.height}
+				    		</span>
+				    		<div class="clear"></div>
+				    		<span class="left">${asset.fileName?html}</span>
+				    		<span class="right">${asset.sizeInKB} KB</span>
+				    	</td>
+			    	<#else><td></td>
+			    	</#if>
+		    	</tr>
+		    	<tr class="task-preview-images center">
+		    		<#if task.originalAsset?has_content>
+		    			<#assign asset = task.originalAsset/>
+			    		<td class="task-preview-image clickable">
+			    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
+			    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
+				    		</a>
+				    	</td>
+				    <#else><td></td>
+			    	</#if>
+			    	<td></td>
+			    	<#if task.newestAsset?has_content>
+			    		<#assign asset = task.newestAsset/>
+				    	<td class="task-preview-image clickable">
+				    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    		</a>
+				    	</td>
+				    <#else><td></td>
+			    	</#if>
+		    	</tr>
+			</table>
+	    </#if>
+	  <!-- 3D Mesh Preview -->
+	    <#if task.getType().name() == 'MESH'>
+	    	<table class="task-preview">
+    			<colgroup>
+			       <col span="1" style="width: 49%;">
+			       <col span="1" style="width: 2%;">
+			       <col span="1" style="width: 49%;">
+			    </colgroup>
+				<tr class="task-preview-buttons">
+			    	<#if task.originalAsset?has_content>
+			    		<#assign asset = task.originalAsset/>
+				    	<td class="task-preview-button-original task-button button">
+				    		<span class="left" style="font-weight:bold">Original:</span>
+				    		<span class="right">
+				    			${asset.polyCount} &#x25E3;
+				    		</span>
+				    		<div class="clear"></div>
+				    		<span class="left">${asset.fileName?html}</span>
+				    		<span class="right">${asset.sizeInKB} KB</span>
+				    	</td>
+			    	<#else><td></td>
+			    	</#if>
+			    	<td></td>
+			    	<#if task.newestAsset?has_content>
+			    		<#assign asset = task.newestAsset/>
+				    	<td class="task-preview-button-newest task-button button">
+				    		<span class="left" style="font-weight:bold">Newest:</span>
+				    		<span class="right">
+				    			${asset.polyCount} &#x25E3;
+				    		</span>
+				    		<div class="clear"></div>
+				    		<span class="left">${asset.fileName?html}</span>
+				    		<span class="right">${asset.sizeInKB} KB</span>
+				    	</td>
+			    	<#else><td></td>
+			    	</#if>
+		    	</tr>
+		    	<tr class="task-preview-images center">
+		    		<#if task.originalAsset?has_content>
+		    			<#assign asset = task.originalAsset/>
+			    		<td class="task-preview-image">
+			    			<canvas style="width:280px; height:232px; background-color:green;"></canvas>
+				    	</td>
+				    <#else><td></td>
+			    	</#if>
+			    	<td></td>
+			    	<#if task.newestAsset?has_content>
+			    		<#assign asset = task.newestAsset/>
+				    	<td class="task-preview-image">
+			    			<canvas style="width:280px; height:232px; background-color:green;"></canvas>
+				    	</td>
+				    <#else><td></td>
+			    	</#if>
+		    	</tr>
+		    	<tr>
+		    		<#if task.originalAsset?has_content>
+			    		<td class="task-preview-image" style="background-color:gray;">
+					    	options: shadow, wireframe, auto-turning
+					    </td>
+					<#else><td></td>
+					</#if>
+					<td></td>
+					<#if task.newestAsset?has_content>
+			    		<td class="task-preview-image" style="background-color:gray;">
+					    	options: shadow, wireframe, auto-turning
+					    </td>
+					<#else><td></td>
+					</#if>
+		    	</tr>
+			</table>
 	    </#if>
 <!-- Files -->
 		<#if !(task.getType().name() == 'GENERAL')>
