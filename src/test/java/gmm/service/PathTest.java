@@ -1,6 +1,7 @@
 package gmm.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,7 +12,7 @@ public class PathTest {
 
 
 	@Test
-	public void test() {
+	public void testStartsWith() {
 		Path base = Paths.get("/folder");
 		Path sub1 = Paths.get("/folder/sub");
 		Path sub2 = Paths.get("/other/../folder/sub").normalize();

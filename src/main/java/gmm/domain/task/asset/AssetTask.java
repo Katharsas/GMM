@@ -1,4 +1,4 @@
-package gmm.domain.task;
+package gmm.domain.task.asset;
 
 import java.nio.file.Path;
 import java.util.Locale;
@@ -11,6 +11,7 @@ import org.joda.time.format.DateTimeFormatter;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.data.DataConfigService;
 
@@ -70,6 +71,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 
 	public void setOriginalAsset(A originalAsset) {
 		Objects.requireNonNull(config);
+		originalAsset.assertAttributes();
 		this.originalAsset = originalAsset;
 	}
 	
@@ -82,6 +84,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	
 	public void setNewestAsset(A newestAsset) {
 		Objects.requireNonNull(config);
+		newestAsset.assertAttributes();
 		this.newestAsset = newestAsset;
 		this.newestAssetLastUpdate = DateTime.now();
 	}

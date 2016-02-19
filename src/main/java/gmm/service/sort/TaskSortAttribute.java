@@ -1,9 +1,9 @@
 package gmm.service.sort;
 
 import gmm.domain.User;
-import gmm.domain.task.AssetTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
+import gmm.domain.task.asset.AssetTask;
 
 import java.nio.file.Path;
 import java.util.Comparator;

@@ -9,8 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
 import gmm.domain.User;
-import gmm.domain.task.Asset;
-import gmm.domain.task.AssetTask;
+import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
@@ -28,17 +29,23 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	@Autowired private TaskSession session;
 	
 	protected abstract AssetTask<A> createNew(Path assetPath, User user);
+	public abstract A createAsset(Path fileName, AssetGroupType isOriginal);
+	public abstract void createPreview(Path sourceFile, Path previewFolder, A asset);
+	public abstract FileExtensionFilter getExtensions();
 	
 	@Override
 	public final AssetTask<A> create(TaskForm form) {
-		final Path assetPath = getAssetPath(form);
-		final AssetTask<A> task = createNew(assetPath, session.getUser());
+		final Path relative = getAssetPath(form);
+		final AssetTask<A> task = createNew(relative, session.getUser());
 		
 		//If original asset exists, create previews and asset
-		final Path originalAbsolute = config.ASSETS_ORIGINAL.resolve(assetPath);
-		if(originalAbsolute.toFile().isFile()) {
-			task.setOriginalAsset(createAsset(assetPath.getFileName()));
-			createPreview(originalAbsolute, task, true);
+		final Path original = config.ASSETS_ORIGINAL.resolve(relative);
+		if(original.toFile().isFile()) {
+			A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
+			final Path newAsset = config.ASSETS_NEW.resolve(relative);
+			final Path previewFolder = newAsset.resolve(config.SUB_PREVIEW);
+			createPreview(original, previewFolder, asset);
+			task.setOriginalAsset(asset);
 		}
 		edit(task, form);
 		return task;
@@ -68,27 +75,25 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		return form;
 	}
 	
-	public abstract A createAsset(Path fileName);
-	public abstract void createPreview(Path sourceFile, AssetTask<A> task, boolean original);
-	public abstract FileExtensionFilter getExtensions();
-	
 	public void addFile(MultipartFile file, AssetTask<A> task) {
 		final String fileName = file.getOriginalFilename();
 		final boolean isAsset = getExtensions().test(fileName);
 		//Add file
-		final Path relative = task.getAssetPath()
+		final Path assetFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
+		final Path filePath = assetFolder
 				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
 				.resolve(fileName);
-		final Path assetPath = config.ASSETS_NEW.resolve(relative);
 		try {
-			fileService.createFile(assetPath, file.getBytes());
+			fileService.createFile(filePath, file.getBytes());
 		} catch (final IOException e) {
 			throw new UncheckedIOException("Could not retrieve bytes from uploaded file '"+fileName+"'!", e);
 		}
 		
 		if(isAsset) {
-			task.setNewestAsset(createAsset(Paths.get(fileName)));
-			createPreview(assetPath, task, false);
+			A asset = createAsset(Paths.get(fileName), AssetGroupType.NEW);
+			Path previewFolder = assetFolder.resolve(config.SUB_PREVIEW);
+			createPreview(filePath, previewFolder, asset);
+			task.setNewestAsset(asset);
 		}
 	}
 	

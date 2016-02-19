@@ -1,5 +1,7 @@
 package gmm.domain.task;
 
+import gmm.domain.task.asset.ModelTask;
+import gmm.domain.task.asset.TextureTask;
 
 public enum TaskType {
 	GENERAL(GeneralTask.class), 

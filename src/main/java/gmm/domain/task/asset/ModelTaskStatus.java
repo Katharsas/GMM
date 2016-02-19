@@ -1,4 +1,4 @@
-package gmm.domain.task;
+package gmm.domain.task.asset;
 
 public enum ModelTaskStatus {
 	MESH, TEXTURE, ANIMATION, SPACER;

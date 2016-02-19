@@ -1,4 +1,4 @@
-package gmm.domain.task;
+package gmm.domain.task.asset;
 
 import java.nio.file.Path;
 import java.text.DecimalFormat;
@@ -11,20 +11,29 @@ public abstract class Asset {
 	
 	@XStreamAsAttribute
 	private final Path fileName;
+	@XStreamAsAttribute
+	private final AssetGroupType groupType;
 	
 	@XStreamOmitField
 	private Path absolutePath;
 	
-	public Asset(Path fileName) {
+	protected final static String assertAttributesException =
+			"This asset's attributes are not fully populated!";
+	
+	public Asset(Path fileName, AssetGroupType groupType) {
 		Objects.requireNonNull(fileName);
+		Objects.requireNonNull(groupType);
 		this.fileName = fileName;
+		this.groupType = groupType;
 	}
+	
+	public void assertAttributes() {}
 	
 	protected void setAbsolute(Path absolutePath) {
 		this.absolutePath = absolutePath;
 	}
 	
-	protected Path getAbsolute() {
+	public Path getAbsolute() {
 		return absolutePath;
 	}
 	
@@ -44,5 +53,9 @@ public abstract class Asset {
 	
 	public String getFileName() {
 		return fileName.getFileName().toString();
+	}
+
+	public AssetGroupType getGroupType() {
+		return groupType;
 	}
 }

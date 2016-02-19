@@ -24,8 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import gmm.domain.UniqueObject;
-import gmm.domain.task.AssetTask;
-import gmm.domain.task.TextureTask;
+import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;

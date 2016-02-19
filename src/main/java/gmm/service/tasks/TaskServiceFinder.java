@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import gmm.domain.task.Asset;
-import gmm.domain.task.AssetTask;
 import gmm.domain.task.Task;
+import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetTask;
 import gmm.util.Util;
 import gmm.web.forms.TaskForm;
 

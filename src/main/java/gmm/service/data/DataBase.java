@@ -24,11 +24,11 @@ import gmm.domain.Label;
 import gmm.domain.Linkable;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
-import gmm.domain.task.AssetTask;
 import gmm.domain.task.GeneralTask;
-import gmm.domain.task.ModelTask;
 import gmm.domain.task.Task;
-import gmm.domain.task.TextureTask;
+import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.ModelTask;
+import gmm.domain.task.asset.TextureTask;
 import gmm.service.UserService;
 import gmm.util.Util;
 

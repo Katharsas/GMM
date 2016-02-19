@@ -15,9 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.User;
-import gmm.domain.task.AssetTask;
-import gmm.domain.task.Texture;
-import gmm.domain.task.TextureTask;
+import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.Texture;
+import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
@@ -50,23 +50,16 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
-	public void createPreview(Path sourceFile, AssetTask<Texture> task, boolean isOriginal) {
-		if(!sourceFile.toFile().exists()) {
-			return;
-		}
-		final Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
-		Path targetFile;
-		final String version = isOriginal ? "original" : "newest";
+	public void createPreview(Path sourceFile, Path preview, Texture asset) {
 		BufferedImage image = readImage(sourceFile);
-		final Texture asset = isOriginal ? task.getOriginalAsset() : task.getNewestAsset();
 		asset.setDimensions(image.getHeight(), image.getWidth());
-		
+		Path targetFile;
+		final String version = asset.getGroupType().getPreviewFileName();
 		//full preview 
-		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_full.png");
+		targetFile = preview.resolve(version+"_full.png");
 		writeImage(image, targetFile);
-		
 		//small preview
-		targetFile = taskFolder.resolve(config.SUB_PREVIEW).resolve(version+"_small.png");
+		targetFile = preview.resolve(version+"_small.png");
 		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 			image = Scalr.resize(image, SMALL_SIZE);
 		}
@@ -93,20 +86,21 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	@Override
 	public void deletePreview(Path taskFolder) {
 		final Path preview = taskFolder.resolve(config.SUB_PREVIEW);
+		final String version = AssetGroupType.NEW.getPreviewFileName();
 		Path previewFile;
-		previewFile = preview.resolve("newest_full.png");
+		previewFile = preview.resolve(version + "_full.png");
 		if(previewFile.toFile().exists()) {
 			fileService.delete(previewFile);
 		}
-		previewFile = preview.resolve("newest_small.png");
+		previewFile = preview.resolve(version + "_small.png");
 		if(previewFile.toFile().exists()) {
 			fileService.delete(previewFile);
 		}
 	}
 
 	@Override
-	public Texture createAsset(Path relative) {
-		return new Texture(relative);
+	public Texture createAsset(Path relative, AssetGroupType isOriginal) {
+		return new Texture(relative, isOriginal);
 	}
 
 	@Override
