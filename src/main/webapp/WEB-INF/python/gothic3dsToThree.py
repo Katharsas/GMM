@@ -23,23 +23,26 @@ def uprint(*objects, sep=' ', end='\n', file=sys.stdout):
 
 def blenderPluginsEnabled():
 	# import
-	try:
-		bpy.ops.wm.addon_enable(module="KrxImpExp")
-	except ImportError:
-		print("Kerrax import/export plugin not found!")
-		return False
+	if not hasattr(bpy.types, "IMPORT_SCENE_OT_krx3dsimp"):
+		try:
+			bpy.ops.wm.addon_enable(module="KrxImpExp")
+		except ImportError:
+			print("Kerrax import/export plugin not found!")
+			return False
 	
 	if hasattr(bpy.types, "IMPORT_SCENE_OT_krx3dsimp"):
 		uprint("Kerrax 3DS export is available.")
 	else:
 		uprint("Kerrax 3DS export not found!")
 		return False
+	
 	# export
-	try:
-		bpy.ops.wm.addon_enable(module="io_three")
-	except ImportError:
-		uprint("Threejs export plugin not found!")
-		return False
+	if not hasattr(bpy.types, "EXPORT_OT_three"):
+		try:
+			bpy.ops.wm.addon_enable(module="io_three")
+		except ImportError:
+			uprint("Threejs export plugin not found!")
+			return False
 		
 	if hasattr(bpy.types, "EXPORT_OT_three"):
 		uprint("Threejs export is available.")
@@ -155,7 +158,7 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 		self.assertProtocol(current, self.CONVERSION_FROM, self.CONVERSION_END)
 		return
 	
-	def convertFiles(selfs, original, target):
+	def convertFiles(self, original, target):
 		uprint("Converting:")
 		uprint(original)
 		uprint(" -> " + target)
@@ -165,16 +168,29 @@ class ConversionRequestHandler(socketserver.BaseRequestHandler):
 		bpy.ops.object.delete()
 		# import
 		bpy.ops.import_scene.krx3dsimp(filepath = original, quiet = True)
-		# remember mesh
+		# remember mesh object
 		meshObject = bpy.context.object
 		# export
 		bpy.ops.export.three(filepath = target)
-		# get data from mesh
+		# get data from mesh object
 		meshData = meshObject.data
 		jsonAnswer = {}
 		jsonAnswer["polygonCount"] = len(meshData.polygons)
+		jsonAnswer["textures"] = self.getTextureNames(meshObject)
 		return jsonAnswer
-
+	
+	def getTextureNames(self, meshObject):
+		textures = []
+		for materialSlot in meshObject.material_slots:
+			material = materialSlot.material
+			if material.users > 0:
+				for texSlot in material.texture_slots:
+					if texSlot is not None:
+						tex = texSlot.texture
+						if tex.type == "IMAGE":
+							textures.append(tex.image.filepath)
+		return textures
+		
 def main():
 	if blenderPluginsEnabled() == False:
 		uprint("Exiting script since plugins cannot be invoked!")

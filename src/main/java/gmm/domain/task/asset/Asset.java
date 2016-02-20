@@ -5,7 +5,6 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 public abstract class Asset {
 	
@@ -13,9 +12,8 @@ public abstract class Asset {
 	private final Path fileName;
 	@XStreamAsAttribute
 	private final AssetGroupType groupType;
-	
-	@XStreamOmitField
-	private Path absolutePath;
+	@XStreamAsAttribute
+	private long fileSize = -1;
 	
 	protected final static String assertAttributesException =
 			"This asset's attributes are not fully populated!";
@@ -27,28 +25,24 @@ public abstract class Asset {
 		this.groupType = groupType;
 	}
 	
-	public void assertAttributes() {}
-	
-	protected void setAbsolute(Path absolutePath) {
-		this.absolutePath = absolutePath;
+	public void assertAttributes() {
+		if(fileSize < 0) {
+			throw new IllegalStateException(assertAttributesException);
+		}
 	}
-	
-	public Path getAbsolute() {
-		return absolutePath;
+
+	public void setFileSize(Path absolutePath) {
+		this.fileSize = absolutePath.toFile().length();
 	}
-	
-	private long getSize() {
-		return absolutePath.toFile().length();
-	}
-	
+
 	public String getSizeInKB() {
 		DecimalFormat d = new DecimalFormat("########0");
-		return d.format(((Long)getSize()).doubleValue()/1000);
+		return d.format(((Long)fileSize).doubleValue()/1000);
 	}
 	
 	public String getSizeInMB() {
 		DecimalFormat d = new DecimalFormat("########0,00");
-		return d.format(((Long)getSize()).doubleValue()/1000000);
+		return d.format(((Long)fileSize).doubleValue()/1000000);
 	}
 	
 	public String getFileName() {

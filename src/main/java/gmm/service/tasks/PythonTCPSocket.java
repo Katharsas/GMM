@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -71,8 +72,12 @@ public class PythonTCPSocket {
 	
 	protected static class MeshData {
 		private int polygonCount;
+		private Set<String> textures;
 		public int getPolygonCount() {
 			return polygonCount;
+		}
+		public Set<String> getTextures() {
+			return textures;
 		}
 	}
 	
@@ -164,6 +169,7 @@ public class PythonTCPSocket {
 					result = new ConversionResult(false, null, e); 
 					PythonTCPSocket.this.notify();
 				}
+				threadIsAlive.set(false);
 				logger.info("Internal thread: exiting...");
 			}
 		}
@@ -244,7 +250,6 @@ public class PythonTCPSocket {
 						if(duration > (threadTimeout - 300)) {
 							// since caller didnt call us for quite some time we shutdown
 							logger.info("Shutdown timeout reached: Shutting down python socket connection and thread.");
-							threadIsAlive.set(false);
 							return;
 						}
 					} catch (InterruptedException e1) {}

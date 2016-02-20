@@ -48,12 +48,25 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 	
 	public Path getOriginalAssetPath() {
-		return config.ASSETS_ORIGINAL.resolve(getAssetPath());
+		return getFilePath(getOriginalAsset());
 	}
 	
 	public Path getNewestAssetPath() {
-		return config.ASSETS_NEW.resolve(getAssetPath())
-				.resolve(config.SUB_ASSETS).resolve(newestAsset.getFileName());
+		return getFilePath(getNewestAsset());
+	}
+	
+	/**
+	 * @return Absolute file path to the given asset file assuming the asset can be found under
+	 * 		this AssetTask's relative path.
+	 */
+	private Path getFilePath(Asset asset) {
+		Objects.requireNonNull(config);
+		if(asset.getGroupType().isOriginal()) {
+			return config.ASSETS_ORIGINAL.resolve(getAssetPath());
+		} else {
+			return config.ASSETS_NEW.resolve(getAssetPath())
+					.resolve(config.SUB_ASSETS).resolve(asset.getFileName());
+		}
 	}
 	
 	//Setters, Getters---------------------------------
@@ -63,27 +76,21 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 	
 	public A getOriginalAsset() {
-		if (originalAsset != null) {
-			originalAsset.setAbsolute(getOriginalAssetPath());
-		}
 		return originalAsset;
 	}
 
 	public void setOriginalAsset(A originalAsset) {
-		Objects.requireNonNull(config);
+		originalAsset.setFileSize(getFilePath(originalAsset));
 		originalAsset.assertAttributes();
 		this.originalAsset = originalAsset;
 	}
 	
 	public A getNewestAsset() {
-		if (newestAsset != null) {
-			newestAsset.setAbsolute(getNewestAssetPath());
-		}
 		return newestAsset;
 	}
 	
 	public void setNewestAsset(A newestAsset) {
-		Objects.requireNonNull(config);
+		newestAsset.setFileSize(getFilePath(newestAsset));
 		newestAsset.assertAttributes();
 		this.newestAsset = newestAsset;
 		this.newestAssetLastUpdate = DateTime.now();

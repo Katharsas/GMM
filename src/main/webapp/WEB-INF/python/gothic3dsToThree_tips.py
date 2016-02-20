@@ -42,9 +42,15 @@ bpy.ops.export.three(filepath="test/OW_Focusplattform.js")
 # additional export options can be  found in io_three/__init__.py -> class ExportThree
 # defaults can be found in constants.py -> EXPORT_OPTIONS
 
-
-
-# blender --background --python test/test.py -- <scriptargs>
-#  = start blender GUI-less, run script at ... with args ...
-
-#http://blender.stackexchange.com/questions/6817/how-to-pass-command-line-arguments-to-a-blender-python-script
+# get used textures
+meshObject = bpy.context.object
+for materialSlot in meshObject.material_slots:
+	material = materialSlot.material
+	if material.users > 0:
+		for texSlot in material.texture_slots:
+			if texSlot is not None:
+				tex = texSlot.texture
+				if tex.type == "IMAGE":
+					print("")
+					print(tex.image.name)
+					print(tex.image.filepath)

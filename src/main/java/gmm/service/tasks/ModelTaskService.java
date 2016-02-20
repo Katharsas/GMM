@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.HashSet;
+import gmm.collections.Set;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.Model;
@@ -35,6 +37,8 @@ public class ModelTaskService extends AssetTaskService<Model> {
 		final String version = asset.getGroupType().getPreviewFileName();
 		final Path target = previewPath.resolve(version + ".js");
 		MeshData meshData = python.createPreview(sourceFile, target);
+		Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
+		asset.setTextureNames(textures);
 		asset.setPolyCount(meshData.getPolygonCount());
 	}
 	
