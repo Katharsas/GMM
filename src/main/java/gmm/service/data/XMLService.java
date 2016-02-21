@@ -1,10 +1,14 @@
 package gmm.service.data;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.thoughtworks.xstream.XStream;
 
 import gmm.collections.Collection;
 import gmm.domain.Comment;
@@ -19,8 +23,6 @@ import gmm.domain.task.asset.Texture;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.converters.PathConverter;
-
-import com.thoughtworks.xstream.XStream;
 
 
 @Service
@@ -53,18 +55,26 @@ public class XMLService {
 		xstream.registerConverter(new PathConverter());
 	}
 	
-	public synchronized void serialize(Collection<?> objects, Path path) throws IOException {
+	public synchronized void serialize(Collection<?> objects, Path path) {
 		String xml= xstream.toXML(objects);
 		xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" + xml;
-		byte[] bytes = xml.getBytes("UTF-8");
+		byte[] bytes;
+		try {
+			bytes = xml.getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new UncheckedIOException(e);
+		}
     	fileService.createFile(path, bytes);
 	}
 
-	@SuppressWarnings("unchecked")
-	public synchronized <T> Collection<T> deserialize(Path path, Class<T> clazz) throws IOException {
+	public synchronized <T> Collection<T> deserialize(Path path, Class<T> clazz) {
 		if(!path.toFile().exists()) {
-			throw new IOException("File with serialized data at \""+path+"\" does not exist! Cannot deserialize.");
+			throw new UncheckedIOException(new IOException(
+					"File with serialized data at \"" + path + "\" does not exist!"
+							+ " Cannot deserialize."));
 		}
-		return (Collection<T>) xstream.fromXML(path.toFile());
+		@SuppressWarnings("unchecked")
+		Collection<T> result = (Collection<T>) xstream.fromXML(path.toFile());
+		return result;
 	}
 }

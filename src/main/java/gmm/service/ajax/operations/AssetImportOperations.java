@@ -43,7 +43,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 	
 	private final Class<E> clazz;
 	private final TaskForm form;
-	private AssetTask<T> conflictingTask;
+	private E conflictingTask;
 	private List<E> tempData;
 	
 	public AssetImportOperations(TaskForm form, Class<E> clazz) {
@@ -118,16 +118,15 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		return creator.create(clazz, form);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Conflict<String> onLoad(String assetPathString) {
 		Path assetPath = Paths.get(assetPathString);
 		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_NEW);
 
 		// full AssetTask conflict
-		for (final AssetTask<?> t : data.getList(AssetTask.class)) {
+		for (final E t : data.getList(clazz)) {
 			if (t.getAssetPath().equals(assetPath)) {
-				conflictingTask = (AssetTask<T>) t;
+				conflictingTask = t;
 				return taskConflict;
 			}
 		}
@@ -135,7 +134,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		if (config.ASSETS_NEW.resolve(assetPath).toFile().exists()) {
 			return onlyFolderConflict;
 		}
-		return MessageResponseOperations.cast(NO_CONFLICT);
+		return NO_CONFLICT;
 	}
 
 	@Override

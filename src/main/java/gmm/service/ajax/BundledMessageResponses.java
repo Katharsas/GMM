@@ -36,23 +36,23 @@ public class BundledMessageResponses<T> {
 	 * Conflicts are mapped to the operation the user chose when he checked the button.
 	 */
 	private final Map<Conflict<T>, String> doForAlls = new HashMap<>();
-	private Conflict<T> currentConflict = 
-			MessageResponseOperations.cast(MessageResponseOperations.NO_CONFLICT);
+	private Conflict<T> currentConflict;
 	
 	private final Iterator<? extends T> elements;
 	private T currentlyLoaded;
 	
 	protected static final String nextElementOp = "default";
 	protected static final String success = "success";
-	protected static final String finished = "finished";
+	public static final String finished = "finished";
 	
 	public BundledMessageResponses(Iterator<? extends T> elements, MessageResponseOperations<T> ops) {
 		this.elements = elements;
 		this.ops = ops;
 		operations = ops.getOperations();
+		currentConflict = ops.NO_CONFLICT;
 	}
 	
-	public List<MessageResponse> loadFirstBundle() throws Exception {
+	public List<MessageResponse> loadFirstBundle() {
 		return loadNextBundle(nextElementOp, false);
 	}
 	
@@ -91,7 +91,7 @@ public class BundledMessageResponses<T> {
 			//We try to add the next element, which may cause a conflict.
 			currentlyLoaded = elements.next();
 			currentConflict = ops.onLoad(currentlyLoaded);
-			final boolean isConflict = !currentConflict.equals(MessageResponseOperations.NO_CONFLICT);
+			final boolean isConflict = !currentConflict.equals(ops.NO_CONFLICT);
 			
 			// If conflict, we either use a previously given doForAll operation or ask the user.
 			if(isConflict) {

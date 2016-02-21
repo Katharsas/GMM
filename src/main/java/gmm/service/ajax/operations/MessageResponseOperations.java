@@ -24,14 +24,7 @@ public abstract class MessageResponseOperations<T> {
 		public String getStatus();
 		public String getMessage(T element);
 	}
-	public final static Conflict<?> NO_CONFLICT = new Conflict<Object>() {
-		@Override public String getStatus() {return null;}
-		@Override public final String getMessage(Object element) {return null;}
-	};
-	@SuppressWarnings({ "unchecked" })
-	public final static <E> Conflict<E> cast(Conflict<?> conflict) {
-		return (Conflict<E>) conflict;
-	}
+	public final Conflict<T> NO_CONFLICT = null;
 	
 	/**
 	 * @return a map which maps all operation names which the client can send to operations.

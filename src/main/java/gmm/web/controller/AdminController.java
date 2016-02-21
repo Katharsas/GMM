@@ -1,6 +1,5 @@
 package gmm.web.controller;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 
@@ -60,7 +59,7 @@ public class AdminController {
 	}
 	
 	/**
-	 * Default Handler <br/>
+	 * Default Handler <br>
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(method = RequestMethod.GET)
@@ -72,7 +71,7 @@ public class AdminController {
     }
 	
 	/**
-	 * Banner code <br/>
+	 * Banner code <br>
 	 * -----------------------------------------------------------------
 	 */
 	
@@ -95,18 +94,17 @@ public class AdminController {
 	}
 	
 	/**
-	 * Delete all tasks <br/>
+	 * Delete all tasks <br>
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteTasks() throws Exception {
-		
+	public @ResponseBody void deleteTasks() {
 		backups.triggerTaskBackup();
 		data.removeAll(Task.class);
 	}
 	
 	/**
-	 * Task save file operations <br/>
+	 * Task save file operations <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -126,7 +124,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	@ResponseBody
-	public void saveTasks(@RequestParam("name") String pathString) throws IOException {
+	public void saveTasks(@RequestParam("name") String pathString) {
 		manualBackups.saveTasksToXml(data.getList(Task.class), pathString);
 	}
 	
@@ -142,7 +140,7 @@ public class AdminController {
 	}
 	
 	/**
-	 * Task Loading <br/>
+	 * Task Loading <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -152,7 +150,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks(
-			@RequestParam(value = "dir", required = false) Path dir) throws Exception {
+			@RequestParam(value = "dir", required = false) Path dir) {
 		
 		backups.triggerTaskBackup();
 		Iterator<? extends Task> i;
@@ -177,13 +175,13 @@ public class AdminController {
 	@RequestMapping(value = "/load/next", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadNextTask (
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws Exception {
+			@RequestParam("doForAll") boolean doForAll) {
 		
 		return session.taskLoader.loadNextBundle(operation, doForAll);
 	}
 	
 	/**
-	 * Asset Import <br/>
+	 * Asset Import <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -234,7 +232,7 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importAssets (
 			@RequestParam("textures") boolean textures,
-			@ModelAttribute("taskForm") TaskForm form) throws Exception {
+			@ModelAttribute("taskForm") TaskForm form) {
 		
 		backups.triggerTaskBackup();
 		session.assetImporter = new BundledMessageResponses<>(
@@ -249,7 +247,7 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets/next"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importNextAsset(
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws Exception {
+			@RequestParam("doForAll") boolean doForAll) {
 		
 		return session.assetImporter.loadNextBundle(operation, doForAll);
 	}

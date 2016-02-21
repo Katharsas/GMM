@@ -3,6 +3,10 @@ package gmm.web.sessions;
 
 import java.util.Iterator;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.stereotype.Component;
+
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
@@ -14,10 +18,6 @@ import gmm.domain.task.asset.TextureTask;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.operations.AssetImportOperations;
 import gmm.web.forms.TaskForm;
-
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.stereotype.Component;
 
 /**
  * Represents the current state of the asset selection the user has made for asset import.
@@ -68,7 +68,7 @@ public class AdminSession {
 	}
 	
 	public Iterator<? extends Task> getImportedTasks() {
-		List<? extends Task> list = (List<? extends Task>) importOperations.getTasks();
+		List<? extends Task> list = importOperations.getTasks();
 		return list.iterator();
 	}
 }

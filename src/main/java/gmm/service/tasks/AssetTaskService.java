@@ -16,7 +16,7 @@ import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 /**
  * 
@@ -26,7 +26,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
-	@Autowired private TaskSession session;
+	@Autowired private WorkbenchSession session;
 	
 	protected abstract AssetTask<A> createNew(Path assetPath, User user);
 	public abstract A createAsset(Path fileName, AssetGroupType isOriginal);

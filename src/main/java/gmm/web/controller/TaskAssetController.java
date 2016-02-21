@@ -32,7 +32,7 @@ import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 @Controller
 @RequestMapping("tasks")
@@ -40,7 +40,7 @@ import gmm.web.sessions.TaskSession;
 
 public class TaskAssetController {
 
-	@Autowired TaskSession session;
+	@Autowired WorkbenchSession session;
 	@Autowired DataAccess data;
 	@Autowired TaskServiceFinder taskService;
 	@Autowired TextureTaskService textureService;

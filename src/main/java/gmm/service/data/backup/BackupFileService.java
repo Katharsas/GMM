@@ -67,7 +67,7 @@ public class BackupFileService {
 				logger.info("Creating backup for type '" + type.getSimpleName() + "' at " + path);
 				serializer.serialize(toSave, path);
 				removeOldestBackup(type, directory, maxSaveFiles);
-			} catch (final IOException e) {
+			} catch (final Exception e) {
 				throw new BackupServiceException("Failed to create backup for type '"
 						+ type.getSimpleName() + "' at " + path + "'!", e);
 			}

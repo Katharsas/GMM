@@ -3,27 +3,6 @@ package gmm.web.controller;
 
 import java.io.IOException;
 
-import gmm.collections.LinkedList;
-import gmm.collections.List;
-import gmm.domain.Comment;
-import gmm.domain.Label;
-import gmm.domain.UniqueObject;
-import gmm.domain.User;
-import gmm.domain.task.Task;
-import gmm.domain.task.TaskType;
-import gmm.service.data.DataAccess;
-import gmm.service.data.backup.ManualBackupService;
-import gmm.service.tasks.TaskServiceFinder;
-import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.forms.CommentForm;
-import gmm.web.forms.FilterForm;
-import gmm.web.forms.LoadForm;
-import gmm.web.forms.SearchForm;
-import gmm.web.forms.SortForm;
-import gmm.web.forms.TaskForm;
-import gmm.web.sessions.TaskSession;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,11 +17,34 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import gmm.collections.LinkedList;
+import gmm.collections.List;
+import gmm.domain.Comment;
+import gmm.domain.Label;
+import gmm.domain.UniqueObject;
+import gmm.domain.User;
+import gmm.domain.task.Task;
+import gmm.domain.task.TaskType;
+import gmm.service.ajax.MessageResponse;
+import gmm.service.data.DataAccess;
+import gmm.service.data.backup.ManualBackupService;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.TaskRenderResult;
+import gmm.web.forms.CommentForm;
+import gmm.web.forms.FilterForm;
+import gmm.web.forms.LoadForm;
+import gmm.web.forms.SearchForm;
+import gmm.web.forms.SortForm;
+import gmm.web.forms.TaskForm;
+import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
+
 /**
  * This controller is responsible for most task-CRUD operations requested by "tasks" page.
  * 
  * The session state and flow is managed by the TaskSession object.
- * @see {@link gmm.web.sessions.TaskSession}
+ * @see {@link gmm.web.sessions.WorkbenchSession}
  * 
  * @author Jan Mothes
  * 
@@ -53,7 +55,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class TaskController {
 	
 	@Autowired private TaskServiceFinder taskCreator;
-	@Autowired private TaskSession session;
+	@Autowired private TaskSession taskSession;
+	@Autowired private WorkbenchSession workbench;
 	@Autowired private DataAccess data;
 	@Autowired private FtlRenderer ftlRenderer;
 	@Autowired private ManualBackupService manualBackups;
@@ -68,13 +71,13 @@ public class TaskController {
 	public SearchForm getSearchForm() {return new SearchForm();}
 	
 	@ModelAttribute("workbench-sortForm")
-	public SortForm getSortForm() {return session.getSortForm();}
+	public SortForm getSortForm() {return workbench.getSortForm();}
 	
 	@ModelAttribute("workbench-generalFilterForm")
-	public FilterForm getGeneralFilter() {return session.getFilterForm();}
+	public FilterForm getGeneralFilter() {return workbench.getFilterForm();}
 	
 	@ModelAttribute("workbench-loadForm")
-	public LoadForm getWorkbenchLoadForm() {return session.getUser().getLoadForm();}
+	public LoadForm getWorkbenchLoadForm() {return workbench.getUser().getLoadForm();}
 
 	/**
 	 * For FTL rendering
@@ -96,13 +99,13 @@ public class TaskController {
 	@RequestMapping(value = "workbench/admin/save", method = RequestMethod.POST)
 	@ResponseBody
 	public void saveTasksInWorkbench(@RequestParam("name") String pathString) throws IOException {
-		manualBackups.saveTasksToXml(session.getTasks(), pathString);
+		manualBackups.saveTasksToXml(workbench.getTasks(), pathString);
 	}
 	
 	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
 	@ResponseBody
 	public void deleteTasksInWorkbench() {
-		data.removeAll(session.getTasks());
+		data.removeAll(workbench.getTasks());
 	}
 	
 	/**
@@ -114,7 +117,7 @@ public class TaskController {
 	@RequestMapping(value="/submitLoad", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleLoad(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
-		session.updateLoad(loadForm);
+		workbench.updateLoad(loadForm);
 	}
 	
 	/**
@@ -126,7 +129,7 @@ public class TaskController {
 	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleFilter(@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm) {
-		session.updateFilter(filterForm);
+		workbench.updateFilter(filterForm);
 	}
 	
 	
@@ -139,7 +142,7 @@ public class TaskController {
 	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleTasksSearch(@ModelAttribute("workbench-searchForm") SearchForm searchForm) {
-		session.updateSearch(searchForm);
+		workbench.updateSearch(searchForm);
 	}
 	
 	
@@ -152,7 +155,7 @@ public class TaskController {
 	@RequestMapping(value="/submitSort", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleSorting(@ModelAttribute("workbench-sortForm") SortForm sortForm) {
-		session.updateSort(sortForm);
+		workbench.updateSort(sortForm);
 	}
 	
 	
@@ -164,7 +167,7 @@ public class TaskController {
 	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleTasksDelete(@PathVariable String idLink) {
-		data.remove(UniqueObject.getFromIdLink(session.getTasks(), idLink));
+		data.remove(UniqueObject.getFromIdLink(workbench.getTasks(), idLink));
 	}
 	
 	
@@ -181,9 +184,9 @@ public class TaskController {
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
 		
-		Task task = UniqueObject.getFromIdLink(session.getTasks(), taskIdLink);
+		Task task = UniqueObject.getFromIdLink(workbench.getTasks(), taskIdLink);
 		Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
-		if(comment.getAuthor().getId() == session.getUser().getId()) {
+		if(comment.getAuthor().getId() == workbench.getUser().getId()) {
 			comment.setText(edited);
 		}
 		return "redirect:/tasks";
@@ -203,37 +206,49 @@ public class TaskController {
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
 		
-		Comment comment = new Comment(session.getUser(), form.getText());
-		UniqueObject.getFromIdLink(session.getTasks(), idLink).getComments().add(comment);
+		Comment comment = new Comment(workbench.getUser(), form.getText());
+		UniqueObject.getFromIdLink(workbench.getTasks(), idLink).getComments().add(comment);
 	}
-
 	
 	/**
-	 * Create / Edit Task
+	 * Edit task <br>
 	 * -----------------------------------------------------------------
-	 * If the task is new, it will be added to session if its types matches the current type.
-	 * @param form - object containing all task information
-	 * @param idLink - id of task to be edited or null/"" if the task should be added as new task
 	 */
-	@RequestMapping(value="/submitTask", method = RequestMethod.POST)
-	public String handleTasksCreateEdit(
+	
+	@RequestMapping(value="/createTask", method = RequestMethod.POST)
+	@ResponseBody
+	public void editTask(
 			@ModelAttribute("taskForm") TaskForm form,
-			@RequestParam(value="edit", defaultValue="") String idLink) throws Exception {
+			@RequestParam("idLink") String idLink) {
 		
-		Task task;
-		boolean isNew = !validateId(idLink);
+		Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
+		if(task == null) {
+			throw new IllegalArgumentException("Cannot edit task: idLink does not exist!");
+		}
+		taskCreator.edit(task, form);
+	}
+	
+	/**
+	 * Create new task <br>
+	 * -----------------------------------------------------------------
+	 */
+	
+	@RequestMapping(value="/createTask", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageResponse createTask(
+			@ModelAttribute("taskForm") TaskForm form) {
+		
 		Class<? extends Task> type = form.getType().toClass();
-
-		if(isNew) {
-			task = taskCreator.create(type, form);
-			task = type.cast(task);
-			data.add(task);
-		}
-		else {
-			task = UniqueObject.getFromIdLink(session.getTasks(), idLink);
-			taskCreator.edit(task, form);
-		}
-		return "redirect:/tasks";
+		Task task = taskCreator.create(type, form);
+		return taskSession.firstTaskCheck(task, form);
+	}
+	
+	@RequestMapping(value="/createTask/next", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageResponse createTaskNext(
+			@RequestParam("operation") String operation) {
+		
+		return taskSession.getNextTaskCheck(operation);
 	}
 	
 	/**
@@ -249,20 +264,23 @@ public class TaskController {
 			ModelMap model,
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@ModelAttribute("taskForm") TaskForm form,
-			@RequestParam(value="edit", defaultValue="") String edit) throws Exception {
+			@ModelAttribute("taskForm") TaskForm form
+//			@RequestParam(value="edit", defaultValue="") String edit
+			) throws Exception {
 		
-		if (validateId(edit)) {
-			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
-			form = taskCreator.prepareForm(task);
-			model.addAttribute("label", task.getLabel());
-			model.addAttribute("taskForm", form);
-		}
+		//TODO make edit form freemaker-ajax thing
 		
-	    model.addAttribute("taskList", session.getTasks());
+//		if (validateId(edit)) {
+//			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
+//			form = taskCreator.prepareForm(task);
+//			model.addAttribute("label", task.getLabel());
+//			model.addAttribute("taskForm", form);
+//		}
+		
+	    model.addAttribute("taskList", workbench.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    model.addAttribute("edit", edit);
+//	    model.addAttribute("edit", edit);
 	    
 	    populateRequest(request);
 	    String filters = ftlRenderer.renderTemplate(model, "workbench_filters.ftl", request, response);
@@ -271,20 +289,16 @@ public class TaskController {
 	    return "tasks";
 	}
 	
-	private boolean validateId(String idLink){
-		return idLink != null && idLink.matches(".*[0-9]+");
-	}
-	
 	@RequestMapping(value = "/selected", method = RequestMethod.GET)
 	@ResponseBody
 	public boolean[] getSelected() {
-		return session.getSelectedTaskTypes();
+		return workbench.getSelectedTaskTypes();
 	}
 	
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	@ResponseBody
 	public void loadTasks(@RequestParam("type") TaskType type) {
-		session.loadTasks(type);
+		workbench.loadTasks(type);
 	}
 	
 	/**
@@ -300,7 +314,7 @@ public class TaskController {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		List<Task> tasks = new LinkedList<>(Task.class);
-		for(Task task : session.getTasks()) {
+		for(Task task : workbench.getTasks()) {
 			boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
@@ -315,7 +329,7 @@ public class TaskController {
 	@ResponseBody
 	public List<String> getCurrentTaskIds() throws Exception {
 		List<String> taskIds = new LinkedList<>(String.class);
-		for(Task task : session.getTasks()) {
+		for(Task task : workbench.getTasks()) {
 			taskIds.add(task.getIdLink());
 		}
 		return taskIds;

@@ -32,7 +32,7 @@ public class BackUpServiceTest {
 	@Autowired private XMLService xmlService;
 	
 	@Test
-	public void backupTest() throws Exception {
+	public void backupTest() {
 		//deserialize tasks/users from test directory
 		config.updateWorkspace(Paths.get("WEB-INF/dataTesting"));
 		

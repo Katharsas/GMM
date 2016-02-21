@@ -15,8 +15,6 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 	
 	private final DataAccess data = Spring.get(DataAccess.class);
 	
-	private final Conflict<Task> no_conflict = MessageResponseOperations.cast(NO_CONFLICT);
-	
 	private final Conflict<Task> conflict = new Conflict<Task>() {
 		@Override public String getStatus() {
 			return "conflict";
@@ -58,7 +56,7 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 		if (data.hasIds(new long[]{t.getId()})) return conflict;
 		else {
 			data.add(t);
-			return no_conflict;
+			return NO_CONFLICT;
 		}
 	}
 	
