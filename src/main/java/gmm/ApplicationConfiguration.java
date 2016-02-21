@@ -113,6 +113,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 
 		// template path
 		result.setTemplateLoaderPath("/WEB-INF/ftl/");
+		result.setDefaultEncoding("UTF-8");
 
 		// static access
 		final BeansWrapper wrapper = new BeansWrapper();

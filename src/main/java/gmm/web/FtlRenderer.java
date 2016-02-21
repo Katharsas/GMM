@@ -15,9 +15,11 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import freemarker.template.Configuration;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.Label;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.UserService;
+import gmm.service.data.DataAccess;
 
 /**
  * Renders html content from FreeMarker templates (.ftl files).
@@ -28,6 +30,7 @@ import gmm.service.UserService;
 public class FtlRenderer {
 	
 	@Autowired private UserService users;
+	@Autowired private DataAccess data;
 	
 	private Configuration config;
 	
@@ -117,6 +120,8 @@ public class FtlRenderer {
 		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
 	    if (isUserLoggedIn) {
 	    	model.addAttribute("principal", users.getLoggedInUser());
+	    	model.addAttribute("users", users.get());
+			model.addAttribute("taskLabels", data.getList(Label.class));
 	    }
 		model.put("request", request);
 		model.put("springMacroRequestContext",

@@ -215,7 +215,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value="/createTask", method = RequestMethod.POST)
+	@RequestMapping(value="/editTask", method = RequestMethod.POST)
 	@ResponseBody
 	public void editTask(
 			@ModelAttribute("taskForm") TaskForm form,
@@ -263,28 +263,24 @@ public class TaskController {
 	public String send(
 			ModelMap model,
 			HttpServletRequest request,
-			HttpServletResponse response,
-			@ModelAttribute("taskForm") TaskForm form
-//			@RequestParam(value="edit", defaultValue="") String edit
+			HttpServletResponse response
 			) throws Exception {
 		
-		//TODO make edit form freemaker-ajax thing
-		
-//		if (validateId(edit)) {
-//			Task task = UniqueObject.getFromIdLink(session.getTasks(), edit);
-//			form = taskCreator.prepareForm(task);
-//			model.addAttribute("label", task.getLabel());
-//			model.addAttribute("taskForm", form);
-//		}
+		//TODO implements ajax side of editing a task:
+		//TODO  -> remove taskForm from tasks.jsp
+		//TODO  -> insert taskForm into page via Ajax + render url
 		
 	    model.addAttribute("taskList", workbench.getTasks());
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-//	    model.addAttribute("edit", edit);
 	    
 	    populateRequest(request);
-	    String filters = ftlRenderer.renderTemplate(model, "workbench_filters.ftl", request, response);
-	    model.addAttribute("workbench_filters", filters);
+	    String filterHtml = ftlRenderer.renderTemplate(model, "workbench_filters.ftl", request, response);
+	    model.addAttribute("workbench_filters", filterHtml);
+	    
+	    //TODO move to ajax render method
+	    String taskFormHtml = ftlRenderer.renderTemplate(model, "all_taskForm.ftl", request, response);
+	    model.addAttribute("all_taskForm", taskFormHtml);
 	    
 	    return "tasks";
 	}

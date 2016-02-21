@@ -30,7 +30,7 @@
 				<label>
 					<@m.formCheckbox class="generalFilters-all-target"
 							path=path+".taskStatus[${taskStatus_index}]"/>
-					<@s.message "${TaskStatus.values()[taskStatus_index].getNameKey()}"/>
+					<@s.message TaskStatus.values()[taskStatus_index].getNameKey() />
 				</label><br>
 			</#list>
 		</div>
@@ -39,7 +39,7 @@
 				<label>
 					<@m.formCheckbox class="generalFilters-all-target"
 							path=path+".priority[${priority_index}]"/>
-					<@s.message "${TaskPriority.values()[priority_index].getNameKey()}"/>
+					<@s.message TaskPriority.values()[priority_index].getNameKey() />
 				</label><br>
 			</#list>
 		</div>
