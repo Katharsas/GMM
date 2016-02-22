@@ -62,8 +62,7 @@
 
 			<div id="importTaskForm" class="admin-inner">
 				<form:form id="taskForm" commandName="taskForm">
-					<t:all_taskForm>
-					</t:all_taskForm>
+					${all_taskForm}
 				</form:form>
 				
 				<div class="clear"></div>

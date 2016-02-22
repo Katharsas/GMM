@@ -3,6 +3,9 @@ package gmm.web.controller;
 import java.nio.file.Path;
 import java.util.Iterator;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +34,8 @@ import gmm.service.data.backup.ManualBackupService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.RequestData;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
 
@@ -50,6 +55,7 @@ public class AdminController {
 	@Autowired private XMLService xmlService;
 	@Autowired private BackupService backups;
 	@Autowired private ManualBackupService manualBackups;
+	@Autowired private FtlRenderer ftlRenderer;
 	
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskFacade() {
@@ -63,12 +69,24 @@ public class AdminController {
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-    public String send(ModelMap model) {
+	public String send(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) {
+		
 		session.clearImportPaths();
 		model.addAttribute("users", data.getList(User.class));
-	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    return "admin";
-    }
+		model.addAttribute("taskLabels", data.getList(Label.class));
+		
+		model.addAttribute("taskForm", getTaskFacade());
+		
+		RequestData requestData = new RequestData(model, request, response);
+		request.setAttribute("taskForm", getTaskFacade());
+		String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
+		model.addAttribute("all_taskForm", taskFormHtml);
+		
+		return "admin";
+	}
 	
 	/**
 	 * Banner code <br>

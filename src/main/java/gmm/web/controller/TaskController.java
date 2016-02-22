@@ -2,13 +2,18 @@ package gmm.web.controller;
 
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.function.Supplier;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +35,7 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.RequestData;
 import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
@@ -61,38 +67,55 @@ public class TaskController {
 	@Autowired private FtlRenderer ftlRenderer;
 	@Autowired private ManualBackupService manualBackups;
 
-	@ModelAttribute("taskForm")
-	public TaskForm getTaskForm() {return new TaskForm();}
-	
-	@ModelAttribute("commentForm")
-	public CommentForm getCommentForm() {return new CommentForm();}
-	
-	@ModelAttribute("workbench-searchForm")
-	public SearchForm getSearchForm() {return new SearchForm();}
-	
-	@ModelAttribute("workbench-sortForm")
-	public SortForm getSortForm() {return workbench.getSortForm();}
-	
-	@ModelAttribute("workbench-generalFilterForm")
-	public FilterForm getGeneralFilter() {return workbench.getFilterForm();}
-	
-	@ModelAttribute("workbench-loadForm")
-	public LoadForm getWorkbenchLoadForm() {return workbench.getUser().getLoadForm();}
-
 	/**
-	 * For FTL rendering
+	 * ModelAttributes that are used by EITHER jsp OR ftl must be in here.
+	 * Any form-receiving method needs this to get a form instance for filling request data in.
 	 */
-	private void populateRequest(HttpServletRequest request) {
-		request.setAttribute("taskForm", getTaskForm());
-		request.setAttribute("commentForm", getCommentForm());
-		request.setAttribute("workbench-sortForm", getSortForm());
-		request.setAttribute("workbench-generalFilterForm", getGeneralFilter());
-		request.setAttribute("workbench-searchForm", getSearchForm());
-		request.setAttribute("workbench-loadForm", getWorkbenchLoadForm());
+	private final HashMap<String, Supplier<?>> modelSuppliers = new HashMap<>();
+	
+	/**
+	 * Includes all ftl templates and the form bindings they need to access.
+	 * Key is filename of template, value is keys from modelSuppliers.
+	 */
+	private final HashMap<String, String[]> templates = new HashMap<>();;
+	
+	@PostConstruct
+	private void init() {
+		modelSuppliers.put("taskForm", TaskForm::new);
+		modelSuppliers.put("commentForm", CommentForm::new);
+		modelSuppliers.put("workbench-searchForm", SearchForm::new);
+		modelSuppliers.put("workbench-sortForm", workbench::getSortForm);
+		modelSuppliers.put("workbench-generalFilterForm", workbench::getFilterForm);
+		modelSuppliers.put("workbench-loadForm", ()->workbench.getUser().getLoadForm());
+		
+		templates.put("all_taskForm.ftl", new String[]{"taskForm"});
+		templates.put("workbench_filters.ftl", new String[]{"workbench-generalFilterForm"});
 	}
 	
-	/*
-	 * Workbench Admin Tab
+	@ModelAttribute
+	public void populateModel(Model model) {
+		for(Entry<String, Supplier<?>> entry : modelSuppliers.entrySet()) {
+			model.addAttribute(entry.getKey(), entry.getValue().get());
+		}
+	}
+	
+	private void insertTemplate(String template, RequestData requestData) {
+		String fileName = template + ".ftl";
+		// populate request
+		for(String form : templates.get(fileName)) {
+			requestData.request.setAttribute(form, modelSuppliers.get(form).get());
+		}
+		// render and insert into model
+		String result = ftlRenderer.renderTemplate(fileName, requestData);
+		requestData.model.addAttribute(template, result);
+		// cleanup
+		for(String form : templates.get(fileName)) {
+			requestData.request.removeAttribute(form);
+		}
+	}
+	
+	/**
+	 * Workbench Admin Tab <br>
 	 * -----------------------------------------------------------------
 	 */
 	
@@ -109,7 +132,7 @@ public class TaskController {
 	}
 	
 	/**
-	 * Load Settings
+	 * Load Settings <br>
 	 * -----------------------------------------------------------------
 	 * Changes settings for task loading and default workbench loading on login
 	 * @param loadForm - object containing all task loading settings
@@ -121,7 +144,7 @@ public class TaskController {
 	}
 	
 	/**
-	 * Filter
+	 * Filter <br>
 	 * -----------------------------------------------------------------
 	 * Filter is always applied to all tasks of a kind
 	 * @param filterForm - object containing all filter information
@@ -134,7 +157,7 @@ public class TaskController {
 	
 	
 	/**
-	 * Search
+	 * Search <br>
 	 * -----------------------------------------------------------------
 	 * Search is always applied the tasks found by the last filter operation.
 	 * @param searchForm - object containing all search information
@@ -147,7 +170,7 @@ public class TaskController {
 	
 	
 	/**
-	 * Sort
+	 * Sort <br>
 	 * -----------------------------------------------------------------
 	 * Sort is always applied on currently shown tasks.
 	 * @param searchForm - object containing all search information
@@ -160,7 +183,7 @@ public class TaskController {
 	
 	
 	/**
-	 * Delete Task
+	 * Delete Task <br>
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted
 	 */
@@ -172,7 +195,7 @@ public class TaskController {
 	
 	
 	/**
-	 * Edit Comment
+	 * Edit Comment <br>
 	 * @param taskIdLink - identifies the task which contains the comment
 	 * @param commentIdLink - identifies the comment to be edited
 	 * @param edited - the edited text of the comment
@@ -194,7 +217,7 @@ public class TaskController {
 	
 	
 	/**
-	 * Create Comment
+	 * Create Comment <br>
 	 * -----------------------------------------------------------------
 	 * @param principal - user sending the request
 	 * @param idLink - identifies the task to which the comment will be added
@@ -252,7 +275,7 @@ public class TaskController {
 	}
 	
 	/**
-	 * Default Handler
+	 * Default Handler <br>
 	 * -----------------------------------------------------------------
 	 * Used internally by other controller methods, which only modify the session object.
 	 * They then call this method which sends all necessary data to the lient.
@@ -263,24 +286,18 @@ public class TaskController {
 	public String send(
 			ModelMap model,
 			HttpServletRequest request,
-			HttpServletResponse response
-			) throws Exception {
+			HttpServletResponse response) {
 		
-		//TODO implements ajax side of editing a task:
-		//TODO  -> remove taskForm from tasks.jsp
-		//TODO  -> insert taskForm into page via Ajax + render url
-		
-	    model.addAttribute("taskList", workbench.getTasks());
+		RequestData requestData = new RequestData(model, request, response);
+	    insertTemplate("workbench_filters", requestData);
+	    
+	    //TODO implements ajax side of editing a task:
+	  	//TODO  -> remove taskForm from tasks.jsp
+	  	//TODO  -> insert taskForm into page via Ajax + render url
+	    //TODO  -> move to ajax method:
 	    model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    
-	    populateRequest(request);
-	    String filterHtml = ftlRenderer.renderTemplate(model, "workbench_filters.ftl", request, response);
-	    model.addAttribute("workbench_filters", filterHtml);
-	    
-	    //TODO move to ajax render method
-	    String taskFormHtml = ftlRenderer.renderTemplate(model, "all_taskForm.ftl", request, response);
-	    model.addAttribute("all_taskForm", taskFormHtml);
+	    insertTemplate("all_taskForm", requestData);
 	    
 	    return "tasks";
 	}
@@ -314,8 +331,8 @@ public class TaskController {
 			boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
-		populateRequest(request);
-		return ftlRenderer.renderTasks(tasks, model, request, response);
+		return ftlRenderer.renderTasks(tasks,
+				new RequestData(model, request, response));
 	}
 	
 	/**

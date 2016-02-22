@@ -5,14 +5,6 @@ package gmm.web.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import gmm.collections.LinkedList;
-import gmm.collections.List;
-import gmm.domain.task.Task;
-import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.forms.CommentForm;
-import gmm.web.sessions.LinkSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -23,6 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import gmm.collections.LinkedList;
+import gmm.collections.List;
+import gmm.domain.task.Task;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.RequestData;
+import gmm.web.FtlRenderer.TaskRenderResult;
+import gmm.web.forms.CommentForm;
+import gmm.web.sessions.LinkSession;
 
 @RequestMapping("public")
 @Controller
@@ -52,7 +53,8 @@ public class PublicController {
 			if (contains) tasks.add(task);
 		}
 		request.setAttribute("commentForm", getCommentForm());
-		return ftlTaskRenderer.renderTasks(tasks, model, request, response);
+		RequestData requestData = new RequestData(model, request, response);
+		return ftlTaskRenderer.renderTasks(tasks, requestData);
 	}
 	
 	/**
