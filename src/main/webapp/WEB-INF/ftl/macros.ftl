@@ -104,7 +104,7 @@
 	@param isSelected - Optional: If true, this option will be the initially selected one.
 -->
 <#macro formOption value label isSelected=false attributes...>
-	<option name="${value}"
+	<option value="${value}"
 		<#list attributes?keys as attr>
 			${attr}="${attributes[attr]?html}"
 		</#list>

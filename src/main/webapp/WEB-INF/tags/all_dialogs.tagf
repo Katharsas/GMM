@@ -85,7 +85,7 @@
 		</div>
 		<div class="clear"></div>
 	</div>
-	<div id="batchDialog-finishLoadingButton" class="dialog-button button" onclick="ajaxChannel.finish()">
+	<div id="batchDialog-finishLoadingButton" class="dialog-button button">
 		<fmt:message key="admin.database.finish"/>
 	</div>
 </div>

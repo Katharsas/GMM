@@ -20,6 +20,7 @@ import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.service.UserService;
+import gmm.web.forms.CommentForm;
 
 /**
  * Renders html content from FreeMarker templates (.ftl files).
@@ -124,6 +125,7 @@ public class FtlRenderer {
 	}
 	
 	private void populateModel(RequestData requestData) {
+		// model
 		ModelMap model = requestData.model;
 		boolean isUserLoggedIn = users.isUserLoggedIn();
 		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
@@ -136,7 +138,8 @@ public class FtlRenderer {
 				Spring.getServletContext(), null);
 		model.put("request", requestData.request);
 		model.put("springMacroRequestContext", context);
-				
+		// forms that tasks bind to
+		requestData.request.setAttribute("commentForm", new CommentForm());
 	}
 	
 	private void renderTemplate(String fileName, ModelMap model, StringWriter target) {

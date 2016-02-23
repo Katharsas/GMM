@@ -249,7 +249,6 @@ public class AdminController {
 	 */
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importAssets (
-			@RequestParam("textures") boolean textures,
 			@ModelAttribute("taskForm") TaskForm form) {
 		
 		backups.triggerTaskBackup();

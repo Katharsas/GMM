@@ -6,6 +6,7 @@ import Queue from "./shared/queue";
 import TaskLoader from "./shared/taskloader";
 import TaskSwitcher from "./shared/taskswitcher";
 import TaskEventBindings from "./shared/tasklisteners";
+import ResponseBundleHandler from "./shared/responseBundleHandler";
 import { contextUrl, allVars, getURLParameter } from "./shared/default";
 
 var tasksVars = {
@@ -288,6 +289,11 @@ function TaskForm() {
 	var $new = $("#newTaskButton");
 	init();
 	
+	// TODO load from from server and insert
+	
+	// TODO responseBundleHandler conflict buttons are broken!
+	// TODO fix them by moving click handlers there from all_dialogs
+	
 	function init() {
 		if (tasksVars.edit !== "") {
 			show();
@@ -298,7 +304,13 @@ function TaskForm() {
 		
 		$type.change(function() {switchPath($type);});
 		$new.click(function() {show();});
-		$submit.click(function() {$form.submit();});
+		$submit.click(function() {
+			var url = contextUrl + "/tasks/createTask";
+			var ajaxChannel = new ResponseBundleHandler(url, "assets");
+			ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
+				// TODO get fresh form from server
+			});
+		});
 		$cancel.click(function() {
 			//TODO reload only empty form
 			Dialogs.alert(function() {

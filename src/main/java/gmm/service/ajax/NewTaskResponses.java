@@ -1,5 +1,8 @@
 package gmm.service.ajax;
 
+
+import gmm.collections.LinkedList;
+import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.Asset;
 import gmm.domain.task.asset.AssetTask;
@@ -35,19 +38,22 @@ public class NewTaskResponses {
 		}
 	}
 	
-	public MessageResponse loadFirst() {
+	public List<MessageResponse> loadFirst() {
 		if(isAsset) {
-			return importer.loadFirstBundle().iterator().next();
+			return importer.loadFirstBundle();
 		} else {
-			MessageResponse result =
-					new MessageResponse(BundledMessageResponses.finished, null);
+			String message = "Successfully added new task!";
+			MessageResponse finished =
+					new MessageResponse(BundledMessageResponses.finished, message);
+			LinkedList<MessageResponse> result = new LinkedList<>(MessageResponse.class);
+			result.add(finished);
 			return result;
 		}
 	}
 	
-	public MessageResponse loadNext(String operation) {
+	public List<MessageResponse> loadNext(String operation) {
 		if(isAsset) {
-			return importer.loadNextBundle(operation, false).iterator().next();
+			return importer.loadNextBundle(operation, false);
 		} else {
 			// TODO create special exception for violations of BundledMessageResponses protocol.
 			throw new IllegalStateException(

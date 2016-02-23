@@ -24,7 +24,16 @@ public abstract class MessageResponseOperations<T> {
 		public String getStatus();
 		public String getMessage(T element);
 	}
-	public final Conflict<T> NO_CONFLICT = null;
+	public final Conflict<T> NO_CONFLICT = new Conflict<T>() {
+		@Override
+		public String getStatus() {
+			throw new UnsupportedOperationException();
+		}
+		@Override
+		public String getMessage(T element) {
+			throw new UnsupportedOperationException();
+		}
+	};
 	
 	/**
 	 * @return a map which maps all operation names which the client can send to operations.

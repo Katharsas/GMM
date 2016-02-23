@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
@@ -25,13 +26,13 @@ public class TaskSession {
 	private NewTaskResponses newTaskCheck;
 	private Task newTask;
 	
-	public MessageResponse firstTaskCheck(Task assetTask, TaskForm form) {
+	public List<MessageResponse> firstTaskCheck(Task assetTask, TaskForm form) {
 		this.newTask = assetTask;
 		newTaskCheck = new NewTaskResponses(assetTask, form);
 		return addOnSuccess(newTaskCheck.loadFirst());
 	}
 	
-	public MessageResponse getNextTaskCheck(String operation) {
+	public List<MessageResponse> getNextTaskCheck(String operation) {
 		if(newTaskCheck == null) {
 			throw new IllegalStateException("Call method FIRST_AssetTaskCheck first!");
 		} else {
@@ -39,10 +40,11 @@ public class TaskSession {
 		}
 	}
 	
-	private MessageResponse addOnSuccess(MessageResponse response) {
-		if(response.getStatus().equals(BundledMessageResponses.finished)) {
+	private List<MessageResponse> addOnSuccess(List<MessageResponse> responses) {
+		MessageResponse last = responses.get(responses.size()-1);
+		if(last.getStatus().equals(BundledMessageResponses.finished)) {
 			data.add(newTask);
 		}
-		return response;
+		return responses;
 	}
 }

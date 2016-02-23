@@ -42,8 +42,8 @@
 			<@m.formSelect path=(path+".label")>
 				<@m.formOption value="" label="" />
 				<#list taskLabels as singleLabel>
-					<@form.option
-						isSelected = (singleLabel.get() == taskForm.label.get())
+					<@m.formOption
+						isSelected = (singleLabel == taskForm.label)
 						value=singleLabel  label=singleLabel  />
 				</#list>
 			</@m.formSelect>

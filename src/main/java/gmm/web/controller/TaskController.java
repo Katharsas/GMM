@@ -258,7 +258,7 @@ public class TaskController {
 	
 	@RequestMapping(value="/createTask", method = RequestMethod.POST)
 	@ResponseBody
-	public MessageResponse createTask(
+	public List<MessageResponse> createTask(
 			@ModelAttribute("taskForm") TaskForm form) {
 		
 		Class<? extends Task> type = form.getType().toClass();
@@ -268,7 +268,7 @@ public class TaskController {
 	
 	@RequestMapping(value="/createTask/next", method = RequestMethod.POST)
 	@ResponseBody
-	public MessageResponse createTaskNext(
+	public List<MessageResponse> createTaskNext(
 			@RequestParam("operation") String operation) {
 		
 		return taskSession.getNextTaskCheck(operation);
