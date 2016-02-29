@@ -9,21 +9,26 @@
 		"gulp-watch": "file change trigger"
 	},
 	"devDependencies": {
-		"fs": "0.0.2",
-		"path": "^0.11.14",
-		"gulp": "^3.9.0",
-		"gulp-babel": "^5.2.1",
-		"gulp-sass": "^2.0.4",
-		"gulp-sourcemaps": "^1.5.2",
-		"browserify": "^11.2.0",
-		"babelify": "^6.3.0",
-		"stripify": "^3.0.0",
-		"vinyl-transform": "^1.0.0",
-		"vinyl-source-stream": "^1.1.0",
-		"through2": "^2.0.0",
+		"path": "^0.12.7",
+		"gulp": "^3.9.1",
 		"gulp-notify": "^2.2.0",
+		"gulp-sass": "^2.2.0",
+		"gulp-sourcemaps": "^1.6.0",
+		"browserify": "^13.0.0",
+		"babelify": "^7.2.0",
+		"vinyl-source-stream": "^1.1.0",
+		
 		"gulp-rename": "^1.2.2",
-		"event-stream": "^3.3.1",
+		"event-stream": "^3.3.2",
+		
+		"babel-plugin-transform-es2015-modules-commonjs" : "^6.5.2"
+	},
+	"unused": {
+		"gulp-babel": "^6.1.2",
+		"stripify": "^4.0.0",
+		"vinyl-transform": "^1.0.0",
+		"through2": "^2.0.1",
+		
 		"gulp-watch": "^4.3.5"
 	}
 }

@@ -1,7 +1,6 @@
 package gmm.web.controller;
 
 import java.nio.file.Path;
-import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -80,9 +79,9 @@ public class AdminController {
 		
 		model.addAttribute("taskForm", getTaskFacade());
 		
-		RequestData requestData = new RequestData(model, request, response);
+		final RequestData requestData = new RequestData(model, request, response);
 		request.setAttribute("taskForm", getTaskFacade());
-		String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
+		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
 		model.addAttribute("all_taskForm", taskFormHtml);
 		
 		return "admin";
@@ -168,21 +167,19 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks(
-			@RequestParam(value = "dir", required = false) Path dir) {
+			@RequestParam("dir") Path dir) {
 		
 		backups.triggerTaskBackup();
-		Iterator<? extends Task> i;
-		// Load tasks from file
-		if (!(dir == null)) {
-			final Path visible = config.TASKS;
-			final Path dirRelative = fileService.restrictAccess(dir, visible);
-			i = xmlService.deserialize(visible.resolve(dirRelative), Task.class).iterator();
-		}
-		// Load tasks from asset import
-		else {
-			i = session.getImportedTasks();
-		}
-		session.taskLoader = new BundledMessageResponses<>(i, new TaskLoaderOperations());
+		final Path visible = config.TASKS;
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		final Iterable<? extends Task> tasks =
+				xmlService.deserialize(visible.resolve(dirRelative), Task.class);
+		
+		// TODO: split into types with multimap and import assets seperatly
+		
+		session.taskLoader = new BundledMessageResponses<>(
+				tasks, new TaskLoaderOperations(), ()->{session.taskLoader = null;});
+		
 		return session.taskLoader.loadFirstBundle();
 	}
 	
@@ -252,9 +249,7 @@ public class AdminController {
 			@ModelAttribute("taskForm") TaskForm form) {
 		
 		backups.triggerTaskBackup();
-		session.assetImporter = new BundledMessageResponses<>(
-				session.getImportPaths().iterator(), session.getAssetImportOperations(form));
-		return session.assetImporter.loadFirstBundle();
+		return session.firstImportCheckBundle(form);
 	}
 	
 	/**
@@ -266,6 +261,6 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.assetImporter.loadNextBundle(operation, doForAll);
+		return session.nextImportCheckBundle(operation, doForAll);
 	}
 }

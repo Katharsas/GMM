@@ -21,7 +21,7 @@ import Dialogs from "./dialogs";
  * @param {String} responseBundleOption - Key to get option from ResponseBundleOptions,
  * 		either "tasks" or "assets"
  */
-export default function(url, responseBundleOption) {
+export default function ResponseBundleHandler(url, responseBundleOption) {
 	//Namespace
 	var ns = "#batchDialog";
 	var ResponseBundleOptions = {
@@ -33,14 +33,15 @@ export default function(url, responseBundleOption) {
 					$options.children(ns+"-overwriteTaskButton").show();
 					$options.children(ns+"-addBothTasksButton").show();
 				},
+				conflicts : [{
+					name: "conflict",
+					actions: ["skip", "overwrite", "both"]
+				}],
 				/**
-				 * @param {boolean} loadAssets - true if tasks are provided by asset importer,
-				 * false if tasks are provided by xml file
-				 * @param {string} file - xml task file path, if loadAssets is false
+				 * @param {string} file - path to xml task file
 				 */
 				start : function(options) {
-					var data = options.loadAssets ? {} : {dir: options.file};
-					return Ajax.post(url, data);
+					return Ajax.post(url, {dir: options.file});
 				}
 
 			},
@@ -60,6 +61,13 @@ export default function(url, responseBundleOption) {
 						break;
 					}
 				},
+				conflicts : [{
+					name: "taskConflict",
+					actions: ["skip", "overwriteTaskAquireData", "overwriteTaskDeleteData"]
+				},{
+					name: "folderConflict",
+					actions: ["skip", "aquireData", "deleteData"]
+				}],
 				/**
 				 * @param {jquery} $taskForm - task form that will be submitted
 				 */
@@ -81,15 +89,23 @@ export default function(url, responseBundleOption) {
 			$dialog.find(ns+"-conflictOptions");
 	var $finishedButton =
 			$dialog.find(ns+"-finishLoadingButton");
-	var $checkBox =
-			$dialog.find(ns+'-doForAllCheckbox input');
+	var $checkBoxContainer =
+			$dialog.find(ns+'-doForAllCheckbox');
+	var $checkBox = $checkBoxContainer.find("input");
+	var $conflictActionButtons = $conflictOptions.find(".button");
 	
 	var callback;
 	var that = this;
 	
-	$finishedButton.on("click", function() {
+	$finishedButton.off("click").on("click", function() {
 		that.finish();
 	});
+	
+	$conflictActionButtons.off("click").on("click", function() {
+		that.answer($(this).attr("data-action"));
+	});
+	
+	$checkBoxContainer.show();
 	
 	/**
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
@@ -130,6 +146,7 @@ export default function(url, responseBundleOption) {
 	 */
 	function reactToResults(results) {
 		var outOfSync = "Something went wrong! Out of sync with server. Please reload page.";
+		var multiConflicts = "Error: Multiple actions with same name defined. Please contact admin.";
 		//for all but the last element, the status should be success
 		for (var i = 0; i < results.length-1; i++) {
 			var dataToCheck = results[i];
@@ -155,15 +172,30 @@ export default function(url, responseBundleOption) {
 			//if conflict, we need to validate the conflict type
 			//and show conflict options accordingly.
 			$conflictMessage.html(data.message);
-			if (options.conflicts.indexOf(data.status) !== -1) {
-				options.showButtons(data.status, $conflictOptions);
+			var foundConflict = false;
+			options.conflicts.forEach(function(conflict){
+				if(conflict.name === data.status) {
+					if (foundConflict) {
+						$conflictMessage.html(multiConflicts);
+					}
+					foundConflict = true;
+					showActionButtons(conflict.actions);
+				}
+			});
+			if (!foundConflict) {
+				$conflictMessage.html(outOfSync);
 			}
-			else $conflictMessage.html(outOfSync);
 		}
 		$messageListContainer.scrollTop($messageList.height());
 	}
 	
 	function appendMessage(message) {
 		$messageList.append("<li>"+message+"</li>");
+	}
+	
+	function showActionButtons(actions) {
+		actions.forEach(function(action) {
+			$conflictActionButtons.filter("[data-action='"+action+"']").show();
+		});
 	}
 }

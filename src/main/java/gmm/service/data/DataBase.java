@@ -124,20 +124,26 @@ public class DataBase implements DataAccess {
 	}
 
 	@Override
-	public synchronized <T extends Linkable> boolean add(T data) {
-		final boolean result = getDataList(Util.classOf(data)).add(data);
+	public synchronized <T extends Linkable> void add(T data) {
+		final Collection<T> collection = getDataList(Util.classOf(data));
+		if (collection.contains(data)) {
+			throw new IllegalArgumentException("Element cannot be added because it already exists!");
+		}
+		collection.add(data);
 		if(data instanceof Task) {
 			final Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
 			callbacks.onAdd(task);
 		}
-		return result;
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> boolean addAll(Collection<T> data) {
+	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
 		final Collection<T> collection = getDataList(data.getGenericType());
-		final boolean result =  collection.addAll(data);
+		if(!Collections.disjoint(data, collection)) {
+			throw new IllegalArgumentException("Elements cannot be added because at least one of them already exists!");
+		}
+		collection.addAll(data);
 		if(Task.class.isAssignableFrom(data.getGenericType())) {
 			final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
 			for (final Task task : tasks) {
@@ -145,7 +151,20 @@ public class DataBase implements DataAccess {
 			}
 			callbacks.onAddAll(tasks);
 		}
-		return result;
+	}
+
+	@Override
+	public synchronized <T extends Linkable> void remove(T data) {
+		final Collection<T> collection = getDataList(Util.classOf(data));
+		if(!collection.contains(data)){
+			throw new IllegalArgumentException("Element cannot be removed because it does not exists!");
+		}
+		collection.remove(data);
+		final boolean removed = getDataList(data.getClass()).remove(data);
+		if (removed && data instanceof Task) {
+			final Task task = (Task) data;
+			callbacks.onRemove(task);
+		}
 	}
 	
 	@Override
@@ -160,27 +179,28 @@ public class DataBase implements DataAccess {
 			clazzToData.put(clazz, item);
 		}
 		for(final Class<? extends Linkable> clazz : clazzToData.keySet()) {
+			if(!getDataList(clazz).containsAll(clazzToData.get(clazz))) {
+				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exists!");
+			}
+		}
+		for(final Class<? extends Linkable> clazz : clazzToData.keySet()) {
 			getDataList(clazz).removeAll(clazzToData.get(clazz));
 		}
 		callbacks.onRemoveAll(tasks);
-	}
-
-	@Override
-	public synchronized <T extends Linkable> boolean remove(T data) {
-		final boolean removed = getDataList(data.getClass()).remove(data);
-		if (removed && data instanceof Task) {
-			final Task task = (Task) data;
-			callbacks.onRemove(task);
-		}
-		return removed;
 	}
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		if(Task.class.isAssignableFrom(clazz)) {
 			final Collection<? extends Task> tasks = Util.castBound(getList(clazz), Task.class);
+			clearAll(clazz);
 			callbacks.onRemoveAll(tasks);
+		} else {
+			clearAll(clazz);
 		}
+	}
+	
+	private <T extends Linkable> void clearAll(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
 			textureTasks.clear();
@@ -193,7 +213,6 @@ public class DataBase implements DataAccess {
 		else {
 			getDataList(clazz).clear();
 		}
-		//TODO call callbacks!!!
 	}
 	
 	private <T extends Linkable> Collection<T> getDataList(Class<T> clazz) {

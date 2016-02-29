@@ -56,7 +56,7 @@ function buildScript(files) {
 	var tasks = files.map(function(file) {
 		var config = {entries: [jsDir + file], debug: true};
 		return browserify(config)
-			.transform(babelify)
+			.transform(babelify, {plugins: ["transform-es2015-modules-commonjs"]})
 			.bundle()
 			.on("error", handleErrors)
 			.pipe(source(file))

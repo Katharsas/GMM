@@ -264,11 +264,6 @@ var UserManager = function() {
 function importAssets() {
 	var url = contextUrl + "/admin/importAssets";
 	var ajaxChannel = new ResponseBundleHandler(url, "assets");
-	ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
-		
-		var url = contextUrl + "/admin/load";
-		var ajaxChannel = new ResponseBundleHandler(url, 'tasks');
-		ajaxChannel.start({loadAssets:true});
-	});
+	ajaxChannel.start({$taskForm: $("#taskForm")});
 }
 global.importAssets = importAssets;

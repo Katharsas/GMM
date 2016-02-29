@@ -5,12 +5,17 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
+import gmm.domain.task.TaskType;
+import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetTask;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.NewTaskResponses;
+import gmm.service.ajax.operations.AssetImportOperations;
 import gmm.service.data.DataAccess;
+import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.forms.TaskForm;
 
 @Component
@@ -18,33 +23,47 @@ import gmm.web.forms.TaskForm;
 public class TaskSession {
 	
 	@Autowired private DataAccess data;
+	@Autowired private TaskServiceFinder taskCreator;
+	
+	public void cleanUp() {
+		importer = null;
+	}
 	
 	/*--------------------------------------------------
-	 * Add new task (conflict checking)
+	 * Add new task
 	 * ---------------------------------------------------*/
 	
-	private NewTaskResponses newTaskCheck;
-	private Task newTask;
+	private BundledMessageResponses<String> importer;
 	
-	public List<MessageResponse> firstTaskCheck(Task assetTask, TaskForm form) {
-		this.newTask = assetTask;
-		newTaskCheck = new NewTaskResponses(assetTask, form);
-		return addOnSuccess(newTaskCheck.loadFirst());
+	public List<MessageResponse> firstTaskCheck(TaskForm form) {
+		importer = null;
+		final TaskType type = form.getType();
+		if(type.equals(TaskType.GENERAL)) {
+			// if is general task, just create and add, there can be no conflicts
+			final Task task = taskCreator.create(type.toClass(), form);
+			data.add(task);
+			final String message = "Successfully added new task! ID: " + task.getId();
+			final MessageResponse finished =
+					new MessageResponse(BundledMessageResponses.finished, message);
+			
+			return new LinkedList<>(MessageResponse.class, finished);
+		} else {
+			// else check for assetpath conflicts
+			@SuppressWarnings("unchecked")
+			final Class<? extends AssetTask<?>> clazz =
+					(Class<? extends AssetTask<?>>) type.toClass();
+			 final AssetImportOperations<? extends Asset, ? extends AssetTask<?>> ops =
+					 new AssetImportOperations<>(form, clazz, data::add);
+			 
+			importer = new BundledMessageResponses<>(
+					new LinkedList<>(String.class, form.getAssetPath()),
+					ops, ()->{importer = null;});
+			
+			return importer.loadFirstBundle();
+		}
 	}
 	
 	public List<MessageResponse> getNextTaskCheck(String operation) {
-		if(newTaskCheck == null) {
-			throw new IllegalStateException("Call method FIRST_AssetTaskCheck first!");
-		} else {
-			return addOnSuccess(newTaskCheck.loadNext(operation));
-		}
-	}
-	
-	private List<MessageResponse> addOnSuccess(List<MessageResponse> responses) {
-		MessageResponse last = responses.get(responses.size()-1);
-		if(last.getStatus().equals(BundledMessageResponses.finished)) {
-			data.add(newTask);
-		}
-		return responses;
+		return importer.loadNextBundle(operation, false);
 	}
 }

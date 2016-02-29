@@ -94,22 +94,22 @@ public class TaskController {
 	
 	@ModelAttribute
 	public void populateModel(Model model) {
-		for(Entry<String, Supplier<?>> entry : modelSuppliers.entrySet()) {
+		for(final Entry<String, Supplier<?>> entry : modelSuppliers.entrySet()) {
 			model.addAttribute(entry.getKey(), entry.getValue().get());
 		}
 	}
 	
 	private void insertTemplate(String template, RequestData requestData) {
-		String fileName = template + ".ftl";
+		final String fileName = template + ".ftl";
 		// populate request
-		for(String form : templates.get(fileName)) {
+		for(final String form : templates.get(fileName)) {
 			requestData.request.setAttribute(form, modelSuppliers.get(form).get());
 		}
 		// render and insert into model
-		String result = ftlRenderer.renderTemplate(fileName, requestData);
+		final String result = ftlRenderer.renderTemplate(fileName, requestData);
 		requestData.model.addAttribute(template, result);
 		// cleanup
-		for(String form : templates.get(fileName)) {
+		for(final String form : templates.get(fileName)) {
 			requestData.request.removeAttribute(form);
 		}
 	}
@@ -207,8 +207,8 @@ public class TaskController {
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
 		
-		Task task = UniqueObject.getFromIdLink(workbench.getTasks(), taskIdLink);
-		Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
+		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), taskIdLink);
+		final Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
 		if(comment.getAuthor().getId() == workbench.getUser().getId()) {
 			comment.setText(edited);
 		}
@@ -229,7 +229,7 @@ public class TaskController {
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
 		
-		Comment comment = new Comment(workbench.getUser(), form.getText());
+		final Comment comment = new Comment(workbench.getUser(), form.getText());
 		UniqueObject.getFromIdLink(workbench.getTasks(), idLink).getComments().add(comment);
 	}
 	
@@ -244,7 +244,7 @@ public class TaskController {
 			@ModelAttribute("taskForm") TaskForm form,
 			@RequestParam("idLink") String idLink) {
 		
-		Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
+		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
 		if(task == null) {
 			throw new IllegalArgumentException("Cannot edit task: idLink does not exist!");
 		}
@@ -261,9 +261,7 @@ public class TaskController {
 	public List<MessageResponse> createTask(
 			@ModelAttribute("taskForm") TaskForm form) {
 		
-		Class<? extends Task> type = form.getType().toClass();
-		Task task = taskCreator.create(type, form);
-		return taskSession.firstTaskCheck(task, form);
+		return taskSession.firstTaskCheck(form);
 	}
 	
 	@RequestMapping(value="/createTask/next", method = RequestMethod.POST)
@@ -288,7 +286,9 @@ public class TaskController {
 			HttpServletRequest request,
 			HttpServletResponse response) {
 		
-		RequestData requestData = new RequestData(model, request, response);
+		taskSession.cleanUp();
+		
+		final RequestData requestData = new RequestData(model, request, response);
 	    insertTemplate("workbench_filters", requestData);
 	    
 	    //TODO implements ajax side of editing a task:
@@ -326,9 +326,9 @@ public class TaskController {
 			HttpServletResponse response) throws Exception {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
-		List<Task> tasks = new LinkedList<>(Task.class);
-		for(Task task : workbench.getTasks()) {
-			boolean contains = idLinks.remove(task.getIdLink());
+		final List<Task> tasks = new LinkedList<>(Task.class);
+		for(final Task task : workbench.getTasks()) {
+			final boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
 		return ftlRenderer.renderTasks(tasks,
@@ -341,8 +341,8 @@ public class TaskController {
 	@RequestMapping(value = "/workbench/currentTaskIds", method = RequestMethod.GET)
 	@ResponseBody
 	public List<String> getCurrentTaskIds() throws Exception {
-		List<String> taskIds = new LinkedList<>(String.class);
-		for(Task task : workbench.getTasks()) {
+		final List<String> taskIds = new LinkedList<>(String.class);
+		for(final Task task : workbench.getTasks()) {
 			taskIds.add(task.getIdLink());
 		}
 		return taskIds;

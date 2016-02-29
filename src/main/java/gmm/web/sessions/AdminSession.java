@@ -1,8 +1,7 @@
 package gmm.web.sessions;
 
 
-import java.util.Iterator;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,9 @@ import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.ajax.BundledMessageResponses;
+import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetImportOperations;
+import gmm.service.data.DataAccess;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -27,29 +28,43 @@ import gmm.web.forms.TaskForm;
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AdminSession {
-
-	public BundledMessageResponses<? extends Task> taskLoader;
-	public BundledMessageResponses<String> assetImporter;
 	
-	private AssetImportOperations<? extends Asset, ? extends AssetTask<?>> importOperations;
+	@Autowired private DataAccess data;
+	
+	public void cleanUp() {
+		taskLoader = null;
+		assetImporter = null;
+		clearImportPaths();
+	}
+
+	/*--------------------------------------------------
+	 * Load tasks from file
+	 * ---------------------------------------------------*/
+	
+	public BundledMessageResponses<? extends Task> taskLoader;
+	
+	/*--------------------------------------------------
+	 * Import asset tasks
+	 * ---------------------------------------------------*/
+	
+	private BundledMessageResponses<String> assetImporter;
 	private final List<String> importFilePaths = new LinkedList<>(String.class);
 	private boolean areTexturePaths = true;
+	
+	// Add asset paths
 	
 	public void addImportPaths(Collection<String> paths, boolean areTexturePaths) {
 		if(this.areTexturePaths != areTexturePaths) {
 			importFilePaths.clear();
 			this.areTexturePaths = areTexturePaths;
 		}
-		for (String path : paths) {
+		for (final String path : paths) {
 			if (!importFilePaths.contains(path)) {
 				importFilePaths.add(path);
 			}
 		}
 	}
 	public void clearImportPaths() {
-		importOperations = null;
-		taskLoader = null;
-		assetImporter = null;
 		importFilePaths.clear();
 	}
 	
@@ -57,18 +72,21 @@ public class AdminSession {
 		return importFilePaths.copy();
 	}
 	
-	public AssetImportOperations<? extends Asset, ? extends AssetTask<?>> getAssetImportOperations(TaskForm form) {
-		if(areTexturePaths) {
-			importOperations = new AssetImportOperations<>(form, TextureTask.class);
-		}
-		else {
-			importOperations = new AssetImportOperations<>(form, ModelTask.class);
-		}
-		return importOperations;
+	// Check asset paths for conflict
+	
+	public List<MessageResponse> firstImportCheckBundle(TaskForm form) {
+		final Class<? extends AssetTask<?>> type = areTexturePaths ?
+				TextureTask.class : ModelTask.class;
+		final AssetImportOperations<? extends Asset, ? extends AssetTask<?>> ops =
+				new AssetImportOperations<>(form, type, data::add);
+		
+		assetImporter = new BundledMessageResponses<>(
+				getImportPaths(), ops, ()->{assetImporter = null;});
+		
+		return assetImporter.loadFirstBundle();
 	}
 	
-	public Iterator<? extends Task> getImportedTasks() {
-		List<? extends Task> list = importOperations.getTasks();
-		return list.iterator();
+	public List<MessageResponse> nextImportCheckBundle(String operation, boolean doForAllFlag) {
+		return assetImporter.loadNextBundle(operation, doForAllFlag);
 	}
 }

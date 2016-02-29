@@ -43,7 +43,7 @@ public class BackUpServiceTest {
 		
 		//load tasks/users into DataAccess
 		final MockedResponseBundleHandler<Task> taskLoader = new MockedResponseBundleHandler<>();
-		taskLoader.processResponses(tasks.iterator(), new TaskLoaderOperations());
+		taskLoader.processResponses(tasks, new TaskLoaderOperations());
 		data.addAll(users);
 		
 		//trigger task/user save

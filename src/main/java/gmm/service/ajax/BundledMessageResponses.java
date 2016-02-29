@@ -28,6 +28,7 @@ import gmm.service.ajax.operations.MessageResponseOperations.Operation;
  */
 public class BundledMessageResponses<T> {
 	
+	private final Runnable onFinished;
 	private final MessageResponseOperations<T> ops;
 	private final Map<String, Operation<T>> operations;
 	
@@ -36,18 +37,24 @@ public class BundledMessageResponses<T> {
 	 * Conflicts are mapped to the operation the user chose when he checked the button.
 	 */
 	private final Map<Conflict<T>, String> doForAlls = new HashMap<>();
-	private Conflict<T> currentConflict;
-	
 	private final Iterator<? extends T> elements;
+	private Conflict<T> currentConflict;
 	private T currentlyLoaded;
 	
 	protected static final String nextElementOp = "default";
 	protected static final String success = "success";
 	public static final String finished = "finished";
 	
-	public BundledMessageResponses(Iterator<? extends T> elements, MessageResponseOperations<T> ops) {
-		this.elements = elements;
+	public BundledMessageResponses(
+			Iterable<? extends T> elements, MessageResponseOperations<T> ops) {
+		this(elements, ops, ()->{});
+	}
+	
+	public BundledMessageResponses(
+			Iterable<? extends T> elements, MessageResponseOperations<T> ops, Runnable onFinished) {
+		this.elements = elements.iterator();
 		this.ops = ops;
+		this.onFinished = onFinished;
 		operations = ops.getOperations();
 		currentConflict = ops.NO_CONFLICT;
 	}
@@ -86,6 +93,7 @@ public class BundledMessageResponses<T> {
 	private MessageResponse processNewElement() {
 		//If loading finished, user should stop sending requests!
 		if (!elements.hasNext()) {
+			onFinished.run();
 			return new MessageResponse(finished, null);
 		} else {
 			//We try to add the next element, which may cause a conflict.
