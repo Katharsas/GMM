@@ -11,16 +11,9 @@ import { contextUrl, allVars, getURLParameter } from "./shared/default";
 
 var tasksVars = {
 	"edit" : "",
-	"selectedTaskFileIsAsset" : "",
 };
 
 var tasksFuncs = {
-	"subDir" : function() {
-		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
-	},
-	"filePath" : function() {
-		return allVars["task-files-selected"].attr("rel");
-	},
 	"refresh" : function() {
 		var url = contextUrl + "/tasks";
 		if (tasksVars.edit !== "") {
@@ -45,7 +38,7 @@ global.tasksVars = tasksVars;
  * 
  * @author Jan Mothes
  */
-var Workbench = function() {
+var Workbench = function(onEdit) {
 	var that = this;
 	
 	var $workbench = $("#workbench");
@@ -68,7 +61,7 @@ var Workbench = function() {
 		return $task1[0] === $task2[0];
 	});
 	
-	var taskBinders = TaskEventBindings(tasksVars, tasksFuncs,
+	var taskBinders = TaskEventBindings(
 		function($task) {
 			taskSwitcher.switchTask($task, expandedTasks);
 		},
@@ -77,7 +70,8 @@ var Workbench = function() {
 		},
 		function($task) {
 			taskLoader.removeTask($task);
-		}
+		},
+		onEdit
 	);
 	taskLoader.setTaskEventBinders(taskListId, taskBinders);
 	
@@ -236,9 +230,9 @@ var Workbench = function() {
 $(document).ready(
 	function() {
 		tasksVars.edit = getURLParameter("edit");
-		new TaskForm();
+		var taskForm = TaskForm();
 		
-		var workbench = new Workbench();
+		var workbench = new Workbench(taskForm.prepareEdit);
 		global.workbench = workbench;
 		
 		//TODO sidebarmarker creation on task select
@@ -280,59 +274,84 @@ function CheckboxGrouper($checkboxGroup, onGroupChange) {
 
 /**
  * -------------------- TaskForm -----------------------------------------------------------------
+ * Singleton, since there can only be one taskForm perpage currently.
  * Initializes task form and registers behaviour for task form buttons.
  */
-function TaskForm() {
-	var $form = $("#taskForm");
-	var $submit = $("#submitTaskButton");
-	var $cancel = $("#cancelTaskButton");
-	var $new = $("#newTaskButton");
-	init();
-	
-	// TODO load from from server and insert
-	
-	// TODO responseBundleHandler conflict buttons are broken!
-	// TODO fix them by moving click handlers there from all_dialogs
-	
-	function init() {
-		if (tasksVars.edit !== "") {
-			show();
-			$form.find("#taskGroupType").hide();
-		}
-		var $type = $form.find("#taskForm-element-type select");
-		switchPath($type);
+var TaskForm = (function() {
+	var instance = null;
+	var TaskForm = function() {
 		
-		$type.change(function() {switchPath($type);});
-		$new.click(function() {show();});
-		$submit.click(function() {
-			var url = contextUrl + "/tasks/createTask";
-			var ajaxChannel = new ResponseBundleHandler(url, "assets");
-			ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
-				// TODO get fresh form from server
+		var $form = $("#taskForm");
+		var $submit = $("#submitTaskButton");
+		var $cancel = $("#cancelTaskButton");
+		var $new = $("#newTaskButton");
+		init();
+		getAndInsertForm();
+		
+		function init() {
+			if (tasksVars.edit !== "") {
+				show();
+				$form.find("#taskGroupType").hide();
+			}
+			var $type = $form.find("#taskForm-element-type select");
+			switchPath($type);
+			
+			$type.change(function() {switchPath($type);});
+			$new.click(function() {show();});
+			$submit.click(function() {
+				var url = contextUrl + "/tasks/createTask";
+				var ajaxChannel = new ResponseBundleHandler(url, "assets", true);
+				ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
+					Ajax.post(contextUrl + "/tasks/resetTaskForm")
+						.done(getAndInsertForm);
+				});
 			});
-		});
-		$cancel.click(function() {
-			//TODO reload only empty form
-			Dialogs.alert(function() {
-				tasksVars.edit = "";
-				tasksFuncs.refresh();
-			}, "TODO: Reset form only");
-		});
-	}
-	
-	function switchPath($taskElementType) {
-		var selected = $taskElementType.find(":selected").val();
-		var $path = $form.find("#taskForm-element-path");
-		switch(selected) {
-			case "GENERAL":	$path.hide();break;
-			default:		$path.show();break;
+			$cancel.click(function() {
+				Ajax.post(contextUrl + "/tasks/resetTaskForm")
+					.done(getAndInsertForm);
+			});
 		}
-	}
-	
-	function show() {
-		$form.show();
-		$submit.show();
-		$cancel.show();
-		$new.hide();
-	}
-}
+		
+		function switchPath($taskElementType) {
+			var selected = $taskElementType.find(":selected").val();
+			var $path = $form.find("#taskForm-element-path");
+			switch(selected) {
+				case "GENERAL":	$path.hide();break;
+				default:		$path.show();break;
+			}
+		}
+		
+		function show() {
+			$form.show();
+			$submit.show();
+			$cancel.show();
+			$new.hide();
+		}
+		
+		function prepareEdit(id) {
+			Ajax.post(contextUrl + "/tasks/editTask/announce", {idLink : id})
+				.done(getAndInsertForm);
+		}
+		
+		function getAndInsertForm() {
+			$form.empty();
+			Ajax.get(contextUrl + "/tasks/renderTaskForm")
+				.done(function(htmlString) {
+					$form.html(htmlString);
+					// TODO server should tell us if we are editing or creating new
+					// => we can show the user that hes editing / creating something new
+					// TODO edit detection via URL param broken => submit will always create new
+					// TODO deleting a task must reset form if editing that task
+				}
+			);
+		}
+		
+		return {
+			prepareEdit : prepareEdit
+		};
+	};
+	return function() {
+		if(instance === null) instance = TaskForm();
+		return instance;
+	};
+})();

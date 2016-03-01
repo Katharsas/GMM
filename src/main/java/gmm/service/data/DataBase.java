@@ -160,8 +160,7 @@ public class DataBase implements DataAccess {
 			throw new IllegalArgumentException("Element cannot be removed because it does not exists!");
 		}
 		collection.remove(data);
-		final boolean removed = getDataList(data.getClass()).remove(data);
-		if (removed && data instanceof Task) {
+		if (data instanceof Task) {
 			final Task task = (Task) data;
 			callbacks.onRemove(task);
 		}

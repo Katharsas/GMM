@@ -81,7 +81,7 @@ public class TaskController {
 	
 	@PostConstruct
 	private void init() {
-		modelSuppliers.put("taskForm", TaskForm::new);
+		modelSuppliers.put("taskForm", taskSession::getTaskForm);
 		modelSuppliers.put("commentForm", CommentForm::new);
 		modelSuppliers.put("workbench-searchForm", SearchForm::new);
 		modelSuppliers.put("workbench-sortForm", workbench::getSortForm);
@@ -99,6 +99,13 @@ public class TaskController {
 		}
 	}
 	
+	/**
+	 * Renders the given Freemaker template to a string and inserts that into into given model to
+	 * provide access to the rendered html in jsp files.
+	 * @param template - The filename of the template without extension.
+	 * @param requestData - string will be added to this model, so you can insert the template in
+	 * 		jsp code just like any other model attribute by the given template name
+	 */
 	private void insertTemplate(String template, RequestData requestData) {
 		final String fileName = template + ".ftl";
 		// populate request
@@ -238,17 +245,24 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value="/editTask", method = RequestMethod.POST)
+	@RequestMapping(value="/editTask/announce", method = RequestMethod.POST)
 	@ResponseBody
 	public void editTask(
-			@ModelAttribute("taskForm") TaskForm form,
 			@RequestParam("idLink") String idLink) {
 		
 		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
 		if(task == null) {
 			throw new IllegalArgumentException("Cannot edit task: idLink does not exist!");
 		}
-		taskCreator.edit(task, form);
+		taskSession.setupTaskFormNewEdit(task);
+	}
+	
+	@RequestMapping(value="/editTask/submit", method = RequestMethod.POST)
+	@ResponseBody
+	public void editTask(
+			@ModelAttribute("taskForm") TaskForm form) {
+		
+		taskSession.executeEdit(form);
 	}
 	
 	/**
@@ -273,6 +287,39 @@ public class TaskController {
 	}
 	
 	/**
+	 * TaskForm <br>
+	 * -----------------------------------------------------------------
+	 */
+	
+	@RequestMapping(value = "/resetTaskForm", method = RequestMethod.POST)
+	@ResponseBody
+	public void resetTaskForm() {
+		taskSession.setupTaskFormNewTask();
+	}
+	
+	@RequestMapping(value = "/saveTaskForm", method = RequestMethod.POST)
+	@ResponseBody
+	public void saveTaskForm(
+			@ModelAttribute("taskForm") TaskForm form) {
+		
+		taskSession.updateTaskForm(form);
+	}
+	
+	@RequestMapping(value = "/renderTaskForm", method = RequestMethod.GET,  produces="text/plain")
+	@ResponseBody
+	public String renderTaskForm(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) {
+		
+		final RequestData requestData = new RequestData(model, request, response);
+		model.addAttribute("users", data.getList(User.class));
+	    model.addAttribute("taskLabels", data.getList(Label.class));
+		insertTemplate("all_taskForm", requestData);
+		return (String) model.get("all_taskForm");
+	}
+	
+	/**
 	 * Default Handler <br>
 	 * -----------------------------------------------------------------
 	 * Used internally by other controller methods, which only modify the session object.
@@ -290,15 +337,6 @@ public class TaskController {
 		
 		final RequestData requestData = new RequestData(model, request, response);
 	    insertTemplate("workbench_filters", requestData);
-	    
-	    //TODO implements ajax side of editing a task:
-	  	//TODO  -> remove taskForm from tasks.jsp
-	  	//TODO  -> insert taskForm into page via Ajax + render url
-	    //TODO  -> move to ajax method:
-	    model.addAttribute("users", data.getList(User.class));
-	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    insertTemplate("all_taskForm", requestData);
-	    
 	    return "tasks";
 	}
 	
@@ -308,11 +346,17 @@ public class TaskController {
 		return workbench.getSelectedTaskTypes();
 	}
 	
+	
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	@ResponseBody
 	public void loadTasks(@RequestParam("type") TaskType type) {
 		workbench.loadTasks(type);
 	}
+	
+	/**
+	 * Workbench tasks <br>
+	 * -----------------------------------------------------------------
+	 */
 	
 	/**
 	 * Get task data for specified ids, must be visible in workbench currently.

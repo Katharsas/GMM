@@ -24,7 +24,6 @@ var fileName = window.location.pathname.substr(window.location.pathname.lastInde
 var paramString = window.location.search.substring(1);
 
 var allVars = {
-	"task-files-selected":$(),
 	"selectedAssetFile":$(),
 	"selectedBackupFile":$(),
 	"taskBackgroundColor":"#111",

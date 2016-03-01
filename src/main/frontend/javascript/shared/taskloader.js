@@ -2,7 +2,7 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";
-import { contextUrl, allFuncs } from "./default";
+import { contextUrl } from "./default";
 //missing: taskVars
 
 /**
@@ -140,7 +140,7 @@ export default (function() {
 	/**
 	 * - converts html strings to dom elements
 	 * - converts svg links to svg code
-	 * - hides bodies and inserts filetrees into asset task bodies
+	 * - hides bodies
 	 */
 	function preprocess(task) {
 		task.$header = $(task.header);
@@ -153,21 +153,6 @@ export default (function() {
 			delete task.body;
 			HtmlPreProcessor.apply(task.$body);
 			task.$body.hide();
-			var id = task.idLink;
-			task.$body.find('.task-files-assets-tree').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
-				function($file) {
-					global.tasksVars.selectedTaskFileIsAsset = true;
-					allFuncs.selectTreeElement($file, "task-files-selected");
-				}
-			);
-			task.$body.find('.task-files-other-tree').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
-				function($file) {
-					global.tasksVars.selectedTaskFileIsAsset = false;
-					allFuncs.selectTreeElement($file, "task-files-selected");
-				}
-			);
 		}, 0);
 	}
 	

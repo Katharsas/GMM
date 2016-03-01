@@ -1,5 +1,7 @@
 package gmm.web.sessions;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -30,7 +32,48 @@ public class TaskSession {
 	}
 	
 	/*--------------------------------------------------
-	 * Add new task
+	 * Prepare/save taskForm for task creation/edit
+	 * ---------------------------------------------------*/
+	
+	private Task currentlyEdited = null;
+	private TaskForm currentTaskForm = new TaskForm(); // never null
+	
+	public TaskForm getTaskForm() {
+		return currentTaskForm;
+	}
+	
+	// Call to prepare creation of a new wask from empty taskForm
+	public void setupTaskFormNewTask() {
+		currentlyEdited = null;
+		currentTaskForm = new TaskForm();
+	}
+	
+	// Call to prepare editing of a task (and fill taskForm with that tasks data)
+	public void setupTaskFormNewEdit(Task edited) {
+		currentlyEdited = edited;
+		currentTaskForm = taskCreator.prepareForm(currentlyEdited);
+	}
+	
+	public void updateTaskForm(TaskForm taskForm) {
+		Objects.requireNonNull(currentTaskForm);
+		currentTaskForm = taskForm;
+	}
+	
+	/*--------------------------------------------------
+	 * Edit task
+	 * ---------------------------------------------------*/
+	
+	public void executeEdit(TaskForm finalForm) {
+		Objects.requireNonNull(finalForm);
+		if (currentlyEdited.getType().equals(finalForm.getType())) {
+			taskCreator.edit(currentlyEdited, finalForm);
+		} else {
+			throw new IllegalArgumentException("The type of a task cannot be edited!");
+		}
+	}
+	
+	/*--------------------------------------------------
+	 * Create new task (& conflict checking)
 	 * ---------------------------------------------------*/
 	
 	private BundledMessageResponses<String> importer;

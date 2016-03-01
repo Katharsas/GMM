@@ -34,7 +34,6 @@
 						action="${contextUrl}/tasks/submitTask?edit=${edit}"
 						commandName="taskForm"
 						style="display: none;">
-					${all_taskForm}
 				</form:form>
 				<div class="clear"></div>
 				<div class="taskForm-buttons">

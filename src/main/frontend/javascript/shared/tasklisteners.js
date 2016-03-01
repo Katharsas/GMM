@@ -8,13 +8,10 @@ import { contextUrl, allVars, htmlDecode } from "./default";
  * ------------- TaskEventBindings ---------------------------------------------
  * Provides methods to bind all needed listeners to task header or body
  * 
- * Dependencies:
- * 	allVars
- * 	tasksFuncs.selectedTaskFileIsAsset
- * 	tasksFuncs.filePath
- * 	tasksVars.selectedTaskFileIsAsset
  */
-export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
+export default function(onswitch, onchange, onremove, onedit) {
+	
+	//comments
 	
 	var hideCommentForm = function($commentForm) {
 		var $elementComments = $commentForm.parent();
@@ -41,10 +38,31 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 			}, "Change your comment below:", undefined, comment, 700);
 	};
 	
+	//download
+	
 	var downloadFromPreview = function(taskId, version) {
 		var uri = contextUrl + "/tasks/download/" + taskId + "/preview/" + version + "/";
 		window.open(uri);
 	};
+	
+	// file trees
+	
+	var selectedFileIsAsset;
+	var $selectedFile = $();
+	
+	var subDir = function() {
+		return selectedTaskFileIsAsset ? "asset" : "other";
+	};
+	var filePath = function() {
+		return $selectedFile.attr("rel");
+	};
+	var selectFile = function($file, isAsset) {
+		selectedFileIsAsset = isAsset;
+		$selectedFile.removeClass("task-files-selected");
+		$selectedFile = $file;
+		$selectedFile.addClass("task-files-selected");
+	};
+	
 	
 	return {
 		
@@ -90,6 +108,11 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 					});
 			});
 			
+			//edit task
+			$operations.find(".task-operations-editTask").click(function() {
+				onedit(id);
+			});
+			
 			//delete task
 			$operations.find(".task-operations-deleteTask").click(function() {
 				var $confirm = Dialogs.confirm(function() {
@@ -108,6 +131,23 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 			
 			var $files = $body.find(".task-files");
 			if ($files.length > 0) {
+				
+				//file trees
+				var $fileTreeAssets = $files.find(".task-files-assets-tree");
+				$fileTreeOther.fileTree(
+					allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
+					function($file) {
+						selectFile($file, true);
+					}
+				);
+				var $fileTreeOther = $files.find(".task-files-other-tree");
+				$fileTreeOther.fileTree(
+					allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
+					function($file) {
+						selectFile($file, false);
+					}
+				);
+				
 				var $preview = $body.find(".task-preview");
 				var $fileOps = $files.find(".task-files-operations");
 				
@@ -138,27 +178,27 @@ export default function(tasksVars, tasksFuncs, onswitch, onchange, onremove) {
 				
 				//download
 				$fileOps.find(".task-files-button-download").click(function() {
-					var dir = tasksFuncs.filePath();
+					var dir = filePath();
 					if (dir === undefined || dir === "") return;
-					var uri = contextUrl + "/tasks/download/" + id + "/" + tasksFuncs.subDir() + "/" + dir + "/";
+					var uri = contextUrl + "/tasks/download/" + id + "/" + subDir() + "/" + dir + "/";
 					window.open(uri);
 				});
 				
 				//delete
 				$fileOps.find(".task-files-button-delete").click(function() {
-					var dir = tasksFuncs.filePath();
+					var dir = filePath();
 					if (dir === undefined || dir === "") {
 						return;
 					}
 					var $dialog = Dialogs.confirm(function() {
 						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
-								{dir: dir, asset: tasksVars.selectedTaskFileIsAsset.toString()})
+								{dir: dir, asset: selectedTaskFileIsAsset.toString()})
 							.done(function() {
 								Dialogs.hideDialog($dialog);
 								//TODO refresh filetree only
 								Dialogs.alert(function(){onchange($task);}, "TODO: Refresh filetree only");
 							});
-					}, "Delete " + tasksFuncs.filePath() + " ?");
+					}, "Delete " + filePath() + " ?");
 				});
 			}
 		}

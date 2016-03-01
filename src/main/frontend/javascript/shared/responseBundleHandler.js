@@ -16,12 +16,15 @@ import Dialogs from "./dialogs";
  * 
  * @author Jan Mothes
  * 
- * @param {String} url - URL to the function returning the first messageResponse.
+ * @param {string} url - URL to the function returning the first messageResponse.
  * 		All subsequent answers (not first) will be sent to the url + "/next".
- * @param {String} responseBundleOption - Key to get option from ResponseBundleOptions,
+ * @param {string} responseBundleOption - Key to get option from ResponseBundleOptions,
  * 		either "tasks" or "assets"
+ * @param {boolean} minimalUI - currently only hides doForAll checkbox (use this when
+ * 		only one / low number of elements get processed)
  */
-export default function ResponseBundleHandler(url, responseBundleOption) {
+export default function ResponseBundleHandler(url, responseBundleOption, minimalUI) {
+	minimalUI = minimalUI || false;
 	//Namespace
 	var ns = "#batchDialog";
 	var ResponseBundleOptions = {
@@ -105,8 +108,6 @@ export default function ResponseBundleHandler(url, responseBundleOption) {
 		that.answer($(this).attr("data-action"));
 	});
 	
-	$checkBoxContainer.show();
-	
 	/**
 	 * Get first responses (bundled) from server. Last response in bundle is either either "finish"
 	 * or conflict message.
@@ -163,6 +164,7 @@ export default function ResponseBundleHandler(url, responseBundleOption) {
 			that.answer("default");
 		}
 		else if(data.status == "finished") {
+			// server finished, show finished message & button
 			if(data.message) {
 				appendMessage(data.message);
 			}
@@ -194,6 +196,9 @@ export default function ResponseBundleHandler(url, responseBundleOption) {
 	}
 	
 	function showActionButtons(actions) {
+		if (!minimalUI) {
+			$checkBoxContainer.show();
+		}
 		actions.forEach(function(action) {
 			$conflictActionButtons.filter("[data-action='"+action+"']").show();
 		});
