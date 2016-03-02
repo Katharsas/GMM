@@ -16,7 +16,7 @@ import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 /**
  * 
@@ -26,7 +26,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
-	@Autowired private TaskSession session;
+	@Autowired private WorkbenchSession session;
 	
 	protected abstract AssetTask<A> createNew(Path assetPath, User user);
 	public abstract A createAsset(Path fileName, AssetGroupType isOriginal);
@@ -41,7 +41,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		//If original asset exists, create previews and asset
 		final Path original = config.ASSETS_ORIGINAL.resolve(relative);
 		if(original.toFile().isFile()) {
-			A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
+			final A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
 			final Path newAsset = config.ASSETS_NEW.resolve(relative);
 			final Path previewFolder = newAsset.resolve(config.SUB_PREVIEW);
 			createPreview(original, previewFolder, asset);
@@ -63,6 +63,9 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	public void edit(AssetTask<A> task, TaskForm form) {
 		super.edit(task, form);
 		final Path assetPath = getAssetPath(form);
+		if(!assetPath.equals(task.getAssetPath())) {
+			throw new IllegalArgumentException("Asset path cannot be edited!");
+		}
 		//Substitute wildcards
 		task.setName(form.getName().replace("%filename%", assetPath.getFileName().toString()));
 		task.setDetails(form.getDetails().replace("%filename%", assetPath.getFileName().toString()));
@@ -90,8 +93,8 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		}
 		
 		if(isAsset) {
-			A asset = createAsset(Paths.get(fileName), AssetGroupType.NEW);
-			Path previewFolder = assetFolder.resolve(config.SUB_PREVIEW);
+			final A asset = createAsset(Paths.get(fileName), AssetGroupType.NEW);
+			final Path previewFolder = assetFolder.resolve(config.SUB_PREVIEW);
 			createPreview(filePath, previewFolder, asset);
 			task.setNewestAsset(asset);
 		}

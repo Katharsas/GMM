@@ -54,27 +54,27 @@
 	<p id="batchDialog-conflictMessage"></p>
 	<div id="batchDialog-listWrapper"><ul id="batchDialog-list"></ul></div>
 	<div id="batchDialog-conflictOptions">
-		<div id="batchDialog-skipButton" class="left dialog-button button" onclick="ajaxChannel.answer('skip');">
+		<div class="left dialog-button button" data-action="skip">
 			<fmt:message key="admin.database.skip"/>
 		</div>
 		<!-- Load Tasks -->
-		<div id="batchDialog-overwriteTaskButton" class="left dialog-button button" onclick="ajaxChannel.answer('overwrite');">
+		<div class="left dialog-button button" data-action="overwrite">
 			<fmt:message key="admin.database.overwrite"/>
 		</div>
-		<div id="batchDialog-addBothTasksButton" class="left dialog-button button" onclick="ajaxChannel.answer('both');">
+		<div class="left dialog-button button" data-action="both">
 			<fmt:message key="admin.database.keepboth"/>
 		</div>
 		<!-- Import Assets -->
-		<div id="batchDialog-overwriteTaskAquireDataButton" class="left dialog-button button" onclick="ajaxChannel.answer('overwriteTaskAquireData');">
+		<div class="left dialog-button button" data-action="overwriteTaskAquireData">
 			<fmt:message key="all_template.acquire"/>
 		</div>
-		<div id="batchDialog-overwriteTaskDeleteDataButton" class="left dialog-button button" onclick="ajaxChannel.answer('overwriteTaskDeleteData');">
+		<div class="left dialog-button button" data-action="overwriteTaskDeleteData">
 			<fmt:message key="all_template.delete"/>
 		</div>
-		<div id="batchDialog-aquireDataButton" class="left dialog-button button" onclick="ajaxChannel.answer('aquireData');">
+		<div class="left dialog-button button" data-action="aquireData">
 			<fmt:message key="all_template.acquire"/>
 		</div>
-		<div id="batchDialog-deleteDataButton" class="left dialog-button button" onclick="ajaxChannel.answer('deleteData');">
+		<div class="left dialog-button button" data-action="deleteData">
 			<fmt:message key="all_template.delete"/>
 		</div>
 		<div id="batchDialog-doForAllCheckbox" class="right">
@@ -85,7 +85,7 @@
 		</div>
 		<div class="clear"></div>
 	</div>
-	<div id="batchDialog-finishLoadingButton" class="dialog-button button" onclick="ajaxChannel.finish()">
+	<div id="batchDialog-finishLoadingButton" class="dialog-button button">
 		<fmt:message key="admin.database.finish"/>
 	</div>
 </div>

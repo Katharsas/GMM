@@ -22,7 +22,7 @@
 			    </div>
 			</#if>
 		    <div class="task-status">
-		    	<@s.message "${task.getTaskStatus().getNameKey()}"/>
+		    	<@s.message task.getTaskStatus().getNameKey() />
 		    </div>
 			<div class="task-priority ${task.getPriority().toString()}">
 				&nbsp;

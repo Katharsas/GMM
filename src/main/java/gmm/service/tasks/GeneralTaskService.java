@@ -5,12 +5,12 @@ import org.springframework.stereotype.Service;
 
 import gmm.domain.task.GeneralTask;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 @Service
 public class GeneralTaskService extends TaskFormService<GeneralTask> {
 
-	@Autowired private TaskSession session;
+	@Autowired private WorkbenchSession session;
 	
 	@Override
 	public Class<GeneralTask> getTaskType() {

@@ -1,5 +1,5 @@
 package gmm.web.controller;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 public class ProfileController {
 
-	@Autowired TaskSession session;
+	@Autowired WorkbenchSession session;
 	@Autowired PasswordEncoder encoder;
 	
 	@RequestMapping(method = RequestMethod.GET)

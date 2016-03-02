@@ -1,5 +1,8 @@
 package gmm.util;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import gmm.collections.Collection;
 
 public class Util {
@@ -58,5 +61,24 @@ public class Util {
 	@SuppressWarnings("unchecked")
 	public static <T> Class<? extends T> getClass(T t) {
 		return (Class<? extends T>) t.getClass();
+	}
+	
+	public static class SingleIterator<T> implements Iterator<T> {
+		private boolean hasNext = true;
+		private T element;
+		public SingleIterator(T element) {
+			this.element = element;
+		}
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+		@Override
+		public T next() {
+			if(hasNext) {
+				hasNext = false;
+				return element;
+			} else throw new NoSuchElementException();
+		}
 	}
 }

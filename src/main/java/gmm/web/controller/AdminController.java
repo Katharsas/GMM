@@ -1,8 +1,9 @@
 package gmm.web.controller;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,6 +33,8 @@ import gmm.service.data.backup.ManualBackupService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
+import gmm.web.FtlRenderer;
+import gmm.web.FtlRenderer.RequestData;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
 
@@ -51,6 +54,7 @@ public class AdminController {
 	@Autowired private XMLService xmlService;
 	@Autowired private BackupService backups;
 	@Autowired private ManualBackupService manualBackups;
+	@Autowired private FtlRenderer ftlRenderer;
 	
 	@ModelAttribute("taskForm")
 	public TaskForm getTaskFacade() {
@@ -60,19 +64,31 @@ public class AdminController {
 	}
 	
 	/**
-	 * Default Handler <br/>
+	 * Default Handler <br>
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(method = RequestMethod.GET)
-    public String send(ModelMap model) {
+	public String send(
+			ModelMap model,
+			HttpServletRequest request,
+			HttpServletResponse response) {
+		
 		session.clearImportPaths();
 		model.addAttribute("users", data.getList(User.class));
-	    model.addAttribute("taskLabels", data.getList(Label.class));
-	    return "admin";
-    }
+		model.addAttribute("taskLabels", data.getList(Label.class));
+		
+		model.addAttribute("taskForm", getTaskFacade());
+		
+		final RequestData requestData = new RequestData(model, request, response);
+		request.setAttribute("taskForm", getTaskFacade());
+		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
+		model.addAttribute("all_taskForm", taskFormHtml);
+		
+		return "admin";
+	}
 	
 	/**
-	 * Banner code <br/>
+	 * Banner code <br>
 	 * -----------------------------------------------------------------
 	 */
 	
@@ -95,18 +111,17 @@ public class AdminController {
 	}
 	
 	/**
-	 * Delete all tasks <br/>
+	 * Delete all tasks <br>
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
-	public @ResponseBody void deleteTasks() throws Exception {
-		
+	public @ResponseBody void deleteTasks() {
 		backups.triggerTaskBackup();
 		data.removeAll(Task.class);
 	}
 	
 	/**
-	 * Task save file operations <br/>
+	 * Task save file operations <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -126,7 +141,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	@ResponseBody
-	public void saveTasks(@RequestParam("name") String pathString) throws IOException {
+	public void saveTasks(@RequestParam("name") String pathString) {
 		manualBackups.saveTasksToXml(data.getList(Task.class), pathString);
 	}
 	
@@ -142,7 +157,7 @@ public class AdminController {
 	}
 	
 	/**
-	 * Task Loading <br/>
+	 * Task Loading <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -152,21 +167,19 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/load", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks(
-			@RequestParam(value = "dir", required = false) Path dir) throws Exception {
+			@RequestParam("dir") Path dir) {
 		
 		backups.triggerTaskBackup();
-		Iterator<? extends Task> i;
-		// Load tasks from file
-		if (!(dir == null)) {
-			final Path visible = config.TASKS;
-			final Path dirRelative = fileService.restrictAccess(dir, visible);
-			i = xmlService.deserialize(visible.resolve(dirRelative), Task.class).iterator();
-		}
-		// Load tasks from asset import
-		else {
-			i = session.getImportedTasks();
-		}
-		session.taskLoader = new BundledMessageResponses<>(i, new TaskLoaderOperations());
+		final Path visible = config.TASKS;
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		final Iterable<? extends Task> tasks =
+				xmlService.deserialize(visible.resolve(dirRelative), Task.class);
+		
+		// TODO: split into types with multimap and import assets seperatly
+		
+		session.taskLoader = new BundledMessageResponses<>(
+				tasks, new TaskLoaderOperations(), ()->{session.taskLoader = null;});
+		
 		return session.taskLoader.loadFirstBundle();
 	}
 	
@@ -177,13 +190,13 @@ public class AdminController {
 	@RequestMapping(value = "/load/next", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadNextTask (
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws Exception {
+			@RequestParam("doForAll") boolean doForAll) {
 		
 		return session.taskLoader.loadNextBundle(operation, doForAll);
 	}
 	
 	/**
-	 * Asset Import <br/>
+	 * Asset Import <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -233,13 +246,10 @@ public class AdminController {
 	 */
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importAssets (
-			@RequestParam("textures") boolean textures,
-			@ModelAttribute("taskForm") TaskForm form) throws Exception {
+			@ModelAttribute("taskForm") TaskForm form) {
 		
 		backups.triggerTaskBackup();
-		session.assetImporter = new BundledMessageResponses<>(
-				session.getImportPaths().iterator(), session.getAssetImportOperations(form));
-		return session.assetImporter.loadFirstBundle();
+		return session.firstImportCheckBundle(form);
 	}
 	
 	/**
@@ -249,8 +259,8 @@ public class AdminController {
 	@RequestMapping(value = {"/importAssets/next"} , method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> importNextAsset(
 			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) throws Exception {
+			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.assetImporter.loadNextBundle(operation, doForAll);
+		return session.nextImportCheckBundle(operation, doForAll);
 	}
 }

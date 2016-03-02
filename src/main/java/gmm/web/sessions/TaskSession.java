@@ -1,282 +1,122 @@
 package gmm.web.sessions;
 
+import java.util.Objects;
 
-import java.util.Arrays;
-
-import javax.annotation.PostConstruct;
-
-import gmm.collections.Collection;
-import gmm.collections.LinkedList;
-import gmm.collections.List;
-import gmm.domain.User;
-import gmm.domain.task.Task;
-import gmm.domain.task.TaskType;
-import gmm.service.TaskFilterService;
-import gmm.service.UserService;
-import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.TaskUpdateCallback;
-import gmm.service.sort.TaskSortService;
-import gmm.util.Util;
-import gmm.web.forms.FilterForm;
-import gmm.web.forms.SearchForm;
-import gmm.web.forms.SortForm;
-import gmm.web.forms.LoadForm;
-import gmm.web.forms.LoadForm.LoadOperation;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import gmm.collections.LinkedList;
+import gmm.collections.List;
+import gmm.domain.task.Task;
+import gmm.domain.task.TaskType;
+import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetTask;
+import gmm.service.ajax.BundledMessageResponses;
+import gmm.service.ajax.MessageResponse;
+import gmm.service.ajax.operations.AssetImportOperations;
+import gmm.service.data.DataAccess;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.web.forms.TaskForm;
 
-/**
- * Session Bean. Gets instanciated once per session (can be used by multiple controllers).
- * Manages the session flow/logic on the Tasks page of the GMM.
- * It basically remembers the state the session is in and treats changes accordingly.
- * 
- * @author Jan Mothes
- */
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class TaskSession {
-
-	/**
-	 * TODO: Actually push this stuff to client
-	 * 
-	 * Updates session caches when task data changes.
-	 */
-	private class UpdateCallback implements TaskUpdateCallback {
-		@Override
-		public <T extends Task> void onAdd(T task) {
-			List<T> single = new LinkedList<T>(Util.classOf(task));
-			single.add(task);
-			onAddAll(single);
-		}
-		@Override
-		public <T extends Task> void onAddAll(Collection<T> tasks) {
-			TaskType type = TaskType.fromClass(tasks.getGenericType());
-			if(selected[type.ordinal()]) {
-				filteredTasks.addAll(filter(tasks));
-				filteredTasks = sort(filteredTasks);
-				TaskSession.this.tasks = filteredTasks.copy();
-				notifyClient();
-			}
-		}
-		@Override
-		public <T extends Task> void onRemove(T task) {
-			filteredTasks.remove(task);
-			tasks.remove(task);
-		}
-		@Override
-		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
-			filteredTasks.removeAll(tasks);
-			TaskSession.this.tasks.removeAll(tasks);
-			notifyClient();
-		}
-		private void notifyClient() {
-			
-		}
-	}
-	
-	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired private DataAccess data;
-	@Autowired private UserService users;
-	@Autowired private TaskFilterService filterService;
-	@Autowired private TaskSortService sortService;
+	@Autowired private TaskServiceFinder taskCreator;
 	
-	//user logged into this session
-	private User user;
-	
-	//currently active task lists (any of TaskType)
-	private boolean[] selected = new boolean[TaskType.values().length];
-	
-	//task filtered by general filter (base for search)
-	private List<Task> filteredTasks;
-	
-	//filteredTasks additionally filtered by search
-	private List<Task> tasks;
-	
-	//current settings for general filter
-	private FilterForm generalFilter;
-	
-	//current task sort settings
-	private SortForm sort;
-	
-	//current task load settings
-	private LoadForm load;
-	
-	//needed to prevent from getting garbage collected
-	//needs to die with this object
-	private final UpdateCallback strongReference;
-	
-	public TaskSession() {
-		 strongReference = new UpdateCallback();
+	public void cleanUp() {
+		importer = null;
 	}
 	
-	@PostConstruct
-	private void init() {
-		data.registerForUpdates(strongReference);
-		
-		filteredTasks = new LinkedList<>(Task.class);
-		tasks = new LinkedList<>(Task.class);
-		sort = new SortForm();
-		generalFilter = new FilterForm();
-		
-		user = users.getLoggedInUser();
-		load = user.getLoadForm();
-		if (load == null) updateLoad(new LoadForm());
-		if (load.isReloadOnStartup()) {
-			load(load.getDefaultStartupType(), LoadOperation.ONLY);
+	/*--------------------------------------------------
+	 * Prepare/save taskForm for task creation/edit
+	 * ---------------------------------------------------*/
+	
+	private Task currentlyEdited = null;
+	private TaskForm currentTaskForm = new TaskForm(); // never null
+	
+	public TaskForm getTaskForm() {
+		return currentTaskForm;
+	}
+	
+	public String getEditedIdLink() {
+		return currentlyEdited == null ? null :
+			currentlyEdited.getIdLink();
+	}
+	
+	// Call to prepare creation of a new wask from empty taskForm
+	public void setupTaskFormNewTask() {
+		currentlyEdited = null;
+		currentTaskForm = new TaskForm();
+	}
+	
+	// Call to prepare editing of a task (and fill taskForm with that tasks data)
+	public void setupTaskFormNewEdit(Task edited) {
+		currentlyEdited = edited;
+		currentTaskForm = taskCreator.prepareForm(currentlyEdited);
+	}
+	
+	public void updateTaskForm(TaskForm taskForm) {
+		Objects.requireNonNull(currentTaskForm);
+		currentTaskForm = taskForm;
+	}
+	
+	/*--------------------------------------------------
+	 * Edit task
+	 * ---------------------------------------------------*/
+	
+	public void executeEdit(TaskForm finalForm) {
+		Objects.requireNonNull(finalForm);
+		if (currentlyEdited.getType().equals(finalForm.getType())) {
+			// since tasks are immutable, just edit their data
+			taskCreator.edit(currentlyEdited, finalForm);
+			// data relies on tasks being treated as immutable
+			// => do what we would have done if tasks were actually immutable
+			data.remove(currentlyEdited);
+			data.add(currentlyEdited);
+		} else {
+			throw new IllegalArgumentException("The type of a task cannot be edited!");
 		}
 	}
 	
 	/*--------------------------------------------------
-	 * Private Helper methods
+	 * Create new task (& conflict checking)
 	 * ---------------------------------------------------*/
 	
-	private void load(TaskType type, LoadOperation operation) {
-		switch (operation) {
-		case ADD:
-			add(type);break;
-		case ONLY:
-			only(type);break;
-		case REMOVE:
-			remove(type);break;
+	private BundledMessageResponses<String> importer;
+	
+	public List<MessageResponse> firstTaskCheck(TaskForm form) {
+		importer = null;
+		final TaskType type = form.getType();
+		if(type.equals(TaskType.GENERAL)) {
+			// if is general task, just create and add, there can be no conflicts
+			final Task task = taskCreator.create(type.toClass(), form);
+			data.add(task);
+			final String message = "Successfully added new task! ID: " + task.getId();
+			final MessageResponse finished =
+					new MessageResponse(BundledMessageResponses.finished, message);
+			
+			return new LinkedList<>(MessageResponse.class, finished);
+		} else {
+			// else check for assetpath conflicts
+			@SuppressWarnings("unchecked")
+			final Class<? extends AssetTask<?>> clazz =
+					(Class<? extends AssetTask<?>>) type.toClass();
+			 final AssetImportOperations<? extends Asset, ? extends AssetTask<?>> ops =
+					 new AssetImportOperations<>(form, clazz, data::add);
+			 
+			importer = new BundledMessageResponses<>(
+					new LinkedList<>(String.class, form.getAssetPath()),
+					ops, ()->{importer = null;});
+			
+			return importer.loadFirstBundle();
 		}
 	}
 	
-	/**
-	 * Add a type of tasks to the currently selected types. Will reset modifiers
-	 * like search.
-	 */
-	private void add(TaskType type) {
-		int i = type.ordinal();
-		if(!selected[i]) {
-			filteredTasks.addAll(filter(getTaskList(type)));
-			filteredTasks = sort(filteredTasks);
-			selected[i] = true;
-		}
-		tasks = (List<Task>) filteredTasks.copy();
-	}
-	
-	/**
-	 * Select only one specific type of tasks. Will reset modifiers like search.
-	 */
-	private void only(TaskType type) {
-		filteredTasks.clear();
-		Arrays.fill(selected, false);
-		add(type);
-	}
-	
-	/**
-	 * Remove a type of tasks from the currently selected. Will NOT reset modifiers
-	 * like search.
-	 */
-	private void remove(TaskType type) {
-		int i = type.ordinal();
-		if(selected[i]) {
-			Collection<? extends Task> toRemove = getTaskList(type);
-			filteredTasks.removeAll(toRemove);
-			selected[i] = false;
-			tasks.removeAll(toRemove);
-		}
-	}
-	
-	/**
-	 * Reloads all tasks. Will reset modifiers like search.
-	 */
-	private void reload() {
-		filteredTasks.clear();
-		TaskType[] types = TaskType.values();
-		for(int i = 0; i < selected.length; i++) {
-			if(selected[i]) {
-				filteredTasks.addAll(filter(getTaskList(types[i])));
-			}
-		}
-		filteredTasks = sort(filteredTasks);
-		tasks = (List<Task>) filteredTasks.copy();
-	}
-	
-	private <T extends Task> Collection<T> filter(Collection<T> tasks) {
-		return filterService.filter(tasks, generalFilter, user);
-	}
-	
-	private <T extends Task> List<T> sort(List<T> tasks) {
-		return sortService.sort(tasks, sort);
-	}
-	
-	private Collection<? extends Task> getTaskList (TaskType type) {
-		return data.getList(type.toClass());
-	}
-	
-	/*--------------------------------------------------
-	 * Update session information
-	 * ---------------------------------------------------*/
-	
-	/**
-	 * Change/update loaded tasks
-	 */
-	public void loadTasks(TaskType type) {
-		load(type, load.getLoadOperation());
-	}
-	
-	/**
-	 * Update load settings
-	 */
-	public void updateLoad(LoadForm load) {
-		synchronized (load) {
-			this.load = load;
-			getUser().setLoadForm(load);
-		}
-	}
-	
-	/**
-	 * Apply/update filtering
-	 */
-	public void updateFilter(FilterForm filter) {
-		generalFilter = filter;
-		reload();
-	}
-	
-	/**
-	 * Apply/update search filtering
-	 */
-	public void updateSearch(SearchForm search) {
-		tasks = filterService.search(filteredTasks, search);
-	}
-	
-	/**
-	 * Apply/update task sorting settings
-	 */
-	public void updateSort(SortForm sort) {
-		this.sort = sort;
-		tasks = sort(tasks);
-	}
-	
-	/*--------------------------------------------------
-	 * Retrieve session information
-	 * ---------------------------------------------------*/
-	
-	public List<Task> getTasks() {
-		return (List<Task>) tasks.copy();
-	}
-	
-	public boolean[] getSelectedTaskTypes() {
-		return selected;
-	}
-	
-	public User getUser() {
-		return user;
-	}
-	
-	public SortForm getSortForm() {
-		return sort;
-	}
-	
-	public FilterForm getFilterForm() {
-		return generalFilter;
+	public List<MessageResponse> getNextTaskCheck(String operation) {
+		return importer.loadNextBundle(operation, false);
 	}
 }

@@ -32,7 +32,7 @@ import gmm.service.data.DataConfigService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 @Controller
 @RequestMapping("tasks")
@@ -40,7 +40,7 @@ import gmm.web.sessions.TaskSession;
 
 public class TaskAssetController {
 
-	@Autowired TaskSession session;
+	@Autowired WorkbenchSession session;
 	@Autowired DataAccess data;
 	@Autowired TaskServiceFinder taskService;
 	@Autowired TextureTaskService textureService;
@@ -100,14 +100,13 @@ public class TaskAssetController {
 	 * @param subDir - "assets" if the files are assets
 	 * @param dir - relative path to the requested directory/file
 	 */
-	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
+	@RequestMapping(value = {"/files/{isAssets}/{idLink}"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showAssetFiles(
 			@PathVariable String idLink,
-			@PathVariable String subDir,
+			@PathVariable Boolean isAssets,
 			@RequestParam("dir") Path dir) {
 
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final boolean isAssets = subDir.equals("assets");
 		
 		final Path visible = config.ASSETS_NEW
 				.resolve(task.getAssetPath())

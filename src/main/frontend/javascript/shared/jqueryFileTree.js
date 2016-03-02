@@ -38,16 +38,20 @@ import Ajax from "./ajax";
 // MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION:
 //
 // Options:  directoryClickable - whether or not to call the callbackOnSelect function on directory click
+//			 url - alternative name for "script" option 
 //
 $.extend($.fn, {
 	fileTree: function(options, callbackOnSelect, callbackOnCollapse) {
 		// Defaults
 		if( !options ) options = {};
-		if( options.root === undefined ) options.root = '/';
-		if( options.script === undefined ) options.script = 'jqueryFileTree.php';
+		if( options.root === undefined ) options.root = '';
+		if( options.script === undefined ) {
+			if ( options.url === undefined ) options.script = 'jqueryFileTree.php';
+			else options.script = options.url;
+		}
 		if( options.folderEvent === undefined ) options.folderEvent = 'click';
-		if( options.expandSpeed === undefined ) options.expandSpeed= 500;
-		if( options.collapseSpeed === undefined ) options.collapseSpeed= 500;
+		if( options.expandSpeed === undefined ) options.expandSpeed= 300;
+		if( options.collapseSpeed === undefined ) options.collapseSpeed= 300;
 		if( options.expandEasing === undefined ) options.expandEasing = null;
 		if( options.collapseEasing === undefined ) options.collapseEasing = null;
 		if( options.multiFolder === undefined ) options.multiFolder = true;
@@ -71,7 +75,7 @@ $.extend($.fn, {
 								easing: options.expandEasing });
 						}
 						bindTree(c);
-					})
+					});
 			}
 			
 			function bindTree(t) {

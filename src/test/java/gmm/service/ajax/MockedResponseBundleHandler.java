@@ -1,7 +1,5 @@
 package gmm.service.ajax;
 
-import java.util.Iterator;
-
 import gmm.collections.List;
 import gmm.service.ajax.operations.MessageResponseOperations;
 
@@ -21,7 +19,7 @@ public class MockedResponseBundleHandler<T> {
 	 * @param ops - see {@link BundledMessageResponses}
 	 * @throws IllegalStateException if a response contains a conflict
 	 */
-	public void processResponses(Iterator<T> elements, MessageResponseOperations<T> ops) throws Exception {
+	public void processResponses(Iterable<T> elements, MessageResponseOperations<T> ops) {
 		final BundledMessageResponses<T> responses = new BundledMessageResponses<>(elements, ops);
 		List<MessageResponse> list = responses.loadFirstBundle();
 		while(true) {

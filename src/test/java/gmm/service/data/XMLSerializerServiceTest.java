@@ -1,16 +1,8 @@
 package gmm.service.data;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.nio.file.Path;
-
-import gmm.collections.Collection;
-import gmm.domain.Notification;
-import gmm.domain.User;
-import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
-import gmm.service.data.XMLService;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+
+import gmm.collections.Collection;
+import gmm.domain.Notification;
+import gmm.domain.User;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -43,7 +39,7 @@ public class XMLSerializerServiceTest {
 	}
 	
 	@Test
-	public void testUserSerialisation() throws IOException {		
+	public void testUserSerialisation() {		
 		//add test user
 		User testUser = new User("testUser");
 		testUser.setPasswordHash("testPasswordHash");

@@ -2,7 +2,7 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";
-import { contextUrl, allFuncs } from "./default";
+import { contextUrl } from "./default";
 //missing: taskVars
 
 /**
@@ -38,33 +38,38 @@ export default (function() {
 	var taskListMap = {};
 	
 	/**
+	 * Asynchronous!
 	 * Get list of tasks to show, load any missing task data, reinsert headers.
+	 * @return - Promise
 	 */
-	function create(taskListId, done) {
+	var create = function(taskListId) {
 		var taskList = taskListMap[taskListId];
-		
-		getCurrent(taskListId, function() {
-		loadMissingTaskData(taskListId, function() {
-		reinsertHeaders(taskListId, taskList.current);
-		});});
-	}
+		return $.when().then(function(){
+				return updateVisibleAndCache(taskListId);
+		}).then(function() {
+				reinsertHeaders(taskListId, taskList.current);
+		});
+	};
 	
 	/**
+	 * Asynchronous!
 	 * Update tasks from server for all task lists.
+	 * @return - Promise
 	 */
-	function update(taskListId, idLinks, done) {
-		updateCacheTaskData(taskListId, idLinks, function() {
-		Object.keys(taskListMap).forEach(function(taskListId) {
-			reinsertHeaders(taskListId, idLinks);
+	var update = function(taskListId, idLinks) {
+		return $.when().then(function(){
+			return loadIntoCache(taskListId, idLinks);
+		}).then(function() {
+			Object.keys(taskListMap).forEach(function(taskListId) {
+				reinsertHeaders(taskListId, idLinks);
+			});
 		});
-		callIfExists(done);
-		});
-	}
+	};
 	
 	/**
 	 * Remove tasks for all task lists.
 	 */
-	function remove (idLinks) {
+	var remove = function(idLinks) {
 		//delete from cache
 		idLinks.forEach(function(id) {
 			delete idToTaskData[id];
@@ -80,13 +85,13 @@ export default (function() {
 				$tasks.remove("#"+id);
 			});
 		});
-	}
+	};
 	
 	/**
 	 * Clears task list, then reinsert headers from cache into task list.
 	 * ALL tasks are replaced to update order changes correctly.
 	 */
-	function reinsertHeaders(taskListId, idLinks) {
+	var reinsertHeaders = function(taskListId, idLinks) {
 		var taskList = taskListMap[taskListId];
 		taskList.$list.children(".task").remove();
 		taskList.current.forEach(function(id) {
@@ -94,55 +99,68 @@ export default (function() {
 			taskList.eventBinders.bindHeader($header);
 			taskList.$list.append($header);
 		});
-	}
+	};
 	
 	/**
+	 * Asynchronous!
 	 * Get list of currently visible tasks
+	 * @return - Promise
 	 */
-	function getCurrent(taskListId, done) {
-		var taskList = taskListMap[taskListId];
-		Ajax.get(contextUrl + taskList.url + "/currentTaskIds")
-			.done(function(tasks) {
-				taskList.current = tasks;
-				callIfExists(done);
+	var updateVisibleAndCache = (function() {return function(taskListId) {
+			var taskList = taskListMap[taskListId];
+			return Ajax.get(contextUrl + taskList.url + "/currentTaskIds")
+				.then(function(taskListState) {
+					taskList.current = taskListState.visibleIds;
+					var dirtyIds = taskListState.dirtyIds;
+					return $.when().then(function() {
+						return loadIntoCache(taskListId, dirtyIds);
+					}).then(function() {
+						return getNotYetChachedIds(taskListId);
+					}).then(function(missing) {
+						return loadIntoCache(taskListId, missing);
+					});
+				});
+		};
+		/**
+		 * Asynchronous!
+		 * Get the ids of the tasks whose cache data is missing.
+		 * @return - Promise
+		 */
+		function getNotYetChachedIds(taskListId) {
+			var missing = [];
+			var taskList = taskListMap[taskListId];
+			taskList.current.forEach(function(id) {
+				if (!idToTaskData.hasOwnProperty(id)) {
+					missing.push(id);
+				}
 			});
-	}
+			return missing;
+		}
+	})();
 	
 	/**
-	 * Load task data for any current tasks that is not cached yet.
-	 */
-	function loadMissingTaskData(taskListId, done) {
-		var missing = [];
-		var taskList = taskListMap[taskListId];
-		taskList.current.forEach(function(id) {
-			if (!idToTaskData.hasOwnProperty(id)) {
-				missing.push(id);
-			}
-		});
-		updateCacheTaskData(taskListId, missing, done);
-	}
-	
-	/**
+	 * Asynchronous!
 	 * Gets updated task data from server and inserts processed data into cache.
+	 * @return - Promise
 	 */
-	function updateCacheTaskData(taskListId, idLinks, done) {
+	var loadIntoCache = function(taskListId, idLinks) {
 		var taskList = taskListMap[taskListId];
-		Ajax.post(contextUrl + taskList.url + "/renderTaskData", { "idLinks[]" : idLinks })
-			.done(function (taskRenders) {
+		var url = contextUrl + taskList.url + "/renderTaskData";
+		return Ajax.post(url, { "idLinks[]" : idLinks })
+			.then(function (taskRenders) {
 				taskRenders.forEach(function(task) {
 					preprocess(task);
 					idToTaskData[task.idLink] = task;
 				});
-				callIfExists(done);
 			});
-	}
+	};
 	
 	/**
 	 * - converts html strings to dom elements
 	 * - converts svg links to svg code
-	 * - hides bodies and inserts filetrees into asset task bodies
+	 * - hides bodies
 	 */
-	function preprocess(task) {
+	var preprocess = function(task) {
 		task.$header = $(task.header);
 		delete task.header;
 		HtmlPreProcessor.apply(task.$header);
@@ -153,29 +171,14 @@ export default (function() {
 			delete task.body;
 			HtmlPreProcessor.apply(task.$body);
 			task.$body.hide();
-			var id = task.idLink;
-			task.$body.find('.task-files-assets-tree').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
-				function($file) {
-					global.tasksVars.selectedTaskFileIsAsset = true;
-					allFuncs.selectTreeElement($file, "task-files-selected");
-				}
-			);
-			task.$body.find('.task-files-other-tree').fileTree(
-				allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
-				function($file) {
-					global.tasksVars.selectedTaskFileIsAsset = false;
-					allFuncs.selectTreeElement($file, "task-files-selected");
-				}
-			);
 		}, 0);
-	}
+	};
 	
-	function callIfExists(callback) {
+	var callIfExists = function(callback) {
 		if (callback !== undefined) { 
 			callback();
 		}
-	}
+	};
 	
 	return {
 		
@@ -185,20 +188,18 @@ export default (function() {
 		},
 		
 		createTaskList : function(taskListId, callback) {
-			create(taskListId, callback);
+			create(taskListId).then(callback);
 		},
 		
 		setTaskEventBinders : function(taskListId, eventBinders) {
 			taskListMap[taskListId].eventBinders = eventBinders;
 		},
 		
-		updateTask : function(taskListId, $task) {
-			var idLink = $task.attr('id');
+		updateTask : function(taskListId, idLink) {
 			update(taskListId, [idLink]);
 		},
 		
-		removeTask : function($task) {
-			var idLink = $task.attr('id');
+		removeTask : function(idLink) {
 			remove([idLink]);
 		},
 		

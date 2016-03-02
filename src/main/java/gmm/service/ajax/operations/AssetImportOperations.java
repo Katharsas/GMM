@@ -4,9 +4,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
-import gmm.collections.LinkedList;
-import gmm.collections.List;
 import gmm.domain.task.asset.Asset;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService;
@@ -43,13 +42,13 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 	
 	private final Class<E> clazz;
 	private final TaskForm form;
-	private AssetTask<T> conflictingTask;
-	private List<E> tempData;
+	private final Consumer<E> onCreate;
+	private E conflictingTask;
 	
-	public AssetImportOperations(TaskForm form, Class<E> clazz) {
+	public AssetImportOperations(TaskForm form, Class<E> clazz, Consumer<E> onCreate) {
 		this.form = form;
 		this.clazz = clazz;
-		this.tempData = new LinkedList<>(clazz);
+		this.onCreate = onCreate;
 	}
 	
 	private final Conflict<String> taskConflict = new Conflict<String>() {
@@ -85,7 +84,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 					newTask.setNewestAsset(asset);
 				}
 				data.remove(conflictingTask);
-				tempData.add(newTask);
+				onCreate.accept(newTask);
 				return "Overwriting existing task and aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -93,20 +92,20 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 			@Override public String execute(String assetPath) {
 				data.remove(conflictingTask);
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				tempData.add(create(assetPath));
+				onCreate.accept(create(assetPath));
 				return "Overwriting existing task and deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("aquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) {
-				tempData.add(create(assetPath));
+				onCreate.accept(create(assetPath));
 				return "Aquiring existing data for path \""+assetPath+"\" !";
 			}
 		});
 		map.put("deleteData", new Operation<String>() {
 			@Override public String execute(String assetPath) {
 				fileService.delete(config.ASSETS_NEW.resolve(assetPath));
-				tempData.add(create(assetPath));
+				onCreate.accept(create(assetPath));
 				return "Deleting existing data for path \""+assetPath+"\" !";
 			}
 		});
@@ -118,16 +117,15 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		return creator.create(clazz, form);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public Conflict<String> onLoad(String assetPathString) {
 		Path assetPath = Paths.get(assetPathString);
 		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_NEW);
 
 		// full AssetTask conflict
-		for (final AssetTask<?> t : data.getList(AssetTask.class)) {
+		for (final E t : data.getList(clazz)) {
 			if (t.getAssetPath().equals(assetPath)) {
-				conflictingTask = (AssetTask<T>) t;
+				conflictingTask = t;
 				return taskConflict;
 			}
 		}
@@ -135,16 +133,12 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		if (config.ASSETS_NEW.resolve(assetPath).toFile().exists()) {
 			return onlyFolderConflict;
 		}
-		return MessageResponseOperations.cast(NO_CONFLICT);
+		return NO_CONFLICT;
 	}
 
 	@Override
 	public String onDefault(String assetPath) {
-		tempData.add(create(assetPath));
+		onCreate.accept(create(assetPath));
 		return "Successfully imported asset at \""+assetPath+"\"";
-	}
-	
-	public List<E> getTasks() {
-		return tempData;
 	}
 }

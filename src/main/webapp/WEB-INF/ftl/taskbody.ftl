@@ -257,11 +257,9 @@
 		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/delete.svg">
 		    		<@s.message "delete"/>
 		    	</div>
-		    	<div class="right task-button button">
-					<a href="${request.contextPath}/tasks?edit=${task.getIdLink()}">
-						<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
-						<@s.message "edit"/><span></span>
-					</a>
+		    	<div class="task-operations-editTask right task-button button">
+					<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
+					<@s.message "edit"/><span></span>
 		    	</div>
 		    </#if>
 	    	<div class="clear"></div>

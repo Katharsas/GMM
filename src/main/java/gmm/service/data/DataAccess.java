@@ -10,11 +10,11 @@ import gmm.domain.task.Task;
 public interface DataAccess {
 
 	public <T extends Linkable> Collection<T> getList(Class<T> clazz);
-	public <T extends Linkable> boolean add(T data);
-	public <T extends Linkable> boolean remove(T data);
-	public <T extends Linkable> boolean addAll(Collection<T> data);
-	public <T extends Linkable> void removeAll(Class<T> clazz);
+	public <T extends Linkable> void add(T data);
+	public <T extends Linkable> void addAll(Collection<T> data);
+	public <T extends Linkable> void remove(T data);
 	public <T extends Linkable> void removeAll(Collection<T> data);
+	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	

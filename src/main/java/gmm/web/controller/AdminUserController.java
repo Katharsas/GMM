@@ -1,6 +1,5 @@
 package gmm.web.controller;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,7 @@ import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
-import gmm.web.sessions.TaskSession;
+import gmm.web.sessions.WorkbenchSession;
 
 @Controller
 @RequestMapping("admin")
@@ -28,7 +27,7 @@ import gmm.web.sessions.TaskSession;
 
 public class AdminUserController {
 
-	@Autowired TaskSession session;
+	@Autowired WorkbenchSession session;
 	
 	@Autowired DataConfigService config;
 	@Autowired DataAccess data;
@@ -100,7 +99,7 @@ public class AdminUserController {
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
-	public @ResponseBody void saveUsers() throws IOException {
+	public @ResponseBody void saveUsers() {
 		
 		final Path path = config.USERS.resolve("users.xml");
 		xmlService.serialize(users.get(), path);
@@ -111,7 +110,7 @@ public class AdminUserController {
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
-	public @ResponseBody void loadUsers() throws IOException {	
+	public @ResponseBody void loadUsers() {	
 		
 		final Path path = config.USERS.resolve("users.xml");
 		final Collection<User> loadedUsers =  xmlService.deserialize(path, User.class);

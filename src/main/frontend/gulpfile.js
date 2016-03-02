@@ -31,6 +31,8 @@ var jsDir = "javascript/";
 var jsDest = "../webapp/resources/javascript/compiled/";
 //var jsFilter = "**/*.js";
 
+var jsSourceMaps = true;
+
 //SASS
 
 var sassDir = "sass/";
@@ -54,9 +56,15 @@ function handleErrors() {
 
 function buildScript(files) {
 	var tasks = files.map(function(file) {
-		var config = {entries: [jsDir + file], debug: true};
-		return browserify(config)
-			.transform(babelify)
+		var configBrowserify = {
+				entries: [jsDir + file],
+				debug: jsSourceMaps
+			};
+		var configBabelify = {
+				plugins: ["transform-es2015-modules-commonjs"],
+			};
+		return browserify(configBrowserify)
+			.transform(babelify, configBabelify)
 			.bundle()
 			.on("error", handleErrors)
 			.pipe(source(file))

@@ -45,8 +45,7 @@ public class TaskServiceFinder {
 	}
 	
 	public <T extends Task, E extends T> void edit(T task, TaskForm form) {
-		@SuppressWarnings("unchecked")
-		final Class<T> clazz = (Class<T>) task.getClass();
+		final Class<T> clazz = Util.classOf(task);
 		final TaskFormService<T> taskService = getService(clazz);
 		taskService.edit(task, form);
 	}

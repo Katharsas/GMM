@@ -32,7 +32,7 @@ public class BackUpServiceTest {
 	@Autowired private XMLService xmlService;
 	
 	@Test
-	public void backupTest() throws Exception {
+	public void backupTest() {
 		//deserialize tasks/users from test directory
 		config.updateWorkspace(Paths.get("WEB-INF/dataTesting"));
 		
@@ -43,7 +43,7 @@ public class BackUpServiceTest {
 		
 		//load tasks/users into DataAccess
 		final MockedResponseBundleHandler<Task> taskLoader = new MockedResponseBundleHandler<>();
-		taskLoader.processResponses(tasks.iterator(), new TaskLoaderOperations());
+		taskLoader.processResponses(tasks, new TaskLoaderOperations());
 		data.addAll(users);
 		
 		//trigger task/user save

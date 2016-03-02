@@ -1,6 +1,5 @@
 package gmm.service.data.backup;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -20,7 +19,7 @@ public class ManualBackupService {
 	@Autowired private XMLService xmlService;
 	@Autowired private FileService fileService;
 	
-	public void saveTasksToXml(Collection<? extends Task> tasks, String pathString) throws IOException {
+	public void saveTasksToXml(Collection<? extends Task> tasks, String pathString) {
 		final Path visible = config.TASKS;
 		final Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		xmlService.serialize(tasks, path);

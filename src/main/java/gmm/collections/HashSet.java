@@ -3,7 +3,7 @@ package gmm.collections;
 public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 	private static final long serialVersionUID = 895544914638784256L;
 
-	private Class<E> genericType;
+	private final Class<E> genericType;
 	
 	public HashSet(Class<E> clazz, java.util.Collection<? extends E> set) {
 		super(set);
