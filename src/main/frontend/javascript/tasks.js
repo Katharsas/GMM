@@ -33,12 +33,12 @@ global.tasksVars = tasksVars;
  */
 
 /**
- * TODO: call delete and update methods on taskloader after deleting/editing
- *  => route tasks listeners from tasks in workbench to workbench somehow
+ * -------------------- Workbench ----------------------------------------------------------------
+ * List of tasks with options for loading, sorting, filtering and searching tasks in(to) this list.
  * 
  * @author Jan Mothes
  */
-var Workbench = function(onEdit) {
+var Workbench = function(taskForm) {
 	var that = this;
 	
 	var $workbench = $("#workbench");
@@ -57,7 +57,7 @@ var Workbench = function(onEdit) {
 	});
 	
 	var taskSwitcher = TaskSwitcher(taskListId, taskLoader);
-	var expandedTasks =  new Queue(3, function($task1, $task2) {
+	var expandedTasks = new Queue(3, function($task1, $task2) {
 		return $task1[0] === $task2[0];
 	});
 	
@@ -65,20 +65,29 @@ var Workbench = function(onEdit) {
 		function($task) {
 			taskSwitcher.switchTask($task, expandedTasks);
 		},
-		function($task) {
-			taskLoader.updateTask(taskListId, $task);
+		function($task, id) {
+			taskLoader.updateTask(taskListId, id);
 		},
-		function($task) {
-			taskLoader.removeTask($task);
+		function($task, id) {
+			taskLoader.removeTask(id);
+			taskForm.resetFormIfUnderEdit(id);
 		},
-		onEdit
+		function(id) {
+			taskForm.prepareEdit(id);
+		}
 	);
 	taskLoader.setTaskEventBinders(taskListId, taskBinders);
+	taskForm.setOnEdit(function(id) {
+		taskLoader.updateTask(taskListId, id);
+	});
+	taskForm.setOnCreate(function() {
+		render();
+	});
 	
 	var render = function() {
 		taskLoader.createTaskList(taskListId, function() {
 			$count.text(taskLoader.getTaskIds.length);
-			this.expandedTasks.clear();
+			expandedTasks.clear();
 		});
 	};
 	var updateTasks = function() {
@@ -232,7 +241,7 @@ $(document).ready(
 		tasksVars.edit = getURLParameter("edit");
 		var taskForm = TaskForm();
 		
-		var workbench = new Workbench(taskForm.prepareEdit);
+		var workbench = new Workbench(taskForm);
 		global.workbench = workbench;
 		
 		//TODO sidebarmarker creation on task select
@@ -281,38 +290,75 @@ var TaskForm = (function() {
 	var instance = null;
 	var TaskForm = function() {
 		
-		var $form = $("#taskForm");
-		var $submit = $("#submitTaskButton");
-		var $cancel = $("#cancelTaskButton");
-		var $new = $("#newTaskButton");
-		init();
-		getAndInsertForm();
+		// null if there is no editing going on, idLink otherwise
+		var currentlyEditedId = null;
+		var onEdit = null;
+		var onCreate = null;
 		
-		function init() {
-			if (tasksVars.edit !== "") {
-				show();
-				$form.find("#taskGroupType").hide();
-			}
-			var $type = $form.find("#taskForm-element-type select");
-			switchPath($type);
-			
-			$type.change(function() {switchPath($type);});
-			$new.click(function() {show();});
-			$submit.click(function() {
+		var $form = $("#taskForm");
+		var $new = $("#newTaskButton");
+		var $cancel = $("#cancelTaskButton");
+		var $submit = $("#submitTaskButton");
+		
+		$new.on("click", function() {
+			show();
+		});
+		$submit.on("click", function() {
+			if(currentlyEditedId !== null) {
+				// submit edit
+				Ajax.post(contextUrl + "/tasks/editTask/submit", null, $form)
+					.done(function() {
+						var idBuffer = currentlyEditedId;
+						resetTaskForm();
+						onEdit(idBuffer);
+					});
+			} else {
+				// submit new task
 				var url = contextUrl + "/tasks/createTask";
 				var ajaxChannel = new ResponseBundleHandler(url, "assets", true);
 				ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
-					Ajax.post(contextUrl + "/tasks/resetTaskForm")
-						.done(getAndInsertForm);
+					resetTaskForm();
+					onCreate();
 				});
-			});
-			$cancel.click(function() {
-				Ajax.post(contextUrl + "/tasks/resetTaskForm")
-					.done(getAndInsertForm);
-			});
+			}
+			// TODO refresh added /edited task from server
+		});
+		$cancel.on("click", function() {
+			resetTaskForm();
+		});
+		resetTaskForm();
+		
+		// TODO show user if he is currently editing or creating new task
+		
+		function resetTaskForm() {
+			Ajax.post(contextUrl + "/tasks/resetTaskForm")
+				.done(function() {
+					hide();
+					getAndInsertForm();
+				});
 		}
 		
-		function switchPath($taskElementType) {
+		function getAndInsertForm() {
+			$form.empty();
+			Ajax.get(contextUrl + "/tasks/renderTaskForm")
+				.done(function(data) {
+					$form.html(data.taskFormHtml);
+					currentlyEditedId = data.editedTaskIdLink;
+					if(currentlyEditedId !== null) {
+						// if editing, hide type selection
+						var $type = $form.find("#taskForm-group-type");
+						$type.hide();
+					} else {
+						// else show path if asset
+						var $typeSelect = $form.find("#taskForm-element-type select");
+						$typeSelect.on("change", function() {switchAssetPath($typeSelect);});
+						switchAssetPath($typeSelect);
+					}
+				}
+			);
+		}
+		
+		function switchAssetPath($taskElementType) {
 			var selected = $taskElementType.find(":selected").val();
 			var $path = $form.find("#taskForm-element-path");
 			switch(selected) {
@@ -328,26 +374,45 @@ var TaskForm = (function() {
 			$new.hide();
 		}
 		
-		function prepareEdit(id) {
-			Ajax.post(contextUrl + "/tasks/editTask/announce", {idLink : id})
-				.done(getAndInsertForm);
+		function hide() {
+			$form.hide();
+			$submit.hide();
+			$cancel.hide();
+			$new.show();
 		}
 		
-		function getAndInsertForm() {
-			$form.empty();
-			Ajax.get(contextUrl + "/tasks/renderTaskForm")
-				.done(function(htmlString) {
-					$form.html(htmlString);
-					// TODO server should tell us if we are editing or creating new
-					// => we can show the user that hes editing / creating something new
-					// TODO edit detection via URL param broken => submit will always create new
-					// TODO deleting a task must reset form if editing that task
-				}
-			);
+		function prepareEdit(id) {
+			Ajax.post(contextUrl + "/tasks/editTask/announce", {idLink : id})
+				.done(function() {
+					getAndInsertForm();
+					show();
+				});
+		}
+		
+		function resetIfEdited(id) {
+			if(currentlyEditedId == id) {
+				resetTaskForm();
+			}
+		}
+		
+		/**
+		 * @callback onEditCallback - called with edited tasks id on edit submit
+		 */
+		function setOnEdit(onEditCallback) {
+			onEdit = onEditCallback;
+		}
+		/**
+		 * @callback onCreateCallback - called on create task
+		 */
+		function setOnCreate(onCreateCallback) {
+			onCreate = onCreateCallback;
 		}
 		
 		return {
-			prepareEdit : prepareEdit
+			prepareEdit : prepareEdit,
+			resetFormIfUnderEdit : resetIfEdited,
+			setOnEdit : setOnEdit,
+			setOnCreate : setOnCreate
 		};
 	};
 	return function() {

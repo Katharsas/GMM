@@ -39,7 +39,7 @@
 	<div class="taskForm-element">
 		<div class="taskForm-description">&#160;</div>
 		<div class="taskForm-input input">
-			<@m.formSelect path=(path+".label")>
+			<@m.formSelect path=(path+".labelSelect")>
 				<@m.formOption value="" label="" />
 				<#list taskLabels as singleLabel>
 					<@m.formOption
@@ -106,7 +106,9 @@
 			<@s.message "all_taskForm.text2" /><br/><br/>
 			<@s.message "all_taskForm.text3" />
 		</div>
-		<div class="taskForm-description"><fmt:message key="all_taskForm.file"/></div>
+		<div class="taskForm-description">
+			<@s.message "all_taskForm.file" />
+		</div>
 		<div class="taskForm-input input">
 			<@m.formInput path=(path+".assetPath") value="" />
 		</div>

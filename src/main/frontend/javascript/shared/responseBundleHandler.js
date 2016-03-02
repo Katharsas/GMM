@@ -29,13 +29,6 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 	var ns = "#batchDialog";
 	var ResponseBundleOptions = {
 			tasks : {
-				conflicts : ["conflict"],
-				showButtons : function(conflict, $options) {
-					$options.children(ns+"-skipButton").show();
-					$options.children(ns+"-doForAllCheckbox").show();
-					$options.children(ns+"-overwriteTaskButton").show();
-					$options.children(ns+"-addBothTasksButton").show();
-				},
 				conflicts : [{
 					name: "conflict",
 					actions: ["skip", "overwrite", "both"]
@@ -49,21 +42,6 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 
 			},
 			assets : {
-				conflicts : ["taskConflict", "folderConflict"],
-				showButtons : function(conflict, $options) {
-					$options.children(ns+"-skipButton").show();
-					$options.children(ns+"-doForAllCheckbox").show();
-					switch(conflict) {
-					case "taskConflict":
-						$options.children(ns+"-overwriteTaskAquireDataButton").show();
-						$options.children(ns+"-overwriteTaskDeleteDataButton").show();
-						break;
-					case "folderConflict":
-						$options.children(ns+"-aquireDataButton").show();
-						$options.children(ns+"-deleteDataButton").show();
-						break;
-					}
-				},
 				conflicts : [{
 					name: "taskConflict",
 					actions: ["skip", "overwriteTaskAquireData", "overwriteTaskDeleteData"]

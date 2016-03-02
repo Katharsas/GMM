@@ -42,6 +42,11 @@ public class TaskSession {
 		return currentTaskForm;
 	}
 	
+	public String getEditedIdLink() {
+		return currentlyEdited == null ? null :
+			currentlyEdited.getIdLink();
+	}
+	
 	// Call to prepare creation of a new wask from empty taskForm
 	public void setupTaskFormNewTask() {
 		currentlyEdited = null;
@@ -66,7 +71,12 @@ public class TaskSession {
 	public void executeEdit(TaskForm finalForm) {
 		Objects.requireNonNull(finalForm);
 		if (currentlyEdited.getType().equals(finalForm.getType())) {
+			// since tasks are immutable, just edit their data
 			taskCreator.edit(currentlyEdited, finalForm);
+			// data relies on tasks being treated as immutable
+			// => do what we would have done if tasks were actually immutable
+			data.remove(currentlyEdited);
+			data.add(currentlyEdited);
 		} else {
 			throw new IllegalArgumentException("The type of a task cannot be edited!");
 		}

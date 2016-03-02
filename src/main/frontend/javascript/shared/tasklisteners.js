@@ -26,14 +26,14 @@ export default function(onswitch, onchange, onremove, onedit) {
 		$commentForm.show();
 	};
 	
-	var changeComment = function(comment, taskId, commentId, $task) {
+	var changeComment = function(comment, taskId, commentId, $task, id) {
 		var $confirm = Dialogs.confirm(
 			function(input, textarea) {
 				var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
 				Ajax.post(url, {"editedComment" : textarea}) 
 					.done(function() {
 						Dialogs.hideDialog($confirm);
-						onchange($task);
+						onchange($task, id);
 					});
 			}, "Change your comment below:", undefined, comment, 700);
 	};
@@ -92,7 +92,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 			$comments.on("click", ".task-comment-editButton", function() {
 				var $comment = $(this).parent(".task-comment");
 				var $text = $comment.children(".task-comment-text");
-				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task);
+				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task, id);
 			});
 			//show/hide new comment form
 			$operations.find(".task-operations-switchComment").click(function() {
@@ -104,7 +104,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 				var url = contextUrl + "/tasks/submitComment/" + id;
 				Ajax.post(url, {}, $form)
 					.done(function() {
-						onchange($task);
+						onchange($task, id);
 					});
 			});
 			
@@ -119,7 +119,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 						.done(function() {
 							Dialogs.hideDialog($confirm);
-							onremove($task);
+							onremove($task, id);
 						});
 				}, "Are you sure you want to delete this task?");
 			});
@@ -133,16 +133,20 @@ export default function(onswitch, onchange, onremove, onedit) {
 			if ($files.length > 0) {
 				
 				//file trees
+				var fileTreeOptions = function(isAsset) {
+					return {
+						url: contextUrl + "/tasks/files/" + isAsset.toString() + "/" + id,
+						directoryClickable: false
+					};
+				};
 				var $fileTreeAssets = $files.find(".task-files-assets-tree");
-				$fileTreeOther.fileTree(
-					allFuncs.treePluginOptions(contextUrl + "/tasks/files/assets/" + id, false),
+				$fileTreeAssets.fileTree(fileTreeOptions(true),
 					function($file) {
 						selectFile($file, true);
 					}
 				);
 				var $fileTreeOther = $files.find(".task-files-other-tree");
-				$fileTreeOther.fileTree(
-					allFuncs.treePluginOptions(contextUrl + "/tasks/files/other/" + id, false),
+				$fileTreeOther.fileTree(fileTreeOptions(false),
 					function($file) {
 						selectFile($file, false);
 					}
@@ -168,7 +172,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 						.done(function(responseText) {
 							//TODO refresh filetree only
-							Dialogs.alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+							Dialogs.alert(function(){onchange($task, id);}, "TODO: Refresh filetree only");
 						});
 				});
 				//bind triggering of filechooser to button
@@ -196,7 +200,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 							.done(function() {
 								Dialogs.hideDialog($dialog);
 								//TODO refresh filetree only
-								Dialogs.alert(function(){onchange($task);}, "TODO: Refresh filetree only");
+								Dialogs.alert(function(){onchange($task, id);}, "TODO: Refresh filetree only");
 							});
 					}, "Delete " + filePath() + " ?");
 				});

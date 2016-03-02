@@ -36,6 +36,7 @@ abstract class TaskFormService<T extends Task> {
 		form.setPriority(task.getPriority());
 		form.setStatus(task.getTaskStatus());
 		form.setAssigned(task.getAssigned());
+		form.setType(task.getType());
 		return form;
 	}
 }

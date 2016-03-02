@@ -33,7 +33,6 @@ import gmm.domain.task.TaskType;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
-import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.RequestData;
 import gmm.web.FtlRenderer.TaskRenderResult;
@@ -60,7 +59,6 @@ import gmm.web.sessions.WorkbenchSession;
 @Controller
 public class TaskController {
 	
-	@Autowired private TaskServiceFinder taskCreator;
 	@Autowired private TaskSession taskSession;
 	@Autowired private WorkbenchSession workbench;
 	@Autowired private DataAccess data;
@@ -139,8 +137,17 @@ public class TaskController {
 	}
 	
 	/**
-	 * Load Settings <br>
+	 * Load  <br>
 	 * -----------------------------------------------------------------
+	 * @param type - type whose corresponding button was clicked by user
+	 */
+	@RequestMapping(value = "/load", method = RequestMethod.POST)
+	@ResponseBody
+	public void loadTasks(@RequestParam("type") TaskType type) {
+		workbench.loadTasks(type);
+	}
+	
+	/**
 	 * Changes settings for task loading and default workbench loading on login
 	 * @param loadForm - object containing all task loading settings
 	 */
@@ -148,6 +155,17 @@ public class TaskController {
 	@ResponseBody
 	public void handleLoad(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
 		workbench.updateLoad(loadForm);
+	}
+	
+	/**
+	 * Returns what types should be visible based on what method / buttons the user clicked.
+	 * @return True for the selected/active task types, false for the others. Array element
+	 * 		positions correspond to {@link TaskType#values()}.
+	 */
+	@RequestMapping(value = "/selected", method = RequestMethod.GET)
+	@ResponseBody
+	public boolean[] getSelected() {
+		return workbench.getSelectedTaskTypes();
 	}
 	
 	/**
@@ -222,7 +240,6 @@ public class TaskController {
 		return "redirect:/tasks";
 	}
 	
-	
 	/**
 	 * Create Comment <br>
 	 * -----------------------------------------------------------------
@@ -274,7 +291,6 @@ public class TaskController {
 	@ResponseBody
 	public List<MessageResponse> createTask(
 			@ModelAttribute("taskForm") TaskForm form) {
-		
 		return taskSession.firstTaskCheck(form);
 	}
 	
@@ -305,9 +321,9 @@ public class TaskController {
 		taskSession.updateTaskForm(form);
 	}
 	
-	@RequestMapping(value = "/renderTaskForm", method = RequestMethod.GET,  produces="text/plain")
+	@RequestMapping(value = "/renderTaskForm", method = RequestMethod.GET)
 	@ResponseBody
-	public String renderTaskForm(
+	public TaskFormResult renderTaskForm(
 			ModelMap model,
 			HttpServletRequest request,
 			HttpServletResponse response) {
@@ -316,7 +332,17 @@ public class TaskController {
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 		insertTemplate("all_taskForm", requestData);
-		return (String) model.get("all_taskForm");
+		final String taskFormHtml = (String) model.get("all_taskForm");
+		return new TaskFormResult(taskFormHtml, taskSession.getEditedIdLink());
+	}
+	
+	public static class TaskFormResult {
+		public final String editedTaskIdLink;
+		public final String taskFormHtml;
+		public TaskFormResult(String taskFormHtml, String editedTaskIdLink) {
+			this.editedTaskIdLink = editedTaskIdLink;
+			this.taskFormHtml = taskFormHtml;
+		}
 	}
 	
 	/**
@@ -338,19 +364,6 @@ public class TaskController {
 		final RequestData requestData = new RequestData(model, request, response);
 	    insertTemplate("workbench_filters", requestData);
 	    return "tasks";
-	}
-	
-	@RequestMapping(value = "/selected", method = RequestMethod.GET)
-	@ResponseBody
-	public boolean[] getSelected() {
-		return workbench.getSelectedTaskTypes();
-	}
-	
-	
-	@RequestMapping(value = "/load", method = RequestMethod.POST)
-	@ResponseBody
-	public void loadTasks(@RequestParam("type") TaskType type) {
-		workbench.loadTasks(type);
 	}
 	
 	/**
@@ -381,14 +394,31 @@ public class TaskController {
 	
 	/**
 	 * Get list of the ids of the tasks currently visible in workbench.
+	 * TODO return 2 lists: visible tasks, dirty tasks. Dirty tasks are visible tasks that are also makred dirty in workbench. Clear marks in workbench.
 	 */
 	@RequestMapping(value = "/workbench/currentTaskIds", method = RequestMethod.GET)
 	@ResponseBody
-	public List<String> getCurrentTaskIds() throws Exception {
-		final List<String> taskIds = new LinkedList<>(String.class);
+	public TaskListState getTaskListState() throws Exception {
+		final List<String> visibleIds = new LinkedList<>(String.class);
 		for(final Task task : workbench.getTasks()) {
-			taskIds.add(task.getIdLink());
+			visibleIds.add(task.getIdLink());
 		}
-		return taskIds;
+		final List<String> dirtyIds = new LinkedList<>(String.class);
+		for(final String visibleId : visibleIds) {
+			for(final Task dirty : workbench.getDirtyTasks()) {
+				final String dirtyId = dirty.getIdLink();
+				if(visibleId.equals(dirtyId)) dirtyIds.add(dirtyId);
+			}
+		}
+		return new TaskListState(visibleIds, dirtyIds);
+	}
+	
+	public static class TaskListState {
+		public final List<String> visibleIds;
+		public final List<String> dirtyIds;
+		public TaskListState(List<String> visibleIds, List<String> dirtyIds) {
+			this.visibleIds = visibleIds;
+			this.dirtyIds = dirtyIds;
+		}
 	}
 }

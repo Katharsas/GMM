@@ -100,14 +100,13 @@ public class TaskAssetController {
 	 * @param subDir - "assets" if the files are assets
 	 * @param dir - relative path to the requested directory/file
 	 */
-	@RequestMapping(value = {"/files/{subDir}/{idLink}"} , method = RequestMethod.POST)
+	@RequestMapping(value = {"/files/{isAssets}/{idLink}"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showAssetFiles(
 			@PathVariable String idLink,
-			@PathVariable String subDir,
+			@PathVariable Boolean isAssets,
 			@RequestParam("dir") Path dir) {
 
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final boolean isAssets = subDir.equals("assets");
 		
 		final Path visible = config.ASSETS_NEW
 				.resolve(task.getAssetPath())

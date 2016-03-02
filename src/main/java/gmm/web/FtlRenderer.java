@@ -40,9 +40,9 @@ public class FtlRenderer {
 	}
 	
 	public static class TaskRenderResult {
-		public String idLink;
-		public String header;
-		public String body;
+		public final String idLink;
+		public final String header;
+		public final String body;
 		public TaskRenderResult(Task task, String header, String body) {
 			this.idLink = task.getIdLink();
 			this.header = header;
@@ -76,8 +76,8 @@ public class FtlRenderer {
 	public String renderTemplate(String fileName, RequestData requestData) {
 		
 		populateModel(requestData);
-		StringWriter out = new StringWriter();
-		StringBuffer buffer = out.getBuffer();
+		final StringWriter out = new StringWriter();
+		final StringBuffer buffer = out.getBuffer();
 		renderTemplate(fileName, requestData.model, out);
 		return buffer.toString();
 	}
@@ -101,10 +101,10 @@ public class FtlRenderer {
 	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, RequestData requestData) {
 		
 		populateModel(requestData);
-		List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
+		final List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
 		
-		for(Task task : tasks) {
-			TaskRenderResult result = renderSingleTask(task, requestData.model);
+		for(final Task task : tasks) {
+			final TaskRenderResult result = renderSingleTask(task, requestData.model);
 			renderedTasks.add(result);
 		}
 		return renderedTasks;
@@ -113,12 +113,12 @@ public class FtlRenderer {
 	private TaskRenderResult renderSingleTask(Task task, ModelMap model) {
 		model.put("task", task);
 		
-		StringWriter outH = new StringWriter();
-		StringBuffer bufferH = outH.getBuffer();
+		final StringWriter outH = new StringWriter();
+		final StringBuffer bufferH = outH.getBuffer();
 		renderTemplate("taskheader.ftl", model, outH);
 		
-		StringWriter outB = new StringWriter();
-		StringBuffer bufferB = outB.getBuffer();
+		final StringWriter outB = new StringWriter();
+		final StringBuffer bufferB = outB.getBuffer();
 		renderTemplate("taskbody.ftl", model, outB);
 		
 		return new TaskRenderResult(task, bufferH.toString(), bufferB.toString());
@@ -126,13 +126,13 @@ public class FtlRenderer {
 	
 	private void populateModel(RequestData requestData) {
 		// model
-		ModelMap model = requestData.model;
-		boolean isUserLoggedIn = users.isUserLoggedIn();
+		final ModelMap model = requestData.model;
+		final boolean isUserLoggedIn = users.isUserLoggedIn();
 		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
 	    if (isUserLoggedIn) {
 	    	model.addAttribute("principal", users.getLoggedInUser());
 	    }
-	    RequestContext context = new RequestContext(
+	    final RequestContext context = new RequestContext(
 				requestData.request,
 				requestData.response,
 				Spring.getServletContext(), null);
@@ -145,9 +145,9 @@ public class FtlRenderer {
 	private void renderTemplate(String fileName, ModelMap model, StringWriter target) {
 		try {
 			config.getTemplate(fileName).process(model, target);
-		} catch (TemplateException e) {
+		} catch (final TemplateException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			throw new UncheckedIOException(
 					"Couldn't retrieve Freemarker template file '" + fileName + "'!", e);
 		}

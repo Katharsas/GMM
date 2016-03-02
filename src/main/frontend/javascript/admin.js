@@ -13,7 +13,7 @@ var Database = function() {
 	 */
 	var refreshDatabaseFileTree = function() {
 		$database.find("#database-fileTreeContainer").fileTree(
-			allFuncs.treePluginOptions(contextUrl + "/admin/backups", false),
+			{url: contextUrl + "/admin/backups"},
 			function($file) {
 				allFuncs.selectTreeElement($file, "selectedBackupFile");
 			},
@@ -86,7 +86,7 @@ var AssetImport = function() {
 	$assets.find("#taskForm").find("#taskForm-group-type").hide();
 	
 	$assets.find('#assets-fileTreeContainer').fileTree(
-		allFuncs.treePluginOptions(contextUrl + "/admin/originalAssets", true),
+		{url: contextUrl + "/admin/originalAssets"},
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedAssetFile");
 		}

@@ -46,19 +46,19 @@ public class WorkbenchSession {
 	
 	/**
 	 * TODO: Actually push this stuff to client
+	 * TODO: make threadsafe ?!
 	 * 
 	 * Updates session caches when task data changes.
 	 */
 	private class UpdateCallback implements TaskUpdateCallback {
 		@Override
 		public <T extends Task> void onAdd(T task) {
-			List<T> single = new LinkedList<T>(Util.classOf(task));
-			single.add(task);
+			final List<T> single = new LinkedList<T>(Util.classOf(task), task);
 			onAddAll(single);
 		}
 		@Override
 		public <T extends Task> void onAddAll(Collection<T> tasks) {
-			TaskType type = TaskType.fromClass(tasks.getGenericType());
+			final TaskType type = TaskType.fromClass(tasks.getGenericType());
 			if(selected[type.ordinal()]) {
 				filteredTasks.addAll(filter(tasks));
 				filteredTasks = sort(filteredTasks);
@@ -68,13 +68,14 @@ public class WorkbenchSession {
 		}
 		@Override
 		public <T extends Task> void onRemove(T task) {
-			filteredTasks.remove(task);
-			tasks.remove(task);
+			final List<T> single = new LinkedList<T>(Util.classOf(task), task);
+			onRemoveAll(single);
 		}
 		@Override
 		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
 			filteredTasks.removeAll(tasks);
 			WorkbenchSession.this.tasks.removeAll(tasks);
+			possiblyDirtyTasks.addAll(tasks);
 			notifyClient();
 		}
 		private void notifyClient() {
@@ -99,6 +100,9 @@ public class WorkbenchSession {
 	//filteredTasks additionally filtered by search
 	private List<Task> tasks;
 	
+	//remember removed tasks in case they get replaced by tasks with same id
+	private List<Task> possiblyDirtyTasks;
+	
 	//current settings for general filter
 	private FilterForm generalFilter;
 	
@@ -122,6 +126,8 @@ public class WorkbenchSession {
 		
 		filteredTasks = new LinkedList<>(Task.class);
 		tasks = new LinkedList<>(Task.class);
+		possiblyDirtyTasks = new LinkedList<>(Task.class);
+		
 		sort = new SortForm();
 		generalFilter = new FilterForm();
 		
@@ -153,7 +159,7 @@ public class WorkbenchSession {
 	 * like search.
 	 */
 	private void add(TaskType type) {
-		int i = type.ordinal();
+		final int i = type.ordinal();
 		if(!selected[i]) {
 			filteredTasks.addAll(filter(getTaskList(type)));
 			filteredTasks = sort(filteredTasks);
@@ -176,9 +182,9 @@ public class WorkbenchSession {
 	 * like search.
 	 */
 	private void remove(TaskType type) {
-		int i = type.ordinal();
+		final int i = type.ordinal();
 		if(selected[i]) {
-			Collection<? extends Task> toRemove = getTaskList(type);
+			final Collection<? extends Task> toRemove = getTaskList(type);
 			filteredTasks.removeAll(toRemove);
 			selected[i] = false;
 			tasks.removeAll(toRemove);
@@ -190,7 +196,7 @@ public class WorkbenchSession {
 	 */
 	private void reload() {
 		filteredTasks.clear();
-		TaskType[] types = TaskType.values();
+		final TaskType[] types = TaskType.values();
 		for(int i = 0; i < selected.length; i++) {
 			if(selected[i]) {
 				filteredTasks.addAll(filter(getTaskList(types[i])));
@@ -262,6 +268,15 @@ public class WorkbenchSession {
 	
 	public List<Task> getTasks() {
 		return tasks.copy();
+	}
+	
+	/**
+	 * Getting this list will clear it, you can only get it once!
+	 */
+	public List<Task> getDirtyTasks() {
+		final List<Task> result = possiblyDirtyTasks.copy();
+		possiblyDirtyTasks.clear();
+		return result;
 	}
 	
 	public boolean[] getSelectedTaskTypes() {
