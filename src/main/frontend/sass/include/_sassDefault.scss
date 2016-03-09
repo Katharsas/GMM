@@ -46,6 +46,13 @@
 		@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
 		box-shadow: inset 0px 1px 1px lighten($color, 20%);
 	}
+	&:active, &.active {
+		$color:darken($color, 7%);
+		$top:darken($color, 3%);
+		$bot:lighten($color, 1%);
+		@include background-linear-gradient(top, $top 0%, $color 100%-$gradient-width, $color $gradient-width, $bot 100%);
+		box-shadow: inset 0px 1px 1px darken($color, 10%);
+	}
 }
 
 @mixin indented-shadow-for-bright($color) {

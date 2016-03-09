@@ -1,3 +1,7 @@
+/* jshint esnext:true */
+import $ from "../lib/jquery";
+import THREE from "../lib/three";//TODO
+
 /*
  * Dependencies: JQuery, Three.js, OrbitControls.js, jqueryResize.js
  *
@@ -116,7 +120,7 @@ var PreviewRenderer = (function() {
 			var initOptions;
 			var setInitOptions = function(event) {
 				initOptions = event.detail;
-			}
+			};
 			// save options until we can register proper handler
 			$canvas.on("renderOptionsChange", setInitOptions);
 			
@@ -208,8 +212,8 @@ var PreviewRenderer = (function() {
 					renderer.domElement = null;
 					renderer = null;
 				}
-			}
-		}
+			};
+		};
 		// CanvasRenderer End
 		// ####################################################################################
 	})();
@@ -220,7 +224,7 @@ var PreviewRenderer = (function() {
 		camera.position.y = 10;
 		camera.position.z = 20;
 		return camera;
-	}
+	};
 
 	var createControls  = function($canvas, camera, animationCallbacks) {
 		var controls = new THREE.OrbitControls(camera, $('#canvasControls')[0]);
@@ -240,7 +244,7 @@ var PreviewRenderer = (function() {
 			controls.update();// needed for zoom
 		});
 		return controls;
-	}
+	};
 	
 	/**
 	 * PreviewRenderer
@@ -274,13 +278,13 @@ var PreviewRenderer = (function() {
 			showWireframe : false,
 			rotateCamera : true,
 			rotateCameraSpeed : 0.7
-		}
+		};
 
 		var setOptions = new CustomEvent("renderOptionsChange", { detail : options });
 		var dispatch = function() {
 			$bothCanvas[0].dispatchEvent(setOptions);
 			$bothCanvas[1].dispatchEvent(setOptions);
-		}
+		};
 		dispatch();
 
 		var render = function() {
@@ -305,7 +309,7 @@ var PreviewRenderer = (function() {
 			options.showWireframe = !options.showWireframe;
 			dispatch();
 		});
-	}
+	};
 })();
 
-PreviewRenderer($("#canvasControls"));
+export default PreviewRenderer;

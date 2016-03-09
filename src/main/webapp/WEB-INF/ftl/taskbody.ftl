@@ -86,10 +86,10 @@
 			    	<#else><td></td>
 			    	</#if>
 		    	</tr>
-		    	<tr class="task-preview-images center">
+		    	<tr class="task-preview-visuals center">
 		    		<#if task.originalAsset?has_content>
 		    			<#assign asset = task.originalAsset/>
-			    		<td class="task-preview-image clickable">
+			    		<td class="task-preview-visual clickable">
 			    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
 			    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
 				    		</a>
@@ -99,7 +99,7 @@
 			    	<td></td>
 			    	<#if task.newestAsset?has_content>
 			    		<#assign asset = task.newestAsset/>
-				    	<td class="task-preview-image clickable">
+				    	<td class="task-preview-visual clickable">
 				    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 				    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 				    		</a>
@@ -113,9 +113,9 @@
 	    <#if task.getType().name() == 'MESH'>
 	    	<table class="task-preview">
     			<colgroup>
-			       <col span="1" style="width: 49%;">
-			       <col span="1" style="width: 2%;">
-			       <col span="1" style="width: 49%;">
+			       <col span="1" style="width: 50%;">
+			       <col span="1" style="width: 0%;">
+			       <col span="1" style="width: 50%;">
 			    </colgroup>
 				<tr class="task-preview-buttons">
 			    	<#if task.originalAsset?has_content>
@@ -146,38 +146,61 @@
 			    	<#else><td></td>
 			    	</#if>
 		    	</tr>
-		    	<tr class="task-preview-images center">
+		    	<tr class="task-preview-visuals center">
 		    		<#if task.originalAsset?has_content>
 		    			<#assign asset = task.originalAsset/>
-			    		<td class="task-preview-image">
-			    			<canvas style="width:280px; height:232px; background-color:green;"></canvas>
+			    		<td class="task-preview-visual clickable">
+			    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
+			    				<canvas></canvas>
+				    		</a>
 				    	</td>
 				    <#else><td></td>
 			    	</#if>
 			    	<td></td>
 			    	<#if task.newestAsset?has_content>
 			    		<#assign asset = task.newestAsset/>
-				    	<td class="task-preview-image">
-			    			<canvas style="width:280px; height:232px; background-color:green;"></canvas>
+				    	<td class="task-preview-visual clickable">
+				    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    			<canvas></canvas>
+				    		</a>
 				    	</td>
 				    <#else><td></td>
 			    	</#if>
-		    	</tr>
-		    	<tr>
-		    		<#if task.originalAsset?has_content>
-			    		<td class="task-preview-image" style="background-color:gray;">
-					    	options: shadow, wireframe, auto-turning
-					    </td>
-					<#else><td></td>
-					</#if>
-					<td></td>
-					<#if task.newestAsset?has_content>
-			    		<td class="task-preview-image" style="background-color:gray;">
-					    	options: shadow, wireframe, auto-turning
-					    </td>
-					<#else><td></td>
-					</#if>
-		    	</tr>
+			    </tr>
+				<#if task.originalAsset?has_content>
+			    	<tr>
+			    		<td class="task-preview-renderOptions" colspan="3">
+			    			<div class="renderOptionsText left">Rendering:</div>
+			    			<div class="renderOptionGroup button-group left">
+		    					<div class="button left active">Solid</div>
+			    				<div class="button left">Wireframe</div>
+			    				<div class="clear"></div>
+			    			</div>
+			    			<div class="renderOptionGroup right">
+			    				<label class="renderOptionsText renderOption-shadows"><input type="checkbox">Shadows</label>
+			    				<label class="renderOptionsText renderOption-rotLight"><input type="checkbox">Rotate Light</label>
+			    				<label class="renderOptionsText renderOption-rotCamera"><input type="checkbox">Rotate Camera at speed:</label>
+			    				<input class="renderOptionsSpeed renderOption-rotCameraSpeed" type="text" style="width:50px">
+			    			</div>
+			    			<div class="clear"></div>
+			    		</td>
+			    	</tr>
+			    	<tr>
+			    		<#if task.originalAsset?has_content>
+				    		<td class="task-preview-image" style="background-color:gray;">
+						    	textures
+						    </td>
+						<#else><td></td>
+						</#if>
+						<td></td>
+						<#if task.newestAsset?has_content>
+				    		<td class="task-preview-image" style="background-color:gray;">
+						    	textures
+						    </td>
+						<#else><td></td>
+						</#if>
+			    	</tr>
+		    	</#if>
 			</table>
 	    </#if>
 <!-- Files -->
