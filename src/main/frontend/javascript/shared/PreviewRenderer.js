@@ -159,7 +159,7 @@ var PreviewRenderer = (function() {
 			};
 		};
 		
-		var initCanvas = function($canvas, renderer, camera) {
+		var initCanvas = function($canvas, funcId, renderer, camera) {
 			var width, height;
 			var updateCanvasSize = function() {
 				width = $canvas.width();
@@ -169,10 +169,9 @@ var PreviewRenderer = (function() {
 				camera.updateProjectionMatrix();
 				renderer.setSize(width, height, false);
 			};
-			
 			// needs jqueryResize to work
 			$($canvas).resize(function() {
-				waitForFinalEvent(updateCanvasSize, 50, "canvresz");
+				waitForFinalEvent(updateCanvasSize, 50, funcId);
 			});
 			updateCanvasSize();
 		};
@@ -203,10 +202,11 @@ var PreviewRenderer = (function() {
 		return function (data, animationCallbacks) {
 			
 			var $canvas = data.$canvas;
+			var geometryPath = data.geometryPath;
 			var scene = createScene($canvas, animationCallbacks);
-			loadMeshIntoScene($canvas, data.geometryPath, scene);
+			loadMeshIntoScene($canvas, geometryPath, scene);
 			var renderer = createRenderer($canvas);
-			initCanvas($canvas, renderer, data.camera);
+			initCanvas($canvas, geometryPath, renderer, data.camera);
 			
 			return {
 				render : function() {
@@ -305,7 +305,7 @@ var PreviewRenderer = (function() {
 		}
 		
 		var options = {
-			shadowsEnabled : true,
+			shadowsEnabled : false,
 			rotateLight : true,
 			showWireframe : false,
 			rotateCamera : true,
