@@ -1,7 +1,12 @@
 package gmm.service.tasks;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,9 +40,9 @@ public class ModelTaskService extends AssetTaskService<Model> {
 	public void createPreview(Path sourceFile, Path previewPath, Model asset) {
 		fileService.createDirectory(previewPath);
 		final String version = asset.getGroupType().getPreviewFileName();
-		final Path target = previewPath.resolve(version + ".js");
-		MeshData meshData = python.createPreview(sourceFile, target);
-		Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
+		final Path target = previewPath.resolve(version + ".json");
+		final MeshData meshData = python.createPreview(sourceFile, target);
+		final Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
 		asset.setTextureNames(textures);
 		asset.setPolyCount(meshData.getPolygonCount());
 	}
@@ -65,5 +70,19 @@ public class ModelTaskService extends AssetTaskService<Model> {
 	@Override
 	public FileExtensionFilter getExtensions() {
 		return ModelTaskService.extensions;
+	}
+	
+	public void writePreview(ModelTask task, String version, OutputStream target) {
+		final String modelName = version + ".json";		
+		final Path path = config.ASSETS_NEW
+				.resolve(task.getAssetPath())
+				.resolve(config.SUB_PREVIEW)
+				.resolve(modelName);
+		try(FileInputStream fis = new FileInputStream(path.toFile())) {
+			IOUtils.copy(fis, target);
+		} catch (final IOException e) {
+			throw new UncheckedIOException(
+					"Could not deliver preview file from '" + path.toString() + "'!", e);
+		}
 	}
 }

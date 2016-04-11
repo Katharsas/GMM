@@ -1,8 +1,9 @@
 package gmm.service.tasks;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
@@ -10,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 
+import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -121,21 +123,17 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	/**
 	 * Returns a texture preview image (png) as byte array.
 	 */
-	public byte[] getPreview(TextureTask task, boolean small, String version) throws IOException {
-		final String imageName = version + "_" + (small ? "small" : "full") + ".png";		
-		
-		final Path imagePath = config.ASSETS_NEW
+	public void writePreview(TextureTask task, boolean small, String version, OutputStream target) {
+		final String imageName = version + (small ? "_small" : "_full") + ".png";		
+		final Path path = config.ASSETS_NEW
 				.resolve(task.getAssetPath())
 				.resolve(config.SUB_PREVIEW)
 				.resolve(imageName);
-
-		if(!imagePath.toFile().exists()) {
-			return null;
+		try(FileInputStream fis = new FileInputStream(path.toFile())) {
+			IOUtils.copy(fis, target);
+		} catch (final IOException e) {
+			throw new UncheckedIOException(
+					"Could not deliver preview file from '" + path.toString() + "'!", e);
 		}
-		final BufferedImage image = ImageIO.read(imagePath.toFile());
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ImageIO.write(image, "png", out);
-		final byte[] bytes = out.toByteArray();
-		return bytes;
 	}
 }

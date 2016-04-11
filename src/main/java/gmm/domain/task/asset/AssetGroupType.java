@@ -7,6 +7,14 @@ public enum AssetGroupType {
 	public static AssetGroupType get(boolean isOriginal) {
 		return isOriginal ? ORIGINAL : NEW;
 	}
+	public static AssetGroupType get(String previewFileName) {
+		for(final AssetGroupType type : AssetGroupType.values()) {
+			if (type.getPreviewFileName().equals(previewFileName)) {
+				return type;
+			}
+		}
+		throw new IllegalArgumentException();
+	}
 	
 	private final  String previewFileName;
 	private AssetGroupType(String previewFileName) {

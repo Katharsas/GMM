@@ -24,11 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import gmm.domain.UniqueObject;
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
+import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
@@ -44,6 +47,7 @@ public class TaskAssetController {
 	@Autowired DataAccess data;
 	@Autowired TaskServiceFinder taskService;
 	@Autowired TextureTaskService textureService;
+	@Autowired ModelTaskService modelService;
 	@Autowired DataConfigService config;
 	@Autowired FileService fileService;
 	
@@ -75,16 +79,45 @@ public class TaskAssetController {
 	 * @param version - "original" for original texture preview, newest for the most current new texture
 	 * @param idLink - identifies the corresponding task
 	 */
-	@RequestMapping(value="/preview", method = RequestMethod.GET, produces="image/png")
-	public @ResponseBody byte[] sendPreview(
+	@RequestMapping(value="/preview/texture", method = RequestMethod.GET, produces="image/png")
+	public @ResponseBody void sendTexturePreview(
 			HttpServletResponse response,
-			@RequestParam(value="small", defaultValue="false") boolean small,
+			@RequestParam(value="small", defaultValue="true") boolean small,
 			@RequestParam(value="ver") String version,
 			@RequestParam(value="id") String idLink) throws Exception {
 		
 		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
-		return textureService.getPreview(task, small, version);
+		validatePreviewParams(task, version);
+		textureService.writePreview(task, small, version, response.getOutputStream());
+	}
+	
+	/**
+	 * Texture Preview Image
+	 * -----------------------------------------------------------------
+	 * @param small - true for small preview, false for full size
+	 * @param version - "original" for original texture preview, newest for the most current new texture
+	 * @param idLink - identifies the corresponding task
+	 */
+	@RequestMapping(value="/preview/3Dmodel", method = RequestMethod.GET, produces="application/json")
+	public @ResponseBody void sendModelPreview(
+			HttpServletResponse response,
+			@RequestParam(value="ver") String version,
+			@RequestParam(value="id") String idLink) throws Exception {
+		
+		setPreviewCaching(response);
+		final ModelTask task = UniqueObject.getFromIdLink(data.getList(ModelTask.class), idLink);
+		validatePreviewParams(task, version);
+		modelService.writePreview(task, version, response.getOutputStream());
+	}
+	
+	public void validatePreviewParams(AssetTask<?> task, String previewFilename) {
+		if(task == null) throw new IllegalArgumentException("Invalid task id!");
+		try {
+			AssetGroupType.get(previewFilename);
+		} catch(final IllegalArgumentException e) {
+			throw new IllegalArgumentException("Invalid version!", e);
+		}
 	}
 	
 	/**
