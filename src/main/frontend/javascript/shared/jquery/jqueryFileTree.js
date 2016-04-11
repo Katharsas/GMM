@@ -1,5 +1,5 @@
-import $ from "../lib/jquery";
-import Ajax from "./ajax";
+import $ from "../../lib/jquery";
+import Ajax from "../ajax";
 
 // jQuery File Tree Plugin
 //

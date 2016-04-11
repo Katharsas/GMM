@@ -26,7 +26,7 @@
 #############
 
 src/main/webapp/resources/javascript/lib/* linguist-vendored
-three/js/* linguist-vendored
+three/* linguist-vendored
 misc/* linguist-vendored
 
 *.scss linguist-language=CSS

@@ -64,6 +64,9 @@ html, body {
     width: 100%;
     height: 100%;
 }
+html {
+	overflow-y: scroll;
+}
 * {
 	@include browser-property-prefix(box-sizing, border-box);
 }

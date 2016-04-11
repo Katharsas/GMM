@@ -59,7 +59,7 @@ var PreviewRenderer = (function() {
 			
 			var rotateLight;
 			$canvas.on("renderOptionsChange", function(event) {
-				var options = event.detail;
+				var options = event.originalEvent.detail;
 				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
 				directionalLight.castShadow = shadowsEnabled;
 				setupShadows(directionalLight, shadowPadding);
@@ -108,9 +108,15 @@ var PreviewRenderer = (function() {
 		
 		var createRenderer = function($canvas) {
 			var renderer = new THREE.WebGLRenderer({canvas:$canvas[0], antialias: true});
-			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-			renderer.shadowMap.enabled = true;
-			renderer.shadowMapSoft = true;
+			$canvas.on("renderOptionsChange", function(event) {
+				var options = event.originalEvent.detail;
+				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
+				if(shadowsEnabled) {
+					renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+					renderer.shadowMap.enabled = true;
+					renderer.shadowMapSoft = true;
+				}
+			});
 			return renderer;
 		};
 		
@@ -124,7 +130,7 @@ var PreviewRenderer = (function() {
 			// we need to register event handler immediatly but load is async
 			var initOptions;
 			var setInitOptions = function(event) {
-				initOptions = event.detail;
+				initOptions = event.originalEvent.detail;
 			};
 			// save options until we can register proper handler
 			$canvas.on("renderOptionsChange", setInitOptions);
@@ -238,7 +244,7 @@ var PreviewRenderer = (function() {
 			return Math.min(Math.max(number, -bound), bound);
 		};
 		$canvas.on("renderOptionsChange", function(event) {
-			var options = event.detail;
+			var options = event.originalEvent.detail;
 			controls.autoRotate = options.rotateCamera;
 			controls.autoRotateSpeed = options.rotateCameraSpeed;
 		});
@@ -262,7 +268,7 @@ var PreviewRenderer = (function() {
 			var animationCallbacks = [];
 			
 			var camera = createCamera();
-			var controls = createControls($canvasAreas, camera, animationCallbacks);
+			var controls = createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
 			
 			var renderers = [];
 			
@@ -270,7 +276,7 @@ var PreviewRenderer = (function() {
 				var $area = $(this);
 				var data = {
 					geometryPath : $area.attr("data-url"),
-					$canvas : $area.find("canvas")[0],
+					$canvas : $area.find("canvas"),
 					camera : camera
 				};
 				var renderer = new CanvasRenderer(data, animationCallbacks);
@@ -286,12 +292,13 @@ var PreviewRenderer = (function() {
 			rotateCameraSpeed : 0.7
 		};
 
-		var setOptions = new CustomEvent("renderOptionsChange", { detail : options });
-		
 		var dispatch = function() {
-			for(var canvas of $bothCanvas) {
-				canvas.dispatchEvent(setOptions);
-			}
+			$canvasAreas.each(function() {
+				var $area = $(this);
+				//TODO remove fix for https://github.com/jquery/jquery/issues/1867 in all listeners
+				var event = new CustomEvent("renderOptionsChange", { detail : options });
+				$area.find("canvas")[0].dispatchEvent(event);
+			});
 		};
 		
 		var render = function() {

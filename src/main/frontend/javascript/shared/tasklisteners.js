@@ -219,6 +219,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 			//TODO
 			if($renderOptions.length > 0) {
 				var renderer = PreviewRenderer($canvasContainer);
+				renderer.update();
 			}
 		}
 	};

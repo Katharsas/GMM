@@ -81,7 +81,6 @@ gulp.task("build-js", function () {
 	//multiple files: http://fettblog.eu/gulp-browserify-multiple-bundles/
 	return buildScript(
 		[
-//		 "example/consumer.js",
 		 "tasks.js",
 		 "links.js",
 		 "admin.js",
