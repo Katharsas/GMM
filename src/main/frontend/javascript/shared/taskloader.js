@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";

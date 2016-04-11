@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import $ from "./lib/jquery";
 import Queue from "./shared/queue";
 import TaskLoader from "./shared/taskloader";

@@ -1,6 +1,6 @@
-/* jshint esnext:true */
+import "./shared/default";
+
 import $ from "./lib/jquery";
-import empty from "./shared/default";
 
 $(document).ready(function() {
 	var $submit = $("#login-form-submit");

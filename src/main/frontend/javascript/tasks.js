@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import $ from "./lib/jquery";
 import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";

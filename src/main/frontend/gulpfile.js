@@ -61,7 +61,8 @@ function buildScript(files) {
 				debug: jsSourceMaps
 			};
 		var configBabelify = {
-				plugins: ["transform-es2015-modules-commonjs"],
+				plugins: ["transform-es2015-modules-commonjs",
+				          "transform-es2015-for-of"],
 			};
 		return browserify(configBrowserify)
 			.transform(babelify, configBabelify)

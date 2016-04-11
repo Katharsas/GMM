@@ -1,0 +1,8 @@
+{
+	"strict": "implied",
+	"esversion": 6,
+	"undef": true,
+	"unused": "vars",
+	"browserify": true,
+	"nonstandard": true
+}

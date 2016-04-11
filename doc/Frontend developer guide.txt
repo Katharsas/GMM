@@ -45,6 +45,7 @@ All custom js code is organized into modules (which can be imported in other mod
 => Any used libraries are not modules, so they are in "src/main/webapp/resources/javascript/lib". They are not packed into a single file by browserify and need to be referenced seperatly in html.
 => Global namespace can be accessed by using "global.<objectname>". Try to remove remaining global stuff.
 => Modules are compiled whenever you change an ES 6 file or start a complete maven build.
+=> js can be validated by using JSHint, its settings file is at "src/main/frontend/.jshintrc". It's advised to exclude "src/main/frontend/node_modules" folder from validation
 
 -------------------------------------------
 4. Internationalization (i18n)

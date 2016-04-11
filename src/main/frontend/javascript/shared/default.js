@@ -1,7 +1,7 @@
-/* jshint esnext:true */
+import "./jqueryFileTree";
+import "./jqueryDraggable";
+
 import $ from "../lib/jquery";
-import empty from "./jqueryFileTree";
-import empty2 from "./jqueryDraggable";
 import Ajax from "./ajax";
 import Dialogs from "./dialogs";
 import HtmlPreProcessor from "./preprocessor";

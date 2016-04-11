@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import $ from "../lib/jquery";
 import { allVars } from "./default";
 

@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import TweenLite from "../lib/tweenLite";
 
 /**

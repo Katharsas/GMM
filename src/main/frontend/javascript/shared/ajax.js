@@ -1,4 +1,3 @@
-/* jshint esnext:true */
 import $ from "../lib/jquery";
 import Dialogs from "./dialogs";
 import { contextUrl } from "./default";

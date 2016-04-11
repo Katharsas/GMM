@@ -21,7 +21,8 @@
 		"gulp-rename": "^1.2.2",
 		"event-stream": "^3.3.2",
 		
-		"babel-plugin-transform-es2015-modules-commonjs" : "^6.5.2"
+		"babel-plugin-transform-es2015-for-of" : "^6.6.0",
+		"babel-plugin-transform-es2015-modules-commonjs" : "^6.7.0"
 	},
 	"unused": {
 		"gulp-babel": "^6.1.2",
