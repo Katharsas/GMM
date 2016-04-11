@@ -9,7 +9,7 @@
     		var tasksHTML = {};
     		tasksHTML['tab'] = '${fn:escapeXml(cfn:escapeJS(tab))}';
 		</script>
-		<script src="<c:url value="/res/javascript/lib/three.min.js"/>" type="text/javascript"></script>
+		<script src="<c:url value="/res/javascript/lib/three.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/OrbitControls.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/TweenLite.min.js"/>" type="text/javascript"></script>
     	<script src="<c:url value="/res/javascript/lib/CSSPlugin.min.js"/>" type="text/javascript"></script>

@@ -20,7 +20,7 @@
 				var allVars = [];
 				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
 			</script>
-			<script src="<c:url value="/res/javascript/lib/jquery-2.1.1.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
