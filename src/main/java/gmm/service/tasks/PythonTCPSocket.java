@@ -106,7 +106,7 @@ public class PythonTCPSocket {
 			notify(); // wake up thread if sleeping
 			try {
 				wait(10000); // block: worker will create result and wake us up
-			} catch (InterruptedException e) {}
+			} catch (final InterruptedException e) {}
 		}
 		if(logger.isInfoEnabled()) {
 			final long duration = System.currentTimeMillis() - startTime;
@@ -120,7 +120,7 @@ public class PythonTCPSocket {
 		synchronized(threadIsAlive) {
 			if(!threadIsAlive.get()) {
 				logger.info("Thread not alive: Starting new thread for python socket connection.");
-				Thread thread = new Thread(convertion);
+				final Thread thread = new Thread(convertion);
 				threadIsAlive.set(true); // dont accidentally restart twice
 				thread.start();
 			}
@@ -165,7 +165,7 @@ public class PythonTCPSocket {
 					startPythonScript();
 					connectAndSend();
 				}
-				catch(RuntimeException e) {
+				catch(final RuntimeException e) {
 					result = new ConversionResult(false, null, e); 
 					PythonTCPSocket.this.notify();
 				}
@@ -207,7 +207,7 @@ public class PythonTCPSocket {
 					logger.debug(message, e);
 					try {
 						Thread.sleep(tryReconnectSleep);
-					} catch (InterruptedException e1) {
+					} catch (final InterruptedException e1) {
 						logger.error(e1.getMessage(), e1);
 					}
 					currentTry++;
@@ -252,24 +252,24 @@ public class PythonTCPSocket {
 							logger.info("Shutdown timeout reached: Shutting down python socket connection and thread.");
 							return;
 						}
-					} catch (InterruptedException e1) {}
+					} catch (final InterruptedException e1) {}
 				}
 				RuntimeException goneWrong = null;
 				MeshData meshData = null;
 				try {
 					sendPaths(toPython, next);
 					try {
-						String success = fromPython.readLine();
+						final String success = fromPython.readLine();
 						if (!success.equals(conversionSuccess)) {
 							throw new IOException("Conversion protocol violation!");
 						}
-						String jsonString = fromPython.readLine();
+						final String jsonString = fromPython.readLine();
 						meshData = jackson.readValue(jsonString, MeshData.class);
-					} catch (IOException e) {
+					} catch (final IOException e) {
 						throw new UncheckedIOException(e);
 					}
 				}
-				catch(RuntimeException e) {
+				catch(final RuntimeException e) {
 					goneWrong = e; // record any exception
 					// will be rethrown by thread that caused convertion
 				}

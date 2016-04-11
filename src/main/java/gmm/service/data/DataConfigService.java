@@ -62,8 +62,12 @@ public class DataConfigService {
 	private void setUpConfigService() {
 		base = Paths.get(context.getRealPath(""));
 		updateWorkspace(workspace);
-		blender = base.resolve(blender);
-		logger.info("Expecting blender to directly be in '" + blender + "'.");
+		blender = base.resolve(blender).normalize();
+		logger.info("\n"
+				+	"##########################################################" + "\n\n"
+				+	"  Expecting blender installation folder to be: " + "\n"
+				+	"  " + blender + "\n\n"
+				+	"##########################################################");
 	}
 	
 	public Path getWorkspace() {
@@ -76,7 +80,7 @@ public class DataConfigService {
 	
 	public void updateWorkspace(Path workspace) {
 		Objects.requireNonNull(workspace);
-		final Path wsAbsolute = base.resolve(workspace);
+		final Path wsAbsolute = base.resolve(workspace).normalize();
 		this.workspace = wsAbsolute;
 		
 		logger.info("\n"
