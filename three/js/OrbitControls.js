@@ -13,11 +13,17 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finter swipe
 
-THREE.OrbitControls = function ( object, domElement ) {
+/**
+ * @param localElement - Control events (like mousedown) are started only if mouse is inside
+ * 		localElement, but can extend into domElement (mousemove), useful for small or multiple
+ * 		viewports.
+ */
+THREE.OrbitControls = function ( object, domElement, localElement ) {
 
 	this.object = object;
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	this.localElement = ( localElement !== undefined ) ? localElement : document;
 
 	// Set to false to disable this control
 	this.enabled = true;
@@ -219,9 +225,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.dispose = function() {
 
 		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
-		scope.domElement.removeEventListener( 'mousedown', onMouseDown, false );
-		scope.domElement.removeEventListener( 'mousewheel', onMouseWheel, false );
-		scope.domElement.removeEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
+		scope.localElement.removeEventListener( 'mousedown', onMouseDown, false );
+		scope.localElement.removeEventListener( 'wheel', onMouseWheel, false );
 
 		scope.domElement.removeEventListener( 'touchstart', onTouchStart, false );
 		scope.domElement.removeEventListener( 'touchend', onTouchEnd, false );
@@ -518,31 +523,14 @@ THREE.OrbitControls = function ( object, domElement ) {
 	function handleMouseWheel( event ) {
 
 		//console.log( 'handleMouseWheel' );
-
-		var delta = 0;
-
-		if ( event.wheelDelta !== undefined ) {
-
-			// WebKit / Opera / Explorer 9
-
-			delta = event.wheelDelta;
-
-		} else if ( event.detail !== undefined ) {
-
-			// Firefox
-
-			delta = - event.detail;
-
-		}
-
-		if ( delta > 0 ) {
-
-			dollyOut( getZoomScale() );
-
-		} else if ( delta < 0 ) {
-
-			dollyIn( getZoomScale() );
-
+		
+		var delta = event.deltaY;
+		if (delta < 0) {
+			dollyOut(getZoomScale());
+		} else if (delta > 0) {
+			dollyIn(getZoomScale());
+		} else {
+			return;
 		}
 
 		scope.update();
@@ -718,9 +706,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( state !== STATE.NONE ) {
 
-			document.addEventListener( 'mousemove', onMouseMove, false );
-			document.addEventListener( 'mouseup', onMouseUp, false );
-			document.addEventListener( 'mouseout', onMouseUp, false );
+			scope.domElement.addEventListener( 'mousemove', onMouseMove, false );
+			scope.domElement.addEventListener( 'mouseup', onMouseUp, false );
+			scope.domElement.addEventListener( 'mouseleave', onMouseUp, false );
 
 			scope.dispatchEvent( startEvent );
 
@@ -762,9 +750,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		handleMouseUp( event );
 
-		document.removeEventListener( 'mousemove', onMouseMove, false );
-		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
+		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
+		scope.domElement.removeEventListener( 'mouseup', onMouseUp, false );
+		scope.domElement.removeEventListener( 'mouseleave', onMouseUp, false );
 
 		scope.dispatchEvent( endEvent );
 
@@ -910,11 +898,10 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
 
-	scope.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	scope.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	scope.domElement.addEventListener( 'MozMousePixelScroll', onMouseWheel, false ); // firefox
+	scope.localElement.addEventListener( 'mousedown', onMouseDown, false );
+	scope.localElement.addEventListener( 'wheel', onMouseWheel, false );
 
-	scope.domElement.addEventListener( 'touchstart', onTouchStart, false );
+	scope.localElement.addEventListener( 'touchstart', onTouchStart, false );
 	scope.domElement.addEventListener( 'touchend', onTouchEnd, false );
 	scope.domElement.addEventListener( 'touchmove', onTouchMove, false );
 
