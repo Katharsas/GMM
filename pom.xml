@@ -9,6 +9,20 @@
 	<name>Gothic Mod Manager</name>
 	<url>https://github.com/Katharsas/GMM</url>
 	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>apache.snapshots</id>
+			<name>Apache Snapshots</name>
+			<url>http://repository.apache.org/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+	
 	<!-- 
 	
 		Maven commands used for building/testing/running etc.
@@ -34,7 +48,9 @@
 		<org.springframework.version>4.2.0.RELEASE</org.springframework.version>
 		<org.springframework.security.version>4.0.2.RELEASE</org.springframework.security.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tomcat.version>7.0.63</tomcat.version>
+		<!-- Tomcat7-Maven-Plugin only works with tomcat 7, dont even try 8+ -->
+		<!-- In the long run, the plugin should be replaced -->
+		<tomcat.version>7.0.68</tomcat.version>
 	</properties>
 
 	<dependencies>
@@ -113,9 +129,9 @@
 			<version>1.2</version>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
+			<groupId>javax.servlet.jsp</groupId>
 			<artifactId>jsp-api</artifactId>
-			<version>2.0</version>
+			<version>2.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -127,9 +143,10 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<version>3.0.1</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Tomcat stuff -->
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-juli</artifactId>
@@ -249,7 +266,9 @@
 				<plugin>
 					<groupId>org.apache.tomcat.maven</groupId>
 					<artifactId>tomcat7-maven-plugin</artifactId>
-					<version>2.1</version>
+					<version>2.3-SNAPSHOT</version>
+					<!-- Overwrite dependencies to effectivly set version of embedded tomcat server -->
+					<!-- Setting version to 8+ will most likely not work. -->
 					<dependencies>
 						<dependency>
 							<groupId>org.apache.tomcat.embed</groupId>
@@ -432,13 +451,21 @@
 						<id>default-war</id>
 						<phase>package</phase>
 						<configuration>
-							<warSourceExcludes>
+							<packagingExcludes>
+								<!--
+									If a build should contain some sample data,
+									put anything unwanted into excluded folder like below,
+									but never commit a pom that includes sample data!
+									Always check if the build contains only the expected files!
+								-->
+<!-- 								WEB-INF/data/assets/new/**, -->
+<!-- 								WEB-INF/data/assets/original/excluded/**, -->
 								WEB-INF/data/assets/**,
 								WEB-INF/data/tasks/**,
 								WEB-INF/data/users/**,
 								WEB-INF/dataTesting/**,
 								WEB-INF/blender/**
-							</warSourceExcludes>
+							</packagingExcludes>
 						</configuration>
 					</execution>
 				</executions>
@@ -452,8 +479,20 @@
 					<port>8080</port>
 					<encoding>UTF-8</encoding>
 				</configuration>
+				<executions>
+					<execution>
+						<id>tomcat-run</id>
+						<goals>
+							<goal>exec-war-only</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+								<path>/GMM</path>                              
+                                <attachartifactclassifier>exec-war</attachartifactclassifier>
+                                <attachartifactclassifiertype>jar</attachartifactclassifiertype>
+						</configuration>
+					</execution>
 				<!-- Enable Hot Reload -->
-<!-- 				<executions> -->
 <!-- 					<execution> -->
 <!-- 						<id>run-embedded</id> -->
 <!-- 						<goals> -->
@@ -465,7 +504,7 @@
 <!-- 							<contextFile>${project.basedir}/tomcat/context.xml</contextFile> -->
 <!-- 						</configuration> -->
 <!-- 					</execution> -->
-<!-- 				</executions> -->
+				</executions>
 			</plugin>
 
 			<plugin>
