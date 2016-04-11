@@ -239,7 +239,6 @@ var UserManager = function() {
 	// all users buttons
 	//-----------------------------------------------------------------
 	$(".admin-users-new").on("click", function() {
-		console.log("test");
 		editUserName(null, "new");
 	});
 	$(".admin-users-save").on("click", function() {

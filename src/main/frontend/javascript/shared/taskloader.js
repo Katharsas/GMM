@@ -2,7 +2,6 @@ import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";
 import { contextUrl } from "./default";
-//missing: taskVars
 
 /**
  * -------------------- TaskLoader ----------------------------------------------------------------
@@ -171,12 +170,6 @@ export default (function() {
 			HtmlPreProcessor.apply(task.$body);
 			task.$body.hide();
 		}, 0);
-	};
-	
-	var callIfExists = function(callback) {
-		if (callback !== undefined) { 
-			callback();
-		}
 	};
 	
 	return {

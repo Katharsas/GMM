@@ -1,6 +1,7 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import Dialogs from "./dialogs";
+import PreviewRenderer from "./PreviewRenderer";
 import { contextUrl, allVars, htmlDecode } from "./default";
 
 /**
@@ -10,6 +11,7 @@ import { contextUrl, allVars, htmlDecode } from "./default";
  */
 export default function(onswitch, onchange, onremove, onedit) {
 	
+	//if(1 == "text") console.log(x = 10);
 	//comments
 	
 	var hideCommentForm = function($commentForm) {
@@ -50,7 +52,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 	var $selectedFile = $();
 	
 	var subDir = function() {
-		return selectedTaskFileIsAsset ? "asset" : "other";
+		return selectedFileIsAsset ? "asset" : "other";
 	};
 	var filePath = function() {
 		return $selectedFile.attr("rel");
@@ -128,7 +130,9 @@ export default function(onswitch, onchange, onremove, onedit) {
 			 * -------------------------------------------------------
 			 */
 			
+			var $preview = $body.find(".task-preview");
 			var $files = $body.find(".task-files");
+			
 			if ($files.length > 0) {
 				
 				//file trees
@@ -151,7 +155,6 @@ export default function(onswitch, onchange, onremove, onedit) {
 					}
 				);
 				
-				var $preview = $body.find(".task-preview");
 				var $fileOps = $files.find(".task-files-operations");
 				
 				//download from preview
@@ -169,7 +172,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 					allVars.$overlay.show();
 					var file = $inputFile[0].files[0];
 					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
-						.done(function(responseText) {
+						.done(function() {
 							//TODO refresh filetree only
 							Dialogs.alert(function(){onchange($task, id);}, "TODO: Refresh filetree only");
 						});
@@ -195,7 +198,7 @@ export default function(onswitch, onchange, onremove, onedit) {
 					}
 					var $dialog = Dialogs.confirm(function() {
 						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
-								{dir: dir, asset: selectedTaskFileIsAsset.toString()})
+								{dir: dir, asset: selectedFileIsAsset.toString()})
 							.done(function() {
 								Dialogs.hideDialog($dialog);
 								//TODO refresh filetree only
@@ -203,6 +206,19 @@ export default function(onswitch, onchange, onremove, onedit) {
 							});
 					}, "Delete " + filePath() + " ?");
 				});
+			}
+			
+			/* -------------------------------------------------------
+			 * 3D PREVIEW
+			 * -------------------------------------------------------
+			 */
+			
+			var $canvasContainer = $preview.find(".task-preview-visuals");
+			var $renderOptions = $preview.find(".task-preview-renderOptions");
+
+			//TODO
+			if($renderOptions.length > 0) {
+				var renderer = PreviewRenderer($canvasContainer);
 			}
 		}
 	};

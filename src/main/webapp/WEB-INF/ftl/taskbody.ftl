@@ -90,8 +90,8 @@
 		    		<#if task.originalAsset?has_content>
 		    			<#assign asset = task.originalAsset/>
 			    		<td class="task-preview-visual clickable">
-			    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
-			    				<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=original&amp;id=${task.getIdLink()}">
+			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}">
+			    				<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
@@ -100,8 +100,8 @@
 			    	<#if task.newestAsset?has_content>
 			    		<#assign asset = task.newestAsset/>
 				    	<td class="task-preview-visual clickable">
-				    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-				    			<img src="${request.contextPath}/tasks/preview?small=true&amp;ver=newest&amp;id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    			<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
@@ -149,8 +149,9 @@
 		    	<tr class="task-preview-visuals center">
 		    		<#if task.originalAsset?has_content>
 		    			<#assign asset = task.originalAsset/>
-			    		<td class="task-preview-visual clickable">
-			    			<a href="${request.contextPath}/tasks/preview?small=false&ver=original&id=${task.getIdLink()}">
+			    		<td class="task-preview-visual clickable"
+			    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}">
+			    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}">
 			    				<canvas></canvas>
 				    		</a>
 				    	</td>
@@ -159,8 +160,9 @@
 			    	<td></td>
 			    	<#if task.newestAsset?has_content>
 			    		<#assign asset = task.newestAsset/>
-				    	<td class="task-preview-visual clickable">
-				    		<a href="${request.contextPath}/tasks/preview?small=false&amp;ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    	<td class="task-preview-visual clickable"
+				    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 				    			<canvas></canvas>
 				    		</a>
 				    	</td>

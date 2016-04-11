@@ -6,20 +6,10 @@ import TaskLoader from "./shared/taskloader";
 import TaskSwitcher from "./shared/taskswitcher";
 import TaskEventBindings from "./shared/tasklisteners";
 import ResponseBundleHandler from "./shared/responseBundleHandler";
-import { contextUrl, allVars, getURLParameter } from "./shared/default";
+import { contextUrl, getURLParameter } from "./shared/default";
 
 var tasksVars = {
 	"edit" : "",
-};
-
-var tasksFuncs = {
-	"refresh" : function() {
-		var url = contextUrl + "/tasks";
-		if (tasksVars.edit !== "") {
-			url += "?edit=" + tasksVars.edit;
-		}
-		window.location.href =  url;
-	}
 };
 
 tasksVars.tab = global.tasksHTML.tab;
@@ -38,7 +28,6 @@ global.tasksVars = tasksVars;
  * @author Jan Mothes
  */
 var Workbench = function(taskForm) {
-	var that = this;
 	
 	var $workbench = $("#workbench");
 	var $workbenchList = $workbench.find(".list-body");

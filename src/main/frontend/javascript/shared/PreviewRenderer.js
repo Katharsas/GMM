@@ -52,7 +52,9 @@ var PreviewRenderer = (function() {
 			directionalLight.position.set(lightDistance, lightDistance, lightDistance);
 			scene.add(directionalLight);
 			// directional light visual
-			var shadowVisualizer = setupShadows(directionalLight, animationCallbacks);
+			var shadowPadding = 30;
+			var shadowVisualizer =
+				createShadowVisualizer(directionalLight, shadowPadding, animationCallbacks);
 			scene.add(shadowVisualizer);
 			
 			var rotateLight;
@@ -60,6 +62,7 @@ var PreviewRenderer = (function() {
 				var options = event.detail;
 				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
 				directionalLight.castShadow = shadowsEnabled;
+				setupShadows(directionalLight, shadowPadding);
 				shadowVisualizer.visible = shadowsEnabled;
 				rotateLight = options.rotateLight;
 			});
@@ -76,28 +79,31 @@ var PreviewRenderer = (function() {
 			return scene;
 		};
 		
-		var setupShadows = function(light, animationCallbacks) {
-			var shadowCamera = light.shadow.camera;
-			// shadow casting boundaries
-			shadowCamera.near = 100;
-			shadowCamera.far = 250;
-			var shadowPadding = 30;
-			shadowCamera.left = -shadowPadding;
-			shadowCamera.right = shadowPadding;
-			shadowCamera.top = shadowPadding;
-			shadowCamera.bottom = -shadowPadding;
-			// quality
-			light.shadow.bias = 0.0001;
-			var resolution = 2048;
-			light.shadow.mapSize.width = resolution;
-			light.shadow.mapSize.height = resolution;
-			
+		var createShadowVisualizer = function(light, shadowPadding, animationCallbacks) {
 			var shadowVisualizer = new THREE.DirectionalLightHelper(light, shadowPadding);
 			animationCallbacks.push(function() {
 				if(shadowVisualizer)
 				shadowVisualizer.update();
 			});
 			return shadowVisualizer;
+		};
+		
+		var setupShadows = function(light, shadowPadding) {
+			if(light.castShadow) {
+				var shadowCamera = light.shadow.camera;
+				// shadow casting boundaries
+				shadowCamera.near = 100;
+				shadowCamera.far = 250;
+				shadowCamera.left = -shadowPadding;
+				shadowCamera.right = shadowPadding;
+				shadowCamera.top = shadowPadding;
+				shadowCamera.bottom = -shadowPadding;
+				// quality
+				light.shadow.bias = 0.0001;
+				var resolution = 2048;
+				light.shadow.mapSize.width = resolution;
+				light.shadow.mapSize.height = resolution;
+			}
 		};
 		
 		var createRenderer = function($canvas) {
@@ -144,7 +150,7 @@ var PreviewRenderer = (function() {
 				mesh.receiveShadow = shadowsEnabled;
 				// wireframe
 				material.wireframe = options.showWireframe;
-			}
+			};
 		};
 		
 		var initCanvas = function($canvas, renderer, camera) {
@@ -250,26 +256,27 @@ var PreviewRenderer = (function() {
 	 */
 	return function($canvasContainer) {
 		
-		var animationCallbacks = [];
-
-		var $bothCanvas = $canvasContainer.find("canvas");
-		var camera = createCamera();
-		var controls = createControls($bothCanvas, camera, animationCallbacks);
+		var $canvasAreas = $canvasContainer.find(".task-preview-visual");
 		
-		// TODO paths
-		var data1 = {
-			geometryPath : "./models/original.json",
-			$canvas : $($bothCanvas[0]),
-			camera : camera
-		};
-		var data2 = {
-			geometryPath : "./models/new.json",
-			$canvas : $($bothCanvas[1]),
-			camera : camera
-		};
-		
-		var renderer1 = new CanvasRenderer(data1, animationCallbacks);
-		var renderer2 = new CanvasRenderer(data2, animationCallbacks);
+		if($canvasAreas.length > 0) {
+			var animationCallbacks = [];
+			
+			var camera = createCamera();
+			var controls = createControls($canvasAreas, camera, animationCallbacks);
+			
+			var renderers = [];
+			
+			$canvasAreas.each(function() {
+				var $area = $(this);
+				var data = {
+					geometryPath : $area.attr("data-url"),
+					$canvas : $area.find("canvas")[0],
+					camera : camera
+				};
+				var renderer = new CanvasRenderer(data, animationCallbacks);
+				renderers.push(renderer);
+			});
+		}
 		
 		var options = {
 			shadowsEnabled : true,
@@ -280,34 +287,37 @@ var PreviewRenderer = (function() {
 		};
 
 		var setOptions = new CustomEvent("renderOptionsChange", { detail : options });
+		
 		var dispatch = function() {
-			$bothCanvas[0].dispatchEvent(setOptions);
-			$bothCanvas[1].dispatchEvent(setOptions);
+			for(var canvas of $bothCanvas) {
+				canvas.dispatchEvent(setOptions);
+			}
 		};
-		dispatch();
-
+		
 		var render = function() {
 			requestAnimationFrame(render);
 			for(var i = 0; i < animationCallbacks.length; i++) {
 				animationCallbacks[i]();
 			}
-			renderer1.render();
-			renderer2.render();
+			for(var renderer of renderers) {
+				renderer.render();
+			}
 		};
-
+		
+		dispatch();
 		render();
 		
-		// ####################### Test-UI #######################
-		// TODO
-
-		$("#toggleShadows").click(function() {
-			options.shadowsEnabled = !options.shadowsEnabled;
-			dispatch();
-		});
-		$("#toggleWireframe").click(function() {
-			options.showWireframe = !options.showWireframe;
-			dispatch();
-		});
+		return {
+			options: options,
+			update: function() {
+				dispatch();
+			},
+			destroy: function() {
+				for(var renderer of renderers) {
+					renderer.destroy();
+				}
+			}
+		};
 	};
 })();
 
