@@ -1,3 +1,7 @@
+/*
+ * TODO: NOT IN SYNC WITH PREVIEWRENDERER
+ */
+
 
 /*
  * Dependencies: JQuery, Three.js, OrbitControls.js, jqueryResize.js
@@ -168,11 +172,6 @@ var PreviewRenderer = (function() {
 				renderer.setSize(width, height, false);
 			};
 			
-			// prevent user from scrolling while zooming
-			$canvas.on('scroll', function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-			});
 			// needs jqueryResize to work
 			$($canvas).resize(function() {
 				waitForFinalEvent(updateCanvasSize, 50, "canvresz");
@@ -227,6 +226,25 @@ var PreviewRenderer = (function() {
 		// ####################################################################################
 	})();
 	
+	/**
+	 * Proxy for adding and removing event listeners (emulates native dom element from jquery object).
+	 */
+	var NodeProxy = function($nodes) {
+		var nodeArray = [];
+		for (var node of $nodes.toArray()) {
+			nodeArray.push(node);
+		}
+		this.addEventListener = function(...args) {
+			for (var node of nodeArray) {
+				node.addEventListener(...args);
+			}
+		};
+		this.removeEventListener = function(...args) {
+			for (var node of nodeArray) {
+				node.removeEventListener(...args);
+			}
+		};
+	};
 	
 	var createCamera = function() {
 		var camera = new THREE.PerspectiveCamera( 40, 1, 1, 500 );
@@ -236,7 +254,8 @@ var PreviewRenderer = (function() {
 	};
 
 	var createControls  = function($canvas, camera, animationCallbacks) {
-		var controls = new THREE.OrbitControls(camera, $('#canvasControls')[0]);
+		var canvas = $canvas.length === 1 ? $canvas[0] : new NodeProxy($canvas);
+		var controls = new THREE.OrbitControls(camera, document, canvas);
 		controls.target.y = 5;
 		var restrictToBounds = function(number, bound) {
 			return Math.min(Math.max(number, -bound), bound);
@@ -266,7 +285,7 @@ var PreviewRenderer = (function() {
 			var animationCallbacks = [];
 			
 			var camera = createCamera();
-			var controls = createControls($canvasAreas, camera, animationCallbacks);
+			createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
 			
 			var renderers = [];
 			
@@ -277,13 +296,18 @@ var PreviewRenderer = (function() {
 					$canvas : $area.find("canvas"),
 					camera : camera
 				};
+				// stop any parent event handlers when inside canvas
+				data.$canvas.on("click", function(event) {
+					event.stopPropagation();
+					event.preventDefault();
+				});
 				var renderer = new CanvasRenderer(data, animationCallbacks);
 				renderers.push(renderer);
 			});
 		}
 		
 		var options = {
-			shadowsEnabled : true,
+			shadowsEnabled : false,
 			rotateLight : true,
 			showWireframe : false,
 			rotateCamera : true,

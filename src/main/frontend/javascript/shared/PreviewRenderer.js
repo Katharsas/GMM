@@ -59,7 +59,7 @@ var PreviewRenderer = (function() {
 			
 			var rotateLight;
 			$canvas.on("renderOptionsChange", function(event) {
-				var options = event.originalEvent.detail;
+				var options = event.detail;
 				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
 				directionalLight.castShadow = shadowsEnabled;
 				setupShadows(directionalLight, shadowPadding);
@@ -109,7 +109,7 @@ var PreviewRenderer = (function() {
 		var createRenderer = function($canvas) {
 			var renderer = new THREE.WebGLRenderer({canvas:$canvas[0], antialias: true});
 			$canvas.on("renderOptionsChange", function(event) {
-				var options = event.originalEvent.detail;
+				var options = event.detail;
 				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
 				if(shadowsEnabled) {
 					renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -130,7 +130,7 @@ var PreviewRenderer = (function() {
 			// we need to register event handler immediatly but load is async
 			var initOptions;
 			var setInitOptions = function(event) {
-				initOptions = event.originalEvent.detail;
+				initOptions = event.detail;
 			};
 			// save options until we can register proper handler
 			$canvas.on("renderOptionsChange", setInitOptions);
@@ -170,11 +170,6 @@ var PreviewRenderer = (function() {
 				renderer.setSize(width, height, false);
 			};
 			
-			// prevent user from scrolling while zooming
-			$canvas.on('scroll', function(event) {
-				event.preventDefault();
-				event.stopPropagation();
-			});
 			// needs jqueryResize to work
 			$($canvas).resize(function() {
 				waitForFinalEvent(updateCanvasSize, 50, "canvresz");
@@ -229,6 +224,25 @@ var PreviewRenderer = (function() {
 		// ####################################################################################
 	})();
 	
+	/**
+	 * Proxy for adding and removing event listeners (emulates native dom element from jquery object).
+	 */
+	var NodeProxy = function($nodes) {
+		var nodeArray = [];
+		for (var node of $nodes.toArray()) {
+			nodeArray.push(node);
+		}
+		this.addEventListener = function(...args) {
+			for (var node of nodeArray) {
+				node.addEventListener(...args);
+			}
+		};
+		this.removeEventListener = function(...args) {
+			for (var node of nodeArray) {
+				node.removeEventListener(...args);
+			}
+		};
+	};
 	
 	var createCamera = function() {
 		var camera = new THREE.PerspectiveCamera( 40, 1, 1, 500 );
@@ -238,13 +252,14 @@ var PreviewRenderer = (function() {
 	};
 
 	var createControls  = function($canvas, camera, animationCallbacks) {
-		var controls = new THREE.OrbitControls(camera, $('#canvasControls')[0]);
+		var canvas = $canvas.length === 1 ? $canvas[0] : new NodeProxy($canvas);
+		var controls = new THREE.OrbitControls(camera, document, canvas);
 		controls.target.y = 5;
 		var restrictToBounds = function(number, bound) {
 			return Math.min(Math.max(number, -bound), bound);
 		};
 		$canvas.on("renderOptionsChange", function(event) {
-			var options = event.originalEvent.detail;
+			var options = event.detail;
 			controls.autoRotate = options.rotateCamera;
 			controls.autoRotateSpeed = options.rotateCameraSpeed;
 		});
@@ -268,7 +283,7 @@ var PreviewRenderer = (function() {
 			var animationCallbacks = [];
 			
 			var camera = createCamera();
-			var controls = createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
+			createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
 			
 			var renderers = [];
 			
@@ -279,6 +294,11 @@ var PreviewRenderer = (function() {
 					$canvas : $area.find("canvas"),
 					camera : camera
 				};
+				// stop any parent event handlers when inside canvas
+				data.$canvas.on("click", function(event) {
+					event.stopPropagation();
+					event.preventDefault();
+				});
 				var renderer = new CanvasRenderer(data, animationCallbacks);
 				renderers.push(renderer);
 			});
@@ -295,7 +315,6 @@ var PreviewRenderer = (function() {
 		var dispatch = function() {
 			$canvasAreas.each(function() {
 				var $area = $(this);
-				//TODO remove fix for https://github.com/jquery/jquery/issues/1867 in all listeners
 				var event = new CustomEvent("renderOptionsChange", { detail : options });
 				$area.find("canvas")[0].dispatchEvent(event);
 			});
