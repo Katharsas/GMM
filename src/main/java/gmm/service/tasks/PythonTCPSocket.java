@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -14,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,6 +163,10 @@ public class PythonTCPSocket {
 				logger.info("Internal thread: starting execution...");
 				try {
 					startPythonScript();
+					final int waitUntilStartedMillis = 500;
+					try {
+						Thread.sleep(waitUntilStartedMillis);
+					} catch (final InterruptedException e) {logger.debug("", e);}
 					connectAndSend();
 				}
 				catch(final RuntimeException e) {
@@ -175,19 +179,31 @@ public class PythonTCPSocket {
 		}
 		
 		private void startPythonScript() {
-			final Path scriptPath = config.getBlenderPythonScript();
-			final Path scriptRelative = config.blender.relativize(scriptPath);
+			final Path blenderPathAbsolute = config.blender.resolve("blender");
+			final Path scriptPathAbsolute = config.getBlenderPythonScript();
 			try {
+				// create blender process
 				final ProcessBuilder pb = new ProcessBuilder(
-						"\"" + config.blender.resolve("blender") + "\"",
+						blenderPathAbsolute.toString(),
+						"-noaudio",
 						"--background",
 						"--python",
-						"\"" + scriptRelative + "\"",
+						scriptPathAbsolute.toString(),
 						"--");// append script args here
-				pb.directory(config.blender.toFile());
-				pb.redirectOutput(Redirect.INHERIT);
-				pb.redirectError(Redirect.INHERIT);
-				pb.start();
+				final Process process = pb.start();
+				
+				// log output from process
+				final Stream<String> standardLines = 
+		                new BufferedReader(new InputStreamReader(process.getInputStream())).lines();
+				final Stream<String> errorLines = 
+		                new BufferedReader(new InputStreamReader(process.getErrorStream())).lines();
+				new Thread(()->{
+					standardLines.forEach(line -> {logger.debug(line);});
+				}).start();
+				new Thread(()->{
+					errorLines.forEach(line -> {logger.warn(line);});
+				}).start();
+				
 			} catch (final IOException e1) {
 				throw new UncheckedIOException(e1);
 			}

@@ -16,6 +16,9 @@
 			<Pattern>%d{HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
 	</appender>
 	
   	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -32,6 +35,9 @@
 			<Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>DEBUG</level>
+		</filter>
   	</appender>
   	
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
@@ -42,12 +48,5 @@
 		<appender-ref ref="consoleAppender" />
 		<appender-ref ref="dailyRollingFileAppender" />
 	</root>
-  	
-<!-- 	<logger name="org.codingpedia" additivity="false"> -->
-<!-- 	    <level value="DEBUG" /> -->
-<!-- 		<appender-ref ref="dailyRollingFileAppender"/> -->
-<!-- 		<appender-ref ref="minuteRollingFileAppender"/> -->
-<!-- 		<appender-ref ref="consoleAppender" /> -->
-<!-- 	</logger> -->
 
 </configuration>
