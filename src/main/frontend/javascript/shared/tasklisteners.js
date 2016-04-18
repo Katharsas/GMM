@@ -126,13 +126,73 @@ export default function(onswitch, onchange, onremove, onedit) {
 			});
 			
 			/* -------------------------------------------------------
-			 * ASSET TASK
+			 * ASSET TASK - PREVIEW
 			 * -------------------------------------------------------
 			 */
 			
 			var $preview = $body.find(".task-preview");
-			var $files = $body.find(".task-files");
+			if($preview.length > 0)
+			{
+				//download from preview
+				$preview.find(".task-preview-button-original").click(function() {
+					downloadFromPreview(id, 'original');
+				});
+				$preview.find(".task-preview-button-newest").click(function() {
+					downloadFromPreview(id, 'newest');
+				});
+				
+				//3D preview
+				var $canvasContainer = $preview.find(".task-preview-visuals");
+				var renderer = PreviewRenderer($canvasContainer);
+				
+				var $renderOptions = $preview.find(".task-preview-renderOptions");
+				
+				var $renderSolid = $renderOptions.find(".renderOption-solid");
+				var $renderWire = $renderOptions.find(".renderOption-wire");
+				// render mode
+				$renderOptions.find(".renderOption-solid").on("click", function() {
+					$renderWire.removeClass("active");
+					$renderSolid.addClass("active");
+					renderer.setOptions({showWireframe: false});
+				});
+				$renderOptions.find(".renderOption-wire").on("click", function() {
+					$renderSolid.removeClass("active");
+					$renderWire.addClass("active");
+					renderer.setOptions({showWireframe: true});
+				});
+				// checkboxes
+				var $shadows = $renderOptions.find(".renderOption-shadows input");
+				$shadows.prop('checked', renderer.getOption("shadowsEnabled"));
+				$shadows.on("change", function() {
+					renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
+				});
+				var $rotLight = $renderOptions.find(".renderOption-rotLight input");
+				$rotLight.prop('checked', renderer.getOption("rotateLight"));
+				$rotLight.on("change", function() {
+					renderer.setOptions({rotateLight: $(this).is(":checked")});
+				});
+				var $rotCamera = $renderOptions.find(".renderOption-rotCamera input");
+				$rotCamera.prop('checked', renderer.getOption("rotateCamera"));
+				$rotCamera.on("change", function() {
+					renderer.setOptions({rotateCamera: $(this).is(":checked")});
+				});
+				// number input
+				var $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
+				$rotCameraSpeed.val(renderer.getOption("rotateCameraSpeed"));
+				$rotCameraSpeed.on("input", function() {
+					var speed = parseFloat($rotCameraSpeed.val());
+					if (!isNaN(speed) && speed < 100) {
+						renderer.setOptions({rotateCameraSpeed: speed});
+					}
+				});
+			}
 			
+			/* -------------------------------------------------------
+			 * ASSET TASK - FILES
+			 * -------------------------------------------------------
+			 */
+			
+			var $files = $body.find(".task-files");
 			if ($files.length > 0) {
 				
 				//file trees
@@ -156,14 +216,6 @@ export default function(onswitch, onchange, onremove, onedit) {
 				);
 				
 				var $fileOps = $files.find(".task-files-operations");
-				
-				//download from preview
-				$preview.find(".task-preview-button-original").click(function() {
-					downloadFromPreview(id, 'original');
-				});
-				$preview.find(".task-preview-button-newest").click(function() {
-					downloadFromPreview(id, 'newest');
-				});
 				
 				//upload
 				var $inputFile = $fileOps.find(".task-files-uploadInput");
@@ -206,20 +258,6 @@ export default function(onswitch, onchange, onremove, onedit) {
 							});
 					}, "Delete " + filePath() + " ?");
 				});
-			}
-			
-			/* -------------------------------------------------------
-			 * 3D PREVIEW
-			 * -------------------------------------------------------
-			 */
-			
-			var $canvasContainer = $preview.find(".task-preview-visuals");
-			var $renderOptions = $preview.find(".task-preview-renderOptions");
-
-			//TODO
-			if($renderOptions.length > 0) {
-				var renderer = PreviewRenderer($canvasContainer);
-				renderer.update();
 			}
 		}
 	};

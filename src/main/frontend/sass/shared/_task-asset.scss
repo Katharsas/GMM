@@ -1,3 +1,5 @@
+@import '../include';
+
 /* //////////////////////////////////////////////////
  * Preview
  * //////////////////////////////////////////////////*/
@@ -54,6 +56,9 @@
 	}
 	.button {
 		min-width: 100px;
+	}
+	.button.active {
+		border-bottom: 1px solid $c-orange;
 	}
 	label {
 		margin-left:10px;

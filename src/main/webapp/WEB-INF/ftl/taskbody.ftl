@@ -111,71 +111,71 @@
 	    </#if>
 	  <!-- 3D Mesh Preview -->
 	    <#if task.getType().name() == 'MESH'>
-	    	<table class="task-preview">
-    			<colgroup>
-			       <col span="1" style="width: 50%;">
-			       <col span="1" style="width: 0%;">
-			       <col span="1" style="width: 50%;">
-			    </colgroup>
-				<tr class="task-preview-buttons">
-			    	<#if task.originalAsset?has_content>
-			    		<#assign asset = task.originalAsset/>
-				    	<td class="task-preview-button-original task-button button">
-				    		<span class="left" style="font-weight:bold">Original:</span>
-				    		<span class="right">
-				    			${asset.polyCount} &#x25E3;
-				    		</span>
-				    		<div class="clear"></div>
-				    		<span class="left">${asset.fileName?html}</span>
-				    		<span class="right">${asset.sizeInKB} KB</span>
-				    	</td>
-			    	<#else><td></td>
-			    	</#if>
-			    	<td></td>
-			    	<#if task.newestAsset?has_content>
-			    		<#assign asset = task.newestAsset/>
-				    	<td class="task-preview-button-newest task-button button">
-				    		<span class="left" style="font-weight:bold">Newest:</span>
-				    		<span class="right">
-				    			${asset.polyCount} &#x25E3;
-				    		</span>
-				    		<div class="clear"></div>
-				    		<span class="left">${asset.fileName?html}</span>
-				    		<span class="right">${asset.sizeInKB} KB</span>
-				    	</td>
-			    	<#else><td></td>
-			    	</#if>
-		    	</tr>
-		    	<tr class="task-preview-visuals center">
-		    		<#if task.originalAsset?has_content>
-		    			<#assign asset = task.originalAsset/>
-			    		<td class="task-preview-visual clickable"
-			    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}">
-			    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}">
-			    				<canvas></canvas>
-				    		</a>
-				    	</td>
-				    <#else><td></td>
-			    	</#if>
-			    	<td></td>
-			    	<#if task.newestAsset?has_content>
-			    		<#assign asset = task.newestAsset/>
-				    	<td class="task-preview-visual clickable"
-				    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-				    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-				    			<canvas></canvas>
-				    		</a>
-				    	</td>
-				    <#else><td></td>
-			    	</#if>
-			    </tr>
-				<#if task.originalAsset?has_content>
+	    	<#if task.originalAsset?has_content || task.newestAsset?has_content>
+		    	<table class="task-preview">
+	    			<colgroup>
+				       <col span="1" style="width: 50%;">
+				       <col span="1" style="width: 0%;">
+				       <col span="1" style="width: 50%;">
+				    </colgroup>
+					<tr class="task-preview-buttons">
+				    	<#if task.originalAsset?has_content>
+				    		<#assign asset = task.originalAsset/>
+					    	<td class="task-preview-button-original task-button button">
+					    		<span class="left" style="font-weight:bold">Original:</span>
+					    		<span class="right">
+					    			${asset.polyCount} &#x25E3;
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.fileName?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+					    	</td>
+				    	<#else><td></td>
+				    	</#if>
+				    	<td></td>
+				    	<#if task.newestAsset?has_content>
+				    		<#assign asset = task.newestAsset/>
+					    	<td class="task-preview-button-newest task-button button">
+					    		<span class="left" style="font-weight:bold">Newest:</span>
+					    		<span class="right">
+					    			${asset.polyCount} &#x25E3;
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.fileName?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+					    	</td>
+				    	<#else><td></td>
+				    	</#if>
+			    	</tr>
+			    	<tr class="task-preview-visuals center">
+			    		<#if task.originalAsset?has_content>
+			    			<#assign asset = task.originalAsset/>
+				    		<td class="task-preview-visual clickable"
+				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}">
+				    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}">
+				    				<canvas></canvas>
+					    		</a>
+					    	</td>
+					    <#else><td></td>
+				    	</#if>
+				    	<td></td>
+				    	<#if task.newestAsset?has_content>
+				    		<#assign asset = task.newestAsset/>
+					    	<td class="task-preview-visual clickable"
+					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+					    			<canvas></canvas>
+					    		</a>
+					    	</td>
+					    <#else><td></td>
+				    	</#if>
+				    </tr>
 			    	<tr>
 			    		<td class="task-preview-renderOptions" colspan="3">
 			    			<div class="renderOptionsText left">Rendering:</div>
 			    			<div class="renderOptionGroup button-group left">
-		    					<div class="button left active">Solid</div>
-			    				<div class="button left">Wireframe</div>
+		    					<div class="button left renderOption-solid active">Solid</div>
+			    				<div class="button left renderOption-wire">Wireframe</div>
 			    				<div class="clear"></div>
 			    			</div>
 			    			<div class="renderOptionGroup right">
@@ -202,8 +202,8 @@
 						<#else><td></td>
 						</#if>
 			    	</tr>
-		    	</#if>
-			</table>
+				</table>
+			</#if>
 	    </#if>
 <!-- Files -->
 		<#if !(task.getType().name() == 'GENERAL')>

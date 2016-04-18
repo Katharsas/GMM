@@ -1,10 +1,22 @@
-var $canvasControls = $("#canvasControls");
 
-PreviewRenderer($canvasControls);
+var $canvasControls = $("<div></div>").attr("id", "canvasControls");
+
+var $preview1 = $("<div/>")
+	.addClass("task-preview-visual")
+	.attr("data-url", "./models/original.json")
+	.append($("<canvas></canvas>"));
+
+var $preview2 = $("<div/>")
+	.addClass("task-preview-visual")
+	.attr("data-url", "./models/new.json")
+	.append($("<canvas></canvas>"));
+
+$canvasControls.append($preview1, $preview2);
 
 
 
-$("#toggleWireframe").on("click", function(event) {
-	var height = parseInt($canvasControls.css("height"));
-	$canvasControls.css("height", height + "%");
-});
+var renderer = PreviewRenderer($canvasControls);
+
+$("body").prepend($canvasControls);
+
+renderer.update();

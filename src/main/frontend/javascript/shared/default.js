@@ -1,6 +1,5 @@
 import "./jquery/jqueryFileTree";
 import "./jquery/jqueryDraggable";
-import "./jquery/jqueryResize";
 
 import $ from "../lib/jquery";
 import Ajax from "./ajax";

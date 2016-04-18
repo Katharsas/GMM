@@ -4,7 +4,7 @@
 
 
 /*
- * Dependencies: JQuery, Three.js, OrbitControls.js, jqueryResize.js
+ * Dependencies: JQuery, Three.js, OrbitControls.js
  *
  * TODO: proper cleanup on task collapse: https://github.com/mrdoob/three.js/issues/7391 (event handlers!)
  */
@@ -129,13 +129,14 @@ var PreviewRenderer = (function() {
 		var loadMeshIntoScene = function($canvas, jsonPath, scene) {
 			var loader = new THREE.JSONLoader();
 
-			// we need to register event handler immediatly but load is async
-			var initOptions;
-			var setInitOptions = function(event) {
-				initOptions = event.detail;
+			// to not miss out on the first renderOptionsChange event,
+			// we should register event handler immediatly, but cant because load is async
+			//  => cache events for loader, until loader can register proper listener
+			var chached;
+			var cacheRenderOptions = function(event) {
+				chached = event.detail;
 			};
-			// save options until we can register proper handler
-			$canvas.on("renderOptionsChange", setInitOptions);
+			$canvas.on("renderOptionsChange", cacheRenderOptions);
 			
 			loader.load(jsonPath, function(geometry, materials) {
 				var material = new THREE.MeshLambertMaterial();
@@ -145,10 +146,10 @@ var PreviewRenderer = (function() {
 				$canvas.on("renderOptionsChange", function(event) {
 					setOptions(event.detail, material, mesh);
 				});
-				// remove init handler and apply init options
-				$canvas.off("renderOptionsChange", setInitOptions);
-				if(initOptions) {
-					setOptions(initOptions, material, mesh);
+				// remove cache-handler and apply options from cache if event already occured
+				$canvas.off("renderOptionsChange", cacheRenderOptions);
+				if(chached) {
+					setOptions(chached, material, mesh);
 				}
 			});
 			var setOptions = function(options, material, mesh) {
@@ -161,29 +162,35 @@ var PreviewRenderer = (function() {
 			};
 		};
 		
-		var initCanvas = function($canvas, funcId, renderer, camera) {
-			var width, height;
-			var updateCanvasSize = function() {
-				width = $canvas.width();
-				height = $canvas.height();
-
-				camera.aspect = $canvas.width() / $canvas.height();
-				camera.updateProjectionMatrix();
-				renderer.setSize(width, height, false);
+		function Size2D(width, height) {
+			this.width = width;
+			this.height = height;
+			this.equals = function(size) {
+				return size.width === width && size.height === height;
 			};
-			// needs jqueryResize to work
-			$($canvas).resize(function() {
-				waitForFinalEvent(updateCanvasSize, 50, funcId);
-			});
-			updateCanvasSize();
-		};
-
+		}
+		
 		/**
-		 * Allows to call a function only after a certain amount of time passed without the same function being called again.
-		 * This is useful to delay expensive event handlers, that get fired rapidly, until events "calm down".
+		 * @param {Size2D} canvasSize - width & height used to update camera & renderer
+		 */
+		var updateCanvasSize = function(canvasSize, camera, renderer) {
+			var width = canvasSize.width;
+			var height = canvasSize.height;
+
+			camera.aspect = width / height;
+			camera.updateProjectionMatrix();
+			renderer.setSize(width, height, false);
+		};
+		
+		/**
+		 * Allows to call a function only after a certain amount of time passed without the same
+		 * function being called again. This is useful to delay expensive event handlers, that get
+		 * fired rapidly, until events "calm down".
+		 * 
 		 * @param {callback} callback
 		 * @param {int} ms - the time that must pass until callback will be called
-		 * @param {uniqueId} - if the same unqiueId gets passed twice before time ran out on the first, timer will be reset
+		 * @param {uniqueId} - identifies the function to delay. If the same id gets passed twice
+		 * 		before time ran out on the first, timer will be reset
 		 */
 		var waitForFinalEvent = (function() {
 			var timers = {};
@@ -197,6 +204,7 @@ var PreviewRenderer = (function() {
 				timers[uniqueId] = setTimeout(callback, ms);
 			};
 		})();
+		
 
 		/**
 		 * CanvasRenderer
@@ -205,14 +213,27 @@ var PreviewRenderer = (function() {
 			
 			var $canvas = data.$canvas;
 			var geometryPath = data.geometryPath;
+			var camera = data.camera;
 			var scene = createScene($canvas, animationCallbacks);
 			loadMeshIntoScene($canvas, geometryPath, scene);
 			var renderer = createRenderer($canvas);
-			initCanvas($canvas, geometryPath, renderer, data.camera);
+			
+			var canvasSize = new Size2D(0, 0);
+			// checks if canvas size changed and updates stuff accordingly
+			var checkResize = function() {
+				var newCanvasSize = new Size2D($canvas.width(), $canvas.height());
+				if(!canvasSize.equals(newCanvasSize)) {
+					canvasSize = newCanvasSize;
+					waitForFinalEvent(function() {
+						updateCanvasSize(canvasSize, camera, renderer);
+					}, 50, geometryPath);
+				}
+			};
 			
 			return {
 				render : function() {
-					renderer.render(scene, data.camera);
+					checkResize();
+					renderer.render(scene, camera);
 				},
 				destroy : function() {
 					renderer.forceContextLoss();
@@ -336,9 +357,14 @@ var PreviewRenderer = (function() {
 		render();
 		
 		return {
-			options: options,
-			update: function() {
+			setOptions: function(changedOptions) {
+				for(var option in changedOptions) {
+					options[option] = changedOptions[option];
+				}
 				dispatch();
+			},
+			getOption: function(option) {
+				return options[option];
 			},
 			destroy: function() {
 				for(var renderer of renderers) {
