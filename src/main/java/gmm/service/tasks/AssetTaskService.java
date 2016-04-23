@@ -37,17 +37,10 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	public final AssetTask<A> create(TaskForm form) {
 		final Path relative = getAssetPath(form);
 		final AssetTask<A> task = createNew(relative, session.getUser());
-		
-		//If original asset exists, create previews and asset
-		final Path original = config.ASSETS_ORIGINAL.resolve(relative);
-		if(original.toFile().isFile()) {
-			final A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
-			final Path newAsset = config.ASSETS_NEW.resolve(relative);
-			final Path previewFolder = newAsset.resolve(config.SUB_PREVIEW);
-			createPreview(original, previewFolder, asset);
-			task.setOriginalAsset(asset);
-		}
 		edit(task, form);
+		final A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
+		setupAssetUpdatePreview(task, asset);
+		updateAssetUpdatePreview(task, AssetGroupType.NEW);
 		return task;
 	}
 	
@@ -91,12 +84,49 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		} catch (final IOException e) {
 			throw new UncheckedIOException("Could not retrieve bytes from uploaded file '"+fileName+"'!", e);
 		}
-		
 		if(isAsset) {
-			final A asset = createAsset(Paths.get(fileName), AssetGroupType.NEW);
-			final Path previewFolder = assetFolder.resolve(config.SUB_PREVIEW);
-			createPreview(filePath, previewFolder, asset);
-			task.setNewestAsset(asset);
+			final A asset = createAsset(filePath.getFileName(), AssetGroupType.NEW);
+			boolean updated = setupAssetUpdatePreview(task, asset);
+			if(!updated) {
+				throw new IllegalStateException("Could not update task with new file '"+fileName+"' (not found)!");
+			}
+		}
+	}
+	
+	/**
+	 * @return True, if the given task has an asset of the given groupType and a corresponding file
+	 * exists.
+	 */
+	public boolean updateAssetUpdatePreview(AssetTask<A> task, AssetGroupType type) {
+		final A asset = task.getAsset(type);
+		if (asset == null) {
+			return false;
+		} else {
+			return setupAssetUpdatePreview(task, asset);
+		}
+	}
+	
+	/**
+	 * Sync task with file system: <br>
+	 * Look for asset file that matches the given asset data. If found, set asset object on task and
+	 * create preview of it. If not, set asset to null (existing previews will not be deleted).
+	 * 
+	 * @param task - The tasks whose asset data to update.
+	 * @param type - Define which of the task's asset to be updated.
+	 * @return True, if a corresponding file could be found for this asset.
+	 */
+	private boolean setupAssetUpdatePreview(AssetTask<A> task, A asset) {
+		AssetGroupType type = asset.getGroupType();
+		final Path previewFolder = task.getPreviewFolderPath();
+		final Path assetPathAbsolute = task.getFilePathAbsolute(asset);
+		
+		if(assetPathAbsolute.toFile().isFile()) {
+			createPreview(assetPathAbsolute, previewFolder, asset);
+			task.setAsset(asset, type);
+			return true;
+		} else {
+			task.setAsset(null, type);
+			return false;
 		}
 	}
 	

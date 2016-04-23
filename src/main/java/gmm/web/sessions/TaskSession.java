@@ -11,7 +11,6 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
-import gmm.domain.task.asset.Asset;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
@@ -103,9 +102,8 @@ public class TaskSession {
 		} else {
 			// else check for assetpath conflicts
 			@SuppressWarnings("unchecked")
-			final Class<? extends AssetTask<?>> clazz =
-					(Class<? extends AssetTask<?>>) type.toClass();
-			 final AssetImportOperations<? extends Asset, ? extends AssetTask<?>> ops =
+			final Class<? extends AssetTask<?>> clazz = (Class<? extends AssetTask<?>>) type.toClass();
+			final AssetImportOperations<?> ops =
 					 new AssetImportOperations<>(form, clazz, data::add);
 			 
 			importer = new BundledMessageResponses<>(

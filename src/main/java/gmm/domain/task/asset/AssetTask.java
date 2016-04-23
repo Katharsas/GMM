@@ -48,18 +48,23 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 	
 	public Path getOriginalAssetPath() {
-		return getFilePath(getOriginalAsset());
+		return getFilePathAbsolute(getOriginalAsset());
 	}
 	
 	public Path getNewestAssetPath() {
-		return getFilePath(getNewestAsset());
+		return getFilePathAbsolute(getNewestAsset());
+	}
+	
+	public Path getPreviewFolderPath() {
+		return config.ASSETS_NEW.resolve(getAssetPath()).resolve(config.SUB_PREVIEW);
 	}
 	
 	/**
 	 * @return Absolute file path to the given asset file assuming the asset can be found under
 	 * 		this AssetTask's relative path.
 	 */
-	private Path getFilePath(Asset asset) {
+	public Path getFilePathAbsolute(Asset asset) {
+		Objects.requireNonNull(asset);
 		Objects.requireNonNull(config);
 		if(asset.getGroupType().isOriginal()) {
 			return config.ASSETS_ORIGINAL.resolve(getAssetPath());
@@ -69,10 +74,25 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		}
 	}
 	
-	//Setters, Getters---------------------------------
-	
 	public Path getAssetPath() {
 		return assetPath;
+	}
+	
+	public A getAsset(AssetGroupType type) {
+		return type.isOriginal() ? getOriginalAsset() : getNewestAsset();
+	}
+	
+	public void setAsset(A asset, AssetGroupType type) {
+		if(asset != null) {
+			asset.setFileSize(getFilePathAbsolute(asset));
+			asset.assertAttributes();
+		}
+		if(type.isOriginal()) {
+			this.originalAsset = asset;
+		} else {
+			this.newestAsset = asset;
+			this.newestAssetLastUpdate = DateTime.now();
+		}
 	}
 	
 	public A getOriginalAsset() {
@@ -80,9 +100,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 
 	public void setOriginalAsset(A originalAsset) {
-		originalAsset.setFileSize(getFilePath(originalAsset));
-		originalAsset.assertAttributes();
-		this.originalAsset = originalAsset;
+		setAsset(originalAsset, AssetGroupType.ORIGINAL);
 	}
 	
 	public A getNewestAsset() {
@@ -90,10 +108,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 	
 	public void setNewestAsset(A newestAsset) {
-		newestAsset.setFileSize(getFilePath(newestAsset));
-		newestAsset.assertAttributes();
-		this.newestAsset = newestAsset;
-		this.newestAssetLastUpdate = DateTime.now();
+		setAsset(newestAsset, AssetGroupType.NEW);
 	}
 	
 	public String getNewestAssetNocache() {

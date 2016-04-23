@@ -1,23 +1,36 @@
 package gmm.web.sessions;
 
 
+import java.util.HashMap;
+import java.util.stream.StreamSupport;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import gmm.collections.Collection;
+import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.task.GeneralTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetImportOperations;
+import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.DataAccess;
+import gmm.service.tasks.AssetTaskService;
+import gmm.service.tasks.TaskServiceFinder;
+import gmm.util.Util;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -30,18 +43,68 @@ import gmm.web.forms.TaskForm;
 public class AdminSession {
 	
 	@Autowired private DataAccess data;
-	
-	public void cleanUp() {
-		taskLoader = null;
-		assetImporter = null;
-		clearImportPaths();
-	}
+	@Autowired private TaskServiceFinder serviceFinder;
 
 	/*--------------------------------------------------
 	 * Load tasks from file
 	 * ---------------------------------------------------*/
 	
-	public BundledMessageResponses<? extends Task> taskLoader;
+	private BundledMessageResponses<? extends Task> generalTaskLoader;
+	private BundledMessageResponses<String> assetTaskLoader;
+	private Multimap<Class<? extends Task>, Task> multiMap;
+	
+	public void prepareLoadTasks(Collection<Task> tasks) {
+		// split tasks into types to use correct conflict checker for loading
+		multiMap = HashMultimap.create();
+		StreamSupport.stream(tasks.spliterator(), false)
+			.forEach(task -> multiMap.put(task.getClass(), task));
+	}
+	
+	public List<MessageResponse> firstLoadGeneralCheckBundle() {
+		java.util.Collection<Task> tasks = multiMap.get(GeneralTask.class);
+		
+		final TaskLoaderOperations ops = new TaskLoaderOperations();
+		generalTaskLoader = new BundledMessageResponses<>(
+				tasks, ops, ()->{generalTaskLoader = null;});
+		
+		return generalTaskLoader.loadFirstBundle();
+	}
+	
+	public List<MessageResponse> firstLoadAssetCheckBundle() {
+		final Collection<Task> assetTasks = new HashSet<>(Task.class);
+		assetTasks.addAll(multiMap.get(TextureTask.class));
+		assetTasks.addAll(multiMap.get(ModelTask.class));
+		
+		HashMap<String, AssetTask<?>> pathToTask = new HashMap<>();
+		for(Task task : assetTasks) {
+			AssetTask<?> assetTask = (AssetTask<?>) task;
+			pathToTask.put(assetTask.getAssetPath().toString(), assetTask);
+		}
+		final AssetImportOperations<?> ops = new AssetImportOperations<>(
+				AssetTask.class, (path) -> {
+					AssetTask<?> task = pathToTask.get(path);
+					task.onLoad();
+					return updateAssetTaskAssets(task);
+				}, data::add);
+		
+		assetTaskLoader = new BundledMessageResponses<String>(
+				pathToTask.keySet(), ops, ()->{assetTaskLoader = null;});
+		
+		return assetTaskLoader.loadFirstBundle();
+	}
+	
+	private <A extends Asset> AssetTask<A> updateAssetTaskAssets(AssetTask<A> task) {
+		AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+		service.updateAssetUpdatePreview(task, AssetGroupType.ORIGINAL);
+		service.updateAssetUpdatePreview(task, AssetGroupType.NEW);
+		return task;
+	}
+	
+	public List<MessageResponse> nextLoadCheckBundle(String operation, boolean doForAllFlag) {
+		return (generalTaskLoader != null ? generalTaskLoader : assetTaskLoader)
+				.loadNextBundle(operation, doForAllFlag);
+	}
+
 	
 	/*--------------------------------------------------
 	 * Import asset tasks
@@ -77,8 +140,7 @@ public class AdminSession {
 	public List<MessageResponse> firstImportCheckBundle(TaskForm form) {
 		final Class<? extends AssetTask<?>> type = areTexturePaths ?
 				TextureTask.class : ModelTask.class;
-		final AssetImportOperations<? extends Asset, ? extends AssetTask<?>> ops =
-				new AssetImportOperations<>(form, type, data::add);
+		final AssetImportOperations<?> ops = new AssetImportOperations<>(form, type, data::add);
 		
 		assetImporter = new BundledMessageResponses<>(
 				getImportPaths(), ops, ()->{assetImporter = null;});

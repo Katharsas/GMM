@@ -16,7 +16,7 @@ public enum AssetGroupType {
 		throw new IllegalArgumentException();
 	}
 	
-	private final  String previewFileName;
+	private final String previewFileName;
 	private AssetGroupType(String previewFileName) {
 		this.previewFileName = previewFileName;
 	}

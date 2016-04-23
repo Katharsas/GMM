@@ -147,7 +147,7 @@
 				    	<#else><td></td>
 				    	</#if>
 			    	</tr>
-			    	<tr class="task-preview-visuals center">
+			    	<tr class="task-preview-visuals task-preview-3D center">
 			    		<#if task.originalAsset?has_content>
 			    			<#assign asset = task.originalAsset/>
 				    		<td class="task-preview-visual clickable"

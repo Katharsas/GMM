@@ -5,8 +5,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import gmm.domain.task.asset.Asset;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService;
 import gmm.service.Spring;
@@ -33,22 +33,35 @@ import gmm.web.forms.TaskForm;
  * 
  * @author Jan Mothes
  */
-public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> extends MessageResponseOperations<String> {
+public class AssetImportOperations<E extends AssetTask<?>> extends MessageResponseOperations<String> {
 
 	private final FileService fileService = Spring.get(FileService.class);
 	private final DataConfigService config = Spring.get(DataConfigService.class);
 	private final DataAccess data = Spring.get(DataAccess.class);
 	private final TaskServiceFinder creator = Spring.get(TaskServiceFinder.class);
 	
-	private final Class<E> clazz;
-	private final TaskForm form;
-	private final Consumer<E> onCreate;
-	private E conflictingTask;
+	private final Class<? extends AssetTask<?>> clazz;
+	private final Function<String, AssetTask<?>> create;
+	private final Consumer<AssetTask<?>> onCreate;
+	private AssetTask<?> conflictingTask;
 	
-	public AssetImportOperations(TaskForm form, Class<E> clazz, Consumer<E> onCreate) {
-		this.form = form;
+	public AssetImportOperations(TaskForm form, Class<E> clazz, Consumer<AssetTask<?>> onCreate) {
+		this.create = (assetPath) -> {
+			form.setAssetPath(assetPath);
+			return creator.create(clazz, form);
+		};
 		this.clazz = clazz;
 		this.onCreate = onCreate;
+	}
+	
+	public AssetImportOperations(Class<E> clazz, Function<String, AssetTask<?>> create, Consumer<AssetTask<?>> onCreate) {
+		this.clazz = clazz;
+		this.create = create;
+		this.onCreate = onCreate;
+	}
+	
+	private AssetTask<?> create(String assetPath) {
+		return create.apply(assetPath);
 	}
 	
 	private final Conflict<String> taskConflict = new Conflict<String>() {
@@ -78,11 +91,7 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		});
 		map.put("overwriteTaskAquireData", new Operation<String>() {
 			@Override public String execute(String assetPath) {
-				final E newTask = create(assetPath);
-				final T asset = conflictingTask.getNewestAsset();
-				if (asset != null && conflictingTask.getNewestAssetPath().toFile().isFile()) {
-					newTask.setNewestAsset(asset);
-				}
+				final AssetTask<?> newTask = create(assetPath);
 				data.remove(conflictingTask);
 				onCreate.accept(newTask);
 				return "Overwriting existing task and aquiring existing data for path \""+assetPath+"\" !";
@@ -112,18 +121,13 @@ public class AssetImportOperations<T extends Asset, E extends AssetTask<T>> exte
 		return map;
 	}
 	
-	private E create(String assetPath) {
-		form.setAssetPath(assetPath);
-		return creator.create(clazz, form);
-	}
-	
 	@Override
 	public Conflict<String> onLoad(String assetPathString) {
 		Path assetPath = Paths.get(assetPathString);
 		assetPath = fileService.restrictAccess(assetPath, config.ASSETS_NEW);
 
 		// full AssetTask conflict
-		for (final E t : data.getList(clazz)) {
+		for (final AssetTask<?> t : data.getList(clazz)) {
 			if (t.getAssetPath().equals(assetPath)) {
 				conflictingTask = t;
 				return taskConflict;

@@ -30,9 +30,12 @@ var Database = function() {
 		if(dir === undefined || dir === "") return;
 		var $confirm = Dialogs.confirm(function() {
 			Dialogs.hideDialog($confirm);
-			global.ajaxChannel = new ResponseBundleHandler('tasks');
-			global.ajaxChannel.start({loadAssets:false, file:dir}, function() {
-				refreshDatabaseFileTree();
+			var url = contextUrl + "/admin/load/general";
+			global.ajaxChannel = new ResponseBundleHandler(url, "tasks");
+			global.ajaxChannel.start({file:dir}, function() {
+				var url = contextUrl + "/admin/load/asset";
+				global.ajaxChannel = new ResponseBundleHandler(url, "assets");
+				global.ajaxChannel.start({});
 			});
 		}, "Load all tasks from "+dir+"?");
 	});

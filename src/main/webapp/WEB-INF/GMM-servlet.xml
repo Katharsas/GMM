@@ -15,5 +15,6 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 	
+	<!-- Since Java-Config is used, no configuration here -->
 </beans>
 

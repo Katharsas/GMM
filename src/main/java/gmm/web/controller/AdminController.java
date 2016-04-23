@@ -16,15 +16,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import gmm.collections.Collection;
 import gmm.collections.List;
 import gmm.domain.Label;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.FileService.PathFilter;
-import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.TaskLoaderOperations;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
@@ -158,41 +157,61 @@ public class AdminController {
 	
 	/**
 	 * Task Loading <br>
-	 * -----------------------------------------------------------------<br/>
+	 * -----------------------------------------------------------------<br>
 	 */
 	
 	/**
-	 * Start message conversation .<br/>
+	 * Load tasks from file.
+	 * Start message conversation for general tasks. <br>
 	 * @see {@link #loadNextTask(String, boolean)}
 	 */
-	@RequestMapping(value = "/load", method = RequestMethod.POST)
+	@RequestMapping(value = "/load/general", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks(
 			@RequestParam("dir") Path dir) {
 		
 		backups.triggerTaskBackup();
 		final Path visible = config.TASKS;
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
-		final Iterable<? extends Task> tasks =
+		final Collection<Task> tasks =
 				xmlService.deserialize(visible.resolve(dirRelative), Task.class);
 		
-		// TODO: split into types with multimap and import assets seperatly
-		
-		session.taskLoader = new BundledMessageResponses<>(
-				tasks, new TaskLoaderOperations(), ()->{session.taskLoader = null;});
-		
-		return session.taskLoader.loadFirstBundle();
+		session.prepareLoadTasks(tasks);
+		return session.firstLoadGeneralCheckBundle();
 	}
 	
 	/**
-	 * Next message conversation. <br/>
-	 * Tasks will be loaded according to received user operations. <br/>
+	 * Next message conversation. <br>
+	 * Tasks will be loaded according to received user operations. <br>
 	 */
-	@RequestMapping(value = "/load/next", method = RequestMethod.POST)
+	@RequestMapping(value = "/load/general/next", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadNextTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.taskLoader.loadNextBundle(operation, doForAll);
+		return session.nextLoadCheckBundle(operation, doForAll);
+	}
+	
+	/**
+	 * Continue loading tasks from file.
+	 * Start message conversation for asset tasks. <br>
+	 * @see {@link #loadNextTask(String, boolean)}
+	 */
+	@RequestMapping(value = "/load/asset", method = RequestMethod.POST)
+	public @ResponseBody List<MessageResponse> loadAssetTasks() {
+		
+		return session.firstLoadAssetCheckBundle();
+	}
+	
+	/**
+	 * Next message conversation. <br>
+	 * Tasks will be loaded according to received user operations. <br>
+	 */
+	@RequestMapping(value = "/load/asset/next", method = RequestMethod.POST)
+	public @ResponseBody List<MessageResponse> loadNextAssetTask (
+			@RequestParam("operation") String operation,
+			@RequestParam("doForAll") boolean doForAll) {
+		
+		return loadNextTask(operation, doForAll);
 	}
 	
 	/**

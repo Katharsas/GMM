@@ -142,49 +142,51 @@ export default function(onswitch, onchange, onremove, onedit) {
 				});
 				
 				//3D preview
-				var $canvasContainer = $preview.find(".task-preview-visuals");
-				var renderer = PreviewRenderer($canvasContainer);
-				
-				var $renderOptions = $preview.find(".task-preview-renderOptions");
-				
-				var $renderSolid = $renderOptions.find(".renderOption-solid");
-				var $renderWire = $renderOptions.find(".renderOption-wire");
-				// render mode
-				$renderOptions.find(".renderOption-solid").on("click", function() {
-					$renderWire.removeClass("active");
-					$renderSolid.addClass("active");
-					renderer.setOptions({showWireframe: false});
-				});
-				$renderOptions.find(".renderOption-wire").on("click", function() {
-					$renderSolid.removeClass("active");
-					$renderWire.addClass("active");
-					renderer.setOptions({showWireframe: true});
-				});
-				// checkboxes
-				var $shadows = $renderOptions.find(".renderOption-shadows input");
-				$shadows.prop('checked', renderer.getOption("shadowsEnabled"));
-				$shadows.on("change", function() {
-					renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
-				});
-				var $rotLight = $renderOptions.find(".renderOption-rotLight input");
-				$rotLight.prop('checked', renderer.getOption("rotateLight"));
-				$rotLight.on("change", function() {
-					renderer.setOptions({rotateLight: $(this).is(":checked")});
-				});
-				var $rotCamera = $renderOptions.find(".renderOption-rotCamera input");
-				$rotCamera.prop('checked', renderer.getOption("rotateCamera"));
-				$rotCamera.on("change", function() {
-					renderer.setOptions({rotateCamera: $(this).is(":checked")});
-				});
-				// number input
-				var $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
-				$rotCameraSpeed.val(renderer.getOption("rotateCameraSpeed"));
-				$rotCameraSpeed.on("input", function() {
-					var speed = parseFloat($rotCameraSpeed.val());
-					if (!isNaN(speed) && speed < 100) {
-						renderer.setOptions({rotateCameraSpeed: speed});
-					}
-				});
+				var $canvasContainer = $preview.find(".task-preview-visuals.task-preview-3D");
+				if($canvasContainer.length > 0) {
+					var renderer = PreviewRenderer($canvasContainer);
+					
+					var $renderOptions = $preview.find(".task-preview-renderOptions");
+					
+					var $renderSolid = $renderOptions.find(".renderOption-solid");
+					var $renderWire = $renderOptions.find(".renderOption-wire");
+					// render mode
+					$renderOptions.find(".renderOption-solid").on("click", function() {
+						$renderWire.removeClass("active");
+						$renderSolid.addClass("active");
+						renderer.setOptions({showWireframe: false});
+					});
+					$renderOptions.find(".renderOption-wire").on("click", function() {
+						$renderSolid.removeClass("active");
+						$renderWire.addClass("active");
+						renderer.setOptions({showWireframe: true});
+					});
+					// checkboxes
+					var $shadows = $renderOptions.find(".renderOption-shadows input");
+					$shadows.prop('checked', renderer.getOption("shadowsEnabled"));
+					$shadows.on("change", function() {
+						renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
+					});
+					var $rotLight = $renderOptions.find(".renderOption-rotLight input");
+					$rotLight.prop('checked', renderer.getOption("rotateLight"));
+					$rotLight.on("change", function() {
+						renderer.setOptions({rotateLight: $(this).is(":checked")});
+					});
+					var $rotCamera = $renderOptions.find(".renderOption-rotCamera input");
+					$rotCamera.prop('checked', renderer.getOption("rotateCamera"));
+					$rotCamera.on("change", function() {
+						renderer.setOptions({rotateCamera: $(this).is(":checked")});
+					});
+					// number input
+					var $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
+					$rotCameraSpeed.val(renderer.getOption("rotateCameraSpeed"));
+					$rotCameraSpeed.on("input", function() {
+						var speed = parseFloat($rotCameraSpeed.val());
+						if (!isNaN(speed) && speed < 100) {
+							renderer.setOptions({rotateCameraSpeed: speed});
+						}
+					});
+				}
 			}
 			
 			/* -------------------------------------------------------
