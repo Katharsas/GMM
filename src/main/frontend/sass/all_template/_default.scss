@@ -67,6 +67,10 @@ html, body {
 html {
 	overflow-y: scroll;
 }
+ul {
+	padding: 0;
+	margin: 0;
+}
 * {
 	@include browser-property-prefix(box-sizing, border-box);
 }

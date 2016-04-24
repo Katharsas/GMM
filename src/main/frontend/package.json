@@ -11,18 +11,23 @@
 	"devDependencies": {
 		"path": "^0.12.7",
 		"gulp": "^3.9.1",
+		"gulp-if": "^2.0.0",
 		"gulp-notify": "^2.2.0",
 		"gulp-sass": "^2.2.0",
 		"gulp-sourcemaps": "^1.6.0",
+		"gulp-uglify": "^1.5.3",
 		"browserify": "^13.0.0",
 		"babelify": "^7.2.0",
 		"vinyl-source-stream": "^1.1.0",
+		"vinyl-buffer": "^1.0.0",
 		
 		"gulp-rename": "^1.2.2",
 		"event-stream": "^3.3.2",
 		
 		"babel-plugin-transform-es2015-for-of" : "^6.6.0",
-		"babel-plugin-transform-es2015-modules-commonjs" : "^6.7.0"
+		"babel-plugin-transform-es2015-parameters" : "^6.7.0",
+		"babel-plugin-transform-es2015-spread" : "^6.6.5",
+		"babel-plugin-transform-es2015-modules-commonjs" : "^6.7.4"
 	},
 	"unused": {
 		"gulp-babel": "^6.1.2",

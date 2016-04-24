@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,12 @@ public class ModelTaskService extends AssetTaskService<Model> {
 		final String version = asset.getGroupType().getPreviewFileName();
 		final Path target = previewPath.resolve(version + ".json");
 		final MeshData meshData = python.createPreview(sourceFile, target);
-		final Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
-		asset.setTextureNames(textures);
+		final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
+		final Set<String> textureNames = new HashSet<>(String.class);
+		for(final String path : texturePaths) {
+			textureNames.add(Paths.get(path).getFileName().toString());
+		}
+		asset.setTextureNames(textureNames);
 		asset.setPolyCount(meshData.getPolygonCount());
 	}
 	

@@ -189,15 +189,23 @@
 			    	</tr>
 			    	<tr>
 			    		<#if task.originalAsset?has_content>
-				    		<td class="task-preview-image" style="background-color:gray;">
-						    	textures
+				    		<td class="task-preview-textures">
+				    			<ul>
+				    				<#list task.originalAsset.textureNames as textureName>
+						    			<li>${textureName?html}</li>
+									</#list>
+				    			</ul>
 						    </td>
 						<#else><td></td>
 						</#if>
 						<td></td>
 						<#if task.newestAsset?has_content>
-				    		<td class="task-preview-image" style="background-color:gray;">
-						    	textures
+				    		<td class="task-preview-textures">
+				    			<ul>
+							    	<#list task.newestAsset.textureNames as textureName>
+							    		<li>${textureName?html}</li>
+									</#list>
+								</ul>
 						    </td>
 						<#else><td></td>
 						</#if>

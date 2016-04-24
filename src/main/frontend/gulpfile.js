@@ -8,12 +8,15 @@
 var notify = require("gulp-notify");
 
 var gulp = require("gulp");
+var gulpif = require('gulp-if');
 var sass = require("gulp-sass");
 var sourcemaps = require("gulp-sourcemaps");
 
+var uglify = require('gulp-uglify');
 var browserify = require("browserify");
 var babelify = require("babelify");
 var source = require("vinyl-source-stream");
+var buffer = require('vinyl-buffer');
 var rename = require("gulp-rename");
 var eventStream = require("event-stream");
 
@@ -31,13 +34,16 @@ var jsDir = "javascript/";
 var jsDest = "../webapp/resources/javascript/compiled/";
 //var jsFilter = "**/*.js";
 
-var jsSourceMaps = true;
+var jsSourceMaps = false;
+var jsMinify = true;
 
 //SASS
 
 var sassDir = "sass/";
 var sassDest = "../webapp/resources/css/compiled/";
 var sassFilter = "**/*.scss";
+
+var cssSourceMaps = false;
 
 /**
  * ########################
@@ -48,7 +54,7 @@ var sassFilter = "**/*.scss";
 function handleErrors() {
 	var args = Array.prototype.slice.call(arguments);
 	notify.onError({
-		title: "Compile Error",
+		title: "Compile Error in line <%= error.lineNumber %>",
 		message: "<%= error.message %>"
 	}).apply(this, args);
 	this.emit("end"); // Keep gulp from hanging on this task
@@ -62,6 +68,8 @@ function buildScript(files) {
 			};
 		var configBabelify = {
 				plugins: ["transform-es2015-modules-commonjs",
+				          "transform-es2015-parameters",
+				          "transform-es2015-spread",
 				          "transform-es2015-for-of"],
 			};
 		return browserify(configBrowserify)
@@ -69,6 +77,9 @@ function buildScript(files) {
 			.bundle()
 			.on("error", handleErrors)
 			.pipe(source(file))
+			.pipe(gulpif(jsMinify, buffer()))
+			.pipe(gulpif(jsMinify, uglify()))
+			.on("error", handleErrors)
 			.pipe(rename({
 				extname: ".bundle.js"
 			}))
@@ -92,9 +103,9 @@ gulp.task("build-js", function () {
 gulp.task("build-sass", function () {
 	return gulp
 		.src(sassDir + sassFilter)
-		.pipe(sourcemaps.init())
+		.pipe(gulpif(cssSourceMaps, sourcemaps.init()))
 		.pipe(sass().on("error", sass.logError))
-		.pipe(sourcemaps.write())
+		.pipe(gulpif(cssSourceMaps, sourcemaps.write()))
 		.pipe(gulp.dest(sassDest));
 });
 
