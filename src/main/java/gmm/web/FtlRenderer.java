@@ -55,25 +55,11 @@ public class FtlRenderer {
 		}
 	}
 	
-	public static class RequestData {
-		public final ModelMap model;
-		public final HttpServletRequest request;
-		public final HttpServletResponse response;
-		
-		public RequestData(ModelMap model,
-				HttpServletRequest request,
-				HttpServletResponse response) {
-			this.model = model;
-			this.request = request;
-			this.response = response;
-		}
-	}
-	
 	/**
 	 * Request must already include all needed forms.
 	 * Renders basically any template to a String.
 	 */
-	public String renderTemplate(String fileName, RequestData requestData) {
+	public String renderTemplate(String fileName, ControllerArgs requestData) {
 		
 		populateModel(requestData);
 		final StringWriter out = new StringWriter();
@@ -87,7 +73,7 @@ public class FtlRenderer {
 	 * Renders task to 2 html strings: taskheader and taskbody
 	 * @return WrapperObject for task html
 	 */
-	public TaskRenderResult renderTask(Task task, RequestData requestData) {
+	public TaskRenderResult renderTask(Task task, ControllerArgs requestData) {
 		
 		populateModel(requestData);
 		return renderSingleTask(task, requestData.model);
@@ -98,7 +84,7 @@ public class FtlRenderer {
 	 * Renders tasks to a list with task html for JSON auto-convertion.
 	 * @see {@link #renderTask(Task, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
-	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, RequestData requestData) {
+	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ControllerArgs requestData) {
 		
 		populateModel(requestData);
 		final List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
@@ -124,7 +110,7 @@ public class FtlRenderer {
 		return new TaskRenderResult(task, bufferH.toString(), bufferB.toString());
 	}
 	
-	private void populateModel(RequestData requestData) {
+	private void populateModel(ControllerArgs requestData) {
 		// model
 		final ModelMap model = requestData.model;
 		final boolean isUserLoggedIn = users.isUserLoggedIn();

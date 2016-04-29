@@ -1,23 +1,23 @@
 <#import "/spring.ftl" as s/>
 <#import "macros.ftl" as m/>
 
+<#-- set path String, set bind to path String, make form available -->
+<#assign path="workbench-generalFilterForm">
+<@s.bind path=path/>
+<#assign filter=.vars[path]>
+
 <form id="generalFilters">
-	<#-- set path String, set bind to path String, make form available -->
-	<#assign path="workbench-generalFilterForm">
-	<@s.bind path=path/>
-	<#assign filter=.vars[path]>
-	
 	<div id="generalFilters-body">
 		<div class="generalFilters-group left">
 			<label>
-				<@m.formCheckbox path=path+".assignedToMe"/>
+				<@m.formCheckbox class="generalFilters-notarget" path=path+".assignedToMe"/>
 				<@s.message "tasks.filter.assigned"/>
 			</label><br>
 			<label>
-				<@m.formCheckbox path=path+".createdByMe"/>
+				<@m.formCheckbox class="generalFilters-notarget" path=path+".createdByMe"/>
 				<@s.message "tasks.filter.created"/>
 			</label><br>
-			<label class="workbench-filter-space">
+			<label class="generalFilters-space">
 				<input type="checkbox"/>.
 			</label><br>
 			<label>

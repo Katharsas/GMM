@@ -88,15 +88,34 @@ $padding-wb-horizontal: 10;
 	@include colorTheme-subpage-bright;
 	min-width:5em;
 	
+	position:relative;//for absolute child
 	padding: #{$padding-wb-vertical}px #{$padding-wb-horizontal}px;
 	float: left;
 	text-align: center;
 	
 	border-right: 2px solid #000;
+	//border-left: 1px solid #000;
 	border-bottom: 2px solid #000;
 	
-	&:hover {
+	&.hover-active {
 		background-color: lighten($bgc-subpage-bright, 4%);
+	}
+	
+	.workbench-menu-tab-highlight {
+		background-color: $bgc-subpage-bright;
+		position: absolute;
+		height: 1.6em;
+		bottom: 100%;
+		
+		left: -2px;
+		right: -2px;
+	    border: 2px solid black;
+		border-bottom: none;
+		margin-bottom: 2px;
+	    
+	    &:hover {
+	    	background-color: lighten($bgc-subpage-bright, 4%);
+	    }
 	}
 }
 

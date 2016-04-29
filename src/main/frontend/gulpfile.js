@@ -35,7 +35,7 @@ var jsDest = "../webapp/resources/javascript/compiled/";
 //var jsFilter = "**/*.js";
 
 var jsSourceMaps = false;
-var jsMinify = true;
+var jsMinify = false;
 
 //SASS
 

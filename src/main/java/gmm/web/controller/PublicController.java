@@ -20,8 +20,8 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.RequestData;
 import gmm.web.FtlRenderer.TaskRenderResult;
+import gmm.web.ControllerArgs;
 import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
 
@@ -53,7 +53,7 @@ public class PublicController {
 			if (contains) tasks.add(task);
 		}
 		request.setAttribute("commentForm", getCommentForm());
-		RequestData requestData = new RequestData(model, request, response);
+		ControllerArgs requestData = new ControllerArgs(model, request, response);
 		return ftlTaskRenderer.renderTasks(tasks, requestData);
 	}
 	

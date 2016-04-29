@@ -1,8 +1,12 @@
 package gmm.web.controller;
 
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 
@@ -33,8 +37,8 @@ import gmm.domain.task.TaskType;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
+import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.RequestData;
 import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.FilterForm;
@@ -104,7 +108,7 @@ public class TaskController {
 	 * @param requestData - string will be added to this model, so you can insert the template in
 	 * 		jsp code just like any other model attribute by the given template name
 	 */
-	private void insertTemplate(String template, RequestData requestData) {
+	private String insertTemplate(String template, ControllerArgs requestData) {
 		final String fileName = template + ".ftl";
 		// populate request
 		for(final String form : templates.get(fileName)) {
@@ -117,6 +121,7 @@ public class TaskController {
 		for(final String form : templates.get(fileName)) {
 			requestData.request.removeAttribute(form);
 		}
+		return result;
 	}
 	
 	/**
@@ -171,13 +176,30 @@ public class TaskController {
 	/**
 	 * Filter <br>
 	 * -----------------------------------------------------------------
-	 * Filter is always applied to all tasks of a kind
 	 * @param filterForm - object containing all filter information
+	 * @param reset - true if user clicked the reset filter button (discard filterForm)
 	 */
-	@RequestMapping(value="/submitFilter", method = RequestMethod.POST)
+	@RequestMapping(value="/filter",  method = { GET, POST }, produces = "application/json")
 	@ResponseBody
-	public void handleFilter(@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm) {
-		workbench.updateFilter(filterForm);
+	public Map<String, String> handleFilter(
+			ControllerArgs args,
+			@ModelAttribute("workbench-generalFilterForm") FilterForm filterForm,
+			@RequestParam(value = "reset", required = false, defaultValue = "false") boolean reset) {
+		
+		if(args.getRequestMethod().equals(POST)) {
+			if (reset) {
+				workbench.updateFilter(new FilterForm());
+			} else {
+				workbench.updateFilter(filterForm);
+			}
+		}
+		
+		Map<String, String> answer = new HashMap<>();
+		answer.put("isInDefaultState", "" + workbench.getFilterForm().isInDefaultState());
+		if (reset || args.getRequestMethod().equals(GET)) {
+			answer.put("html", insertTemplate("workbench_filters", args));
+		}
+		return answer;
 	}
 	
 	
@@ -328,7 +350,7 @@ public class TaskController {
 			HttpServletRequest request,
 			HttpServletResponse response) {
 		
-		final RequestData requestData = new RequestData(model, request, response);
+		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 		model.addAttribute("users", data.getList(User.class));
 	    model.addAttribute("taskLabels", data.getList(Label.class));
 		insertTemplate("all_taskForm", requestData);
@@ -361,7 +383,7 @@ public class TaskController {
 		
 		taskSession.cleanUp();
 		
-		final RequestData requestData = new RequestData(model, request, response);
+		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 	    insertTemplate("workbench_filters", requestData);
 	    return "tasks";
 	}
@@ -389,7 +411,7 @@ public class TaskController {
 			if (contains) tasks.add(task);
 		}
 		return ftlRenderer.renderTasks(tasks,
-				new RequestData(model, request, response));
+				new ControllerArgs(model, request, response));
 	}
 	
 	/**

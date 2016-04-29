@@ -33,7 +33,7 @@ import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.RequestData;
+import gmm.web.ControllerArgs;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
 
@@ -78,7 +78,7 @@ public class AdminController {
 		
 		model.addAttribute("taskForm", getTaskFacade());
 		
-		final RequestData requestData = new RequestData(model, request, response);
+		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 		request.setAttribute("taskForm", getTaskFacade());
 		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
 		model.addAttribute("all_taskForm", taskFormHtml);

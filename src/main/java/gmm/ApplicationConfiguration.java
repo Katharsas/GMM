@@ -4,6 +4,7 @@ import java.beans.PropertyEditor;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
@@ -20,6 +21,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
@@ -36,6 +38,7 @@ import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateHashModel;
 import gmm.util.ElFunctions;
+import gmm.web.ControllerArgsResolver;
 import gmm.web.binding.PathEditor;
 
 /**
@@ -82,6 +85,14 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 	    registry.addResourceHandler("/res/**").addResourceLocations("/resources/");
 	}
+	
+	/**
+	 * Enable Spring to wrap some controller method parameters into RequestData object.
+	 */
+	@Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        argumentResolvers.add(new ControllerArgsResolver());
+    }
 	
 	/**
 	 * ViewResolver resolve the String return value from controller methods into templates (jsp or ftl).
@@ -134,8 +145,6 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	public MultipartResolver multipartResolver() {
 		return new CommonsMultipartResolver();
 	}
-	
-	
 	
 	/**
 	 * ----------------------------- Custom Beans -----------------------------

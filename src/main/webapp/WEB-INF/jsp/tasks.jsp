@@ -76,35 +76,46 @@
 					-->
 	    			
 	    			<div id="workbench-menu">
-	    				<div class="workbench-menu-tab">Load</div>
-	    				<div class="workbench-menu-tab">Sort</div>
-	    				<div class="workbench-menu-tab">Search</div>
-	    				<div class="workbench-menu-tab">Filter</div>
+	    				<c:set var="tabId" value="load"/>
+	    				<div class="workbench-menu-tab"  data-tabid="${tabId}"><fmt:message key="workbench.menu.tab.${tabId}"/></div>
+	    				<c:set var="tabId" value="sort"/>
+	    				<div class="workbench-menu-tab"  data-tabid="${tabId}"><fmt:message key="workbench.menu.tab.${tabId}"/></div>
+	    				<c:set var="tabId" value="search"/>
+	    				<div class="workbench-menu-tab"  data-tabid="${tabId}"><fmt:message key="workbench.menu.tab.${tabId}"/></div>
+	    				<c:set var="tabId" value="filter"/>
+	    				<div class="workbench-menu-tab"  data-tabid="${tabId}"><fmt:message key="workbench.menu.tab.${tabId}"/></div>
 						<sec:authorize access="hasRole('ROLE_ADMIN')">
-	    					<div class="workbench-menu-tab">Admin</div>
+							<c:set var="tabId" value="admin"/>
+	    					<div class="workbench-menu-tab"  data-tabid="${tabId}"><fmt:message key="workbench.menu.tab.${tabId}"/></div>
 	    				</sec:authorize>
 	    				<div class="clear"></div>
 	    			</div>
 	    			<div id="workbench-tabs">
-		    			<div id="workbench-tab-load" class="workbench-tab">
+	    				<c:set var="tabId" value="load"/>
+		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
 		    				<t:workbench_load>
 		    				</t:workbench_load>
 		    			</div>
-		    			<div id="workbench-tab-sort" class="workbench-tab">
+		    			<c:set var="tabId" value="sort"/>
+		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
 		    				<t:workbench_sort>
 		    				</t:workbench_sort>
 		    			</div>
-		    			<div id="workbench-tab-search" class="workbench-tab">
+		    			<c:set var="tabId" value="search"/>
+		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
 		    				<t:workbench_search>
 		    				</t:workbench_search>
 		    			</div>
-		    			<div id="workbench-tab-filter" class="workbench-tab">
-		    				${workbench_filters}
+		    			<c:set var="tabId" value="filter"/>
+		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
 		    			</div>
-		    			<div id="workbench-tab-admin" class="workbench-tab">
-		    				<t:workbench_admin>
-		    				</t:workbench_admin>
-		    			</div>
+		    			<sec:authorize access="hasRole('ROLE_ADMIN')">
+			    			<c:set var="tabId" value="admin"/>
+			    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
+			    				<t:workbench_admin>
+			    				</t:workbench_admin>
+			    			</div>
+		    			</sec:authorize>
 	    			</div>
 	    			<!-- 
 						workbench list
