@@ -132,7 +132,16 @@ var Dialogs = (function() {
 			var exception = $.parseJSON(jqXHR.responseText);
 			var $exceptionDialog = $("#exceptionDialog");
 			$exceptionDialog.find("#exceptionDialog-message").text(exception.message);
-			$exceptionDialog.find("#exceptionDialog-trace").text(exception.stackTrace);
+			var $instructions = $exceptionDialog.find("#exceptionDialog-instructions");
+			var $stackTrace = $exceptionDialog.find("#exceptionDialog-trace");
+			if (exception.stackTrace === null) {
+				$instructions.hide();
+				$stackTrace.hide();
+			} else {
+				$instructions.show();
+				$stackTrace.text(exception.stackTrace);
+				$stackTrace.show();
+			}
 			showDialog($exceptionDialog);
 		},
 		

@@ -3,21 +3,6 @@ import Queue from "./shared/queue";
 import TaskLoader from "./shared/taskloader";
 import TaskSwitcher from "./shared/taskswitcher";
 import TaskEventBindings from "./shared/tasklisteners";
-import { allVars } from "./shared/default";
-
-var tasksVars = {
-	"selectedTaskFileIsAsset" : "",
-	"expandedTasks" : undefined,
-};
-
-var tasksFuncs = {
-	"subDir" : function() {
-		return tasksVars.selectedTaskFileIsAsset ? "asset" : "other";
-	},
-	"filePath" : function() {
-		return allVars.selectedTaskFile.attr("rel");
-	}
-};
 
 /**
  * This function is executed when document is ready for interactivity!
@@ -33,18 +18,18 @@ $(document).ready(
 		
 		var taskSwitcher = TaskSwitcher(taskListId, taskLoader);
 		var expandedTasks = new Queue(3, function($task1, $task2) {
-				return $task1[0] === $task2[0];
+			return $task1[0] === $task2[0];
 		});
 		
-		var taskBinders = TaskEventBindings(tasksVars, tasksFuncs,
+		var taskBinders = TaskEventBindings(
 			function($task) {
 				taskSwitcher.switchTask($task, expandedTasks);
 			},
-			function($task) {
-				taskLoader.updateTask(taskListId, $task);
+			function($task, id) {
+				taskLoader.updateTask(taskListId, id);
 			},
-			function($task) {
-				taskLoader.removeTask($task);
+			function($task, id) {
+				taskLoader.removeTask(id);
 			}
 		);
 		taskLoader.setTaskEventBinders(taskListId, taskBinders);
@@ -54,7 +39,7 @@ $(document).ready(
 				//TODO: count element in html
 //				var $count = $workbenchList.find(".list-count span");
 //				$count.text(taskLoader.getTaskIds.length);
-				this.expandedTasks.clear();
+				expandedTasks.clear();
 			});
 		};
 		render();

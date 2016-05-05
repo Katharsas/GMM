@@ -35,6 +35,17 @@ var Ajax = (function() {
 		}
 		return result;
 	};
+	
+	var failHandler = function(responseData) {
+		var httpStatus = responseData.status;
+		if(httpStatus === 403) {
+			Dialogs.alert(function(){
+				location.reload();
+			}, "Forbidden or Timeout. Confirm to reload page.");
+		} else {
+			Dialogs.showException(responseData);
+		}
+	};
 
 	return {
 		
@@ -51,7 +62,7 @@ var Ajax = (function() {
 			});
 			return (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(Dialogs.showException);
+					.fail(failHandler);
 		},
 		
 		/**
@@ -67,7 +78,7 @@ var Ajax = (function() {
 			});
 			return (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(Dialogs.showException);
+					.fail(failHandler);
 		},
 		
 		/**
@@ -84,7 +95,7 @@ var Ajax = (function() {
 		    	contentType: false,
 		    	type: "POST"
 			});
-			return $.ajax(settings).fail(Dialogs.showException);
+			return $.ajax(settings).fail(failHandler);
 		}
 	};
 })();

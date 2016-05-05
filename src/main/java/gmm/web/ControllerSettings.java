@@ -1,10 +1,5 @@
 package gmm.web;
 
-import gmm.service.UserService;
-import gmm.service.data.CombinedData;
-import gmm.service.data.DataAccess;
-import gmm.web.binding.PathEditor;
-
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -20,14 +15,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+
+import gmm.service.UserService;
+import gmm.service.data.CombinedData;
+import gmm.service.data.DataAccess;
+import gmm.web.binding.PathEditor;
 
 @ControllerAdvice
 public class ControllerSettings {
@@ -37,7 +35,7 @@ public class ControllerSettings {
 	@Value("${admin.email:}")
 	private String emailAddress;
 	
-	@Autowired private MailSender mailSender;
+//	@Autowired private MailSender mailSender;
 	
 	@Autowired private DataAccess data;
 	@Autowired private UserService users;
@@ -64,12 +62,14 @@ public class ControllerSettings {
 	 * 
 	 * @see http://www.newmediacampaigns.com/blog/browser-rest-http-accept-headers
 	 * @see http://stackoverflow.com/questions/12977368/how-to-change-the-content-type-in-exception-handler
+	 * @see http://stackoverflow.com/questions/27654206/session-timeout-leads-to-access-denied-in-spring-mvc-when-csrf-integration-with
 	 */
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleExceptions(Exception ex, HttpServletRequest request) throws Exception {
 		
-		if (ex instanceof AccessDeniedException) {
-			// will be thrown by spring before redirect, logging blocked by filter
+		if (ex instanceof AccessDeniedException) {			
+			// Spring itself will catch, log and redirect, we don't need to handle this.
+			// Spring logging this exception is blocked with logger-filter to hold log clean.
 			throw ex;
 		}
 		logger.error("Controller threw exception:", ex);
@@ -80,51 +80,77 @@ public class ControllerSettings {
 //			msg.setText(ExceptionUtils.getStackTrace(ex));
 //			mailSender.send(msg);
 //		}
-		HttpHeaders headers = new HttpHeaders();
-		if(users.isUserLoggedIn()) {
-			//sort MIME types from accept header field
-			String accept = request.getHeader("accept");
-			if(accept != null) {
-				String[] mimes = accept.split(",");
-				//sort most quality first
-				Arrays.sort(mimes, new MimeQualityComparator());
-				//if json, return as json
-				String firstMime = mimes[0].split(";")[0];
-				if (firstMime.equals("application/json")) {
-					logger.info("Returning exception to client as json");
-					ExceptionWrapper exceptionVO = new ExceptionWrapper(ex);
-					headers.setContentType(MediaType.APPLICATION_JSON);
-					return new ResponseEntity<ExceptionWrapper>(exceptionVO, headers, HttpStatus.INTERNAL_SERVER_ERROR);
-				}
-			}
-			//if not json, return as html
+		
+		final HttpHeaders headers = new HttpHeaders();
+		Object answer; // String if HTML, any object if JSON
+		if(jsonHasPriority(request.getHeader("accept"))) {
+			logger.info("Returning exception to client as json object");
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			answer = errorJson(ex, users.isUserLoggedIn());
+		} else {
 			logger.info("Returning exception to client as html page");
 			headers.setContentType(MediaType.TEXT_HTML);
-			String error = "<h1>Internal Server Error 500</h1><br>";
-			error += "Please copy the following text and send it to your server admin:<br><br>";
-			error += "<pre>" + ExceptionUtils.getStackTrace(ex) + "</pre>";
-			return new ResponseEntity<String>(error, headers, HttpStatus.INTERNAL_SERVER_ERROR);
+			answer = errorHtml(ex, users.isUserLoggedIn());
 		}
-		return new ResponseEntity<String>("Internal Server Error 500: Login for more information.", headers, HttpStatus.INTERNAL_SERVER_ERROR);
+		final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+		return new ResponseEntity<>(answer, headers, status);
+	}
+	
+	private String notLoggedInErrorHtml() {
+		return "Login for detailed error descriptions.";
+	}
+	
+	private String errorHtml(Exception e, boolean isUserLoggedIn) {
+		String error = "<h1>Internal Server Error 500</h1><br>";
+		if (isUserLoggedIn) {
+			error += "Please copy the following text and send it to your server admin:<br><br>";
+			error += "<pre>" + ExceptionUtils.getStackTrace(e) + "</pre>";
+		} else {
+			error += notLoggedInErrorHtml();
+		}
+		return error;
+	}
+	
+	private ExceptionWrapper errorJson(Exception e, boolean isUserLoggedIn) {
+		if (isUserLoggedIn) {
+			return new ExceptionWrapper(e);
+		} else {
+			return new ExceptionWrapper(notLoggedInErrorHtml());
+		}
+	}
+	
+	/**
+	 * @param acceptString - HTTP accept header field, format according to HTTP spec:
+	 * 		"mime1;quality1,mime2;quality2,mime3,mime4,..." (quality is optional)
+	 * @return true only if json is the MIME type with highest quality of all specified MIME types.
+	 */
+	private boolean jsonHasPriority(String acceptString) {
+		if (acceptString != null) {
+			final String[] mimes = acceptString.split(",");
+			Arrays.sort(mimes, new MimeQualityComparator());
+			final String firstMime = mimes[0].split(";")[0];
+			return firstMime.equals("application/json");
+		}
+		return false;
 	}
 	
 	private static class MimeQualityComparator implements Comparator<String> {
 		@Override
-		public int compare(String m1, String m2) {
-			//split of quality factor
-			double m1Quality = getQualityofMime(m1);
-			double m2Quality = getQualityofMime(m2);
+		public int compare(String mime1, String mime2) {
+			final double m1Quality = getQualityofMime(mime1);
+			final double m2Quality = getQualityofMime(mime2);
 			return Double.compare(m1Quality, m2Quality) * -1;
 		}
 	}
 	
 	/**
-	 * Extract mime quality from one of the mime;quality Strings from the accept
-	 * header of a HTTP request, according to HTTP spec.
+	 * @param mimeAndQuality - "mime;quality" pair from the accept header of a HTTP request,
+	 * 		according to HTTP spec (missing mimeQuality means quality = 1).
+	 * @return quality of this pair according to HTTP spec.
 	 */
 	private static Double getQualityofMime(String mimeAndQuality) {
-		//split of quality factor
-		String[] mime = mimeAndQuality.split(";");
+		//split off quality factor
+		final String[] mime = mimeAndQuality.split(";");
 		if (mime.length <= 1) {
 			return 1.0;
 		} else {
@@ -136,6 +162,10 @@ public class ControllerSettings {
 	public static class ExceptionWrapper {
 		private final String message;
 		private final String stackTrace;
+		public ExceptionWrapper(String customMessage) {
+			message = customMessage;
+			stackTrace = null;
+		}
 		public ExceptionWrapper(Throwable e) {
 			message = e.getLocalizedMessage();
 			stackTrace = ExceptionUtils.getStackTrace(e);

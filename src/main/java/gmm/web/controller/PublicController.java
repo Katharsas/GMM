@@ -19,9 +19,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
+import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.ControllerArgs;
+import gmm.web.controller.TaskController.TaskListState;
 import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
 
@@ -44,7 +45,7 @@ public class PublicController {
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
 			ModelMap model, 
 			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+			HttpServletResponse response) {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		List<Task> tasks = new LinkedList<>(Task.class);
@@ -62,12 +63,15 @@ public class PublicController {
 	 */
 	@RequestMapping(value = "/linkedTasks/currentTaskIds", method = RequestMethod.GET)
 	@ResponseBody
-	public List<String> getCurrentTaskIds() throws Exception {
-		List<String> taskIds = new LinkedList<>(String.class);
+	public TaskListState getCurrentTaskIds() {
+		List<String> visibleIds = new LinkedList<>(String.class);
 		for(Task task : session.getTaskLinks()) {
-			taskIds.add(task.getIdLink());
+			visibleIds.add(task.getIdLink());
 		}
-		return taskIds;
+		final List<String> dirtyIds = new LinkedList<>(String.class);
+		// TODO merge some things like dirty functionality into superclass TaskListSession.
+		// also remove code duplication concerning ftl rendering
+		return new TaskListState(visibleIds, dirtyIds);
 	}
 	
 	/**
