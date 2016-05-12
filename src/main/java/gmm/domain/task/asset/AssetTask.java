@@ -42,6 +42,11 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		this.assetPath = assetPath;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static Class<AssetTask<?>> getGenericClass() {
+		return (Class<AssetTask<?>>) (Class<?>) AssetTask.class;
+	}
+	
 	@Override
 	public void onLoad() {
 		this.config = Spring.get(DataConfigService.class);

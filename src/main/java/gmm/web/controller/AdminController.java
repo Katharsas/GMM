@@ -23,6 +23,7 @@ import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.FileService.PathFilter;
+import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
@@ -31,9 +32,9 @@ import gmm.service.data.backup.BackupService;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
+import gmm.web.ControllerArgs;
 import gmm.web.FileTreeScript;
 import gmm.web.FtlRenderer;
-import gmm.web.ControllerArgs;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
 
@@ -161,12 +162,12 @@ public class AdminController {
 	 */
 	
 	/**
-	 * Load tasks from file.
-	 * Start message conversation for general tasks. <br>
+	 * AssetPath conflict checking start.
+	 * Start message conversation for asset tasks. <br>
 	 * @see {@link #loadNextTask(String, boolean)}
 	 */
-	@RequestMapping(value = "/load/general", method = RequestMethod.POST)
-	public @ResponseBody List<MessageResponse> loadTasks(
+	@RequestMapping(value = "/load/assetPaths", method = RequestMethod.POST)
+	public @ResponseBody List<MessageResponse> loadAssetTasks(
 			@RequestParam("dir") Path dir) {
 		
 		backups.triggerTaskBackup();
@@ -176,42 +177,42 @@ public class AdminController {
 				xmlService.deserialize(visible.resolve(dirRelative), Task.class);
 		
 		session.prepareLoadTasks(tasks);
-		return session.firstLoadGeneralCheckBundle();
+		return session.firstAssetPathCheckBundle();
 	}
 	
 	/**
 	 * Next message conversation. <br>
 	 * Tasks will be loaded according to received user operations. <br>
 	 */
-	@RequestMapping(value = "/load/general/next", method = RequestMethod.POST)
-	public @ResponseBody List<MessageResponse> loadNextTask (
-			@RequestParam("operation") String operation,
-			@RequestParam("doForAll") boolean doForAll) {
-		
-		return session.nextLoadCheckBundle(operation, doForAll);
-	}
-	
-	/**
-	 * Continue loading tasks from file.
-	 * Start message conversation for asset tasks. <br>
-	 * @see {@link #loadNextTask(String, boolean)}
-	 */
-	@RequestMapping(value = "/load/asset", method = RequestMethod.POST)
-	public @ResponseBody List<MessageResponse> loadAssetTasks() {
-		
-		return session.firstLoadAssetCheckBundle();
-	}
-	
-	/**
-	 * Next message conversation. <br>
-	 * Tasks will be loaded according to received user operations. <br>
-	 */
-	@RequestMapping(value = "/load/asset/next", method = RequestMethod.POST)
+	@RequestMapping(value = "/load/assetPaths/next", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadNextAssetTask (
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
 		return loadNextTask(operation, doForAll);
+	}
+	
+	/**
+	 * TaskId conflict checking start.
+	 * Start message conversation for general tasks. <br>
+	 * @see {@link #loadNextTask(String, boolean)}
+	 */
+	@RequestMapping(value = "/load/tasks", method = RequestMethod.POST)
+	public @ResponseBody List<MessageResponse> loadTasks() {
+		
+		return session.firstTaskIdCheckBundle();
+	}
+	
+	/**
+	 * Next message conversation. <br>
+	 * Tasks will be loaded according to received user operations. <br>
+	 */
+	@RequestMapping(value = "/load/tasks/next", method = RequestMethod.POST)
+	public @ResponseBody List<MessageResponse> loadNextTask (
+			@RequestParam("operation") String operation,
+			@RequestParam("doForAll") boolean doForAll) {
+		
+		return session.nextCheckBundle(new ConflictAnswer(operation, doForAll));
 	}
 	
 	/**
@@ -280,6 +281,6 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.nextImportCheckBundle(operation, doForAll);
+		return session.nextImportCheckBundle(new ConflictAnswer(operation, doForAll));
 	}
 }

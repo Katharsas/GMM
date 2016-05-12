@@ -34,6 +34,7 @@ import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
+import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
@@ -194,7 +195,7 @@ public class TaskController {
 			}
 		}
 		
-		Map<String, String> answer = new HashMap<>();
+		final Map<String, String> answer = new HashMap<>();
 		answer.put("isInDefaultState", "" + workbench.getFilterForm().isInDefaultState());
 		if (reset || args.getRequestMethod().equals(GET)) {
 			answer.put("html", insertTemplate("workbench_filters", args));
@@ -321,7 +322,7 @@ public class TaskController {
 	public List<MessageResponse> createTaskNext(
 			@RequestParam("operation") String operation) {
 		
-		return taskSession.getNextTaskCheck(operation);
+		return taskSession.getNextTaskCheck(new ConflictAnswer(operation, false));
 	}
 	
 	/**

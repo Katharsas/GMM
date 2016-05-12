@@ -14,7 +14,7 @@ public class MessageResponse {
 
 	@Override
 	public String toString() {
-		return "Status: "+status+", "+"Message: "+message;
+		return "[ Status: "+status+", "+"Message: "+message+" ]";
 	}
 	
 	public String getStatus() {

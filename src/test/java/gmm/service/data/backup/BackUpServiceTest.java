@@ -15,8 +15,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.service.ajax.MockedResponseBundleHandler;
-import gmm.service.ajax.operations.TaskLoaderOperations;
+import gmm.service.ajax.AutoResponseBundleHandler;
+import gmm.service.ajax.operations.TaskIdConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
@@ -42,8 +42,10 @@ public class BackUpServiceTest {
 		final Collection<User> users = xmlService.deserialize(usersFile, User.class);
 		
 		//load tasks/users into DataAccess
-		final MockedResponseBundleHandler<Task> taskLoader = new MockedResponseBundleHandler<>();
-		taskLoader.processResponses(tasks, new TaskLoaderOperations());
+		final AutoResponseBundleHandler<Task> taskLoader = new AutoResponseBundleHandler<>();
+		taskLoader.processResponses(tasks, new TaskIdConflictChecker(), (conflict)-> {
+			throw new IllegalStateException("Task file invalid! Conflict occured: " + conflict);
+		});
 		data.addAll(users);
 		
 		//trigger task/user save

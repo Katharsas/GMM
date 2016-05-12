@@ -3,13 +3,9 @@ package gmm.service.data;
 import java.util.Collections;
 import java.util.WeakHashMap;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.HashMultimap;
@@ -29,25 +25,12 @@ import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
-import gmm.service.UserService;
 import gmm.util.Util;
 
 @Service
 public class DataBase implements DataAccess {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
-	@Value("${default.user}")
-	private boolean createDefaultUser;
-	
-	@Value("${default.username}")
-	private String defaultUserName;
-	
-	@Value("${default.password}")
-	private String defaultUserPW;
-	
-	@Autowired UserService userService;
-	@Autowired PasswordEncoder encoder;
 	
 	final private List<User> users = new LinkedList<>(User.class);
 	final private Set<GeneralTask> generalTasks = new HashSet<>(GeneralTask.class);
@@ -80,24 +63,6 @@ public class DataBase implements DataAccess {
 	@Autowired
 	private DataBase(CombinedData combined) {
 		this.combined = combined;
-	}
-	
-	@PostConstruct
-	private void init() {
-		if (createDefaultUser) {
-			final User defaultUser = new User(defaultUserName);
-			defaultUser.setPasswordHash(encoder.encode(defaultUserPW));
-			defaultUser.setRole(User.ROLE_ADMIN);
-			defaultUser.enable(true);
-			users.add(defaultUser);
-			
-			logger.info("\n"
-					+	"##########################################################" + "\n\n"
-					+	"  Created default user: " + "\n"
-					+	"  Username: " + defaultUser.getName() + "\n"
-					+	"  Password: " + defaultUserPW + "\n\n"
-					+	"##########################################################");
-		}
 	}
 	
 	@Override

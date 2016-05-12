@@ -95,22 +95,24 @@ public class BackupFileService {
 	/**
 	 * @param type - Type that was used to create backups in specified parent directories.
 	 * @param parents - Directories directly containing backup files of specified type (only!).
-	 * @return Path to backup file that was created most recently.
+	 * @return Path to backup file that was created most recently. Null if no backup file exists.
 	 */
 	protected Path getLatestBackup(Class<? extends Linkable> type, Path... parents) {
 		final TreeSet<Path> paths = new TreeSet<>(new BackupFileComparator(type.getSimpleName()));
 		for (final Path parent : parents) {
-			try(Stream<Path> dir = Files.list(parent)) {
-				dir
-					.filter(Files::isRegularFile)
-					.filter(xmlFilter)
-					.collect(Collectors.toCollection(()->paths));
-			} catch (final IOException e) {
-				throw new BackupServiceException("Failed to get latest backup from folder '"
-						+ parent.toString() + "'!", e);
+			if(parent.toFile().exists()) {
+				try(Stream<Path> dir = Files.list(parent)) {
+					dir
+						.filter(Files::isRegularFile)
+						.filter(xmlFilter)
+						.collect(Collectors.toCollection(()->paths));
+				} catch (final IOException e) {
+					throw new BackupServiceException("Failed to get latest backup from folder '"
+							+ parent.toString() + "'!", e);
+				}
 			}
 		}
-		return paths.last();
+		return paths.isEmpty() ? null : paths.last();
 	}
 	
 	private class BackupFileComparator implements Comparator<Path> {

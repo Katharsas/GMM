@@ -32,13 +32,9 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 					name: "conflict",
 					actions: ["skip", "overwrite", "both"]
 				}],
-				/**
-				 * @param {string} file - path to xml task file
-				 */
 				start : function(options) {
-					return Ajax.post(url, {dir: options.file});
+					return Ajax.post(url);
 				}
-
 			},
 			assets : {
 				conflicts : [{
@@ -49,10 +45,11 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 					actions: ["skip", "aquireData", "deleteData"]
 				}],
 				/**
-				 * @param {jquery} $taskForm - task form that will be submitted
+				 * @param {string} file - path to xml task backup file
+				 * @param {jquery} $taskForm - task form that will be submitted on asset import
 				 */
 				start : function(options) {
-					return Ajax.post(url, {}, options.$taskForm);
+					return Ajax.post(url, {dir: options.file}, options.$taskForm);
 				}
 			}
 		};

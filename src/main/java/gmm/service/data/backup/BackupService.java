@@ -25,7 +25,7 @@ import gmm.service.data.DataConfigService;
 
 /**
  * Saves names are contructed like:
- * backup_type_dd-mmm-yyyy_at_hh-mm.xml
+ * backup_&lt;type&gt;_dd-mmm-yyyy_at_hh-mm.xml
  * 
  * e.g:
  * backup_tasks_23-Sep-2014_at_22-00.xml
@@ -194,10 +194,10 @@ public class BackupService implements ServletContextListener {
 	private Path getLatestBackup(Path folder, Class<? extends Linkable> type) {
 		return service.getLatestBackup(
 				type,
-				triggeredBackup.getSubDir(),
-				monthlyBackup.getSubDir(),
-				daylyBackup.getSubDir(),
-				hourlyBackup.getSubDir()
+				folder.resolve(triggeredBackup.getSubDir()),
+				folder.resolve(monthlyBackup.getSubDir()),
+				folder.resolve(daylyBackup.getSubDir()),
+				folder.resolve(hourlyBackup.getSubDir())
 				);
 	}
 }

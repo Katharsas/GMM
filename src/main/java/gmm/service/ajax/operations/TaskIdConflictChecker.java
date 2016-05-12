@@ -11,41 +11,35 @@ import gmm.service.data.DataAccess;
 /**
  * @author Jan Mothes
  */
-public class TaskLoaderOperations extends MessageResponseOperations<Task> {
+public class TaskIdConflictChecker extends ConflictChecker<Task> {
 	
 	private final DataAccess data = Spring.get(DataAccess.class);
 	
 	private final Conflict<Task> conflict = new Conflict<Task>() {
-		@Override public String getStatus() {
+		@Override public String getName() {
 			return "conflict";
 		}
-		@Override public String getMessage(Task element) {
+		@Override public String getDetails(Task element) {
 			return "Conflict: A task with id: "+element.getId()+" already exists!";
 		}
 	};
 	
 	@Override
-	public Map<String, Operation<Task>> getOperations() {
+	public Map<String, Operation<Task>> getAllOperations() {
 		final Map<String, Operation<Task>> map = new HashMap<>();
 		
-		map.put("skip", new Operation<Task>() {
-			@Override public String execute(Task element) {
-				return "Skipping conflicting "+print(element);
-			}
+		map.put("skip", (conflict, element) -> {
+			return "Skipping conflicting "+print(element);
 		});
-		map.put("overwrite", new Operation<Task>() {
-			@Override public String execute(Task element) {
-				data.remove(element);
-				data.add(element);
-				return "Overwriting task with conflicting "+print(element);
-			}
+		map.put("overwrite", (conflict, element) -> {
+			data.remove(element);
+			data.add(element);
+			return "Overwriting task with conflicting "+print(element);
 		});
-		map.put("both", new Operation<Task>() {
-			@Override public String execute(Task element) {
-				element.makeUnique();
-				data.add(element);
-				return "Adding conflicting task as new "+print(element);
-			}
+		map.put("both", (conflict, element) -> {
+			element.makeUnique();
+			data.add(element);
+			return "Adding conflicting task as new "+print(element);
 		});
 		return map;
 	}
@@ -55,12 +49,12 @@ public class TaskLoaderOperations extends MessageResponseOperations<Task> {
 		UniqueObject.updateCounter(t);
 		if (data.hasIds(new long[]{t.getId()})) return conflict;
 		else {
-			data.add(t);
 			return NO_CONFLICT;
 		}
 	}
 	
 	@Override public String onDefault(Task element) {
+		data.add(element);
 		return "Successfully added "+print(element);
 	}
 

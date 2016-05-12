@@ -1,6 +1,7 @@
 package gmm.web.sessions;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -11,10 +12,10 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
-import gmm.domain.task.asset.AssetTask;
 import gmm.service.ajax.BundledMessageResponses;
+import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetImportOperations;
+import gmm.service.ajax.operations.AssetPathConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.forms.TaskForm;
@@ -101,20 +102,21 @@ public class TaskSession {
 			return new LinkedList<>(MessageResponse.class, finished);
 		} else {
 			// else check for assetpath conflicts
-			@SuppressWarnings("unchecked")
-			final Class<? extends AssetTask<?>> clazz = (Class<? extends AssetTask<?>>) type.toClass();
-			final AssetImportOperations<?> ops =
-					 new AssetImportOperations<>(form, clazz, data::add);
+			final Consumer<String> onAssetPathChecked = (assetPath) -> {
+				form.setAssetPath(assetPath);
+				data.add(taskCreator.create(type.toClass(), form));
+			};
+			final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
 			 
 			importer = new BundledMessageResponses<>(
 					new LinkedList<>(String.class, form.getAssetPath()),
 					ops, ()->{importer = null;});
 			
-			return importer.loadFirstBundle();
+			return importer.firstBundle();
 		}
 	}
 	
-	public List<MessageResponse> getNextTaskCheck(String operation) {
-		return importer.loadNextBundle(operation, false);
+	public List<MessageResponse> getNextTaskCheck(ConflictAnswer answer) {
+		return importer.nextBundle(answer);
 	}
 }

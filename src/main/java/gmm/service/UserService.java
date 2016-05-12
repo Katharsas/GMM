@@ -1,10 +1,5 @@
 package gmm.service;
 
-import gmm.collections.Collection;
-import gmm.domain.UniqueObject;
-import gmm.domain.User;
-import gmm.service.data.DataAccess;
-
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -14,12 +9,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.Collection;
+import gmm.domain.UniqueObject;
+import gmm.domain.User;
+import gmm.service.data.DataAccess;
+
 @Service
 public class UserService {
 
 	@Autowired private DataAccess data;
-	private SecureRandom random = new SecureRandom();
-
+	
+	private final SecureRandom random = new SecureRandom();
+	
 	public User get(Principal principal) {
 		return (principal == null) ?
 				User.NULL : 
@@ -45,6 +46,10 @@ public class UserService {
 	
 	public void add(User user) {
 		data.add(user);
+	}
+	
+	public void addAll(Collection<User> users) {
+		data.addAll(users);
 	}
 	
 	public boolean isUserLoggedIn() {

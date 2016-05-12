@@ -6,9 +6,9 @@ import java.util.Map;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.service.ajax.operations.MessageResponseOperations;
-import gmm.service.ajax.operations.MessageResponseOperations.Conflict;
-import gmm.service.ajax.operations.MessageResponseOperations.Operation;
+import gmm.service.ajax.operations.ConflictChecker;
+import gmm.service.ajax.operations.ConflictChecker.Conflict;
+import gmm.service.ajax.operations.ConflictChecker.Operation;
 
 /**
  * Provides a way to communicate with the client when the server needs to send a lot of
@@ -26,10 +26,10 @@ import gmm.service.ajax.operations.MessageResponseOperations.Operation;
  * @author Jan Mothes
  * @param <T> Type of elements that are being operated on
  */
-public class BundledMessageResponses<T> {
+public class BundledMessageResponses<T> implements BundledMessageResponsesProducer {
 	
 	private final Runnable onFinished;
-	private final MessageResponseOperations<T> ops;
+	private final ConflictChecker<T> ops;
 	private final Map<String, Operation<T>> operations;
 	
 	/**
@@ -41,36 +41,46 @@ public class BundledMessageResponses<T> {
 	private Conflict<T> currentConflict;
 	private T currentlyLoaded;
 	
-	protected static final String nextElementOp = "default";
+	// Operation provided from the client if client has nothing to say.
+	// Other operations are conflict handler ids of a specific MessageResponseOperations object.
+	// TODO: wrap operation id into seperate class
+	private static final String nextElementOp = "default";
+	
+	// Two of thre possible answers to the client, the third being a specific conflict id.
+	// TODO: create enum with SUCCESS, FINISHED, CONFLICT and move conflict type into subfield
 	protected static final String success = "success";
 	public static final String finished = "finished";
 	
+	protected static final ConflictAnswer defaultAnswer = new ConflictAnswer(nextElementOp, false);
+	
 	public BundledMessageResponses(
-			Iterable<? extends T> elements, MessageResponseOperations<T> ops) {
+			Iterable<? extends T> elements, ConflictChecker<T> ops) {
 		this(elements, ops, ()->{});
 	}
 	
 	public BundledMessageResponses(
-			Iterable<? extends T> elements, MessageResponseOperations<T> ops, Runnable onFinished) {
+			Iterable<? extends T> elements, ConflictChecker<T> ops, Runnable onFinished) {
 		this.elements = elements.iterator();
 		this.ops = ops;
 		this.onFinished = onFinished;
-		operations = ops.getOperations();
+		operations = ops.getAllOperations();
 		currentConflict = ops.NO_CONFLICT;
 	}
 	
-	public List<MessageResponse> loadFirstBundle() {
-		return loadNextBundle(nextElementOp, false);
+	@Override
+	public List<MessageResponse> firstBundle() {
+		return nextBundle(defaultAnswer);
 	}
 	
-	public List<MessageResponse> loadNextBundle(String operation, boolean doForAllFlag) {
+	@Override
+	public List<MessageResponse> nextBundle(ConflictAnswer answer) {
 		final List<MessageResponse> results = new LinkedList<>(MessageResponse.class);
-		MessageResponse result = loadNext(operation, doForAllFlag);
+		MessageResponse result = loadNext(answer);
 		boolean loadNext = result.getStatus().equals(success);
 		results.add(result);
 		final long timeStamp = System.currentTimeMillis();
 		while(loadNext) {
-			result = loadNext(nextElementOp, false);
+			result = loadNext(defaultAnswer);
 			results.add(result);
 			final long duration = System.currentTimeMillis() - timeStamp;
 			loadNext = result.getStatus().equals(success) && duration < 2000;
@@ -78,15 +88,15 @@ public class BundledMessageResponses<T> {
 		return results;
 	}
 	
-	private MessageResponse loadNext(String answerOp, boolean doForAllFlag) {
+	private MessageResponse loadNext(ConflictAnswer answer) {
 		//If the user wants to process a new element, we try to do so.
-		if(answerOp.equals(nextElementOp)) {
+		if(answer.operation.equals(nextElementOp)) {
 			return processNewElement();
 		}
 		//Else, he gave an answer on how to handle the last (conflicting) element.
 		else {
-			if(doForAllFlag) doForAlls.put(currentConflict, answerOp);
-			return resolveConflict(answerOp);
+			if(answer.doForAllFlag) doForAlls.put(currentConflict, answer.operation);
+			return resolveConflict(answer.operation);
 		}
 	}
 	
@@ -106,8 +116,8 @@ public class BundledMessageResponses<T> {
 				if (doForAlls.containsKey(currentConflict)) {
 					return resolveConflict(doForAlls.get(currentConflict));
 				} else {
-					final String status = currentConflict.getStatus();
-					final String message = currentConflict.getMessage(currentlyLoaded);
+					final String status = currentConflict.getName();
+					final String message = currentConflict.getDetails(currentlyLoaded);
 					return new MessageResponse(status, message);
 				}	
 			}
@@ -120,11 +130,11 @@ public class BundledMessageResponses<T> {
 	}
 	
 	private MessageResponse resolveConflict(String operation) {
-		final String message = doOperation(operation, currentlyLoaded);
+		final String message = doOperation(operation, currentConflict, currentlyLoaded);
 		return new MessageResponse(success, message);
 	}
 	
-	private final String doOperation(String operationType, T element) {
-		return operations.get(operationType).execute(element);
+	private final String doOperation(String operationType, Conflict<T> conflict, T element) {
+		return operations.get(operationType).execute(conflict, element);
 	}
 }

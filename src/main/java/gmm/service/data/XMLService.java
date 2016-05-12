@@ -28,8 +28,7 @@ import gmm.service.converters.PathConverter;
 @Service
 public class XMLService {
 	
-	@Autowired DataConfigService dataConfig;
-	@Autowired FileService fileService;
+	@Autowired private FileService fileService;
 	
 	final private XStream xstream;
 	
@@ -38,7 +37,7 @@ public class XMLService {
 		xstream.autodetectAnnotations(true);
 		xstream.setMode(XStream.NO_REFERENCES);
 		
-		Class<?>[] clazzes = {
+		final Class<?>[] clazzes = {
 							Task.class,
 							GeneralTask.class,
 							AssetTask.class,
@@ -49,7 +48,7 @@ public class XMLService {
 							Asset.class,
 							Texture.class,
 							Model.class};
-		for (Class<?> c : clazzes) {
+		for (final Class<?> c : clazzes) {
 			xstream.alias(c.getSimpleName(), c);
 		}
 		xstream.registerConverter(new PathConverter());
@@ -61,7 +60,7 @@ public class XMLService {
 		byte[] bytes;
 		try {
 			bytes = xml.getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (final UnsupportedEncodingException e) {
 			throw new UncheckedIOException(e);
 		}
     	fileService.createFile(path, bytes);
@@ -74,7 +73,7 @@ public class XMLService {
 							+ " Cannot deserialize."));
 		}
 		@SuppressWarnings("unchecked")
-		Collection<T> result = (Collection<T>) xstream.fromXML(path.toFile());
+		final Collection<T> result = (Collection<T>) xstream.fromXML(path.toFile());
 		return result;
 	}
 }

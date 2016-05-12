@@ -14,27 +14,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.Collection;
 import gmm.domain.User;
-import gmm.service.FileService;
 import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.XMLService;
-import gmm.web.sessions.WorkbenchSession;
+import gmm.service.data.backup.BackupService;
 
 @Controller
 @RequestMapping("admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 
 public class AdminUserController {
-
-	@Autowired WorkbenchSession session;
 	
-	@Autowired DataConfigService config;
-	@Autowired DataAccess data;
-	@Autowired FileService fileService;
-	@Autowired XMLService xmlService;
-	@Autowired UserService users;
-	@Autowired PasswordEncoder encoder;
+	@Autowired private DataConfigService config;
+	@Autowired private DataAccess data;
+	@Autowired private XMLService xmlService;
+	@Autowired private UserService users;
+	@Autowired private PasswordEncoder encoder;
+	@Autowired private BackupService backups;
 	
 	/**
 	 * Edit User
@@ -102,6 +99,7 @@ public class AdminUserController {
 	public @ResponseBody void saveUsers() {
 		
 		final Path path = config.USERS.resolve("users.xml");
+		backups.triggerUserBackup();
 		xmlService.serialize(users.get(), path);
 	}
 	

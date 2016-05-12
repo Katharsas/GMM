@@ -1,6 +1,4 @@
 package gmm.service.converters;
-import org.springframework.context.ApplicationContext;
-
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 import gmm.collections.Collection;
@@ -21,14 +19,13 @@ public class UserReferenceConverter extends IdReferenceConverter{
 	@Override
 	protected void addAttributes(HierarchicalStreamWriter writer, UniqueObject source) {
 		super.addAttributes(writer, source);
-		User user = (User) source;
+		final User user = (User) source;
 		writer.addAttribute("name", user.getName());
 	}
 
 	@Override
 	Collection<? extends User> getUniqueObjects() {
-		ApplicationContext context = Spring.getApplicationContext();
-		DataAccess data =  context.getBean(DataAccess.class);
+		final DataAccess data =  Spring.get(DataAccess.class);
 		return data.getList(User.class);
 	}
 }
