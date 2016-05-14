@@ -1,15 +1,18 @@
 package gmm.service;
 
+import java.util.function.Function;
+
+import org.springframework.stereotype.Service;
+
 import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskPriority;
 import gmm.domain.task.TaskStatus;
+import gmm.domain.task.asset.AssetTask;
 import gmm.service.filter.GmmSelection;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.SearchForm;
-
-import org.springframework.stereotype.Service;
 
 /**
  * Service for searching and filtering tasks.
@@ -27,29 +30,41 @@ public class TaskFilterService {
 	public synchronized <T extends Task, I extends Collection<T>> I search(
 			I tasks, SearchForm search) {
 		
+		final Function<T, String> getName = task -> task.getName();
+		final Function<T, String> getDetails = task -> task.getDetails();
+		final Function<T, String> getLabel = task -> task.getLabel();
+		final Function<T, String> getAuthor = task -> task.getAuthor().getName();
+		final Function<T, String> getAssigned = task -> {
+			final User assigned = task.getAssigned();
+			return assigned == null ? "" : assigned.getName();
+		};
+		final Function<T, String> getAssetPath = task -> {
+			if (task instanceof AssetTask<?>) {
+				final AssetTask<?> assetTask = (AssetTask<?>) task;
+				return assetTask.getAssetPath().toString();
+			} else {
+				return "";
+			}
+		};
+		
 		I selected;
 		if(search.isEasySearch()) {
-			selected = new GmmSelection<T,I>(tasks, false).start()
+			selected = new GmmSelection<T,I>(tasks, false)
 				.uniteWith()
-				.forFilter(search.getEasy())
-				.match("getName", "getAuthor", "getDetails", "getLabel", "getAssigned")
-				.ignoreNoSuchGetter(true)
-				.uniteWith()
-				.forFilter(search.getEasy())
-				.match("getAssetPath")
+				.matchingAll(search.getEasy(),
+						getName, getAuthor, getDetails, getLabel, getAssigned, getAssetPath)
 				.getSelected();
 		}
 		else {
-			selected = new GmmSelection<T,I>(tasks, true).start()
+			selected = new GmmSelection<T,I>(tasks, true)
+				.autoConvert(false)
 				.intersectWith()
-				.matching("getName", search.getName())
-				.matching("getAuthor", search.getAuthor())
-				.matching("getDetails", search.getDetails())
-				.matching("getLabel", search.getLabel())
-				.matching("getAssigned", search.getAssigned())
-				.ignoreNoSuchGetter(true)
-				.intersectWith()
-				.matching("getAssetPath", search.getPath())
+				.matching(getName, search.getName())
+				.matching(getDetails, search.getDetails())
+				.matching(getLabel, search.getLabel())
+				.matching(getAuthor, search.getAuthor())
+				.matching(getAssigned, search.getAssigned())
+				.matching(getAssetPath, search.getPath())
 				.getSelected();
 		}
 		return selected;
@@ -65,23 +80,23 @@ public class TaskFilterService {
 	public synchronized <T extends Task, I extends Collection<T>> I filter(
 			I tasks, FilterForm filterData, User currentUser) {
 		
-		GmmSelection<T,I> selection = new GmmSelection<T,I>(tasks, true);
+		final GmmSelection<T,I> selection = new GmmSelection<T,I>(tasks, true);
 		selection.strictEqual(true);
 		
 		if (filterData.isCreatedByMe()) {
-			selection.intersectWith().matching("getAuthor", currentUser);
+			selection.intersectWith().matching(task -> task.getAuthor(), currentUser);
 		}
 		if (filterData.isAssignedToMe()) {
-			selection.intersectWith().matching("getAssigned", currentUser);
+			selection.intersectWith().matching(task -> task.getAssigned(), currentUser);
 		}
 		for(int i = 0; i<TaskPriority.values().length; i++) {
 			if (!filterData.getPriority()[i]) {
-				selection.remove().matching("getPriority", TaskPriority.values()[i]);
+				selection.remove().matching(task -> task.getPriority(), TaskPriority.values()[i]);
 			}
 		}
 		for(int i = 0; i<TaskStatus.values().length; i++) {
 			if (!filterData.getTaskStatus()[i]) {
-				selection.remove().matching("getTaskStatus", TaskStatus.values()[i]);
+				selection.remove().matching(task -> task.getTaskStatus(), TaskStatus.values()[i]);
 			}
 		}
 		return selection.getSelected();

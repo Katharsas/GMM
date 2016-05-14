@@ -50,14 +50,13 @@ public class SimpleSelectionTest {
 		final java.util.Collection<TestPerson> persons  = new java.util.HashSet<>();
 		persons.addAll(this.persons);
 		final java.util.Collection<TestPerson> result = new SimpleSelection<>(persons, true)
-				.remove().matching("getName","Tom")
-				.uniteWith().matching("getHometown", "Boston")
+				.remove().matching(p -> p.getName(), "Tom")
+				.uniteWith().matching(p -> p.getHometown(), "Boston")
 				.strictEqual(true)
-				.intersectWith().matching("getSex", "male")
+				.intersectWith().matching(p -> p.getSex(), "male")
 				.cutSelected()
 				.negateAll()
-				.forGetter("getAge")
-				.uniteWith().matchingFilter(20, "21", "22")
+				.uniteWith().matchingAll(p -> p.getAge(), 20, 21, 22)
 				.getSelected();
 		
 		assertEquals(expected, result);
@@ -66,14 +65,13 @@ public class SimpleSelectionTest {
 	@Test
 	public void test2_Gmm() {
 		final Collection<TestPerson> result = new GmmSelection<>(persons, true)
-				.start()
-				.remove().matching("getName","Tom")
-				.uniteWith().matching("getHometown", "Boston")
+				.remove().matching(p -> p.getName(), "Tom")
+				.uniteWith().matching(p -> p.getHometown(), "Boston")
 				.strictEqual(true)
-				.intersectWith().matching("getSex", "male")
+				.intersectWith().matching(p -> p.getSex(), "male")
 				.cutSelected()
 				.negateAll()
-				.uniteWith().forGetter("getAge").match(20, 21, 22)
+				.uniteWith().matchingAll(p -> p.getAge(), 20, 21, 22)
 				.getSelected();
 		
 		assertEquals(expected, result);
@@ -88,15 +86,13 @@ public class SimpleSelectionTest {
 					return new HashSet<TestPerson>(i);
 				}
 			})
-				.remove().matching("getName","Tom")
-				.uniteWith().matching("getHometown", "Boston")
+				.remove().matching(p -> p.getName(), "Tom")
+				.uniteWith().matching(p -> p.getHometown(), "Boston")
 				.strictEqual(true)
-				.intersectWith().matching("getSex", "male")
+				.intersectWith().matching(p -> p.getSex(), "male")
 				.cutSelected()
-				.negateAll()			
-				.forGetter("getAge")
-				.uniteWith()
-				.matchingFilter(20, "21", "22")
+				.negateAll()
+				.uniteWith().matchingAll(p -> p.getAge(), 20, 21, 22)
 				.getSelected();
 		
 		assertEquals(expected, result);

@@ -427,11 +427,8 @@ public class TaskController {
 			visibleIds.add(task.getIdLink());
 		}
 		final List<String> dirtyIds = new LinkedList<>(String.class);
-		for(final String visibleId : visibleIds) {
-			for(final Task dirty : workbench.getDirtyTasks()) {
-				final String dirtyId = dirty.getIdLink();
-				if(visibleId.equals(dirtyId)) dirtyIds.add(dirtyId);
-			}
+		for(final Task dirty : workbench.getDirtyTasks()) {
+			dirtyIds.add(dirty.getIdLink());
 		}
 		return new TaskListState(visibleIds, dirtyIds);
 	}

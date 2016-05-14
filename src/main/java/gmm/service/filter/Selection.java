@@ -1,10 +1,12 @@
 package gmm.service.filter;
 
+import java.util.function.Function;
+
 /**
  * Objects of this class represent a selection (a subset) of a given set of elements of type T and
  * provide methods to manipulate this selection.<br/>
  * In particular, selections can be defined using the elements attributes to filter elements.
- * These attributes are defined and accessed via reflection using the getter method names.
+ * These attributes are retrieved by calling getter functions passed with the filter elements.
  * <br/>
  * <br/>
  * Operations supported:<br/>
@@ -30,15 +32,15 @@ package gmm.service.filter;
  * You could build an according filter as follows:<br/>
  * <pre>
  * Collection<Person> selected =
- * 	new Selection<>(allPersons, true).start()
- * 		.remove().matching("getName","Tom")
- * 		.uniteWith().matching("getHometown", "Boston")
- * 		.strictEqual(true)
- * 		.intersectWith().matching("getSex", "male")
- * 		.cutSelected()
- * 		.negateAll()
- * 		.uniteWith().forGetter("getAge").match(20, 21, "22")
- * 		.getSelected();
+ * 	new Selection<>(allPersons, true)
+ * 		.remove().matching(p -> p.getName(), "Tom")
+ *		.uniteWith().matching(p -> p.getHometown(), "Boston")
+ *		.strictEqual(true)
+ *		.intersectWith().matching(p -> p.getSex(), "male")
+ *		.cutSelected()
+ *		.negateAll()
+ *		.uniteWith().matchingAll(p -> p.getAge(), 20, 21, 22)
+ *		.getSelected();
  * </pre>
  * 
  * @author Jan Mothes aka Kellendil
@@ -46,21 +48,6 @@ package gmm.service.filter;
  * @param <I> - type of data structure that gives access to the elements
  */
 public interface Selection<T,I extends Iterable<T>> {
-	
-	public interface Start {
-		public Selection<?, ?> end();
-	}
-	
-	/**
-	 * Returns a helper object which only offers a reasonable choice of actions.
-	 * All actions will return helper objects too which also only offer limited actions.
-	 * Use this if you are not very familiar with this tool.<br/>
-	 * <br/>
-	 * Use the {@link Start#end()} method to quit the helper object chain and return
-	 * to the main object wich does not restrict access to any function. (Note that you cannot
-	 * quit anywhere in the chain).
-	 */
-	public Start start();
 	
 	/**
 	 * Works similar to the method {@link #matching(String, Object)}.
@@ -73,19 +60,20 @@ public interface Selection<T,I extends Iterable<T>> {
 	 * It also matches if the objects toString() methods are equals (depends on settings).
 	 * @see {@link #autoConvert(boolean)}
 	 */
-	public abstract Selection<T,I> matching(String getterMethodName, Object filter);
+	public abstract <F> Selection<T,I> matching(Function<T, F> getter, F filter);
 	
 	/**
-	 * Calls the method {@link #matching(String, Object)} while using a previously given filter object.
-	 * This filter object must have been specified by calling the method {@link #forFilter(Object)}.
+	 * Similar to {@link #matching(String, Object)}, multiple times on the same filter object.
 	 */
-	public abstract Selection<T,I> matchingGetter(String...getterMethodNames);
+	@SuppressWarnings("unchecked")
+	public abstract <F> Selection<T,I> matchingAll(F filter, Function<T, F>... getters);
 	
 	/**
-	 * Calls the method {@link #matching(String, Object)} while using a previously given getter method name.
+	 * Similar to {@link #matching(String, Object)}, multiple times with the same method call.
 	 * The method name have been first be specified by calling the method {@link #forGetter(String)}.
 	 */
-	public abstract Selection<T,I> matchingFilter(Object...filters);
+	@SuppressWarnings("unchecked")
+	public abstract <F> Selection<T,I> matchingAll(Function<T, F> getter, F... filters);
 	
 	/**
 	 * @return All currently selected elements.
@@ -119,34 +107,15 @@ public interface Selection<T,I extends Iterable<T>> {
 	public abstract Selection<T,I> negateAll();
 	
 	/**
-	 * If true, only completely equal objects match,
-	 * otherwise also partially equal objects match.
+	 * If true, only completely equal objects match, otherwise also partially equal objects match.
 	 * Default is false.
 	 */
 	 public abstract Selection<T,I> strictEqual(boolean onlyMatchEqual);
 	 
 	 /**
-	  * If true, objects will automatically be converted to Strings to find
-	  * a match, otherwise objects must always be of the same type to match.
+	  * If true, null objects will be treated as being equal to empty strings.
 	  * Default is true.
 	  */
-	 public abstract Selection<T,I> autoConvert(boolean autoConvertToString);
+	 public abstract Selection<T,I> autoConvert(boolean nullEqualsEmptyString);
 	 
-	 /**
-	  * If true, using a not existent getter method for matching will not lead
-	  * to an exception, but will cause the filter to be matched against null.
-	  * Default is false.
-	  * @param ignoreMissingGetterMethod
-	  */
-	 public abstract Selection<T,I> ignoreNoSuchGetter(boolean ignoreMissingGetterMethods);
-	 
-	 /**
-	  * @see {@link Selection#matchingGetter(String)}
-	  */
-	 public abstract Selection<T,I> forFilter(Object filter);
-	 
-	 /**
-	  * @see {@link Selection#matchingFilter(Object)}
-	  */
-	 public abstract Selection<T,I> forGetter(String getterMethodName);
 }
