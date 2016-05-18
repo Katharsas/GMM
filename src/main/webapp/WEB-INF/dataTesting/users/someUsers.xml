@@ -1,20 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <gmm.collections.LinkedList serialization="custom">
   <unserializable-parents/>
   <linked-list>
     <default/>
-    <int>2</int>
-    <User id="3" name="TestUser1" role="ROLE_ADMIN" email="">
-      <created>2014-11-03 18:25:06.83 UTC</created>
-      <passwordHash>$2a$10$BSjeYjyTaYWElw44gqi1CuaHWjUeu06AuCHWk/pXdYRUBJb1QRpAC</passwordHash>
+    <int>5</int>
+    <User id="2" name="admin" role="ROLE_ADMIN" email="">
+      <created>2016-05-18 00:11:36.83 UTC</created>
+      <passwordHash>$2a$10$YZE6BGAufG1Y/1cLSTpj6uwf4066rZ3Hw.DrrWVmt2IvriYcNFPqi</passwordHash>
       <enabled>true</enabled>
       <oldNotifications class="linked-list"/>
       <newNotifications class="linked-list"/>
+      <loadForm>
+        <loadOperation>ONLY</loadOperation>
+        <reloadOnStartup>true</reloadOnStartup>
+        <defaultStartupType>GENERAL</defaultStartupType>
+      </loadForm>
     </User>
-    <User id="4" name="Peter" role="ROLE_USER" email="">
-      <created>2014-11-03 18:25:35.536 UTC</created>
+    <User id="3" name="TestA" role="ROLE_USER" email="">
+      <created>2016-05-18 00:11:53.927 UTC</created>
+      <passwordHash>$2a$10$vRyqH4sxCUEm5gPaRq6couWVQNTgDO9gWCGrx5Z4kN2uZ03qJdZQC</passwordHash>
       <enabled>true</enabled>
       <oldNotifications class="linked-list"/>
       <newNotifications class="linked-list"/>
+      <loadForm>
+        <loadOperation>ONLY</loadOperation>
+        <reloadOnStartup>true</reloadOnStartup>
+        <defaultStartupType>GENERAL</defaultStartupType>
+      </loadForm>
+    </User>
+    <User id="4" name="$GermanÜmläüt" role="ROLE_ADMIN" email="">
+      <created>2016-05-18 00:12:32.381 UTC</created>
+      <passwordHash>$2a$10$PKzrKHrecWJaAvTVUotqDOJaRElKsUYSnSyriPvlLfG/.EmyNP8OW</passwordHash>
+      <enabled>true</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <loadForm>
+        <loadOperation>ONLY</loadOperation>
+        <reloadOnStartup>true</reloadOnStartup>
+        <defaultStartupType>GENERAL</defaultStartupType>
+      </loadForm>
+    </User>
+    <User id="5" name="NewUser" role="ROLE_USER" email="">
+      <created>2016-05-18 00:12:46.850 UTC</created>
+      <enabled>false</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <loadForm>
+        <loadOperation>ONLY</loadOperation>
+        <reloadOnStartup>true</reloadOnStartup>
+        <defaultStartupType>GENERAL</defaultStartupType>
+      </loadForm>
+    </User>
+    <User id="6" name="UnicodeTest_汉语考试服务网" role="ROLE_USER" email="">
+      <created>2016-05-18 00:14:47.152 UTC</created>
+      <enabled>true</enabled>
+      <oldNotifications class="linked-list"/>
+      <newNotifications class="linked-list"/>
+      <loadForm>
+        <loadOperation>ONLY</loadOperation>
+        <reloadOnStartup>true</reloadOnStartup>
+        <defaultStartupType>GENERAL</defaultStartupType>
+      </loadForm>
     </User>
   </linked-list>
+  <gmm.collections.LinkedList>
+    <default>
+      <genericType>gmm.domain.User</genericType>
+    </default>
+  </gmm.collections.LinkedList>
 </gmm.collections.LinkedList>

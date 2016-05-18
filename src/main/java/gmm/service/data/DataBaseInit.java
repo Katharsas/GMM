@@ -14,11 +14,12 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.service.UserService;
 import gmm.service.ajax.AutoResponseBundleHandler;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.data.backup.BackupService;
 import gmm.service.data.backup.TaskBackupLoader;
+import gmm.service.data.xstream.XMLService;
+import gmm.service.users.UserService;
 
 @Service
 public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
@@ -61,7 +62,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 	}
 	
 	private void loadTasks(Path latestBackup) {
-		final Collection<Task> tasks = xmlService.deserialize(latestBackup, Task.class);
+		final Collection<Task> tasks = xmlService.deserializeAll(latestBackup, Task.class);
 		backupLoader.prepareLoadTasks(tasks);
 		
 		final AutoResponseBundleHandler<Task> autoLoader = new AutoResponseBundleHandler<>();
@@ -97,7 +98,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 		if(autoloadUsers) {
 			final Path latestBackup = backups.getLatestUserBackup();
 			if (latestBackup != null) {
-				final Collection<User> users = xmlService.deserialize(latestBackup, User.class);
+				final Collection<User> users = xmlService.deserializeAll(latestBackup, User.class);
 				this.users.addAll(users);
 				logger.info("Autoloaded latest user backup file.");
 			} else {

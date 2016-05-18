@@ -1,71 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <gmm.collections.HashSet serialization="custom">
   <unserializable-parents/>
   <set>
     <default/>
     <int>16</int>
     <float>0.75</float>
-    <int>5</int>
-    <GeneralTask id="6" name="test xy" priority="MID" taskStatus="TODO">
-      <created>2014-10-29 20:06:12.788 UTC</created>
-      <author id="User2" name="admin"/>
+    <int>3</int>
+    <GeneralTask id="8" name="I want to be a real User!" priority="ULTRA" taskStatus="TODO">
+      <created>2016-05-18 00:19:34.373 UTC</created>
+      <author id="User3" name="TestA"/>
       <assigned id="User2" name="admin"/>
-      <details></details>
-      <label></label>
+      <details>Im not just a test user!</details>
+      <label>Cry</label>
+      <linkKey>mctikcc6adpovb</linkKey>
       <comments class="linked-list">
-        <Comment id="8">
-          <created>2014-10-29 20:06:55.260 UTC</created>
-          <author id="User2" name="admin"/>
-          <text>irgendwas kaputt mit xy</text>
-          <edited>2014-10-29 20:06:55.260 UTC</edited>
-        </Comment>
         <Comment id="9">
-          <created>2014-10-29 20:07:01.765 UTC</created>
+          <created>2016-05-18 00:20:11.234 UTC</created>
+          <author id="User3" name="TestA"/>
+          <text>I want to!!!</text>
+          <edited>2016-05-18 00:20:11.234 UTC</edited>
+        </Comment>
+        <Comment id="10">
+          <created>2016-05-18 00:20:26.683 UTC</created>
           <author id="User2" name="admin"/>
-          <text>yoyo</text>
-          <edited>2014-10-29 20:07:01.765 UTC</edited>
+          <text>Nope.</text>
+          <edited>2016-05-18 00:20:26.683 UTC</edited>
         </Comment>
       </comments>
       <dependsOn class="linked-list"/>
       <dependencyFor class="linked-list"/>
     </GeneralTask>
-    <GeneralTask id="5" name="test" priority="HIGH" taskStatus="INPROGRESS">
-      <created>2014-10-29 20:05:57.739 UTC</created>
+    <GeneralTask id="7" name="JustTesting" priority="LOW" taskStatus="TODO">
+      <created>2016-05-18 00:18:17.585 UTC</created>
       <author id="User2" name="admin"/>
-      <details>TODO: asdasdasdasd</details>
-      <label></label>
+      <assigned id="User4" name="$GermanÜmläüt"/>
+      <details>Many important details</details>
+      <label>MyAdminLabel</label>
+      <linkKey>liu607c3h84liq</linkKey>
       <comments class="linked-list"/>
       <dependsOn class="linked-list"/>
       <dependencyFor class="linked-list"/>
     </GeneralTask>
-    <GeneralTask id="7" name="vorschlag" priority="LOW" taskStatus="TODO">
-      <created>2014-10-29 20:06:32.976 UTC</created>
+    <GeneralTask id="11" name="Testing Unicode 汉语考试服务网" priority="HIGH" taskStatus="DONE">
+      <created>2016-05-18 00:21:23.843 UTC</created>
       <author id="User2" name="admin"/>
-      <details>Details&#xd;
-Details&#xd;
-Details</details>
-      <label></label>
-      <comments class="linked-list"/>
-      <dependsOn class="linked-list"/>
-      <dependencyFor class="linked-list"/>
-    </GeneralTask>
-    <GeneralTask id="4" name="Aufgabe 2" priority="HIGH" taskStatus="TODO">
-      <created>2014-10-29 20:05:16.670 UTC</created>
-      <author id="User2" name="admin"/>
-      <details>wichtig</details>
-      <label>GMM</label>
-      <comments class="linked-list"/>
-      <dependsOn class="linked-list"/>
-      <dependencyFor class="linked-list"/>
-    </GeneralTask>
-    <GeneralTask id="3" name="Test Aufgabe 1" priority="MID" taskStatus="TODO">
-      <created>2014-10-29 20:04:51.150 UTC</created>
-      <author id="User2" name="admin"/>
-      <assigned id="User2" name="admin"/>
-      <details></details>
-      <label>GMM</label>
+      <assigned id="User6" name="UnicodeTest_汉语考试服务网"/>
+      <details>Testing Unicode 汉语考试服务网</details>
+      <label>Testing Unicode 汉语考试服务网</label>
+      <linkKey>59a7ambm2sf9me</linkKey>
       <comments class="linked-list"/>
       <dependsOn class="linked-list"/>
       <dependencyFor class="linked-list"/>
     </GeneralTask>
   </set>
+  <gmm.collections.HashSet>
+    <default>
+      <genericType>gmm.domain.task.Task</genericType>
+    </default>
+  </gmm.collections.HashSet>
 </gmm.collections.HashSet>

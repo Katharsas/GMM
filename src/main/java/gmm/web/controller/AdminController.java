@@ -27,9 +27,9 @@ import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.XMLService;
 import gmm.service.data.backup.BackupService;
 import gmm.service.data.backup.ManualBackupService;
+import gmm.service.data.xstream.XMLService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.ControllerArgs;
@@ -174,7 +174,7 @@ public class AdminController {
 		final Path visible = config.TASKS;
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		final Collection<Task> tasks =
-				xmlService.deserialize(visible.resolve(dirRelative), Task.class);
+				xmlService.deserializeAll(visible.resolve(dirRelative), Task.class);
 		
 		session.prepareLoadTasks(tasks);
 		return session.firstAssetPathCheckBundle();

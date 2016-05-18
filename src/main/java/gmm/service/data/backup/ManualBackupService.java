@@ -10,7 +10,7 @@ import gmm.collections.Collection;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.XMLService;
+import gmm.service.data.xstream.XMLService;
 
 @Service
 public class ManualBackupService {

@@ -1,7 +1,6 @@
-package gmm.service;
+package gmm.service.users;
 
 import java.math.BigInteger;
-import java.security.Principal;
 import java.security.SecureRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,33 +9,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
-import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.service.data.DataAccess;
 
 @Service
-public class UserService {
+public class UserService extends UserProvider {
 
 	@Autowired private DataAccess data;
 	
 	private final SecureRandom random = new SecureRandom();
 	
-	public User get(Principal principal) {
-		return (principal == null) ?
-				User.NULL : 
-				User.getFromName(data.<User>getList(User.class), principal.getName());
-	}
-	
+	@Override
 	public Collection<User> get() {
 		return data.<User>getList(User.class);
-	}
-	
-	public User get(String name) {
-		return User.getFromName(data.<User>getList(User.class), name);
-	}
-	
-	public User getByIdLink(String idLink) {
-		return UniqueObject.getFromIdLink(data.<User>getList(User.class), idLink);
 	}
 	
 	public String generatePassword() {

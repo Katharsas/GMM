@@ -19,7 +19,7 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
-import gmm.service.UserService;
+import gmm.service.users.UserService;
 import gmm.web.forms.CommentForm;
 
 /**

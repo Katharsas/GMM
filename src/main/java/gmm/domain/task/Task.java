@@ -7,12 +7,10 @@ import java.util.List;
 import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
-import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 import gmm.domain.Comment;
 import gmm.domain.NamedObject;
 import gmm.domain.User;
-import gmm.service.converters.UserReferenceConverter;
 
 public abstract class Task extends NamedObject{
 	
@@ -25,9 +23,11 @@ public abstract class Task extends NamedObject{
 	}
 	
 	//Variables--------------------------------------------------
-	@XStreamConverter(UserReferenceConverter.class)
+	/** XStream depends on "author" variable name {@link gmm.service.data.xstream.XMLService}
+	 */
 	final private User author;
-	@XStreamConverter(UserReferenceConverter.class)
+	/** XStream depends on "assigned" variable name {@link gmm.service.data.xstream.XMLService}
+	 */
 	private User assigned = null;
 	private String details = "";
 	private String label="";

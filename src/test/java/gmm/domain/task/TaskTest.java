@@ -1,4 +1,4 @@
-package gmm.domain;
+package gmm.domain.task;
 
 import static org.junit.Assert.*;
 

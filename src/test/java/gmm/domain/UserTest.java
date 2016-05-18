@@ -1,11 +1,7 @@
 package gmm.domain;
 
-import static org.junit.Assert.*;
-
-import java.util.LinkedList;
-
-import gmm.domain.Notification;
-import gmm.domain.User;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +21,7 @@ public class UserTest {
 		assertEquals("Ralf", objectUnderTest.getName());
 		assertEquals("123456", objectUnderTest.getPasswordHash());
 		assertEquals("", objectUnderTest.getEmail());
-		assertEquals(new LinkedList<Notification>(), objectUnderTest.getOldNotifications());
-		assertEquals(new LinkedList<Notification>(), objectUnderTest.getNewNotifications());
+		//TODO notifications when relevant
 	}
 	
 	@Test

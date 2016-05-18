@@ -107,8 +107,7 @@ public class FileService {
 	}
 	
 	/**
-	 * Deletes the given file or directory and all empty parent directories.
-	 * So if a file is the only file in a folder, the folder will be deleted too.
+	 * Deletes the given file or directory and all subdirectories with all their files.
 	 * @param path - must not be null and corresponding file/folder must exist
 	 */
 	public synchronized void delete(Path path) {

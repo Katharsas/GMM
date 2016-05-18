@@ -25,7 +25,7 @@ import gmm.domain.Linkable;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataAccess;
-import gmm.service.data.XMLService;
+import gmm.service.data.xstream.XMLService;
 
 /**
  * Lower level service for BackupService.

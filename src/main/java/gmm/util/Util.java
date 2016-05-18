@@ -2,6 +2,9 @@ package gmm.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.BiConsumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import gmm.collections.Collection;
 
@@ -80,5 +83,18 @@ public class Util {
 				return element;
 			} else throw new NoSuchElementException();
 		}
+	}
+	
+	public static <A> Stream<A> toStream(Iterable<A> iterable) {
+		return StreamSupport.stream(iterable.spliterator(), false);
+	}
+	
+	public static <A, B> void zip(Iterable<A> ai, Iterable<B> bi, BiConsumer<A, B> onPair) {
+		zip(toStream(ai), toStream(bi), onPair);
+	}
+	
+	public static <A, B> void zip(Stream<A> as, Stream<B> bs, BiConsumer<A, B> onPair) {
+	    Iterator<A> i = as.iterator();
+	    bs.filter(x->i.hasNext()).forEach(b -> onPair.accept(i.next(), b));
 	}
 }

@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.Collection;
 import gmm.domain.User;
-import gmm.service.UserService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.XMLService;
 import gmm.service.data.backup.BackupService;
+import gmm.service.data.xstream.XMLService;
+import gmm.service.users.UserService;
 
 @Controller
 @RequestMapping("admin")
@@ -111,7 +111,7 @@ public class AdminUserController {
 	public @ResponseBody void loadUsers() {	
 		
 		final Path path = config.USERS.resolve("users.xml");
-		final Collection<User> loadedUsers =  xmlService.deserialize(path, User.class);
+		final Collection<User> loadedUsers =  xmlService.deserializeAll(path, User.class);
 		for(final User user : loadedUsers) {
 			user.makeUnique();
 		}

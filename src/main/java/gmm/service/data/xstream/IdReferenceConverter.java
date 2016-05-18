@@ -1,13 +1,6 @@
-package gmm.service.converters;
-
-import gmm.collections.Collection;
-import gmm.domain.UniqueObject;
+package gmm.service.data.xstream;
 
 import org.springframework.stereotype.Service;
-
-
-
-
 
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
@@ -15,19 +8,16 @@ import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
-@Service
-abstract class IdReferenceConverter implements Converter{
+import gmm.collections.Collection;
+import gmm.domain.UniqueObject;
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public boolean canConvert(Class clazz) {
-		return false;
-	}
+@Service
+abstract class IdReferenceConverter implements Converter {
 
 	@Override
 	public void marshal(Object source, HierarchicalStreamWriter writer,
 			MarshallingContext context) {
-		UniqueObject obj = (UniqueObject) source;
+		final UniqueObject obj = (UniqueObject) source;
 		addAttributes(writer, obj);
 	}
 	
@@ -41,7 +31,7 @@ abstract class IdReferenceConverter implements Converter{
 	@Override
 	public Object unmarshal(HierarchicalStreamReader reader,
 			UnmarshallingContext context) {
-		String id = reader.getAttribute("id");
+		final String id = reader.getAttribute("id");
         return UniqueObject.getFromIdLink(getUniqueObjects(), id);
 	}
 	

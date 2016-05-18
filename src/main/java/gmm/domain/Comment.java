@@ -3,14 +3,11 @@ package gmm.domain;
 import java.util.Date;
 import java.util.Objects;
 
-import gmm.service.converters.UserReferenceConverter;
-
-import com.thoughtworks.xstream.annotations.XStreamConverter;
-
 public class Comment extends UniqueObject {
 	
 	//Variables
-	@XStreamConverter(UserReferenceConverter.class)
+	/** XStream depends on "author" variable name {@link gmm.service.data.xstream.XMLService}
+	 */
 	private User author;
 	private String text="";
 	private Date edited;

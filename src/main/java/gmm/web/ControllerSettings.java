@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import gmm.service.UserService;
 import gmm.service.data.CombinedData;
 import gmm.service.data.DataAccess;
+import gmm.service.users.UserService;
 import gmm.web.binding.PathEditor;
 
 @ControllerAdvice

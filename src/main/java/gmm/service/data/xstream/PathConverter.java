@@ -1,4 +1,4 @@
-package gmm.service.converters;
+package gmm.service.data.xstream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.service.UserService;
+import gmm.service.users.UserProvider;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -13,7 +13,7 @@ import gmm.web.forms.TaskForm;
  */
 abstract class TaskFormService<T extends Task> {
 
-	@Autowired private UserService users;
+	@Autowired private UserProvider users;
 	
 	public abstract Class<? extends T> getTaskType();
 	public abstract T create(TaskForm form) ;

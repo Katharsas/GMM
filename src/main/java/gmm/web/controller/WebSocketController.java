@@ -2,14 +2,11 @@ package gmm.web.controller;
 
 import java.security.Principal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import gmm.service.UserService;
 
 /**
  * from tutorial:
@@ -21,8 +18,8 @@ import gmm.service.UserService;
 @Controller
 public class WebSocketController {
 	
-	@Autowired UserService users;
-//	@Autowired SimpMessageSendingOperations sender;
+//	@Autowired private UserService users;
+//	@Autowired private SimpMessageSendingOperations sender;
 	
 	@MessageMapping("/chat/echo")
 	@SendToUser("/queue/echoResult")

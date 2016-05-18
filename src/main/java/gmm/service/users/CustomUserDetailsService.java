@@ -1,7 +1,4 @@
-package gmm.service;
-
-import gmm.collections.HashSet;
-import gmm.collections.Set;
+package gmm.service.users;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,11 +9,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.HashSet;
+import gmm.collections.Set;
+
 @Service
 public class CustomUserDetailsService implements UserDetailsService{
 
 	@Autowired
-	UserService users;
+	UserProvider users;
 	
 	@Override
 	public UserDetails loadUserByUsername(String name)
