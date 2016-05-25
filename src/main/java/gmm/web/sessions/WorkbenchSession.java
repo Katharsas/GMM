@@ -61,7 +61,7 @@ public class WorkbenchSession {
 			final TaskType type = TaskType.fromClass(tasks.getGenericType());
 			if(selected[type.ordinal()]) {
 				filteredTasks.addAll(filter(tasks));
-				filteredTasks = sort(filteredTasks);
+				sort(filteredTasks);
 				WorkbenchSession.this.tasks = filteredTasks.copy();
 				notifyClient();
 			}
@@ -162,7 +162,7 @@ public class WorkbenchSession {
 		final int i = type.ordinal();
 		if(!selected[i]) {
 			filteredTasks.addAll(filter(getTaskList(type)));
-			filteredTasks = sort(filteredTasks);
+			sort(filteredTasks);
 			selected[i] = true;
 		}
 		tasks = filteredTasks.copy();
@@ -202,7 +202,7 @@ public class WorkbenchSession {
 				filteredTasks.addAll(filter(getTaskList(types[i])));
 			}
 		}
-		filteredTasks = sort(filteredTasks);
+		sort(filteredTasks);
 		tasks = filteredTasks.copy();
 	}
 	
@@ -210,8 +210,8 @@ public class WorkbenchSession {
 		return filterService.filter(tasks, generalFilter, user);
 	}
 	
-	private <T extends Task> List<T> sort(List<T> tasks) {
-		return sortService.sort(tasks, sort);
+	private <T extends Task> void sort(List<T> tasks) {
+		sortService.sort(tasks, sort);
 	}
 	
 	private Collection<? extends Task> getTaskList (TaskType type) {
@@ -259,7 +259,7 @@ public class WorkbenchSession {
 	 */
 	public void updateSort(SortForm sort) {
 		this.sort = sort;
-		tasks = sort(tasks);
+		sort(tasks);
 	}
 	
 	/*--------------------------------------------------
