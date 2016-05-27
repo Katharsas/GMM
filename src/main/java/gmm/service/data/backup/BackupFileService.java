@@ -24,12 +24,13 @@ import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
+import gmm.service.data.CombinedData;
 import gmm.service.data.DataAccess;
 import gmm.service.data.xstream.XMLService;
 
 /**
  * Lower level service for BackupService.
- * Wraps all occuring exceptions into RunTimeExceptions.
+ * Wraps all occurring exceptions into RunTimeExceptions.
  * 
  * @author Jan Mothes
  */
@@ -58,23 +59,33 @@ public class BackupFileService {
 	 * 		will be deleted. All files in the directory with ".xml" ending are
 	 * 		expected to be valid backup files with expected file name pattern!
 	 */
-	protected void createBackUp(DateTime timeStamp, Path directory, Class<? extends Linkable> type, int maxSaveFiles) {
+	protected void createListBackup(DateTime timeStamp, Path directory, Class<? extends Linkable> type, int maxSaveFiles) {
 		//add backup file
 		final Collection<? extends Linkable> toSave = data.getList(type);
 		if(toSave.size() > 0) {
-			final Path path = directory.resolve(getFileName(type.getSimpleName(), timeStamp));
-			try {
-				logger.info("Creating backup for type '" + type.getSimpleName() + "' at " + path);
-				serializer.serialize(toSave, path);
-				removeOldestBackup(type, directory, maxSaveFiles);
-			} catch (final Exception e) {
-				throw new BackupServiceException("Failed to create backup for type '"
-						+ type.getSimpleName() + "' at " + path + "'!", e);
-			}
+			createBackup(timeStamp, directory, type, toSave, maxSaveFiles);
 		}
 	}
 	
-	protected void removeOldestBackup(Class<? extends Linkable> type, Path parent, int maxSaveFiles) {
+	protected void createBackupCombinedData(DateTime timeStamp, Path directory, String fileName) {
+		final CombinedData toSave = data.getCombinedData();
+		createBackup(timeStamp, directory, toSave.getClass(), toSave, 10);
+	}
+	
+	protected void createBackup(DateTime timeStamp, Path directory, Class<?> fileNameType, Object toSave, int maxSaveFiles) {
+		//add backup file
+		final Path path = directory.resolve(getFileName(fileNameType.getSimpleName(), timeStamp));
+		try {
+			logger.info("Creating backup for type '" + fileNameType.getSimpleName() + "' at " + path);
+			serializer.serialize(toSave, path);
+			removeOldestBackup(fileNameType, directory, maxSaveFiles);
+		} catch (final Exception e) {
+			throw new BackupServiceException("Failed to create backup for type '"
+					+ fileNameType.getSimpleName() + "' at " + path + "'!", e);
+		}
+	}
+	
+	protected void removeOldestBackup(Class<?> type, Path parent, int maxSaveFiles) {
 		final TreeSet<Path> paths = new TreeSet<>(new BackupFileComparator(type.getSimpleName()));
 		try {
 			try(Stream<Path> dir = Files.list(parent)) {
@@ -97,7 +108,7 @@ public class BackupFileService {
 	 * @param parents - Directories directly containing backup files of specified type (only!).
 	 * @return Path to backup file that was created most recently. Null if no backup file exists.
 	 */
-	protected Path getLatestBackup(Class<? extends Linkable> type, Path... parents) {
+	protected Path getLatestBackup(Class<?> type, Path... parents) {
 		final TreeSet<Path> paths = new TreeSet<>(new BackupFileComparator(type.getSimpleName()));
 		for (final Path parent : parents) {
 			if(parent.toFile().exists()) {

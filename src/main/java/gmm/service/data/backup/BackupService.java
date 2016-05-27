@@ -21,6 +21,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import gmm.domain.Linkable;
 import gmm.domain.User;
 import gmm.domain.task.Task;
+import gmm.service.data.CombinedData;
 import gmm.service.data.DataConfigService;
 
 /**
@@ -71,12 +72,13 @@ public class BackupService implements ServletContextListener {
 			last = now;
 			if (saveTasks) {
 				final Path directory = config.TASKS.resolve(backupPath).resolve(subDir);
-				service.createBackUp(now, directory, Task.class, maxBackups);
+				service.createListBackup(now, directory, Task.class, maxBackups);
 			}
 			if (saveUsers) {
 				final Path directory = config.USERS.resolve(backupPath).resolve(subDir);
-				service.createBackUp(now, directory, User.class, maxBackups);
+				service.createListBackup(now, directory, User.class, maxBackups);
 			}
+			service.createBackupCombinedData(now, config.DB_OTHER, CombinedData.class.getSimpleName());
 		}
 		public Path getSubDir() {return subDir;}
 		public DateTime last() {return last;}
@@ -189,6 +191,11 @@ public class BackupService implements ServletContextListener {
 	public Path getLatestTaskBackup() {
 		final Path folder = config.TASKS.resolve(backupPath);
 		return getLatestBackup(folder, Task.class);
+	}
+	
+	public Path getLatestCombinedDataBackup() {
+		final Path folder = config.DB_OTHER;
+		return service.getLatestBackup(CombinedData.class, folder);
 	}
 	
 	private Path getLatestBackup(Path folder, Class<? extends Linkable> type) {

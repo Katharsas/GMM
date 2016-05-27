@@ -22,7 +22,12 @@ import gmm.service.FileService;
 import gmm.service.data.CombinedData;
 import gmm.util.Util;
 
-
+/**
+ * TODO: Mock filesystem/fileservice (use memory instead).
+ * Maybe create MockFileService with map Path->File to simulate files
+ * 
+ * @author Jan Mothes
+ */
 public class XMLServiceTest {
 
 	private static XMLService xmlService;

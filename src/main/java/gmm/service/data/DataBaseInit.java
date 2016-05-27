@@ -32,6 +32,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 	
 	@Autowired private PasswordEncoder encoder;
 	@Autowired private UserService users;
+	@Autowired private CombinedData combined;
 	
 	private boolean initialized = false;
 	
@@ -40,6 +41,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 		if (!initialized) {
 			initUsers();
 			initTasks();
+			initCombinedData();
 			initialized = true;
 		}
 	}
@@ -127,5 +129,14 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 				+	"  Username: " + defaultUser.getName() + "\n"
 				+	"  Password: " + defaultUserPW + "\n\n"
 				+	"##########################################################");
+	}
+	
+	protected void initCombinedData() {
+		final Path latestBackup = backups.getLatestCombinedDataBackup();
+		if (latestBackup != null) {
+			CombinedData combinedBackup = xmlService.deserialize(latestBackup, CombinedData.class);
+			combined.setCustomAdminBannerActive(combinedBackup.isCustomAdminBannerActive());
+			combined.setCustomAdminBanner(combinedBackup.getCustomAdminBanner());
+		}
 	}
 }

@@ -41,6 +41,9 @@ public class DataConfigService {
 	@Value("${path.tasks}")
 	private Path tasks;
 	
+	@Value("${path.other}")
+	public Path dbOther;
+	
 	@Value("${path.upload}")
 	public Path upload;
 	
@@ -53,6 +56,7 @@ public class DataConfigService {
 	public Path ASSETS_NEW;
 	public Path TASKS;
 	public Path UPLOAD;
+	public Path DB_OTHER;
 	
 	public final Path SUB_ASSETS = Paths.get("assets");
 	public final Path SUB_PREVIEW = Paths.get("preview");
@@ -99,5 +103,7 @@ public class DataConfigService {
 				wsAbsolute.resolve(fileService.restrictAccess(upload, wsAbsolute));
 		USERS = 
 				wsAbsolute.resolve(fileService.restrictAccess(users, wsAbsolute));
+		DB_OTHER =
+				wsAbsolute.resolve(fileService.restrictAccess(dbOther, wsAbsolute));
 	}
 }

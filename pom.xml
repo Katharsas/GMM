@@ -153,6 +153,12 @@
 			<version>${tomcat.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-websocket</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- Logging: Bridge to slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -479,32 +485,6 @@
 					<port>8080</port>
 					<encoding>UTF-8</encoding>
 				</configuration>
-				<executions>
-					<execution>
-						<id>tomcat-run</id>
-						<goals>
-							<goal>exec-war-only</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-								<path>/GMM</path>                              
-                                <attachartifactclassifier>exec-war</attachartifactclassifier>
-                                <attachartifactclassifiertype>jar</attachartifactclassifiertype>
-						</configuration>
-					</execution>
-				<!-- Enable Hot Reload -->
-<!-- 					<execution> -->
-<!-- 						<id>run-embedded</id> -->
-<!-- 						<goals> -->
-<!-- 							<goal>run</goal> -->
-<!-- 						</goals> -->
-<!-- 						<phase>pre-integration-test</phase> -->
-<!-- 						<configuration> -->
-<!-- 							<useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader> -->
-<!-- 							<contextFile>${project.basedir}/tomcat/context.xml</contextFile> -->
-<!-- 						</configuration> -->
-<!-- 					</execution> -->
-				</executions>
 			</plugin>
 
 			<plugin>
@@ -515,6 +495,14 @@
 					<source>1.8</source>
 					<target>1.8</target>
 					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<excludedGroups>gmm.IntegrationTest</excludedGroups>
 				</configuration>
 			</plugin>
 

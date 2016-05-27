@@ -6,12 +6,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import gmm.IntegrationTest;
 import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
@@ -21,12 +23,13 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.xstream.XMLService;
 
+@Category(IntegrationTest.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @ContextConfiguration(classes={
 		gmm.ApplicationConfiguration.class,
 		gmm.SecurityConfiguration.class})
-public class BackUpServiceTest {
+public class BackUpServiceIT {
 	
 	@Autowired private BackupService backupService;
 	@Autowired private DataAccess data;
