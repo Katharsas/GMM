@@ -13,14 +13,22 @@ import gmm.collections.Set;
 import gmm.domain.UniqueObject;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
+import gmm.web.sessions.tasklist.StaticTaskListState;
+import gmm.web.sessions.tasklist.TaskListEvent;
 
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
-public class LinkSession {
+public class LinkSession extends StaticTaskListState {
 
-	@Autowired private DataAccess data;
+	private final DataAccess data;
 	
-	List<Task> tasks = new LinkedList<>(Task.class);
+	private final List<Task> tasks = new LinkedList<>(Task.class);
+	
+	@Autowired
+	public LinkSession(DataAccess data) {
+		this.data = data;
+		data.registerForUpdates(this);
+	}
 	
 	/**
 	 * @param ids - String of task id/ids seperated by comma.
@@ -52,9 +60,30 @@ public class LinkSession {
 			}
 			else throw new IllegalArgumentException("Taskgroup not found or wrong link key!");
 		}
+		taskListEvents.add(new TaskListEvent.FilterAll(getIds(tasks)));
 	}
 	
-	public List<Task> getTaskLinks() {
+	public List<Task> getLinkedTasks() {
 		return tasks;
 	}
+	
+	/**
+	 * RETRIEVED EVENTS WILL BE DELETED.
+	 * The same even cannot be retrieved multiple times.
+	 */
+	public List<TaskListEvent> retrieveEvents() {
+		synchronized (taskListEvents) {
+			List<TaskListEvent> result = taskListEvents.copy();
+			taskListEvents.clear();
+			return result;
+		}
+	}
+	
+	@Override
+	protected List<Task> getVisible() {
+		return tasks;
+	}
+	
+	@Override
+	protected void sortVisible() {}
 }

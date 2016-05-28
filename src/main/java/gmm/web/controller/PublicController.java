@@ -22,9 +22,9 @@ import gmm.domain.task.Task;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.controller.TaskController.TaskListState;
 import gmm.web.forms.CommentForm;
 import gmm.web.sessions.LinkSession;
+import gmm.web.sessions.tasklist.TaskListEvent;
 
 @RequestMapping("public")
 @Controller
@@ -49,7 +49,7 @@ public class PublicController {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		List<Task> tasks = new LinkedList<>(Task.class);
-		for(Task task : session.getTaskLinks()) {
+		for(Task task : session.getLinkedTasks()) {
 			boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
@@ -61,17 +61,10 @@ public class PublicController {
 	/**
 	 * Get list of the ids of the linked tasks.
 	 */
-	@RequestMapping(value = "/linkedTasks/currentTaskIds", method = RequestMethod.GET)
+	@RequestMapping(value = "/linkedTasks/taskListEvents", method = RequestMethod.GET)
 	@ResponseBody
-	public TaskListState getCurrentTaskIds() {
-		List<String> visibleIds = new LinkedList<>(String.class);
-		for(Task task : session.getTaskLinks()) {
-			visibleIds.add(task.getIdLink());
-		}
-		final List<String> dirtyIds = new LinkedList<>(String.class);
-		// TODO merge some things like dirty functionality into superclass TaskListSession.
-		// also remove code duplication concerning ftl rendering
-		return new TaskListState(visibleIds, dirtyIds);
+	public List<TaskListEvent> syncTaskListState() {
+		return session.retrieveEvents();
 	}
 	
 	/**

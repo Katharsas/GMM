@@ -91,23 +91,23 @@ public class WorkbenchSession extends TaskListState {
 	}
 	
 	@Override
-	boolean isTaskTypeVisible(TaskType type) {
+	protected boolean isTaskTypeVisible(TaskType type) {
 		return selected[type.ordinal()];
 	}
 
 	@Override
-	List<Task> getVisible() {
+	protected List<Task> getVisible() {
 		return visible;
 	}
 
 	@Override
-	<T extends Task> Collection<T> filter(Collection<T> tasks) {
+	protected <T extends Task> Collection<T> filter(Collection<T> tasks) {
 		Collection<T> filtered = filterService.filter(tasks, generalFilter, user);
 		return filterService.search(filtered, searchFilter);
 	}
 
 	@Override
-	void sortVisible() {
+	protected void sortVisible() {
 		sortService.sort(visible, sort);
 	}
 	

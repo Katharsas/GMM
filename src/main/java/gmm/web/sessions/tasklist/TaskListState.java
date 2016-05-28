@@ -16,7 +16,7 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		taskListEvents = new LinkedList<>(TaskListEvent.class);
 	}
 	
-	final List<TaskListEvent> taskListEvents;
+	protected final List<TaskListEvent> taskListEvents;
 	
 	@Override
 	public <T extends Task> void onAdd(T task) {
@@ -71,7 +71,7 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		taskListEvents.add(new TaskListEvent.RemoveAll(getIds(tasks)));
 	}
 	
-	List<String> getIds(Collection<? extends Task> tasks) {
+	protected List<String> getIds(Collection<? extends Task> tasks) {
 		final List<String> ids = new LinkedList<>(String.class);
 		for(Task task : tasks) {
 			ids.add(task.getIdLink());
@@ -79,8 +79,8 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		return ids;
 	}
 	
-	abstract boolean isTaskTypeVisible(TaskType type);
-	abstract List<Task> getVisible(); 
-	abstract void sortVisible();
-	abstract <T extends Task> Collection<T> filter(Collection<T> tasks);
+	protected abstract boolean isTaskTypeVisible(TaskType type);
+	protected abstract List<Task> getVisible(); 
+	protected abstract void sortVisible();
+	protected abstract <T extends Task> Collection<T> filter(Collection<T> tasks);
 }
