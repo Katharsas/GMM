@@ -35,7 +35,7 @@ import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
-import gmm.web.sessions.WorkbenchSession;
+import gmm.web.sessions.tasklist.WorkbenchSession;
 
 @Controller
 @RequestMapping("tasks")

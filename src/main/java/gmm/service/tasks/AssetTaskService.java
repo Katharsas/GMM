@@ -16,7 +16,7 @@ import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.WorkbenchSession;
+import gmm.web.sessions.tasklist.WorkbenchSession;
 
 /**
  * 

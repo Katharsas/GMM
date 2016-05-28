@@ -48,13 +48,14 @@ import gmm.web.forms.SearchForm;
 import gmm.web.forms.SortForm;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
-import gmm.web.sessions.WorkbenchSession;
+import gmm.web.sessions.tasklist.TaskListEvent;
+import gmm.web.sessions.tasklist.WorkbenchSession;
 
 /**
  * This controller is responsible for most task-CRUD operations requested by "tasks" page.
  * 
  * The session state and flow is managed by the TaskSession object.
- * @see {@link gmm.web.sessions.WorkbenchSession}
+ * @see {@link gmm.web.sessions.tasklist.WorkbenchSession}
  * 
  * @author Jan Mothes
  * 
@@ -403,7 +404,7 @@ public class TaskController {
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
 			ModelMap model,
 			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+			HttpServletResponse response) {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		final List<Task> tasks = new LinkedList<>(Task.class);
@@ -415,30 +416,9 @@ public class TaskController {
 				new ControllerArgs(model, request, response));
 	}
 	
-	/**
-	 * Get list of the ids of the tasks currently visible in workbench.
-	 * TODO return 2 lists: visible tasks, dirty tasks. Dirty tasks are visible tasks that are also makred dirty in workbench. Clear marks in workbench.
-	 */
-	@RequestMapping(value = "/workbench/currentTaskIds", method = RequestMethod.GET)
+	@RequestMapping(value = "/workbench/taskListEvents", method = RequestMethod.GET)
 	@ResponseBody
-	public TaskListState getTaskListState() throws Exception {
-		final List<String> visibleIds = new LinkedList<>(String.class);
-		for(final Task task : workbench.getTasks()) {
-			visibleIds.add(task.getIdLink());
-		}
-		final List<String> dirtyIds = new LinkedList<>(String.class);
-		for(final Task dirty : workbench.getDirtyTasks()) {
-			dirtyIds.add(dirty.getIdLink());
-		}
-		return new TaskListState(visibleIds, dirtyIds);
-	}
-	
-	public static class TaskListState {
-		public final List<String> visibleIds;
-		public final List<String> dirtyIds;
-		public TaskListState(List<String> visibleIds, List<String> dirtyIds) {
-			this.visibleIds = visibleIds;
-			this.dirtyIds = dirtyIds;
-		}
+	public List<TaskListEvent> syncTaskListState() {
+		return workbench.retrieveEvents();
 	}
 }

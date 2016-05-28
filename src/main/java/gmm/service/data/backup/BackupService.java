@@ -77,8 +77,9 @@ public class BackupService implements ServletContextListener {
 			if (saveUsers) {
 				final Path directory = config.USERS.resolve(backupPath).resolve(subDir);
 				service.createListBackup(now, directory, User.class, maxBackups);
+				// just assume we want backups for combinedData as often as for users
+				service.createBackupCombinedData(now, config.DB_OTHER, CombinedData.class.getSimpleName());
 			}
-			service.createBackupCombinedData(now, config.DB_OTHER, CombinedData.class.getSimpleName());
 		}
 		public Path getSubDir() {return subDir;}
 		public DateTime last() {return last;}

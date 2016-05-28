@@ -1,4 +1,4 @@
-package gmm.web.sessions;
+package gmm.web.sessions.tasklist;
 
 
 import java.util.Arrays;
@@ -20,10 +20,8 @@ import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
 import gmm.service.TaskFilterService;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.TaskUpdateCallback;
 import gmm.service.sort.TaskSortService;
 import gmm.service.users.UserService;
-import gmm.util.Util;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.LoadForm;
 import gmm.web.forms.LoadForm.LoadOperation;
@@ -32,7 +30,7 @@ import gmm.web.forms.SortForm;
 
 
 /**
- * Session Bean. Gets instanciated once per session (can be used by multiple controllers).
+ * Session Bean. Gets instantiated once per session (can be used by multiple controllers).
  * Manages the session flow/logic on the Tasks page of the GMM.
  * It basically remembers the state the session is in and treats changes accordingly.
  * 
@@ -40,48 +38,10 @@ import gmm.web.forms.SortForm;
  */
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
-public class WorkbenchSession {
+public class WorkbenchSession extends TaskListState {
 
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
-	/**
-	 * TODO: Actually push this stuff to client
-	 * TODO: make threadsafe ?!
-	 * 
-	 * Updates session caches when task data changes.
-	 */
-	private class UpdateCallback implements TaskUpdateCallback {
-		@Override
-		public <T extends Task> void onAdd(T task) {
-			final List<T> single = new LinkedList<T>(Util.classOf(task), task);
-			onAddAll(single);
-		}
-		@Override
-		public <T extends Task> void onAddAll(Collection<T> tasks) {
-			final TaskType type = TaskType.fromClass(tasks.getGenericType());
-			if(selected[type.ordinal()]) {
-				filteredTasks.addAll(filter(tasks));
-				sort(filteredTasks);
-				WorkbenchSession.this.tasks = filteredTasks.copy();
-				notifyClient();
-			}
-		}
-		@Override
-		public <T extends Task> void onRemove(T task) {
-			final List<T> single = new LinkedList<T>(Util.classOf(task), task);
-			onRemoveAll(single);
-		}
-		@Override
-		public <T extends Task> void onRemoveAll(Collection<T> tasks) {
-			filteredTasks.removeAll(tasks);
-			WorkbenchSession.this.tasks.removeAll(tasks);
-			possiblyDirtyTasks.addAll(tasks);
-			notifyClient();
-		}
-		private void notifyClient() {
-			
-		}
-	}
 	
 	@Autowired private DataAccess data;
 	@Autowired private UserService users;
@@ -94,17 +54,14 @@ public class WorkbenchSession {
 	//currently active task lists (any of TaskType)
 	private boolean[] selected = new boolean[TaskType.values().length];
 	
-	//task filtered by general filter (base for search)
-	private List<Task> filteredTasks;
-	
-	//filteredTasks additionally filtered by search
-	private List<Task> tasks;
-	
-	//remember removed tasks in case they get replaced by tasks with same id
-	private List<Task> possiblyDirtyTasks;
+	//task filtered by general filter & search
+	private List<Task> visible;
 	
 	//current settings for general filter
 	private FilterForm generalFilter;
+	
+	//current settings for search
+	private SearchForm searchFilter;
 	
 	//current task sort settings
 	private SortForm sort;
@@ -112,24 +69,18 @@ public class WorkbenchSession {
 	//current task load settings
 	private LoadForm load;
 	
-	//needed to prevent from getting garbage collected
-	//needs to die with this object
-	private final UpdateCallback strongReference;
-	
 	public WorkbenchSession() {
-		 strongReference = new UpdateCallback();
 	}
 	
 	@PostConstruct
 	private void init() {
-		data.registerForUpdates(strongReference);
+		data.registerForUpdates(this);
 		
-		filteredTasks = new LinkedList<>(Task.class);
-		tasks = new LinkedList<>(Task.class);
-		possiblyDirtyTasks = new LinkedList<>(Task.class);
+		visible = new LinkedList<>(Task.class);
 		
 		sort = new SortForm();
 		generalFilter = new FilterForm();
+		searchFilter = new SearchForm();
 		
 		user = users.getLoggedInUser();
 		load = user.getLoadForm();
@@ -137,6 +88,27 @@ public class WorkbenchSession {
 		if (load.isReloadOnStartup()) {
 			load(load.getDefaultStartupType(), LoadOperation.ONLY);
 		}
+	}
+	
+	@Override
+	boolean isTaskTypeVisible(TaskType type) {
+		return selected[type.ordinal()];
+	}
+
+	@Override
+	List<Task> getVisible() {
+		return visible;
+	}
+
+	@Override
+	<T extends Task> Collection<T> filter(Collection<T> tasks) {
+		Collection<T> filtered = filterService.filter(tasks, generalFilter, user);
+		return filterService.search(filtered, searchFilter);
+	}
+
+	@Override
+	void sortVisible() {
+		sortService.sort(visible, sort);
 	}
 	
 	/*--------------------------------------------------
@@ -152,6 +124,7 @@ public class WorkbenchSession {
 		case REMOVE:
 			remove(type);break;
 		}
+		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
 	}
 	
 	/**
@@ -161,18 +134,17 @@ public class WorkbenchSession {
 	private void add(TaskType type) {
 		final int i = type.ordinal();
 		if(!selected[i]) {
-			filteredTasks.addAll(filter(getTaskList(type)));
-			sort(filteredTasks);
+			visible.addAll(filter(getTaskList(type)));
+			sortVisible();
 			selected[i] = true;
 		}
-		tasks = filteredTasks.copy();
 	}
 	
 	/**
 	 * Select only one specific type of tasks. Will reset modifiers like search.
 	 */
 	private void only(TaskType type) {
-		filteredTasks.clear();
+		visible.clear();
 		Arrays.fill(selected, false);
 		add(type);
 	}
@@ -185,33 +157,24 @@ public class WorkbenchSession {
 		final int i = type.ordinal();
 		if(selected[i]) {
 			final Collection<? extends Task> toRemove = getTaskList(type);
-			filteredTasks.removeAll(toRemove);
+			visible.removeAll(toRemove);
 			selected[i] = false;
-			tasks.removeAll(toRemove);
 		}
 	}
 	
 	/**
-	 * Reloads all tasks. Will reset modifiers like search.
+	 * Reloads, refilters and resorts all tasks.
 	 */
 	private void reload() {
-		filteredTasks.clear();
+		visible.clear();
 		final TaskType[] types = TaskType.values();
 		for(int i = 0; i < selected.length; i++) {
 			if(selected[i]) {
-				filteredTasks.addAll(filter(getTaskList(types[i])));
+				visible.addAll(filter(getTaskList(types[i])));
 			}
 		}
-		sort(filteredTasks);
-		tasks = filteredTasks.copy();
-	}
-	
-	private <T extends Task> Collection<T> filter(Collection<T> tasks) {
-		return filterService.filter(tasks, generalFilter, user);
-	}
-	
-	private <T extends Task> void sort(List<T> tasks) {
-		sortService.sort(tasks, sort);
+		sortVisible();
+		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
 	}
 	
 	private Collection<? extends Task> getTaskList (TaskType type) {
@@ -242,16 +205,18 @@ public class WorkbenchSession {
 	/**
 	 * Apply/update filtering
 	 */
-	public void updateFilter(FilterForm filter) {
+	public synchronized void updateFilter(FilterForm filter) {
 		generalFilter = filter;
 		reload();
+		
 	}
 	
 	/**
 	 * Apply/update search filtering
 	 */
 	public void updateSearch(SearchForm search) {
-		tasks = filterService.search(filteredTasks, search);
+		this.searchFilter = search;
+		reload();
 	}
 	
 	/**
@@ -259,7 +224,8 @@ public class WorkbenchSession {
 	 */
 	public void updateSort(SortForm sort) {
 		this.sort = sort;
-		sort(tasks);
+		sortVisible();
+		taskListEvents.add(new TaskListEvent.SortAll(getIds(visible)));
 	}
 	
 	/*--------------------------------------------------
@@ -267,16 +233,19 @@ public class WorkbenchSession {
 	 * ---------------------------------------------------*/
 	
 	public List<Task> getTasks() {
-		return tasks.copy();
+		return visible.copy();
 	}
 	
 	/**
-	 * Getting this list will clear it, you can only get it once!
+	 * RETRIEVED EVENTS WILL BE DELETED.
+	 * The same even cannot be retrieved multiple times.
 	 */
-	public List<Task> getDirtyTasks() {
-		final List<Task> result = possiblyDirtyTasks.copy();
-		possiblyDirtyTasks.clear();
-		return result;
+	public List<TaskListEvent> retrieveEvents() {
+		synchronized (taskListEvents) {
+			List<TaskListEvent> result = taskListEvents.copy();
+			taskListEvents.clear();
+			return result;
+		}
 	}
 	
 	public boolean[] getSelectedTaskTypes() {
@@ -293,5 +262,9 @@ public class WorkbenchSession {
 	
 	public FilterForm getFilterForm() {
 		return generalFilter;
+	}
+	
+	public SearchForm getSearchForm() {
+		return searchFilter;
 	}
 }
