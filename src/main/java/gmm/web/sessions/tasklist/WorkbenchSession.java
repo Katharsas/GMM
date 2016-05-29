@@ -3,8 +3,6 @@ package gmm.web.sessions.tasklist;
 
 import java.util.Arrays;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,20 +41,19 @@ public class WorkbenchSession extends TaskListState {
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired private DataAccess data;
-	@Autowired private UserService users;
-	@Autowired private TaskFilterService filterService;
-	@Autowired private TaskSortService sortService;
+	private final DataAccess data;
+	private final TaskFilterService filterService;
+	private final TaskSortService sortService;
 	
 	//user logged into this session
 	private User user;
 	
 	//currently active task lists (any of TaskType)
-	private boolean[] selected = new boolean[TaskType.values().length];
+	private final boolean[] selected = new boolean[TaskType.values().length];
 	
 	//task filtered by general filter & search
 	private List<Task> visible;
-	
+
 	//current settings for general filter
 	private FilterForm generalFilter;
 	
@@ -69,12 +66,14 @@ public class WorkbenchSession extends TaskListState {
 	//current task load settings
 	private LoadForm load;
 	
-	public WorkbenchSession() {
-	}
 	
-	@PostConstruct
-	private void init() {
-		data.registerForUpdates(this);
+	@Autowired
+	public WorkbenchSession(DataAccess data, UserService users,
+			TaskFilterService filterService, TaskSortService sortService) {
+		
+		this.data = data;
+		this.filterService = filterService;
+		this.sortService = sortService;
 		
 		visible = new LinkedList<>(Task.class);
 		
@@ -88,6 +87,8 @@ public class WorkbenchSession extends TaskListState {
 		if (load.isReloadOnStartup()) {
 			load(load.getDefaultStartupType(), LoadOperation.ONLY);
 		}
+		
+		data.registerForUpdates(this);
 	}
 	
 	@Override
