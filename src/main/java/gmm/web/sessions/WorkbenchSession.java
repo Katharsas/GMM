@@ -3,8 +3,6 @@ package gmm.web.sessions;
 
 import java.util.Arrays;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,19 +81,18 @@ public class WorkbenchSession {
 		}
 	}
 	
-	@Autowired private DataAccess data;
-	@Autowired private UserService users;
-	@Autowired private TaskFilterService filterService;
-	@Autowired private TaskSortService sortService;
+	private final DataAccess data;
+	private final TaskFilterService filterService;
+	private final TaskSortService sortService;
 	
 	//user logged into this session
 	private User user;
 	
 	//currently active task lists (any of TaskType)
-	private boolean[] selected = new boolean[TaskType.values().length];
+	private final boolean[] selected = new boolean[TaskType.values().length];
 	
 	//task filtered by general filter (base for search)
-	private List<Task> filteredTasks;
+	private final List<Task> filteredTasks;
 	
 	//filteredTasks additionally filtered by search
 	private List<Task> tasks;
@@ -116,13 +113,13 @@ public class WorkbenchSession {
 	//needs to die with this object
 	private final UpdateCallback strongReference;
 	
-	public WorkbenchSession() {
-		 strongReference = new UpdateCallback();
-	}
-	
-	@PostConstruct
-	private void init() {
-		data.registerForUpdates(strongReference);
+	@Autowired
+	public WorkbenchSession(DataAccess data, UserService users,
+			TaskFilterService filterService, TaskSortService sortService) {
+		
+		this.data = data;
+		this.filterService = filterService;
+		this.sortService = sortService;
 		
 		filteredTasks = new LinkedList<>(Task.class);
 		tasks = new LinkedList<>(Task.class);
@@ -137,6 +134,9 @@ public class WorkbenchSession {
 		if (load.isReloadOnStartup()) {
 			load(load.getDefaultStartupType(), LoadOperation.ONLY);
 		}
+		
+		strongReference = new UpdateCallback();
+		data.registerForUpdates(strongReference);
 	}
 	
 	/*--------------------------------------------------
