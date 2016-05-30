@@ -6,6 +6,7 @@ import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import Dialogs from "./dialogs";
 import HtmlPreProcessor from "./preprocessor";
+import Errors from "./Errors";
 
 //adds :blank selector to jQuery
 $.expr[':'].blank = function(obj) {
@@ -59,6 +60,9 @@ var contextUrl = global.contextUrl;//TODO: remove if unused in HTML
 String.prototype.nl2br = function(is_xhtml) {   
     var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    
     return (this + '').replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1'+ breakTag +'$2');
+};
+Array.prototype.diff = function(a) {
+    return this.filter(function(i) {return a.indexOf(i) < 0;});
 };
 
 /**
@@ -143,5 +147,35 @@ function getURLParameter(sParam)
     return "";
 }
 
-export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter };
+/**
+ * @callback getIdOfElement
+ * @param {Element} element - element from which id needs to be extracted
+ * @returns {Object} id - if of the given element
+ */
+/**
+ * Resorts a list of dom elements based on another list.
+ * @param {Object[]} orderedIds - array of ids with order used to order dom elements.
+ * @param {jquery} $unorderedList - parent of dom elements which are to be ordered.
+ * @param {string} selector - allows to filter children of $unorderedList
+ * @param {getIdOfElement} getIdOfElement - Callback for extracting ids from list elements.
+ * 		Those ids will be compared with the ids of the orderedIds array.
+ */
+function resortElementsById(orderedIds, $unorderedList, selector, getIdOfElement) {
+	var $unorderedElements = $unorderedList.children(selector);
+	if (orderedIds.length !== $unorderedElements.length) {
+		throw new Errors.IllegalArgumentError("List lengths do not match!");
+	}
+	var idToIndexOrdered = {};
+	for(var i = 0; i < orderedIds.length; i++) {
+		idToIndexOrdered[orderedIds[i]] = i;
+	}
+	$unorderedElements.detach().sort(function(element1, element2) {
+		var id1 = getIdOfElement(element1);
+		var id2 = getIdOfElement(element2);
+		return idToIndexOrdered[id1] - idToIndexOrdered[id2];
+	});
+	$unorderedList.append($unorderedElements);
+}
+
+export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, resortElementsById };
 export default {};

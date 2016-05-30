@@ -125,7 +125,6 @@ public class WorkbenchSession extends TaskListState {
 		case REMOVE:
 			remove(type);break;
 		}
-		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
 	}
 	
 	/**
@@ -165,6 +164,7 @@ public class WorkbenchSession extends TaskListState {
 	
 	/**
 	 * Reloads, refilters and resorts all tasks.
+	 * Not thread-safe.
 	 */
 	private void reload() {
 		visible.clear();
@@ -187,18 +187,26 @@ public class WorkbenchSession extends TaskListState {
 	 * ---------------------------------------------------*/
 	
 	/**
+	 * Allow client to retrieve current TaskListState after reloading page.
+	 */
+	public synchronized void createInitEvent() {
+		taskListEvents.add(new TaskListEvent.CreateAll(getIds(visible), getIds(visible)));
+	}
+	
+	/**
 	 * Change/update loaded tasks
 	 */
-	public void loadTasks(TaskType type) {
+	public synchronized void loadTasks(TaskType type) {
 		load(type, load.getLoadOperation());
+		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
 	}
 	
 	/**
 	 * Update load settings
 	 */
-	public void updateLoad(LoadForm load) {
-		synchronized (load) {
-			this.load = load;
+	public synchronized void updateLoad(LoadForm load) {
+		this.load = load;
+		synchronized(getUser()) {
 			getUser().setLoadForm(load);
 		}
 	}
@@ -209,13 +217,12 @@ public class WorkbenchSession extends TaskListState {
 	public synchronized void updateFilter(FilterForm filter) {
 		generalFilter = filter;
 		reload();
-		
 	}
 	
 	/**
 	 * Apply/update search filtering
 	 */
-	public void updateSearch(SearchForm search) {
+	public synchronized void updateSearch(SearchForm search) {
 		this.searchFilter = search;
 		reload();
 	}
@@ -223,7 +230,7 @@ public class WorkbenchSession extends TaskListState {
 	/**
 	 * Apply/update task sorting settings
 	 */
-	public void updateSort(SortForm sort) {
+	public synchronized void updateSort(SortForm sort) {
 		this.sort = sort;
 		sortVisible();
 		taskListEvents.add(new TaskListEvent.SortAll(getIds(visible)));
@@ -239,7 +246,7 @@ public class WorkbenchSession extends TaskListState {
 	
 	/**
 	 * RETRIEVED EVENTS WILL BE DELETED.
-	 * The same even cannot be retrieved multiple times.
+	 * The same event cannot be retrieved multiple times.
 	 */
 	public List<TaskListEvent> retrieveEvents() {
 		synchronized (taskListEvents) {

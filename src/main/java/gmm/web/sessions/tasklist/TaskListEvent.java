@@ -2,10 +2,22 @@ package gmm.web.sessions.tasklist;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Edit is implemented as "RemoveSingle" followed by "AddSingle".
  */
 public abstract class TaskListEvent {
+	
+	@SuppressWarnings("unused")
+	private final static Logger logger = LoggerFactory.getLogger(TaskListEvent.class);
+	
+	public final String eventName;
+	
+	public TaskListEvent() {
+		eventName = this.getClass().getSimpleName();
+	}
 	
 	public static class SortAll extends TaskListEvent {
 		public final List<String> visibleIdsOrdered;

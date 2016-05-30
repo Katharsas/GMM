@@ -1,7 +1,8 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";
-import { contextUrl } from "./default";
+import { contextUrl, resortElementsById } from "./default";
+import Errors from "./Errors";
 
 /**
  * -------------------- TaskLoader ----------------------------------------------------------------
@@ -41,12 +42,7 @@ export default (function() {
 	 * @return - Promise
 	 */
 	var create = function(taskListId) {
-		var taskList = taskListMap[taskListId];
-		return $.when().then(function(){
-				return updateVisibleAndCache(taskListId);
-		}).then(function() {
-				reinsertHeaders(taskListId, taskList.current);
-		});
+		return updateVisibleAndCache(taskListId);
 	};
 	
 	/**
@@ -54,45 +50,58 @@ export default (function() {
 	 * Update tasks from server for all task lists.
 	 * @return - Promise
 	 */
-	var update = function(taskListId, idLinks) {
-		return $.when().then(function(){
-			return loadIntoCache(taskListId, idLinks);
-		}).then(function() {
-			Object.keys(taskListMap).forEach(function(taskListId) {
-				reinsertHeaders(taskListId, idLinks);
-			});
-		});
-	};
+//	var update = function(taskListId, idLinks) {
+//		return $.when().then(function(){
+//			return loadIntoCache(taskListId, idLinks);
+//		}).then(function() {
+//			Object.keys(taskListMap).forEach(function(taskListId) {
+//				reinsertHeaders(taskListId);
+//			});
+//		});
+//	};
 	
 	/**
 	 * Remove tasks for all task lists.
 	 */
-	var remove = function(idLinks) {
-		//delete from cache
-		idLinks.forEach(function(id) {
-			delete idToTaskData[id];
-		});
-		//delete from current & from list itself
-		Object.keys(taskListMap).forEach(function(taskListId) {
-			var taskList = taskListMap[taskListId];
-			var $tasks = taskList.$list.children(".task");
-			idLinks.forEach(function(id) {
-				taskList.current.forEach(function(currentId, index) {
-					if(id === currentId) taskList.current.splice(index, 1);
-				});
-				$tasks.remove("#"+id);
-			});
-		});
-	};
+//	var remove = function(idLinks) {
+//		//delete from cache
+//		idLinks.forEach(function(id) {
+//			delete idToTaskData[id];
+//		});
+//		//delete from current & from list itself
+//		Object.keys(taskListMap).forEach(function(taskListId) {
+//			var taskList = taskListMap[taskListId];
+//			var $tasks = taskList.$list.children(".task");
+//			idLinks.forEach(function(id) {
+//				taskList.current.forEach(function(currentId, index) {
+//					if(id === currentId) taskList.current.splice(index, 1);
+//				});
+//				$tasks.remove("#"+id);
+//			});
+//		});
+//	};
 	
 	/**
 	 * Clears task list, then reinsert headers from cache into task list.
 	 * ALL tasks are replaced to update order changes correctly.
 	 */
-	var reinsertHeaders = function(taskListId, idLinks) {
+//	var reinsertHeaders = function(taskListId) {
+//		var taskList = taskListMap[taskListId];
+//		taskList.$list.children(".task").remove();
+//		taskList.current.forEach(function(id) {
+//			var $header = idToTaskData[id].$header.clone(true, true);
+//			taskList.eventBinders.bindHeader($header);
+//			taskList.$list.append($header);
+//		});
+//	};
+	
+	/**
+	 * Task data for given idLinks must exist.
+	 * Does not check if task header has already been added to the list.
+	 */
+	var appendTaskHeaders = function(taskListId, idLinks) {
 		var taskList = taskListMap[taskListId];
-		taskList.$list.children(".task").remove();
-		taskList.current.forEach(function(id) {
+		idLinks.forEach(function(id) {
 			var $header = idToTaskData[id].$header.clone(true, true);
 			taskList.eventBinders.bindHeader($header);
 			taskList.$list.append($header);
@@ -104,35 +113,119 @@ export default (function() {
 	 * Get list of currently visible tasks
 	 * @return - Promise
 	 */
-	var updateVisibleAndCache = (function() {return function(taskListId) {
+	var updateVisibleAndCache = (function() {
+		return function(taskListId) {
 			var taskList = taskListMap[taskListId];
-			return Ajax.get(contextUrl + taskList.url + "/currentTaskIds")
-				.then(function(taskListState) {
-					taskList.current = taskListState.visibleIds;
-					var dirtyIds = taskListState.dirtyIds;
-					return $.when().then(function() {
-						return loadIntoCache(taskListId, dirtyIds);
-					}).then(function() {
-						return getNotYetChachedIds(taskListId);
-					}).then(function(missing) {
-						return loadIntoCache(taskListId, missing);
-					});
+			return Ajax.get(contextUrl + taskList.url + "/taskListEvents")
+				.then(function(taskListEvents) {
+					for(var event of taskListEvents) {
+						return onTaskListEvent(event, taskListId);
+					}
 				});
 		};
+		
+		// TODO a page can contain multiple tasks with same id (multiple lists)
+		// TODO OOP: instead of passing tasklist everywhere, create TaskList class wich owns the methods.
+		
+		// TODO certain events effect all task lists. If a task gets deleted on list A,
+		// it will receive events for listA as an answer, but updates should be triggered for
+		// for all other lists => call sync for all lists
+		
+		// TODO Bug: When element is selected and then CreateSingle event applied,
+		// the oriignaly selected element cannot be unselected (bugged)
+		
 		/**
-		 * Asynchronous!
-		 * Get the ids of the tasks whose cache data is missing.
-		 * @return - Promise
+		 * @callback getIdFromTask extends resortElementsById.getIdOfElement
+		 * @param {Element} task
 		 */
-		function getNotYetChachedIds(taskListId) {
+		function getIdOfTask(task) {
+			return task.id;
+		}
+
+		function resortTaskList(taskListId, visibleIdsOrdered) {
+			var $list = taskListMap[taskListId].$list;
+			resortElementsById(visibleIdsOrdered, $list, ".task", getIdOfTask);
+		}
+		
+		
+		function getNotYetChachedIds(ids) {
 			var missing = [];
-			var taskList = taskListMap[taskListId];
-			taskList.current.forEach(function(id) {
+			ids.forEach(function(id) {
 				if (!idToTaskData.hasOwnProperty(id)) {
 					missing.push(id);
 				}
 			});
 			return missing;
+		}
+		
+		function onTaskListEvent(event, taskListId) {
+			var taskList = taskListMap[taskListId];
+			switch(event.eventName) {
+			
+			case "FilterAll":
+				var newVisibleIds = event.visibleIdsOrdered;
+				// load missing into cache
+				var missing = getNotYetChachedIds(newVisibleIds);
+				return loadIntoCache(taskListId, missing)
+				.then(function() {
+					// add not visible from cache to page
+					var addedIds = newVisibleIds.diff(taskList.current);
+					appendTaskHeaders(taskListId, addedIds);
+					// remove hidden from page
+					taskList.$list.children(".task").each(function() {
+						var id = getIdOfTask(this);
+						if (newVisibleIds.indexOf(id) < 0) {
+							$(this).remove();
+						}
+					});
+					// resort page elements by visible
+					resortTaskList(taskListId, newVisibleIds);
+					taskListMap[taskListId].current = newVisibleIds;
+				});
+
+			case "SortAll":
+				// resort page elements by visible
+				resortTaskList(taskListId, event.visibleIdsOrdered);
+				taskListMap[taskListId].current = event.visibleIdsOrdered;
+				return $.when();
+				
+			case "CreateAll":
+				// add createIds into cache and to page (need function)
+				return loadIntoCache(taskListId, event.createdIds)
+				.then(function() {
+					appendTaskHeaders(taskListId, event.createdIds);
+				})
+				// resort page elements by visible and set current
+				.then(function() {
+					resortTaskList(taskListId, event.visibleIdsOrdered);
+					taskListMap[taskListId].current = event.visibleIdsOrdered;
+				});
+				
+			case "CreateSingle":
+				// add id html into cache
+				return loadIntoCache(taskListId, [event.createdId])
+				// add html to page at given pos
+				.then(function() {
+					var $header = idToTaskData[event.createdId].$header.clone(true, true);
+					taskList.eventBinders.bindHeader($header);
+					var pos = event.insertedAtPos;
+					taskList.$list.children(".task").eq(pos).before($header);
+					taskListMap[taskListId].current.splice(pos, 0, event.createdId); 
+				});
+				
+			case "RemoveAll":
+				// remove from page & cache
+				// TODO
+				break;
+				
+			case "RemoveSingle":
+				// remove all from page & cache
+				// TODO
+				break;
+				
+			default:
+				throw new Errors.IllegalArgumentError("Illegal TaskListEvent type: "+event.eventName);
+			}
 		}
 	})();
 	
@@ -188,15 +281,21 @@ export default (function() {
 		},
 		
 		updateTask : function(taskListId, idLink) {
-			update(taskListId, [idLink]);
+			//update(taskListId, [idLink]);
+			// TODO: sending an edit should return taskEvents to save requests
+			updateVisibleAndCache(taskListId);
 		},
 		
 		removeTask : function(idLink) {
-			remove([idLink]);
+			//remove([idLink]);
+			// TODO: sending a delete should return taskEvents to save requests
+			// TODO for all taskListIds: updateVisibleAndCache(taskListId);
 		},
 		
 		removeTasks : function(idLinks) {
-			remove(idLinks);
+			//remove(idLinks);
+			// TODO: sending a delete should return taskEvents to save requests
+			// TODO for all taskListIds: updateVisibleAndCache(taskListId);
 		},
 		
 		getTaskIds : function(taskListId) {

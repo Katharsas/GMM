@@ -384,7 +384,7 @@ public class TaskController {
 			HttpServletResponse response) {
 		
 		taskSession.cleanUp();
-		
+		workbench.createInitEvent();
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 	    insertTemplate("workbench_filters", requestData);
 	    return "tasks";
