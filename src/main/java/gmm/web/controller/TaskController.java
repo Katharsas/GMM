@@ -92,8 +92,8 @@ public class TaskController {
 		modelSuppliers.put("workbench-generalFilterForm", workbench::getFilterForm);
 		modelSuppliers.put("workbench-loadForm", ()->workbench.getUser().getLoadForm());
 		
-		templates.put("all_taskForm.ftl", new String[]{"taskForm"});
-		templates.put("workbench_filters.ftl", new String[]{"workbench-generalFilterForm"});
+		templates.put("all_taskForm", new String[]{"taskForm"});
+		templates.put("workbench_filters", new String[]{"workbench-generalFilterForm"});
 	}
 	
 	@ModelAttribute
@@ -106,21 +106,20 @@ public class TaskController {
 	/**
 	 * Renders the given Freemaker template to a string and inserts that into into given model to
 	 * provide access to the rendered html in jsp files.
-	 * @param template - The filename of the template without extension.
+	 * @param templateFile - The filename of the template without extension.
 	 * @param requestData - string will be added to this model, so you can insert the template in
 	 * 		jsp code just like any other model attribute by the given template name
 	 */
-	private String insertTemplate(String template, ControllerArgs requestData) {
-		final String fileName = template + ".ftl";
+	private String insertTemplate(String templateFile, ControllerArgs requestData) {
 		// populate request
-		for(final String form : templates.get(fileName)) {
+		for(final String form : templates.get(templateFile)) {
 			requestData.request.setAttribute(form, modelSuppliers.get(form).get());
 		}
 		// render and insert into model
-		final String result = ftlRenderer.renderTemplate(fileName, requestData);
-		requestData.model.addAttribute(template, result);
+		final String result = ftlRenderer.renderTemplate(templateFile, requestData);
+		requestData.model.addAttribute(templateFile, result);
 		// cleanup
-		for(final String form : templates.get(fileName)) {
+		for(final String form : templates.get(templateFile)) {
 			requestData.request.removeAttribute(form);
 		}
 		return result;

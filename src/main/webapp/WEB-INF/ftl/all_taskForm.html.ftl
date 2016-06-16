@@ -1,5 +1,5 @@
 <#import "/spring.ftl" as s/>
-<#import "macros.ftl" as m/>
+<#import "macros.html.ftl" as m/>
 
 <#assign path="taskForm">
 <@s.bind path=path/>

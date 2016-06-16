@@ -81,7 +81,7 @@ public class AdminController {
 		
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 		request.setAttribute("taskForm", getTaskFacade());
-		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm.ftl", requestData);
+		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm", requestData);
 		model.addAttribute("all_taskForm", taskFormHtml);
 		
 		return "admin";

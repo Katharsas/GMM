@@ -1,11 +1,10 @@
 import $ from "./lib/jquery";
 import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";
-import Queue from "./shared/queue";
-import TaskLoader from "./shared/taskloader";
-import TaskSwitcher from "./shared/taskswitcher";
+import TaskForm from "./shared/TaskForm";
+import TaskCache from "./shared/TaskCache";
+import TaskList from "./shared/TaskList";
 import TaskEventBindings from "./shared/tasklisteners";
-import ResponseBundleHandler from "./shared/responseBundleHandler";
 import { contextUrl, getURLParameter } from "./shared/default";
 
 var tasksVars = {
@@ -37,47 +36,22 @@ var Workbench = function(taskForm) {
 	var $loadButtons = $tabs.find(".workbench-load-typeButton");
 	var $count = $workbenchList.find(".list-count span");
 	
-	var taskListId = "workbench";
-	var taskLoader = TaskLoader;
-	taskLoader.registerTaskList(taskListId, {
+	var taskBinders = TaskEventBindings(taskForm.prepareEdit);
+	var taskCache =  TaskCache("/tasks/workbench/renderTaskData");
+	
+	var taskListSettings = {
 		$list : $workbenchList,
-		url : "/tasks/workbench",
-	});
-	
-	var taskSwitcher = TaskSwitcher(taskListId, taskLoader);
-	var expandedTasks = new Queue(3, function($task1, $task2) {
-		return $task1[0] === $task2[0];
-	});
-	
-	var taskBinders = TaskEventBindings(
-		function($task) {
-			taskSwitcher.switchTask($task, expandedTasks);
-		},
-		function($task, id) {
-			taskLoader.updateTask(taskListId, id);
-		},
-		function($task, id) {
-			taskLoader.removeTask(id);
-			taskForm.resetFormIfUnderEdit(id);
-		},
-		function(id) {
-			taskForm.prepareEdit(id);
+		eventUrl : "/tasks/workbench/taskListEvents",
+		eventBinders : taskBinders,
+		onChange : function(newSize) {
+			$count.text(newSize);
 		}
-	);
-	taskLoader.setTaskEventBinders(taskListId, taskBinders);
-	taskForm.setOnEdit(function(id) {
-		taskLoader.updateTask(taskListId, id);
-	});
-	taskForm.setOnCreate(function() {
-		render();
-	});
-	
-	var render = function() {
-		taskLoader.createTaskList(taskListId, function() {
-			$count.text(taskLoader.getTaskIds.length);
-			expandedTasks.clear();
-		});
 	};
+	var taskList = TaskList(taskListSettings, taskCache);
+
+	taskForm.setOnEdit(taskList.update);
+	taskForm.setOnCreate(taskList.update);
+	
 	var updateTasks = function() {
 		Ajax.get(contextUrl + "/tasks/selected")
 			.done(function(selected) {
@@ -88,7 +62,7 @@ var Workbench = function(taskForm) {
 						$(element).removeClass("selected");
 					}
 				});
-				render();
+				taskList.update();
 			});
 	};
 	this.load = function(type) {
@@ -164,8 +138,7 @@ var Workbench = function(taskForm) {
 		
 		$sortForm.find("select, input").change(function() {
 			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
-				.done(//TODO only load new sorting data
-						render);
+				.done(taskList.update);
 		});
 		
 		//-------------------------------------------------------
@@ -175,7 +148,7 @@ var Workbench = function(taskForm) {
 		
 		$searchForm.find(".workbench-search-submit").click(function() {
 			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
-				.done(render);
+				.done(taskList.update);
 		});
 		$searchForm.find("#workbench-search-switch").click(function() {
 			setSearchType(!isEasySearch());
@@ -227,7 +200,7 @@ var Workbench = function(taskForm) {
 					get$FilterForm().remove();
 					$tab.append(html);
 				}
-				render();
+				taskList.update();
 			};
 			
 			// bind checkboxes
@@ -268,7 +241,7 @@ var Workbench = function(taskForm) {
 				Dialogs.hideDialog($confirm);
 				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
 					.done(function(){
-						taskLoader.removeTasks(taskLoader.getTaskIds(taskListId));
+						taskList.update();
 					});
 			}, "Delete all tasks currently visible in workbench?");
 		});
@@ -329,143 +302,3 @@ function CheckboxGrouper($checkboxGroup, selector, onGroupChange) {
 		$checkboxGroup.findSelf(selector).prop("checked", isChecked);
 	};
 }
-
-/**
- * -------------------- TaskForm -----------------------------------------------------------------
- * Singleton, since there can only be one taskForm per page currently.
- * Initializes task form and registers behaviour for task form buttons.
- */
-var TaskForm = (function() {
-	var instance = null;
-	var TaskForm = function() {
-		
-		// null if there is no editing going on, idLink otherwise
-		var currentlyEditedId = null;
-		var onEdit = null;
-		var onCreate = null;
-		
-		var $form = $("#taskForm");
-		var $new = $("#newTaskButton");
-		var $cancel = $("#cancelTaskButton");
-		var $submit = $("#submitTaskButton");
-		
-		$new.on("click", function() {
-			show();
-		});
-		$submit.on("click", function() {
-			if(currentlyEditedId !== null) {
-				// submit edit
-				Ajax.post(contextUrl + "/tasks/editTask/submit", null, $form)
-					.done(function() {
-						var idBuffer = currentlyEditedId;
-						resetTaskForm();
-						onEdit(idBuffer);
-					});
-			} else {
-				// submit new task
-				var url = contextUrl + "/tasks/createTask";
-				var ajaxChannel = new ResponseBundleHandler(url, "assets", true);
-				ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
-					resetTaskForm();
-					onCreate();
-				});
-			}
-			// TODO refresh added /edited task from server
-		});
-		$cancel.on("click", function() {
-			resetTaskForm();
-		});
-		resetTaskForm();
-		
-		// TODO show user if he is currently editing or creating new task
-		
-		function resetTaskForm() {
-			Ajax.post(contextUrl + "/tasks/resetTaskForm")
-				.done(function() {
-					hide();
-					getAndInsertForm();
-				});
-		}
-		
-		function getAndInsertForm() {
-			$form.empty();
-			Ajax.get(contextUrl + "/tasks/renderTaskForm")
-				.done(function(data) {
-					$form.html(data.taskFormHtml);
-					currentlyEditedId = data.editedTaskIdLink;
-					if(currentlyEditedId !== null) {
-						// if editing, hide type selection
-						var $type = $form.find("#taskForm-group-type");
-						$type.hide();
-					} else {
-						// else show path if asset
-						var $typeSelect = $form.find("#taskForm-element-type select");
-						$typeSelect.on("change", function() {switchAssetPath($typeSelect);});
-						switchAssetPath($typeSelect);
-					}
-				}
-			);
-		}
-		
-		function switchAssetPath($taskElementType) {
-			var selected = $taskElementType.find(":selected").val();
-			var $path = $form.find("#taskForm-element-path");
-			switch(selected) {
-				case "GENERAL":	$path.hide();break;
-				default:		$path.show();break;
-			}
-		}
-		
-		function show() {
-			$form.show();
-			$submit.show();
-			$cancel.show();
-			$new.hide();
-		}
-		
-		function hide() {
-			$form.hide();
-			$submit.hide();
-			$cancel.hide();
-			$new.show();
-		}
-		
-		function prepareEdit(id) {
-			Ajax.post(contextUrl + "/tasks/editTask/announce", {idLink : id})
-				.done(function() {
-					getAndInsertForm();
-					show();
-				});
-		}
-		
-		function resetIfEdited(id) {
-			if(currentlyEditedId == id) {
-				resetTaskForm();
-			}
-		}
-		
-		/**
-		 * @callback onEditCallback - called with edited tasks id on edit submit
-		 */
-		function setOnEdit(onEditCallback) {
-			onEdit = onEditCallback;
-		}
-		/**
-		 * @callback onCreateCallback - called on create task
-		 */
-		function setOnCreate(onCreateCallback) {
-			onCreate = onCreateCallback;
-		}
-		
-		return {
-			prepareEdit : prepareEdit,
-			resetFormIfUnderEdit : resetIfEdited,
-			setOnEdit : setOnEdit,
-			setOnCreate : setOnCreate
-		};
-	};
-	return function() {
-		if(instance === null) instance = TaskForm();
-		return instance;
-	};
-})();

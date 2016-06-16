@@ -30,13 +30,13 @@ import gmm.web.forms.CommentForm;
 @Service
 public class FtlRenderer {
 	
-	@Autowired private UserService users;
-	
-	private Configuration config;
+	private final UserService users;
+	private final Configuration config;
 	
 	@Autowired
-	public FtlRenderer(FreeMarkerConfigurer ftlConfig) throws IOException {
-		config = ftlConfig.getConfiguration();
+	public FtlRenderer(FreeMarkerConfigurer ftlConfig, UserService users) throws IOException {
+		this.config = ftlConfig.getConfiguration();
+		this.users = users;
 	}
 	
 	public static class TaskRenderResult {
@@ -58,6 +58,8 @@ public class FtlRenderer {
 	/**
 	 * Request must already include all needed forms.
 	 * Renders basically any template to a String.
+	 * 
+	 * @param fileName - Name of template file without file extension.
 	 */
 	public String renderTemplate(String fileName, ControllerArgs requestData) {
 		
@@ -101,11 +103,11 @@ public class FtlRenderer {
 		
 		final StringWriter outH = new StringWriter();
 		final StringBuffer bufferH = outH.getBuffer();
-		renderTemplate("taskheader.ftl", model, outH);
+		renderTemplate("taskheader", model, outH);
 		
 		final StringWriter outB = new StringWriter();
 		final StringBuffer bufferB = outB.getBuffer();
-		renderTemplate("taskbody.ftl", model, outB);
+		renderTemplate("taskbody", model, outB);
 		
 		return new TaskRenderResult(task, bufferH.toString(), bufferB.toString());
 	}
@@ -128,9 +130,13 @@ public class FtlRenderer {
 		requestData.request.setAttribute("commentForm", new CommentForm());
 	}
 	
+	/**
+	 * @param fileName - Name of template file without file extension.
+	 */
 	private void renderTemplate(String fileName, ModelMap model, StringWriter target) {
 		try {
-			config.getTemplate(fileName).process(model, target);
+			final String fileExtension = ".html.ftl";
+			config.getTemplate(fileName + fileExtension).process(model, target);
 		} catch (final TemplateException e) {
 			throw new RuntimeException(e);
 		} catch (final IOException e) {

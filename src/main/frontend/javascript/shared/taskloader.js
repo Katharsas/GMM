@@ -10,7 +10,7 @@ import Errors from "./Errors";
  * All task lists must be registered using the taskListMap parameter object.
  * The Taskloader can get the task lists, task data and insert the headers into dom.
  * 
- * 
+ * @deprecated
  * @author Jan Mothes
  */
 export default (function() {
@@ -147,7 +147,6 @@ export default (function() {
 			resortElementsById(visibleIdsOrdered, $list, ".task", getIdOfTask);
 		}
 		
-		
 		function getNotYetChachedIds(ids) {
 			var missing = [];
 			ids.forEach(function(id) {
@@ -194,9 +193,8 @@ export default (function() {
 				return loadIntoCache(taskListId, event.createdIds)
 				.then(function() {
 					appendTaskHeaders(taskListId, event.createdIds);
-				})
-				// resort page elements by visible and set current
-				.then(function() {
+					
+					// resort page elements by visible and set current
 					resortTaskList(taskListId, event.visibleIdsOrdered);
 					taskListMap[taskListId].current = event.visibleIdsOrdered;
 				});

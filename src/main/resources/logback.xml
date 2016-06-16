@@ -10,7 +10,7 @@
  -->
 
 <!-- Enable scanning of this config file -->
-<configuration scan="true" scanPeriod="30 seconds" debug="true">
+<configuration scan="true" scanPeriod="30 seconds" debug="false">
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<Pattern>%d{HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>

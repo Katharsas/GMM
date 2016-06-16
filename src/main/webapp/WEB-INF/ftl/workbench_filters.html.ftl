@@ -1,5 +1,5 @@
 <#import "/spring.ftl" as s/>
-<#import "macros.ftl" as m/>
+<#import "macros.html.ftl" as m/>
 
 <#-- set path String, set bind to path String, make form available -->
 <#assign path="workbench-generalFilterForm">

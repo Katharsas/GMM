@@ -9,7 +9,7 @@ import { contextUrl, allVars, htmlDecode } from "./default";
  * Provides methods to bind all needed listeners to task header or body
  * 
  */
-export default function(onswitch, onchange, onremove, onedit) {
+export default function(onedit) {
 	
 	//if(1 == "text") console.log(x = 10);
 	//comments
@@ -27,14 +27,14 @@ export default function(onswitch, onchange, onremove, onedit) {
 		$commentForm.show();
 	};
 	
-	var changeComment = function(comment, taskId, commentId, $task, id) {
+	var changeComment = function(comment, taskId, commentId, $task, onchange) {
 		var $confirm = Dialogs.confirm(
 			function(input, textarea) {
 				var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
 				Ajax.post(url, {"editedComment" : textarea}) 
 					.done(function() {
 						Dialogs.hideDialog($confirm);
-						onchange($task, id);
+						onchange($task, taskId);
 					});
 			}, "Change your comment below:", undefined, comment, 700);
 	};
@@ -67,33 +67,55 @@ export default function(onswitch, onchange, onremove, onedit) {
 	
 	return {
 		
-		//TODO bind to list instead of each task
-		bindHeader : function($task) {
-			$task.children(".task-header").click(function() {
+		bindList : function($list, onswitch) {
+			$list.on("click", ".task-header", function() {
 				onswitch($(this).parent(".task"));
 			});
+		},
+		
+		bindHeader : function($task) {
 		},
 		
 		/**
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
 		 */
-		bindBody : function(id, $task, $body) {
+		bindBody : function(id, $task, $body, onchange) {
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK
 			 * -------------------------------------------------------
 			 */
 			
+			var $operations = $body.find(".task-body-footer").children(".task-operations");
+			//edit task
+			$operations.find(".task-operations-editTask").click(function() {
+				onedit(id);
+			});
+			//delete task
+			$operations.find(".task-operations-deleteTask").click(function() {
+				var $confirm = Dialogs.confirm(function() {
+					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
+						.done(function() {
+							Dialogs.hideDialog($confirm);
+							onchange($task, id);
+						});
+				}, "Are you sure you want to delete this task?");
+			});
+			
+			/* -------------------------------------------------------
+			 * GENERAL TASK - COMMENTS
+			 * -------------------------------------------------------
+			 */
+			
 			//comments
 			var $comments = $body.find(".task-comments");
 			var $form = $comments.children("form.task-comments-form");
-			var $operations = $body.find(".task-body-footer").children(".task-operations");
 			//show comment edit dialog
 			$comments.on("click", ".task-comment-editButton", function() {
 				var $comment = $(this).parent(".task-comment");
 				var $text = $comment.children(".task-comment-text");
-				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task, id);
+				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task, onchange);
 			});
 			//show/hide new comment form
 			$operations.find(".task-operations-switchComment").click(function() {
@@ -107,22 +129,6 @@ export default function(onswitch, onchange, onremove, onedit) {
 					.done(function() {
 						onchange($task, id);
 					});
-			});
-			
-			//edit task
-			$operations.find(".task-operations-editTask").click(function() {
-				onedit(id);
-			});
-			
-			//delete task
-			$operations.find(".task-operations-deleteTask").click(function() {
-				var $confirm = Dialogs.confirm(function() {
-					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
-						.done(function() {
-							Dialogs.hideDialog($confirm);
-							onremove($task, id);
-						});
-				}, "Are you sure you want to delete this task?");
 			});
 			
 			/* -------------------------------------------------------
