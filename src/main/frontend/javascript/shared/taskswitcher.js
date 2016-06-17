@@ -1,4 +1,5 @@
 import TweenLite from "../lib/tweenLite";
+import Queue from "./queue";
 
 /**
  * -------------------- TaskSwitcher -------------------------------------------------------------
@@ -12,10 +13,16 @@ import TweenLite from "../lib/tweenLite";
  * 		createBody($task) : $body - Returns a body ready top be inserted into dom.
  * 		releaseBody($body) : void - Will be called before removing body from dom.
  */
-export default function(expandedTasksQueue, taskBodyCallbacks) {	
+export default function(taskBodyCallbacks) {
+	
+	var expanded = new Queue(3, function($task1, $task2) {
+		return $task1[0] === $task2[0];
+	});
 	
 	var slideDownTime = 0.5;
-    var slideUpTime = 0.5;
+	var slideUpTime = 0.5;
+//    var slideDownTime = 2;
+//    var slideUpTime = 2;
     
 	//default is 60
 	TweenLite.ticker.fps(30);
@@ -23,41 +30,45 @@ export default function(expandedTasksQueue, taskBodyCallbacks) {
 	function getBody($task) {
 		return $task.children(":last-child");
 	}
+	
+	  /**
+     * Plays a slideUp animation and removes task detail DOM from page.
+     * @return {Promise} - Resolved when all animations have completed.
+     */
+    var collapse = function($task) {
+    	return new Promise(function(resolve, reject) {
+	        if($task !== undefined && $task!== null) {
+	        	$task.removeClass("expanding");
+	        	$task.removeClass("expanded");
+	        	$task.addClass("collapsing");
+	        	
+	        	var $body = getBody($task);
+	        	var tween = TweenLite.to($body, slideUpTime, {height:0,
+	        		onUpdate: function() {
+	        			if (!$task.hasClass("collapsing")) {
+	        				tween.kill();
+	        			}
+	        		},
+	        		onComplete: function() {
+	        			$body.hide();
+	        			taskBodyCallbacks.releaseBody($body);
+	        			$body.remove();
+	        	        $task.removeClass("collapsing");
+	                	$task.addClass("collapsed");
+	                	resolve();
+	                }
+	            });
+	        } else {resolve();}
+    	});
+    };
     
-    return {
-
-        /**
-         * Plays a slideUp animation and removes task detail DOM from page.
-         */
-        collapse : function($task) {
-            if($task !== undefined && $task!== null) {
-            	$task.removeClass("expanding");
-            	$task.removeClass("expanded");
-            	$task.addClass("collapsing");
-            	
-            	var $body = getBody($task);
-            	var tween = TweenLite.to($body, slideUpTime, {height:0,
-            		onUpdate: function() {
-            			if (!$task.hasClass("collapsing")) {
-            				tween.kill();
-            			}
-            		},
-            		onComplete: function() {
-            			$body.hide();
-            			taskBodyCallbacks.releaseBody($body);
-            			$body.remove();
-            	        $task.removeClass("collapsing");
-                    	$task.addClass("collapsed");
-                    }
-                });
-            }
-        },
-        
-        /**
-         * Adds task detail DOM to page and plays a slideDown animation. 
-         */
-        expand : function($task) {
-        	if ($task !== undefined && $task !== null) {
+    /**
+     * Adds task detail DOM to page and plays a slideDown animation.
+     * @return {Promise} - Resolved when all animations have completed.
+     */
+    var expand = function($task) {
+    	return new Promise(function(resolve, reject) {
+    		if ($task !== undefined && $task !== null) {
         		
         		var $body;
         		if(!$task.hasClass("collapsing")) {
@@ -82,18 +93,23 @@ export default function(expandedTasksQueue, taskBodyCallbacks) {
                 		$body.css("height","");
                     	$task.removeClass("expanding");
                 		$task.addClass("expanded");
+                		resolve();
         	        }
         	    });
-        	}
-        },
+        	} else {resolve();}
+    	});
+    };
+    
+    return {
         
         /**
          * Called when user clicks on a task header. Adds/removes this task's body an may
          * remove other task's bodies if given queue is full.
+         * @return {Promise} - Resolved when all animations have completed.
          */
         switchTask : function($task) {
             var $newElement = $task;
-            var isAlreadyExpanded = expandedTasksQueue.contains($newElement);
+            var isAlreadyExpanded = expanded.contains($newElement);
             var $collapse;
             var $expand;
             
@@ -101,14 +117,37 @@ export default function(expandedTasksQueue, taskBodyCallbacks) {
             if(isAlreadyExpanded) {
             	$expand = undefined;
             	$collapse = $newElement;
-            	expandedTasksQueue.remove($collapse);
+            	expanded.remove($collapse);
             }
             else {
             	$expand = $newElement;
-            	$collapse = expandedTasksQueue.add($expand);
+            	$collapse = expanded.add($expand);
             }
-            this.collapse($collapse);
-            this.expand($expand);
+            return Promise.all([
+                collapse($collapse),
+                expand($expand)
+            ]);
+           
+        },
+        
+        /**
+         * @return True if task is currently expanded or expanding.
+         */
+        isTaskExpanded : function($task) {
+        	return expanded.contains($task);
+        },
+        
+        /**
+         * Collapses the task if it is expanded.
+         * @return {Promise} - Resolved when all animations have completed.
+         */
+        collapseTaskIfExpanded : function($task) {
+        	 if(this.isTaskExpanded($task)) {
+        		 expanded.remove($task);
+        		 return collapse($task);
+        	 } else {
+        		 return Promise.resolve();
+        	 }
         }
     };
 }

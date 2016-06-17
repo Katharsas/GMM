@@ -1,9 +1,8 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
+import Dialogs from "./dialogs";
 import { contextUrl, resortElementsById } from "./default";
-import Queue from "./queue";
 import TaskSwitcher from "./taskswitcher";
-import Errors from "./Errors";
 
 /**
  * @author Jan Mothes
@@ -28,17 +27,15 @@ var TaskList = function(settings, cache) {
 	/**
 	 * Allows to expand/collapse task body on click.
 	 */
-	var taskSwitcher = TaskSwitcher(
-		new Queue(3, function($task1, $task2) {
-			return $task1[0] === $task2[0];
-		}),
-		{
+	var taskSwitcher = TaskSwitcher({
+		
 			createBody : function($task) {
 				var idLink = $task.attr('id');
 				var $body = cache.getTaskBody(idLink);
-				settings.eventBinders.bindBody(idLink, $task, $body, updateTaskList);
+				settings.eventBinders.bindBody(idLink, $task, $body, markDeprecated);
 				return $body;
 			},
+			
 			releaseBody : function($body) {
 			}
 		}
@@ -47,6 +44,13 @@ var TaskList = function(settings, cache) {
 	settings.eventBinders.bindList(settings.$list, function($task) {
 		taskSwitcher.switchTask($task);
 	});
+	
+	var findTask = function(idLink) {
+		if (current.indexOf(idLink) < 0) return null;
+		else {
+			return settings.$list.children(".task#" + idLink);
+		}
+	};
 	
 	
 	var getHeader = function(idLink) {
@@ -67,14 +71,37 @@ var TaskList = function(settings, cache) {
 	};
 	
 	/**
-	 * Asynchronous! Get list of currently visible tasks.
-	 * @return - Promise
+	 * Async. Remove task from list as soon as the user changes them or when delete event occurs.
+	 * @returns {Promise}
+	 */
+	var removeTask = function($task, idLink, isExpanded) {
+		return (isExpanded ? taskSwitcher.collapseTaskIfExpanded($task) : Promise.resolve())
+		.then(function() {
+			$task.hide();
+			$task.remove();
+			current.splice(current.indexOf(idLink), 1);
+		});
+	};
+	
+	/**
+	 * Async.
+	 * @returns {Promise}
+	 */
+	var markDeprecated = function($task, idLink) {
+		if ($task === null) $task = findTask(idLink);
+		return removeTask($task, idLink, taskSwitcher.isTaskExpanded($task))
+		.then(updateTaskList);
+	};
+	
+	/**
+	 * Async. Get list of currently visible tasks.
+	 * @returns {Promise}
 	 */
 	var updateTaskList = function() {
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(taskListEvents) {
 			for(var event of taskListEvents) {
-				return onTaskListEvent(event);
+				return taskListEventHandlers[event.eventName](event);
 			}
 		})
 		.then(function() {
@@ -84,27 +111,14 @@ var TaskList = function(settings, cache) {
 		});
 	};
 	
-	/**
-	 * Asynchronous! React to taskListEvent from server.
-	 * @return Promise
-	 */
-	var onTaskListEvent = function(event) {
-		
-		/**
-		 * @callback getIdFromTask extends resortElementsById.getIdOfElement
-		 * @param {Element} task
-		 */
-		function getIdOfTask(task) {
-			return task.id;
-		}
-		
-		function resortTaskList(visibleIdsOrdered) {
-			resortElementsById(visibleIdsOrdered, settings.$list, ".task", getIdOfTask);
-		}
-		
-		switch(event.eventName) {
-		
-		case "FilterAll":
+	var getIdOfTask = function(task) {return task.id;};
+	var resortTaskList = function(visibleIdsOrdered) {
+		resortElementsById(visibleIdsOrdered, settings.$list, ".task", getIdOfTask);
+	};
+	
+	var taskListEventHandlers = {
+			
+		FilterAll : function(event) {
 			var newVisibleIds = event.visibleIdsOrdered;
 			// load missing into cache
 			var missing = cache.getMissingIds(newVisibleIds);
@@ -124,14 +138,16 @@ var TaskList = function(settings, cache) {
 				resortTaskList(newVisibleIds);
 				current = newVisibleIds;
 			});
-
-		case "SortAll":
+		},
+		
+		SortAll : function(event) {
 			// resort page elements by visible
 			resortTaskList(event.visibleIdsOrdered);
 			current = event.visibleIdsOrdered;
-			return $.when();
-			
-		case "CreateAll":
+			return Promise.resolve();
+		},
+		
+		CreateAll : function(event) {
 			// add createIds into cache and to page (need function)
 			return cache.loadTasks(event.createdIds)
 			.then(function() {
@@ -140,33 +156,49 @@ var TaskList = function(settings, cache) {
 				resortTaskList(event.visibleIdsOrdered);
 				current = event.visibleIdsOrdered;
 			});
-			
-		case "CreateSingle":
+		},
+		
+		CreateSingle : function(event) {
+			var id = event.createdId;
 			// add id html into cache
-			return cache.loadTasks([event.createdId])
+			return cache.loadTasks([id])
 			// add html to page at given pos
 			.then(function() {
-				var $header = getHeader(event.createdId);
+				var $header = getHeader(id);
 				var pos = event.insertedAtPos;
 				settings.$list.children(".task").eq(pos).before($header);
-				current.splice(pos, 0, event.createdId); 
+				current.splice(pos, 0, id); 
 			});
-			
-		case "RemoveAll":
-			// remove from page & cache
-			// TODO
-			break;
-			
-		case "RemoveSingle":
+		},
+		
+		RemoveAll : function(event) {
 			// remove all from page & cache
 			// TODO
-			break;
-			
-		default:
-			throw new Errors.IllegalArgumentError("Illegal TaskListEvent type: "+event.eventName);
+			return Promise.resolve();
+		},
+		
+		RemoveSingle : function(event) {
+			var id = event.removedId;
+			// delete from cache
+			cache.deleteTask(id);
+			// check if task is currently visible
+			if(current.indexOf(id) >= 0) {
+				var $task = findTask(id);
+				// if expanded, show message that the expanded tasks was deleted and switch it
+				// TODO make dialogs promisable and wait for ok
+				var isExpanded = taskSwitcher.isTaskExpanded($task);
+				if (isExpanded) {
+					var $confirm = Dialogs.alert(function() {
+						Dialogs.hideDialog($confirm);
+						removeTask($task, id, isExpanded);
+					}, "A task you have selected has been deleted or updated!");
+				} else {
+					removeTask($task, id, isExpanded);
+				}
+			}
+			return Promise.resolve();
 		}
 	};
-	
 
 	
 	return {
@@ -178,7 +210,13 @@ var TaskList = function(settings, cache) {
 		
 		size : function() {
 			return current.length;
-		}
+		},
+		
+		/**
+		 * Call this to remove a task from the list when the task or its data become outdated.
+		 * Also triggers tasklist update.
+		 */
+		markTaskDeprecated : markDeprecated
 		
 	};
 };

@@ -27,17 +27,7 @@ export default function(onedit) {
 		$commentForm.show();
 	};
 	
-	var changeComment = function(comment, taskId, commentId, $task, onchange) {
-		var $confirm = Dialogs.confirm(
-			function(input, textarea) {
-				var url = contextUrl + "/tasks/editComment/" + taskId + "/" + commentId;
-				Ajax.post(url, {"editedComment" : textarea}) 
-					.done(function() {
-						Dialogs.hideDialog($confirm);
-						onchange($task, taskId);
-					});
-			}, "Change your comment below:", undefined, comment, 700);
-	};
+	
 	
 	//download
 	
@@ -80,7 +70,7 @@ export default function(onedit) {
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
 		 */
-		bindBody : function(id, $task, $body, onchange) {
+		bindBody : function(id, $task, $body, markDeprecated) {
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK
@@ -96,9 +86,9 @@ export default function(onedit) {
 			$operations.find(".task-operations-deleteTask").click(function() {
 				var $confirm = Dialogs.confirm(function() {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
-						.done(function() {
+						.then(function() {
 							Dialogs.hideDialog($confirm);
-							onchange($task, id);
+							markDeprecated($task, id);
 						});
 				}, "Are you sure you want to delete this task?");
 			});
@@ -114,8 +104,17 @@ export default function(onedit) {
 			//show comment edit dialog
 			$comments.on("click", ".task-comment-editButton", function() {
 				var $comment = $(this).parent(".task-comment");
-				var $text = $comment.children(".task-comment-text");
-				changeComment(htmlDecode($text.html()), id, $comment.attr("id"), $task, onchange);
+				var comment = htmlDecode($comment.children(".task-comment-text").html());
+				var commentId = $comment.attr("id");
+				var $confirm = Dialogs.confirm(
+					function(input, textarea) {
+						var url = contextUrl + "/tasks/editComment/" + id + "/" + commentId;
+						Ajax.post(url, {"editedComment" : textarea}) 
+							.then(function() {
+								Dialogs.hideDialog($confirm);
+								markDeprecated($task, id);
+							});
+					}, "Change your comment below:", undefined, comment, 700);
 			});
 			//show/hide new comment form
 			$operations.find(".task-operations-switchComment").click(function() {
@@ -126,8 +125,8 @@ export default function(onedit) {
 			$form.find(".task-comment-form-submitButton").click(function() {
 				var url = contextUrl + "/tasks/submitComment/" + id;
 				Ajax.post(url, {}, $form)
-					.done(function() {
-						onchange($task, id);
+					.then(function() {
+						markDeprecated($task, id);
 					});
 			});
 			
@@ -232,9 +231,9 @@ export default function(onedit) {
 					allVars.$overlay.show();
 					var file = $inputFile[0].files[0];
 					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
-						.done(function() {
-							//TODO refresh filetree only
-							Dialogs.alert(function(){onchange($task, id);}, "TODO: Refresh filetree only");
+						.then(function() {
+							//TODO refresh filetree
+							Dialogs.alert(function(){}, "TODO: Refresh filetree only");
 						});
 				});
 				//bind triggering of filechooser to button
@@ -259,10 +258,10 @@ export default function(onedit) {
 					var $dialog = Dialogs.confirm(function() {
 						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
 								{dir: dir, asset: selectedFileIsAsset.toString()})
-							.done(function() {
+							.then(function() {
 								Dialogs.hideDialog($dialog);
-								//TODO refresh filetree only
-								Dialogs.alert(function(){onchange($task, id);}, "TODO: Refresh filetree only");
+								//TODO refresh filetree
+								Dialogs.alert(function(){}, "TODO: Refresh filetree only");
 							});
 					}, "Delete " + filePath() + " ?");
 				});

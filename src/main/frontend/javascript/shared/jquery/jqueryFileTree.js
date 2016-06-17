@@ -63,7 +63,7 @@ $.extend($.fn, {
 				$(c).addClass('wait');
 				$(".jqueryFileTree.start").remove();
 				Ajax.post(options.script, { dir: root })
-					.done(function(data) {
+					.then(function(data) {
 						$(c).find('.start').html('');
 						$(c).removeClass('wait').append(data[0]);
 						if( options.root == root ) {

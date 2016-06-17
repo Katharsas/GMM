@@ -29,11 +29,11 @@ var TaskForm = (function() {
 			if(currentlyEditedId !== null) {
 				// submit edit
 				Ajax.post(contextUrl + "/tasks/editTask/submit", null, $form)
-					.done(function() {
-						var idBuffer = currentlyEditedId;
-						resetTaskForm();
-						onEdit(idBuffer);
-					});
+				.then(function() {
+					var idBuffer = currentlyEditedId;
+					resetTaskForm();
+					onEdit(idBuffer);
+				});
 			} else {
 				// submit new task
 				var url = contextUrl + "/tasks/createTask";
@@ -54,29 +54,29 @@ var TaskForm = (function() {
 		
 		function resetTaskForm() {
 			Ajax.post(contextUrl + "/tasks/resetTaskForm")
-				.done(function() {
-					hide();
-					getAndInsertForm();
-				});
+			.then(function() {
+				hide();
+				getAndInsertForm();
+			});
 		}
 		
 		function getAndInsertForm() {
 			$form.empty();
 			Ajax.get(contextUrl + "/tasks/renderTaskForm")
-				.done(function(data) {
-					$form.html(data.taskFormHtml);
-					currentlyEditedId = data.editedTaskIdLink;
-					if(currentlyEditedId !== null) {
-						// if editing, hide type selection
-						var $type = $form.find("#taskForm-group-type");
-						$type.hide();
-					} else {
-						// else show path if asset
-						var $typeSelect = $form.find("#taskForm-element-type select");
-						$typeSelect.on("change", function() {switchAssetPath($typeSelect);});
-						switchAssetPath($typeSelect);
-					}
+			.then(function(data) {
+				$form.html(data.taskFormHtml);
+				currentlyEditedId = data.editedTaskIdLink;
+				if(currentlyEditedId !== null) {
+					// if editing, hide type selection
+					var $type = $form.find("#taskForm-group-type");
+					$type.hide();
+				} else {
+					// else show path if asset
+					var $typeSelect = $form.find("#taskForm-element-type select");
+					$typeSelect.on("change", function() {switchAssetPath($typeSelect);});
+					switchAssetPath($typeSelect);
 				}
+			}
 			);
 		}
 		
@@ -105,10 +105,10 @@ var TaskForm = (function() {
 		
 		function prepareEdit(id) {
 			Ajax.post(contextUrl + "/tasks/editTask/announce", {idLink : id})
-				.done(function() {
-					getAndInsertForm();
-					show();
-				});
+			.then(function() {
+				getAndInsertForm();
+				show();
+			});
 		}
 		
 		function resetIfEdited(id) {

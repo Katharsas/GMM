@@ -60,9 +60,10 @@ var Ajax = (function() {
 			var settings = getAjaxDefaultSettings(url, data, {
 				type: "POST",
 			});
-			return (($form === undefined) ?
+			var jqPromise = (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
 					.fail(failHandler);
+			return Promise.resolve(jqPromise);
 		},
 		
 		/**
@@ -76,9 +77,10 @@ var Ajax = (function() {
 			var settings = getAjaxDefaultSettings(url, data, {
 				type: "GET",
 			});
-			return (($form === undefined) ?
+			var jqPromise = (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
 					.fail(failHandler);
+			return Promise.resolve(jqPromise);
 		},
 		
 		/**
@@ -95,7 +97,8 @@ var Ajax = (function() {
 		    	contentType: false,
 		    	type: "POST"
 			});
-			return $.ajax(settings).fail(failHandler);
+			var jqPromise = $.ajax(settings).fail(failHandler);
+			return Promise.resolve(jqPromise);
 		}
 	};
 })();

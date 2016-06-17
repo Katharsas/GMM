@@ -49,12 +49,14 @@ var Workbench = function(taskForm) {
 	};
 	var taskList = TaskList(taskListSettings, taskCache);
 
-	taskForm.setOnEdit(taskList.update);
+	taskForm.setOnEdit(function(id) {
+		taskList.markTaskDeprecated(null, id);
+	});
 	taskForm.setOnCreate(taskList.update);
 	
 	var updateTasks = function() {
 		Ajax.get(contextUrl + "/tasks/selected")
-			.done(function(selected) {
+			.then(function(selected) {
 				$loadButtons.each(function(index, element) {
 					if (selected[index]) {
 						$(element).addClass("selected");
@@ -67,7 +69,7 @@ var Workbench = function(taskForm) {
 	};
 	this.load = function(type) {
 		Ajax.post(contextUrl + "/tasks/load", { type: type })
-			.done(updateTasks);
+			.then(updateTasks);
 	};
 	var initWorkbenchTabMenu = function() {
 		var $menuTabs = $workbench.find("#workbench-menu .workbench-menu-tab");
@@ -138,7 +140,7 @@ var Workbench = function(taskForm) {
 		
 		$sortForm.find("select, input").change(function() {
 			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
-				.done(taskList.update);
+				.then(taskList.update);
 		});
 		
 		//-------------------------------------------------------
@@ -148,7 +150,7 @@ var Workbench = function(taskForm) {
 		
 		$searchForm.find(".workbench-search-submit").click(function() {
 			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
-				.done(taskList.update);
+				.then(taskList.update);
 		});
 		$searchForm.find("#workbench-search-switch").click(function() {
 			setSearchType(!isEasySearch());
@@ -183,11 +185,11 @@ var Workbench = function(taskForm) {
 			var submitFilterForm = function(reset) {
 				var data = { reset: reset ? true : false };
 				Ajax.post(contextUrl + "/tasks/filter", data, get$FilterForm())
-					.done(onSubmitAnswer);
+					.then(onSubmitAnswer);
 			};
 			var getFilterForm = function() {
 				Ajax.get(contextUrl + "/tasks/filter", {})
-					.done(onSubmitAnswer);
+					.then(onSubmitAnswer);
 			};
 			var onSubmitAnswer = function(answer) {
 				var isDefault = answer.isInDefaultState;
@@ -229,7 +231,7 @@ var Workbench = function(taskForm) {
 		
 		$saveTasks.find("#dialog-saveTasks-saveButton").click(function() {
 			Ajax.post(contextUrl + "/tasks/workbench/admin/save", {}, $saveTasksForm)
-				.done(function() {
+				.then(function() {
 					Dialogs.hideDialog($("#dialog-saveTasks"));
 				});
 		});
@@ -240,7 +242,7 @@ var Workbench = function(taskForm) {
 			var $confirm = Dialogs.confirm(function() {
 				Dialogs.hideDialog($confirm);
 				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
-					.done(function(){
+					.then(function(){
 						taskList.update();
 					});
 			}, "Delete all tasks currently visible in workbench?");

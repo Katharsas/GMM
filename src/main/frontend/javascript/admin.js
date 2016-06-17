@@ -46,7 +46,7 @@ var Database = function() {
 		if(dir === undefined || dir === "") return;
 		var $confirm = Dialogs.confirm(function() {
 			Ajax.post(contextUrl + "/admin/deleteFile", { dir: dir })
-				.done(function() {
+				.then(function() {
 					refreshDatabaseFileTree();
 					Dialogs.hideDialog($confirm);
 				});
@@ -59,7 +59,7 @@ var Database = function() {
 	});
 	$("#dialog-saveTasks-saveButton").click(function() {
 		Ajax.post(contextUrl + "/admin/save", {}, $("#dialog-saveTasks-form"))
-			.done(function() {
+			.then(function() {
 				refreshDatabaseFileTree();
 				Dialogs.hideDialog($("#dialog-saveTasks"));
 			});
@@ -71,7 +71,7 @@ var Database = function() {
 			Dialogs.hideDialog($confirm);
 			Dialogs.confirm(function() {
 				Ajax.post(contextUrl + "/admin/deleteTasks")
-					.done(function(){
+					.then(function(){
 						refreshDatabaseFileTree();
 						Dialogs.hideDialog($confirm);
 					});
@@ -118,7 +118,7 @@ function addAssetPaths(textures) {
 	$selectedPathsList.empty();
 	var data = { dir: dir, textures: textures };
 	Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
-		.done(function(paths) {
+		.then(function(paths) {
 			if(paths.length===0) {
 				cancelImport();
 				return;
@@ -156,7 +156,7 @@ function hideImport() {
 
 function cancelImport() {
 	Ajax.post(contextUrl + "/admin/import/cancel")
-		.done(function() {hideImport();});
+		.then(function() {hideImport();});
 }
 global.cancelImport = cancelImport;
 
@@ -176,7 +176,7 @@ var UserManager = function() {
 	//-----------------------------------------------------------------
 	var switchUser = function($user, idLink, $enabled) {
 		Ajax.post(contextUrl + "/admin/users/switch/" + idLink)
-			.done(function() {
+			.then(function() {
 				if($.trim($enabled.html()).charCodeAt(0)===0x2611) {
 					$user.addClass("disabled");
 					$enabled.html("&#x2610;");
@@ -194,7 +194,7 @@ var UserManager = function() {
 	//-----------------------------------------------------------------
 	var switchAdmin = function($user, idLink, $role) {
 		Ajax.post(contextUrl + "/admin/users/admin/" + idLink)
-			.done(function() {
+			.then(function() {
 				if($.trim($role.html())==="[ADMIN]") {
 					$role.html("&nbsp;");
 				}
@@ -212,7 +212,7 @@ var UserManager = function() {
 		var userName = $user === null ? "" : $user.find(".admin-user-name").attr("data-name");
 		Dialogs.confirm(function (changedName) {
 			Ajax.post(contextUrl + "/admin/users/edit/"+idLink, {"name": changedName})
-				.done(function() {
+				.then(function() {
 					window.location.reload();
 				});
 		}, "Enter user name here:", userName);
@@ -225,7 +225,7 @@ var UserManager = function() {
 	var resetPassword = function($user, idLink) {
 		var $confirm = Dialogs.confirm(function() {
 			Ajax.post(contextUrl + "/admin/users/reset/" + idLink)
-				.done(function(data) {
+				.then(function(data) {
 					Dialogs.hideDialog($confirm);
 					var $alert = Dialogs.alert(function() {
 						Dialogs.hideDialog($alert);
@@ -246,14 +246,14 @@ var UserManager = function() {
 	});
 	$(".admin-users-save").on("click", function() {
 		Ajax.post(contextUrl + "/admin/users/save")
-			.done(function() {
+			.then(function() {
 				Dialogs.alert(null, "Users saved!");
 			});
 	});
 	$(".admin-users-load").on("click", function() {
 		Dialogs.confirm(function() {
 			Ajax.post(contextUrl + "/admin/users/load")
-				.done(function() {
+				.then(function() {
 					window.location.reload();
 				});
 		}, "Delete all unsaved user data?");

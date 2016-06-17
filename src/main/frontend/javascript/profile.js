@@ -22,7 +22,7 @@ function changePassword() {
 	if(newPW1 === newPW2) {
 		var data = {"oldPW" : oldPW, "newPW" : newPW2};
 		Ajax.post(contextUrl + "/profile/password", data)
-			.done(function(data) {
+			.then(function(data) {
 				if(data.error === undefined || data.error === null) {
 					Dialogs.hideDialog($dialog);
 					Dialogs.alert(Dialogs.hideDialog, "Password change was successful!");

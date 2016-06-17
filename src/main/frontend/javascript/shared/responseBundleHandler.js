@@ -94,7 +94,7 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 		$finishedButton.hide();
 		var ajaxResult = options.start(startOptions);
 		if (ajaxResult === undefined) return;
-		ajaxResult.done(reactToResults);
+		ajaxResult.then(reactToResults);
 		Dialogs.showDialog($dialog);
 	};
 	
@@ -107,7 +107,7 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 		$conflictMessage.empty();
 		var doForAll = $checkBox.is(":checked");
 		Ajax.post(url + "/next", { operation: answer, doForAll: doForAll })
-			.done(reactToResults);
+			.then(reactToResults);
 	};
 	
 	this.finish = function () {

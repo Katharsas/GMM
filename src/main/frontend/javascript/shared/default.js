@@ -114,7 +114,7 @@ $(document).ready(function() {
 	
 	$("#page-tabmenu #logout").click(function()  {
 		Ajax.post( contextUrl + "/logout")
-			.done(function() {
+			.then(function() {
 				window.location.reload();
 			});
 	});
