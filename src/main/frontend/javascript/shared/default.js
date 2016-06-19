@@ -177,5 +177,23 @@ function resortElementsById(orderedIds, $unorderedList, selector, getIdOfElement
 	$unorderedList.append($unorderedElements);
 }
 
-export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, resortElementsById };
+/**
+ * Async task returning a promise.
+ * @callback PromiseProducer
+ * @return {Promise} - Will be resolved when task has finished.
+ */
+/**
+ * Executes multiple async functions so that every function only gets executed
+ * when the previous functions has resolved. Returns the last functions promise.
+ * @param {PromiseProducer}
+ */
+function runSerial(tasks) {
+	var promiseChain = Promise.resolve();
+	for (var task of tasks) {
+		promiseChain = promiseChain.then(task);
+	}
+	return promiseChain;
+}
+
+export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, resortElementsById, runSerial };
 export default {};

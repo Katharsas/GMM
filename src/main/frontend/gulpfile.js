@@ -70,7 +70,8 @@ function buildScript(files) {
 				plugins: ["transform-es2015-modules-commonjs",
 				          "transform-es2015-parameters",
 				          "transform-es2015-spread",
-				          "transform-es2015-for-of"],
+				          "transform-es2015-for-of",
+				          "transform-es2015-block-scoping"],
 			};
 		return browserify(configBrowserify)
 			.transform(babelify, configBabelify)

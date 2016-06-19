@@ -19,6 +19,11 @@ public abstract class TaskListEvent {
 		eventName = this.getClass().getSimpleName();
 	}
 	
+	@Override
+	public String toString() {
+		return "Event[name:" + eventName + "]";
+	}
+	
 	public static class SortAll extends TaskListEvent {
 		public final List<String> visibleIdsOrdered;
 		public SortAll(List<String> visibleIdsOrdered) {

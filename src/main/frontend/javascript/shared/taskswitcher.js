@@ -50,9 +50,7 @@ export default function(taskBodyCallbacks) {
 	        			}
 	        		},
 	        		onComplete: function() {
-	        			$body.hide();
-	        			taskBodyCallbacks.releaseBody($body);
-	        			$body.remove();
+	        			taskBodyCallbacks.destroyBody($body);
 	        	        $task.removeClass("collapsing");
 	                	$task.addClass("collapsed");
 	                	resolve();
@@ -127,7 +125,6 @@ export default function(taskBodyCallbacks) {
                 collapse($collapse),
                 expand($expand)
             ]);
-           
         },
         
         /**

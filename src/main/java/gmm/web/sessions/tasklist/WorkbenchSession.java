@@ -103,7 +103,7 @@ public class WorkbenchSession extends TaskListState {
 
 	@Override
 	protected <T extends Task> Collection<T> filter(Collection<T> tasks) {
-		Collection<T> filtered = filterService.filter(tasks, generalFilter, user);
+		final Collection<T> filtered = filterService.filter(tasks, generalFilter, user);
 		return filterService.search(filtered, searchFilter);
 	}
 
@@ -250,7 +250,7 @@ public class WorkbenchSession extends TaskListState {
 	 */
 	public List<TaskListEvent> retrieveEvents() {
 		synchronized (taskListEvents) {
-			List<TaskListEvent> result = taskListEvents.copy();
+			final List<TaskListEvent> result = taskListEvents.copy();
 			taskListEvents.clear();
 			return result;
 		}

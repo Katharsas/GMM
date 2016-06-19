@@ -64,7 +64,6 @@ var Workbench = function(taskForm) {
 						$(element).removeClass("selected");
 					}
 				});
-				taskList.update();
 			});
 	};
 	this.load = function(type) {

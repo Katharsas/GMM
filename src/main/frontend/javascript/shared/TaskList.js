@@ -1,7 +1,8 @@
-import $ from "../lib/jquery";
+/*jshint loopfunc: true */
+
 import Ajax from "./ajax";
 import Dialogs from "./dialogs";
-import { contextUrl, resortElementsById } from "./default";
+import { contextUrl, resortElementsById, runSerial } from "./default";
 import TaskSwitcher from "./taskswitcher";
 
 /**
@@ -18,6 +19,8 @@ import TaskSwitcher from "./taskswitcher";
  * @param {TaskCache} cache - Task data container.
  */
 var TaskList = function(settings, cache) {
+	
+	var taskSelector = ".task:not(.removed)";
 	
 	/**
 	 * Ids of tasks which are currently visible.
@@ -36,7 +39,8 @@ var TaskList = function(settings, cache) {
 				return $body;
 			},
 			
-			releaseBody : function($body) {
+			destroyBody : function($body) {
+				$body.remove();
 			}
 		}
 	);
@@ -48,7 +52,7 @@ var TaskList = function(settings, cache) {
 	var findTask = function(idLink) {
 		if (current.indexOf(idLink) < 0) return null;
 		else {
-			return settings.$list.children(".task#" + idLink);
+			return settings.$list.children(taskSelector + "#" + idLink);
 		}
 	};
 	
@@ -64,22 +68,25 @@ var TaskList = function(settings, cache) {
 	 * Does not check if task header has already been added to the list.
 	 */
 	var appendTaskHeaders = function(idLinks) {
-		idLinks.forEach(function(id) {
+		for(let id of idLinks) {
 			var $header = getHeader(id);
 			settings.$list.append($header);
-		});
+		}
 	};
 	
 	/**
-	 * Async. Remove task from list as soon as the user changes them or when delete event occurs.
+	 * Async. Remove task from current ids array and from list (after collapsing if expanded).
 	 * @returns {Promise}
 	 */
 	var removeTask = function($task, idLink, isExpanded) {
+		if(isExpanded === undefined) {
+			isExpanded = taskSwitcher.isTaskExpanded($task);
+		}
+		$task.addClass("removed");
+		current.splice(current.indexOf(idLink), 1);
 		return (isExpanded ? taskSwitcher.collapseTaskIfExpanded($task) : Promise.resolve())
 		.then(function() {
-			$task.hide();
 			$task.remove();
-			current.splice(current.indexOf(idLink), 1);
 		});
 	};
 	
@@ -89,7 +96,7 @@ var TaskList = function(settings, cache) {
 	 */
 	var markDeprecated = function($task, idLink) {
 		if ($task === null) $task = findTask(idLink);
-		return removeTask($task, idLink, taskSwitcher.isTaskExpanded($task))
+		return removeTask($task, idLink)
 		.then(updateTaskList);
 	};
 	
@@ -100,9 +107,13 @@ var TaskList = function(settings, cache) {
 	var updateTaskList = function() {
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(taskListEvents) {
-			for(var event of taskListEvents) {
-				return taskListEventHandlers[event.eventName](event);
+			var eventHandlers = [];
+			for(let event of taskListEvents) {
+				eventHandlers.push(function() {
+					return taskListEventHandlers[event.eventName](event);
+				});
 			}
+			return runSerial(eventHandlers);
 		})
 		.then(function() {
 			if (settings.onChange !== null) {
@@ -113,7 +124,7 @@ var TaskList = function(settings, cache) {
 	
 	var getIdOfTask = function(task) {return task.id;};
 	var resortTaskList = function(visibleIdsOrdered) {
-		resortElementsById(visibleIdsOrdered, settings.$list, ".task", getIdOfTask);
+		resortElementsById(visibleIdsOrdered, settings.$list, taskSelector, getIdOfTask);
 	};
 	
 	var taskListEventHandlers = {
@@ -128,12 +139,12 @@ var TaskList = function(settings, cache) {
 				var addedIds = newVisibleIds.diff(current);
 				appendTaskHeaders(addedIds);
 				// remove hidden from page
-				settings.$list.children(".task").each(function() {
-					var id = getIdOfTask(this);
-					if (newVisibleIds.indexOf(id) < 0) {
-						$(this).remove();
-					}
+				var hidden = current.filter(function(id) {
+					return newVisibleIds.indexOf(id) < 0;
 				});
+				for (let id of hidden) {
+					removeTask(findTask(id), id);
+				}
 				// resort page elements by visible
 				resortTaskList(newVisibleIds);
 				current = newVisibleIds;
@@ -166,7 +177,7 @@ var TaskList = function(settings, cache) {
 			.then(function() {
 				var $header = getHeader(id);
 				var pos = event.insertedAtPos;
-				settings.$list.children(".task").eq(pos).before($header);
+				settings.$list.children(taskSelector).eq(pos).before($header);
 				current.splice(pos, 0, id); 
 			});
 		},
@@ -206,7 +217,9 @@ var TaskList = function(settings, cache) {
 		/**
 		 * Call this to cause this list to get updates from the server and thus sync it.
 		 */
-		update : updateTaskList,
+		update : function() {
+			updateTaskList();
+		},
 		
 		size : function() {
 			return current.length;

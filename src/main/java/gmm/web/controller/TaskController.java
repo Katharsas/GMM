@@ -5,6 +5,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,6 +15,8 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -64,6 +67,8 @@ import gmm.web.sessions.tasklist.WorkbenchSession;
 @PreAuthorize("hasRole('ROLE_USER')")
 @Controller
 public class TaskController {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired private TaskSession taskSession;
 	@Autowired private WorkbenchSession workbench;
@@ -250,7 +255,8 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value="/editComment/{taskIdLink}/{commentIdLink}", method = RequestMethod.POST)
-	public String editComment(
+	@ResponseBody
+	public void editComment(
 				@PathVariable String taskIdLink,
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
@@ -260,7 +266,9 @@ public class TaskController {
 		if(comment.getAuthor().getId() == workbench.getUser().getId()) {
 			comment.setText(edited);
 		}
-		return "redirect:/tasks";
+		//TODO: Tasks imumtable
+		data.remove(task);
+		data.add(task);
 	}
 	
 	/**
@@ -276,8 +284,12 @@ public class TaskController {
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
 		
+		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
 		final Comment comment = new Comment(workbench.getUser(), form.getText());
-		UniqueObject.getFromIdLink(workbench.getTasks(), idLink).getComments().add(comment);
+		task.getComments().add(comment);
+		//TODO: Tasks immutable
+		data.remove(task);
+		data.add(task);
 	}
 	
 	/**
@@ -418,6 +430,11 @@ public class TaskController {
 	@RequestMapping(value = "/workbench/taskListEvents", method = RequestMethod.GET)
 	@ResponseBody
 	public List<TaskListEvent> syncTaskListState() {
-		return workbench.retrieveEvents();
+		final List<TaskListEvent> events = workbench.retrieveEvents();
+		if (logger.isDebugEnabled()) {
+			logger.debug(workbench.getUser() + " retrieved events: "
+					+ Arrays.toString(events.toArray()));
+		}
+		return events;
 	}
 }
