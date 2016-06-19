@@ -64,10 +64,11 @@ var Workbench = function(taskForm) {
 						$(element).removeClass("selected");
 					}
 				});
+				taskList.update();
 			});
 	};
 	this.load = function(type) {
-		Ajax.post(contextUrl + "/tasks/load", { type: type })
+		Ajax.post(contextUrl + "/tasks/loadType", { type: type })
 			.then(updateTasks);
 	};
 	var initWorkbenchTabMenu = function() {
@@ -129,7 +130,7 @@ var Workbench = function(taskForm) {
 		var $loadForm = $tabs.find("form#workbench-loadForm");
 		
 		$loadForm.find(".form-element").change(function() {
-			Ajax.post(contextUrl + "/tasks/submitLoad", null, $loadForm);
+			Ajax.post(contextUrl + "/tasks/submitLoadOptions", null, $loadForm);
 		});
 		
 		//-------------------------------------------------------
@@ -184,7 +185,10 @@ var Workbench = function(taskForm) {
 			var submitFilterForm = function(reset) {
 				var data = { reset: reset ? true : false };
 				Ajax.post(contextUrl + "/tasks/filter", data, get$FilterForm())
-					.then(onSubmitAnswer);
+					.then(function(answer){
+						onSubmitAnswer(answer);
+						taskList.update();
+					});
 			};
 			var getFilterForm = function() {
 				Ajax.get(contextUrl + "/tasks/filter", {})
@@ -201,7 +205,6 @@ var Workbench = function(taskForm) {
 					get$FilterForm().remove();
 					$tab.append(html);
 				}
-				taskList.update();
 			};
 			
 			// bind checkboxes

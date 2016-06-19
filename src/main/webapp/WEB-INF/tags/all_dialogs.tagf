@@ -10,10 +10,10 @@
 	<div>
 		<textarea id="confirmDialog-textarea" class="dialog-input"></textarea>
 	</div>
-	<div id="confirmDialog-ok" class="dialog-button button left" onclick="confirmOk()">
+	<div id="confirmDialog-ok" class="dialog-button button left">
 		<fmt:message key="all_template.confirm"/>
 	</div>
-	<div id="confirmDialog-cancel" class="dialog-button button right" onclick="hideDialog($(this))">
+	<div id="confirmDialog-cancel" class="dialog-button button right">
 		<fmt:message key="all_template.cancel"/>
 	</div>
 	<div class="clear"></div>
@@ -100,7 +100,7 @@
 	<div id="dialog-saveTasks-saveButton" class="dialog-button button left">
 		<fmt:message key="admin.database.save"/>
 	</div>
-	<div class="dialog-button button right" onclick="hideDialog($(this))">
+	<div id="dialog-saveTasks-cancelButton" class="dialog-button button right">
 		<fmt:message key="admin.database.cancel"/>
 	</div>
 	<div class="clear"></div>

@@ -100,6 +100,22 @@ var Dialogs = (function() {
 		hideOverlay();
 	};
 	
+	var confirmOk = function() {
+		allVars.onConfirmCallback();
+	};
+	
+	$(document).ready(function() {
+		var $confirmDialog = $("#confirmDialog");
+		$confirmDialog.find("#confirmDialog-ok").on("click", confirmOk);
+		$confirmDialog.find("#confirmDialog-cancel").on("click", function() {
+			hideDialog($confirmDialog);
+		});
+		var $saveTasksDialog = $("#dialog-saveTasks");
+		$saveTasksDialog.find("#dialog-saveTasks-cancelButton").on("click", function() {
+			hideDialog($saveTasksDialog);
+		});
+	});
+	
 	return {
 		showDialog: showDialog,
 		hideDialog: hideDialog,
@@ -145,13 +161,8 @@ var Dialogs = (function() {
 			showDialog($exceptionDialog);
 		},
 		
-		confirmOk: function() {
-			allVars.onConfirmCallback();
-		}
+		confirmOk: confirmOk
 	};
 })();
-//TODO: remove if unsed in HTML
-global.showDialog = Dialogs.showDialog;
-global.hideDialog = Dialogs.hideDialog;
-global.confirmOk = Dialogs.confirmOk;
+
 export default Dialogs;

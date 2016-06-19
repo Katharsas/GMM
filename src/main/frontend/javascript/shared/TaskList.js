@@ -183,9 +183,14 @@ var TaskList = function(settings, cache) {
 		},
 		
 		RemoveAll : function(event) {
-			// remove all from page & cache
-			// TODO
-			return Promise.resolve();
+			var promises = [];
+			for (let id of event.removedIds) {
+				promises.push(this.RemoveSingle({
+					eventName : "RemoveSingle",
+					removedId : id
+				}));
+			}
+			return Promise.all(promises);
 		},
 		
 		RemoveSingle : function(event) {
@@ -195,22 +200,21 @@ var TaskList = function(settings, cache) {
 			// check if task is currently visible
 			if(current.indexOf(id) >= 0) {
 				var $task = findTask(id);
-				// if expanded, show message that the expanded tasks was deleted and switch it
-				// TODO make dialogs promisable and wait for ok
+				// remove task
 				var isExpanded = taskSwitcher.isTaskExpanded($task);
+				var promise = removeTask($task, id, isExpanded);
+				// if expanded, explain to user why task vanished
 				if (isExpanded) {
 					var $confirm = Dialogs.alert(function() {
 						Dialogs.hideDialog($confirm);
-						removeTask($task, id, isExpanded);
-					}, "A task you have selected has been deleted or updated!");
-				} else {
-					removeTask($task, id, isExpanded);
+					}, "A task you had selected has been deleted or updated!");
 				}
+				return promise;
 			}
 			return Promise.resolve();
 		}
 	};
-
+	
 	
 	return {
 		

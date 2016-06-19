@@ -152,7 +152,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param type - type whose corresponding button was clicked by user
 	 */
-	@RequestMapping(value = "/load", method = RequestMethod.POST)
+	@RequestMapping(value = "/loadType", method = RequestMethod.POST)
 	@ResponseBody
 	public void loadTasks(@RequestParam("type") TaskType type) {
 		workbench.loadTasks(type);
@@ -162,7 +162,7 @@ public class TaskController {
 	 * Changes settings for task loading and default workbench loading on login
 	 * @param loadForm - object containing all task loading settings
 	 */
-	@RequestMapping(value="/submitLoad", method = RequestMethod.POST)
+	@RequestMapping(value="/submitLoadOptions", method = RequestMethod.POST)
 	@ResponseBody
 	public void handleLoad(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
 		workbench.updateLoad(loadForm);

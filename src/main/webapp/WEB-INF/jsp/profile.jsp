@@ -13,7 +13,7 @@
 
     <jsp:body>
     	<div id="changePassword">
-			<div class="button pageButton" onclick="showChangePassword()">
+			<div class="button pageButton changePasswordButton">
 				<fmt:message key="password.change"/>
 			</div>
 			<div id="changePasswordDialog" class="dialog">
@@ -36,10 +36,10 @@
 				<div>
 					<input id="changePasswordDialog-second" class="dialog-input" type="password" />
 				</div>
-				<div id="changePasswordDialog-ok" class="dialog-button button left" onclick="changePassword()">
+				<div id="changePasswordDialog-ok" class="dialog-button button left">
 					<fmt:message key="password.submit"/>
 				</div>
-				<div id="changePasswordDialog-cancel" class="dialog-button button right" onclick="hideDialog()">
+				<div id="changePasswordDialog-cancel" class="dialog-button button right">
 					<fmt:message key="password.cancel"/>
 				</div>
 			</div>
