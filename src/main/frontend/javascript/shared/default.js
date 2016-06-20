@@ -1,10 +1,10 @@
 import "./jquery/jqueryFileTree";
 import "./jquery/jqueryDraggable";
 import "./jquery/jqueryFindSelf";
+import "./dialogs";
 
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
-import Dialogs from "./dialogs";
 import HtmlPreProcessor from "./preprocessor";
 import Errors from "./Errors";
 
@@ -97,20 +97,9 @@ function htmlDecode(input){
  * This function is executed when document is ready for interactivity!
  */
 $(document).ready(function() {
-	allVars.$overlay = $("#overlay");
-	
-	Dialogs.hideDialog();
 	//find page tab by URL and set as active tab
 	var activeTab = $("#page-tabmenu .tab a[href=\""+ contextUrl +"/"+fileName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
-	
-	//setup enter keys of dialogs
-	$(".dialogContainer").bind("keypress", function(event) {
-		if(event.which === 13) {
-			Dialogs.confirmOk();
-		}
-	});
-	$(".draggable").fixedDraggable();
 	
 	$("#page-tabmenu #logout").click(function()  {
 		Ajax.post( contextUrl + "/logout")

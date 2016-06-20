@@ -58,10 +58,10 @@ var TaskCache = function(url) {
 		},
 		
 		getTaskHeader : function(idLink) {
-			return idToTaskData[idLink].$header.clone(true, true);
+			return idToTaskData[idLink].$header.clone();
 		},
 		getTaskBody : function(idLink) {
-			return idToTaskData[idLink].$body.clone(true, true);
+			return idToTaskData[idLink].$body.clone();
 		}
 	};
 };

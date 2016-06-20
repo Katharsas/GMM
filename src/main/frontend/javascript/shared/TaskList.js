@@ -177,8 +177,13 @@ var TaskList = function(settings, cache) {
 			.then(function() {
 				var $header = getHeader(id);
 				var pos = event.insertedAtPos;
-				settings.$list.children(taskSelector).eq(pos).before($header);
-				current.splice(pos, 0, id); 
+				// insert before element or at end
+				if(pos !== current.length) {
+					settings.$list.children(taskSelector).eq(pos).before($header);
+				} else {
+					settings.$list.append($header);
+				}
+				current.splice(pos, 0, id);
 			});
 		},
 		

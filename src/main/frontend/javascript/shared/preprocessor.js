@@ -31,7 +31,7 @@ export default (function() {
 		/* Replace all SVG images with inline SVG
 		 * from: http://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
 		 */
-		$range.find('img.svg').each(function(){
+		$range.findSelf('img.svg').each(function(){
 			
 		    var $img = $(this);
 		    var imgURL = $img.attr('src');
@@ -75,7 +75,7 @@ export default (function() {
 	 * Makes all buttons focusable and binds click event to enter key.
 	 */
 	var prepareButtons = function($range) {
-		$range.find(".button").each(function(){
+		$range.findSelf(".button").each(function(){
 			var $button = $(this);
 			$button.attr("tabindex", "0");
 			$button.onEnter(function() {
@@ -84,10 +84,25 @@ export default (function() {
 		});
 	};
 	
+	var makeDraggable = function($range) {
+		$range.findSelf(".draggable").fixedDraggable();
+	};
+	
 	return {
+		/**
+		 * For completely unprocessed elements.
+		 */
 		apply : function($range) {
 			replaceSvgImages($range);
 			prepareButtons($range);
+			makeDraggable($range);
+		},
+		
+		/**
+		 * For elements that were cloned from already processed elements.
+		 */
+		applyOnlyDataAndEvents : function($range) {
+			makeDraggable($range);
 		}
 	};
 })();

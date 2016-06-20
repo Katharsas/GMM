@@ -2,22 +2,23 @@
 
 <%-- Confirm Dialog --%>
 
-<div id="confirmDialog" class="dialog draggable">
-	<p id="confirmDialog-message" class="center"></p>
+<div id="confirmDialog-template" class="confirmDialog dialog draggable">
+	<p class="confirmDialog-message center"></p>
 	<div>
-		<input id="confirmDialog-input" class="dialog-input center"/>
+		<input class="confirmDialog-input dialog-input center"/>
 	</div>
 	<div>
-		<textarea id="confirmDialog-textarea" class="dialog-input"></textarea>
+		<textarea class="confirmDialog-textarea dialog-input"></textarea>
 	</div>
-	<div id="confirmDialog-ok" class="dialog-button button left">
+	<div class="confirmDialog-ok dialog-button button left">
 		<fmt:message key="all_template.confirm"/>
 	</div>
-	<div id="confirmDialog-cancel" class="dialog-button button right">
+	<div class="confirmDialog-cancel dialog-button button right">
 		<fmt:message key="all_template.cancel"/>
 	</div>
 	<div class="clear"></div>
 </div>
+<div id="confirmDialog-container"></div>
 
 <%-- Exception Dialog --%>
 
