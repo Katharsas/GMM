@@ -25,7 +25,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -92,13 +91,15 @@ public class TaskController {
 	private void init() {
 		modelSuppliers.put("taskForm", taskSession::getTaskForm);
 		modelSuppliers.put("commentForm", CommentForm::new);
-		modelSuppliers.put("workbench-searchForm", SearchForm::new);
+		modelSuppliers.put("workbench-searchForm", workbench::getSearchForm);
 		modelSuppliers.put("workbench-sortForm", workbench::getSortForm);
 		modelSuppliers.put("workbench-generalFilterForm", workbench::getFilterForm);
+		modelSuppliers.put("workbench-searchForm", workbench::getSearchForm);
 		modelSuppliers.put("workbench-loadForm", ()->workbench.getUser().getLoadForm());
 		
 		templates.put("all_taskForm", new String[]{"taskForm"});
 		templates.put("workbench_filters", new String[]{"workbench-generalFilterForm"});
+		templates.put("workbench_search", new String[]{"workbench-searchForm"});
 	}
 	
 	@ModelAttribute
@@ -135,13 +136,13 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value = "workbench/admin/save", method = RequestMethod.POST)
+	@RequestMapping(value = "workbench/admin/save", method = POST)
 	@ResponseBody
 	public void saveTasksInWorkbench(@RequestParam("name") String pathString) throws IOException {
 		manualBackups.saveTasksToXml(workbench.getTasks(), pathString);
 	}
 	
-	@RequestMapping(value = "workbench/admin/delete", method = RequestMethod.POST)
+	@RequestMapping(value = "workbench/admin/delete", method = POST)
 	@ResponseBody
 	public void deleteTasksInWorkbench() {
 		data.removeAll(workbench.getTasks());
@@ -152,7 +153,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param type - type whose corresponding button was clicked by user
 	 */
-	@RequestMapping(value = "/loadType", method = RequestMethod.POST)
+	@RequestMapping(value = "/loadType", method = POST)
 	@ResponseBody
 	public void loadTasks(@RequestParam("type") TaskType type) {
 		workbench.loadTasks(type);
@@ -162,7 +163,7 @@ public class TaskController {
 	 * Changes settings for task loading and default workbench loading on login
 	 * @param loadForm - object containing all task loading settings
 	 */
-	@RequestMapping(value="/submitLoadOptions", method = RequestMethod.POST)
+	@RequestMapping(value="/submitLoadOptions", method = POST)
 	@ResponseBody
 	public void handleLoad(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
 		workbench.updateLoad(loadForm);
@@ -173,7 +174,7 @@ public class TaskController {
 	 * @return True for the selected/active task types, false for the others. Array element
 	 * 		positions correspond to {@link TaskType#values()}.
 	 */
-	@RequestMapping(value = "/selected", method = RequestMethod.GET)
+	@RequestMapping(value = "/selected", method = GET)
 	@ResponseBody
 	public boolean[] getSelected() {
 		return workbench.getSelectedTaskTypes();
@@ -185,7 +186,7 @@ public class TaskController {
 	 * @param filterForm - object containing all filter information
 	 * @param reset - true if user clicked the reset filter button (discard filterForm)
 	 */
-	@RequestMapping(value="/filter",  method = { GET, POST }, produces = "application/json")
+	@RequestMapping(value="/filter", method = { GET, POST }, produces = "application/json")
 	@ResponseBody
 	public Map<String, String> handleFilter(
 			ControllerArgs args,
@@ -193,11 +194,7 @@ public class TaskController {
 			@RequestParam(value = "reset", required = false, defaultValue = "false") boolean reset) {
 		
 		if(args.getRequestMethod().equals(POST)) {
-			if (reset) {
-				workbench.updateFilter(new FilterForm());
-			} else {
-				workbench.updateFilter(filterForm);
-			}
+			workbench.updateFilter(reset ? new FilterForm() : filterForm);
 		}
 		
 		final Map<String, String> answer = new HashMap<>();
@@ -215,10 +212,23 @@ public class TaskController {
 	 * Search is always applied the tasks found by the last filter operation.
 	 * @param searchForm - object containing all search information
 	 */
-	@RequestMapping(value="/submitSearch", method = RequestMethod.POST)
+	@RequestMapping(value="/search", method = { GET, POST }, produces = "application/json")
 	@ResponseBody
-	public void handleTasksSearch(@ModelAttribute("workbench-searchForm") SearchForm searchForm) {
-		workbench.updateSearch(searchForm);
+	public Map<String, String> handleTasksSearch(
+			ControllerArgs args,
+			@ModelAttribute("workbench-searchForm") SearchForm searchForm,
+			@RequestParam(value = "reset", required = false, defaultValue = "false") boolean reset) {
+		
+		if(args.getRequestMethod().equals(POST)) {
+			workbench.updateSearch(reset ? new SearchForm() : searchForm);
+		}
+		
+		final Map<String, String> answer = new HashMap<>();
+		answer.put("isInDefaultState", "" + workbench.getSearchForm().isInDefaultState());
+		if (reset || args.getRequestMethod().equals(GET)) {
+			answer.put("html", insertTemplate("workbench_search", args));
+		}
+		return answer;
 	}
 	
 	
@@ -228,7 +238,7 @@ public class TaskController {
 	 * Sort is always applied on currently shown tasks.
 	 * @param searchForm - object containing all search information
 	 */
-	@RequestMapping(value="/submitSort", method = RequestMethod.POST)
+	@RequestMapping(value="/submitSort", method = POST)
 	@ResponseBody
 	public void handleSorting(@ModelAttribute("workbench-sortForm") SortForm sortForm) {
 		workbench.updateSort(sortForm);
@@ -240,7 +250,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the task which will be deleted
 	 */
-	@RequestMapping(value="/deleteTask/{idLink}", method = RequestMethod.POST)
+	@RequestMapping(value="/deleteTask/{idLink}", method = POST)
 	@ResponseBody
 	public void handleTasksDelete(@PathVariable String idLink) {
 		data.remove(UniqueObject.getFromIdLink(workbench.getTasks(), idLink));
@@ -254,7 +264,7 @@ public class TaskController {
 	 * @param edited - the edited text of the comment
 	 * -----------------------------------------------------------------
 	 */
-	@RequestMapping(value="/editComment/{taskIdLink}/{commentIdLink}", method = RequestMethod.POST)
+	@RequestMapping(value="/editComment/{taskIdLink}/{commentIdLink}", method = POST)
 	@ResponseBody
 	public void editComment(
 				@PathVariable String taskIdLink,
@@ -278,7 +288,7 @@ public class TaskController {
 	 * @param idLink - identifies the task to which the comment will be added
 	 * @param form - object containing all comment information
 	 */
-	@RequestMapping(value="/submitComment/{idLink}", method = RequestMethod.POST)
+	@RequestMapping(value="/submitComment/{idLink}", method = POST)
 	@ResponseBody
 	public void handleTasksComment(
 				@PathVariable String idLink,
@@ -297,7 +307,7 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value="/editTask/announce", method = RequestMethod.POST)
+	@RequestMapping(value="/editTask/announce", method = POST)
 	@ResponseBody
 	public void editTask(
 			@RequestParam("idLink") String idLink) {
@@ -309,7 +319,7 @@ public class TaskController {
 		taskSession.setupTaskFormNewEdit(task);
 	}
 	
-	@RequestMapping(value="/editTask/submit", method = RequestMethod.POST)
+	@RequestMapping(value="/editTask/submit", method = POST)
 	@ResponseBody
 	public void editTask(
 			@ModelAttribute("taskForm") TaskForm form) {
@@ -322,14 +332,14 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value="/createTask", method = RequestMethod.POST)
+	@RequestMapping(value="/createTask", method = POST)
 	@ResponseBody
 	public List<MessageResponse> createTask(
 			@ModelAttribute("taskForm") TaskForm form) {
 		return taskSession.firstTaskCheck(form);
 	}
 	
-	@RequestMapping(value="/createTask/next", method = RequestMethod.POST)
+	@RequestMapping(value="/createTask/next", method = POST)
 	@ResponseBody
 	public List<MessageResponse> createTaskNext(
 			@RequestParam("operation") String operation) {
@@ -342,13 +352,13 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	@RequestMapping(value = "/resetTaskForm", method = RequestMethod.POST)
+	@RequestMapping(value = "/resetTaskForm", method = POST)
 	@ResponseBody
 	public void resetTaskForm() {
 		taskSession.setupTaskFormNewTask();
 	}
 	
-	@RequestMapping(value = "/saveTaskForm", method = RequestMethod.POST)
+	@RequestMapping(value = "/saveTaskForm", method = POST)
 	@ResponseBody
 	public void saveTaskForm(
 			@ModelAttribute("taskForm") TaskForm form) {
@@ -356,7 +366,7 @@ public class TaskController {
 		taskSession.updateTaskForm(form);
 	}
 	
-	@RequestMapping(value = "/renderTaskForm", method = RequestMethod.GET)
+	@RequestMapping(value = "/renderTaskForm", method = GET)
 	@ResponseBody
 	public TaskFormResult renderTaskForm(
 			ModelMap model,
@@ -388,7 +398,7 @@ public class TaskController {
 	 * 
 	 * @param edit - Task ID to be made editable in task form
 	 */
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(method = GET)
 	public String send(
 			ModelMap model,
 			HttpServletRequest request,
@@ -409,7 +419,7 @@ public class TaskController {
 	/**
 	 * Get task data for specified ids, must be visible in workbench currently.
 	 */
-	@RequestMapping(value = "/workbench/renderTaskData", method = RequestMethod.POST)
+	@RequestMapping(value = "/workbench/renderTaskData", method = POST)
 	@ResponseBody
 	public List<TaskRenderResult> renderSelectedTasks(
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
@@ -427,7 +437,7 @@ public class TaskController {
 				new ControllerArgs(model, request, response));
 	}
 	
-	@RequestMapping(value = "/workbench/taskListEvents", method = RequestMethod.GET)
+	@RequestMapping(value = "/workbench/taskListEvents", method = GET)
 	@ResponseBody
 	public List<TaskListEvent> syncTaskListState() {
 		final List<TaskListEvent> events = workbench.retrieveEvents();

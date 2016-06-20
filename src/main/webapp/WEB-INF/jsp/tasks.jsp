@@ -103,8 +103,6 @@
 		    			</div>
 		    			<c:set var="tabId" value="search"/>
 		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
-		    				<t:workbench_search>
-		    				</t:workbench_search>
 		    			</div>
 		    			<c:set var="tabId" value="filter"/>
 		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">

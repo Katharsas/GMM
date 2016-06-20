@@ -42,9 +42,7 @@
 			<@m.formSelect path=(path+".labelSelect")>
 				<@m.formOption value="" label="" />
 				<#list taskLabels as singleLabel>
-					<@m.formOption
-						isSelected = (singleLabel == taskForm.label)
-						value=singleLabel  label=singleLabel  />
+					<@m.formOption value=singleLabel label=singleLabel />
 				</#list>
 			</@m.formSelect>
 		</div>
@@ -80,9 +78,7 @@
 			<@m.formSelect path=(path+".assigned")>
 				<@m.formOption value="" label="" />
 				<#list users as current>
-					<@m.formOption
-						isSelected = (current.name == taskForm.assigned)
-						value=current.name  label=current.name />
+					<@m.formOption value=current.name  label=current.name />
 				</#list>
 			</@m.formSelect>
 		</div>

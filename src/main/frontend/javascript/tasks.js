@@ -146,26 +146,58 @@ var Workbench = function(taskForm) {
 		//-------------------------------------------------------
 		//search tab
 		//-------------------------------------------------------
-		var $searchForm = $tabs.find("form#workbench-searchForm");
-		
-		$searchForm.find(".workbench-search-submit").click(function() {
-			Ajax.post(contextUrl + "/tasks/submitSearch", null, $searchForm)
-				.then(taskList.update);
-		});
-		$searchForm.find("#workbench-search-switch").click(function() {
-			setSearchType(!isEasySearch());
-		});
-		var $searchType = $("select#workbench-search-type");
-		function isEasySearch() {
-			return $searchType.val() === "true";
-		}
-		function setSearchType(isEasySearch) {
-			$searchType.val(isEasySearch.toString());
-			$searchForm.find("#workbench-search-easy").toggle(isEasySearch);
-			$searchForm.find("#workbench-search-complex").toggle(!isEasySearch);
-		}
-		//init search visibility
-		setSearchType(isEasySearch());
+		(function() {
+			var tabId = "search";
+			var $tab = tabIdsToMenuTabs[tabId].$tab;
+			var $searchForm;
+			var $searchType;
+			
+			$tab.on("click", ".workbench-search-submit", function(){
+				submitSearchForm(false);
+			});
+			$tab.on("click", "#workbench-search-switch", function(){
+				setSearchType(!isEasySearch());
+			});
+			var submitSearchForm = function(reset) {
+				var data = { reset: reset ? true : false };
+				Ajax.post(contextUrl + "/tasks/search", data, $searchForm)
+				.then(function(answer) {
+					onSubmitAnswer(answer);
+					taskList.update();
+				});
+			};
+			
+			function isEasySearch() {
+				console.log($searchType.val());
+				return $searchType.val() === "true";
+			}
+			function setSearchType(isEasySearch) {
+				var $easy = $searchForm.find("#workbench-search-easy");
+				var $complex = $searchForm.find("#workbench-search-complex");
+				$searchType.val(isEasySearch.toString());
+				$easy.toggle(isEasySearch);
+				$complex.toggle(!isEasySearch);
+			}
+			var onSubmitAnswer = function(answer) {
+				var isDefault = answer.isInDefaultState;
+				highlightMenuTab(tabId, isDefault === "false", function() {
+					// reset
+					submitSearchForm(true);
+				});
+				var html = answer.html;
+				if (html !== undefined) {
+					$tab.children().remove();
+					$tab.append(html);
+				}
+				$searchForm = $tab.find("form#workbench-searchForm");
+				$searchType = $searchForm.find("select#workbench-search-type");
+				setSearchType(isEasySearch());
+			};
+			
+			//get initial searchForm
+			Ajax.get(contextUrl + "/tasks/search", {})
+			.then(onSubmitAnswer);
+		})();
 		
 		//-------------------------------------------------------
 		//filter tab
@@ -173,26 +205,18 @@ var Workbench = function(taskForm) {
 		(function() {
 			var tabId = "filter";
 			var $tab = tabIdsToMenuTabs[tabId].$tab;
-			var get$FilterForm = function() {
-				return $tab.find("form#generalFilters");
-			};
+			var $filterForm;
+			var $all;
 			var allSelector = "#generalFilters-all";
-			var get$All = function() {
-				return $tab.find(allSelector);
-			};
 			
 			// ajax
 			var submitFilterForm = function(reset) {
 				var data = { reset: reset ? true : false };
-				Ajax.post(contextUrl + "/tasks/filter", data, get$FilterForm())
-					.then(function(answer){
-						onSubmitAnswer(answer);
-						taskList.update();
-					});
-			};
-			var getFilterForm = function() {
-				Ajax.get(contextUrl + "/tasks/filter", {})
-					.then(onSubmitAnswer);
+				Ajax.post(contextUrl + "/tasks/filter", data, $filterForm)
+				.then(function(answer){
+					onSubmitAnswer(answer);
+					taskList.update();
+				});
 			};
 			var onSubmitAnswer = function(answer) {
 				var isDefault = answer.isInDefaultState;
@@ -202,9 +226,11 @@ var Workbench = function(taskForm) {
 				});
 				var html = answer.html;
 				if (html !== undefined) {
-					get$FilterForm().remove();
+					$tab.children().remove();
 					$tab.append(html);
 				}
+				$filterForm = $tab.find("form#generalFilters");
+				$all = $tab.find(allSelector);
 			};
 			
 			// bind checkboxes
@@ -212,17 +238,18 @@ var Workbench = function(taskForm) {
 				submitFilterForm();
 			});
 			var cbg = new CheckboxGrouper($tab, ".generalFilters-all-target", function(areChecked) {
-				get$All().prop("checked", areChecked);
+				$all.prop("checked", areChecked);
 				submitFilterForm();
 			});
 			$tab.on("change", allSelector, function() {
-				var isChecked = get$All().prop("checked");
+				var isChecked = $all.prop("checked");
 				cbg.changeGroup(isChecked);
 				submitFilterForm();
 			});
 			
 			// get initial filterForm html
-			getFilterForm();
+			Ajax.get(contextUrl + "/tasks/filter", {})
+			.then(onSubmitAnswer);
 		})();
 		
 		//-------------------------------------------------------

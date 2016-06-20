@@ -23,6 +23,16 @@ public class SearchForm {
 		assigned="";
 		path="";
 	}
+	public boolean isInDefaultState() {
+		boolean isEmpty;
+		if (isEasySearch) {
+			isEmpty = easy.isEmpty();
+		} else {
+			isEmpty = name.isEmpty() && author.isEmpty() && details.isEmpty() && label.isEmpty()
+					&& assigned.isEmpty() && path.isEmpty();
+		}
+		return isEmpty;
+	}
 
 	//Setters, Getters-------------------------------------------
 	public boolean isEasySearch() {

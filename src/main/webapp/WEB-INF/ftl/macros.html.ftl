@@ -72,7 +72,6 @@
 	<#list enum.values() as currentEnum>
 		<#assign message><@s.message currentEnum.getNameKey() /></#assign>
 		<@formOption
-			isSelected = (currentEnum.equals(enum))
 			value = currentEnum.name()
 			label = message />
 	</#list>
@@ -101,16 +100,13 @@
 	Create an option tag for a selection.
 	@param value - The value the selection will have if this option is chosen.
 	@param label - The text this option will show to the user.
-	@param isSelected - Optional: If true, this option will be the initially selected one.
 -->
-<#macro formOption value label isSelected=false attributes...>
+<#macro formOption value label attributes...>
 	<option value="${value}"
 		<#list attributes?keys as attr>
 			${attr}="${attributes[attr]?html}"
 		</#list>
-		<#if isSelected>
-			selected="selected"
-		</#if>
+		<@s.checkSelected value/>
 	>
 	${label}
 	<#nested>

@@ -44,7 +44,7 @@
 	<logger name="org.springframework" level="WARN"/>
 
 	<root>
-		<level value="INFO" />
+		<level value="DEBUG" />
 		<appender-ref ref="consoleAppender" />
 		<appender-ref ref="dailyRollingFileAppender" />
 	</root>
