@@ -20,6 +20,7 @@ import TaskSwitcher from "./taskswitcher";
  */
 var TaskList = function(settings, cache) {
 	
+	var taskListId = settings.taskListId;
 	var taskSelector = ".task:not(.removed)";
 	
 	/**
@@ -30,23 +31,25 @@ var TaskList = function(settings, cache) {
 	/**
 	 * Allows to expand/collapse task body on click.
 	 */
-	var taskSwitcher = TaskSwitcher({
+	var taskSwitcher = TaskSwitcher();
+	taskSwitcher.registerTaskList(taskListId, {
 		
-			createBody : function($task) {
-				var idLink = $task.attr('id');
-				var $body = cache.getTaskBody(idLink);
-				settings.eventBinders.bindBody(idLink, $task, $body, markDeprecated);
-				return $body;
-			},
-			
-			destroyBody : function($body) {
-				$body.remove();
-			}
+		createBody : function($task) {
+			var idLink = $task.attr('id');
+			var $body = cache.getTaskBody(idLink);
+			settings.eventBinders.bindBody(idLink, $task, $body, function($task, idLink) {
+				markDeprecated($task, idLink, true);
+			});
+			return $body;
+		},
+		
+		destroyBody : function($body) {
+			$body.remove();
 		}
-	);
+	});
 	
 	settings.eventBinders.bindList(settings.$list, function($task) {
-		taskSwitcher.switchTask($task);
+		taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
 	});
 	
 	var findTask = function(idLink) {
@@ -71,6 +74,8 @@ var TaskList = function(settings, cache) {
 		for(let id of idLinks) {
 			var $header = getHeader(id);
 			settings.$list.append($header);
+			// select if task with same id was selected before
+			taskSwitcher.expandIfWanted($header, id, taskListId, true);
 		}
 	};
 	
@@ -78,14 +83,17 @@ var TaskList = function(settings, cache) {
 	 * Async. Remove task from current ids array and from list (after collapsing if expanded).
 	 * @returns {Promise}
 	 */
-	var removeTask = function($task, idLink, isExpanded) {
-		if(isExpanded === undefined) {
+	var removeTask = function($task, idLink, isExpanded, instantly) {
+		if(typeof isExpanded === "undefined") {
 			isExpanded = taskSwitcher.isTaskExpanded($task);
 		}
 		$task.addClass("removed");
 		current.splice(current.indexOf(idLink), 1);
-		return (isExpanded ? taskSwitcher.collapseTaskIfExpanded($task) : Promise.resolve())
-		.then(function() {
+		var promise = Promise.resolve();
+		if (isExpanded) {
+			promise = taskSwitcher.collapseTaskIfExpanded($task, idLink, taskListId, instantly);
+		}
+		return promise.then(function() {
 			$task.remove();
 		});
 	};
@@ -94,9 +102,11 @@ var TaskList = function(settings, cache) {
 	 * Async.
 	 * @returns {Promise}
 	 */
-	var markDeprecated = function($task, idLink) {
-		if ($task === null) $task = findTask(idLink);
-		return removeTask($task, idLink)
+	var markDeprecated = function($task, idLink, instantly) {
+		if ($task === null) {
+			$task = findTask(idLink);
+		}
+		return removeTask($task, idLink, undefined, instantly)
 		.then(updateTaskList);
 	};
 	
@@ -135,16 +145,17 @@ var TaskList = function(settings, cache) {
 			var missing = cache.getMissingIds(newVisibleIds);
 			return cache.loadTasks(missing)
 			.then(function() {
-				// add not visible from cache to page
-				var addedIds = newVisibleIds.diff(current);
-				appendTaskHeaders(addedIds);
 				// remove hidden from page
 				var hidden = current.filter(function(id) {
 					return newVisibleIds.indexOf(id) < 0;
 				});
 				for (let id of hidden) {
-					removeTask(findTask(id), id);
+					removeTask(findTask(id), id, undefined, true);
 				}
+				// add not visible from cache to page
+				var addedIds = newVisibleIds.diff(current);
+				appendTaskHeaders(addedIds);
+				
 				// resort page elements by visible
 				resortTaskList(newVisibleIds);
 				current = newVisibleIds;
@@ -184,6 +195,8 @@ var TaskList = function(settings, cache) {
 					settings.$list.append($header);
 				}
 				current.splice(pos, 0, id);
+				// select if task with same id was selected before (-> edit)
+				taskSwitcher.expandIfWanted($header, id, taskListId, true);
 			});
 		},
 		

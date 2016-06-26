@@ -96,7 +96,12 @@
 // body
 //------------------------------------------------------------------------------
 
+.task-operations {
+	padding-left: 5px;
+}
+
 .task-authorDate {
+	margin:1px 5px 0px 5px;
 	bottom:0px;
 	color:#999999;
 	font-size:0.7em;
@@ -104,7 +109,7 @@
 
 .task-button {
 	padding:3px 7px;
-	margin:2px 10px 0px 0px;
+	margin:2px 5px 0px 5px;
 	line-height: 1.4em;
 	min-width:8em;
 }

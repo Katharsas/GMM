@@ -19,7 +19,7 @@ export default function Queue(maxSize, comparator) {
 	 */
 	this.add = function(task) {
 		var result = null;
-		if(this.maxSize !== undefined && queue.length >= this.maxSize) {
+		if(this.isFull()) {
 			result = queue.pop();
 		}
 		queue.unshift(task);
@@ -59,6 +59,10 @@ export default function Queue(maxSize, comparator) {
 	 */
 	this.get = function() {
 		return queue.slice();
+	};
+	
+	this.isFull = function() {
+		return (typeof this.maxSize !== "undefined") && (queue.length >= this.maxSize);
 	};
 	
 	this.clear = function() {

@@ -13,6 +13,7 @@ $(document).ready(
 		var taskCache =  TaskCache("/public/linkedTasks/renderTaskData");
 		
 		var taskListSettings = {
+			taskListId : "linkedTasks",
 			$list : $("#taskList"),
 			eventUrl : "/public/linkedTasks/taskListEvents",
 			eventBinders : taskBinders,

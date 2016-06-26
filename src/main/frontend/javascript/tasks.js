@@ -40,6 +40,7 @@ var Workbench = function(taskForm) {
 	var taskCache =  TaskCache("/tasks/workbench/renderTaskData");
 	
 	var taskListSettings = {
+		taskListId : "workbench",
 		$list : $workbenchList,
 		eventUrl : "/tasks/workbench/taskListEvents",
 		eventBinders : taskBinders,
@@ -168,7 +169,6 @@ var Workbench = function(taskForm) {
 			};
 			
 			function isEasySearch() {
-				console.log($searchType.val());
 				return $searchType.val() === "true";
 			}
 			function setSearchType(isEasySearch) {
