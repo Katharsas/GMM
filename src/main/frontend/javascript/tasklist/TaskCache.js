@@ -1,6 +1,6 @@
-import Ajax from "./ajax";
-import HtmlPreProcessor from "./preprocessor";
-import { contextUrl } from "./default";
+import Ajax from "../shared/ajax";
+import HtmlPreProcessor from "../shared/preprocessor";
+import { contextUrl } from "../shared/default";
 import $ from "../lib/jquery";
 
 /**

@@ -277,8 +277,7 @@ public class TaskController {
 			comment.setText(edited);
 		}
 		//TODO: Tasks imumtable
-		data.remove(task);
-		data.add(task);
+		data.edit(task);
 	}
 	
 	/**
@@ -298,8 +297,7 @@ public class TaskController {
 		final Comment comment = new Comment(workbench.getUser(), form.getText());
 		task.getComments().add(comment);
 		//TODO: Tasks immutable
-		data.remove(task);
-		data.add(task);
+		data.edit(task);
 	}
 	
 	/**
@@ -412,14 +410,14 @@ public class TaskController {
 	}
 	
 	/**
-	 * Workbench tasks <br>
+	 * Task Lists <br>
 	 * -----------------------------------------------------------------
 	 */
 	
 	/**
-	 * Get task data for specified ids, must be visible in workbench currently.
+	 * Get task data for specified ids, must be visible in workbench or pinned currently.
 	 */
-	@RequestMapping(value = "/workbench/renderTaskData", method = POST)
+	@RequestMapping(value = "/renderTaskData", method = POST)
 	@ResponseBody
 	public List<TaskRenderResult> renderSelectedTasks(
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
@@ -437,9 +435,17 @@ public class TaskController {
 				new ControllerArgs(model, request, response));
 	}
 	
+	@RequestMapping(value = "/pinned/taskListEvents", method = GET)
+	@ResponseBody
+	public List<TaskListEvent> syncPinned() {
+//		final List<TaskListEvent> events = new LinkedList<>(TaskListEvent.class);
+//		return events;
+		throw new UnsupportedOperationException();
+	}
+	
 	@RequestMapping(value = "/workbench/taskListEvents", method = GET)
 	@ResponseBody
-	public List<TaskListEvent> syncTaskListState() {
+	public List<TaskListEvent> syncWorkbench() {
 		final List<TaskListEvent> events = workbench.retrieveEvents();
 		if (logger.isDebugEnabled()) {
 			logger.debug(workbench.getUser() + " retrieved events: "

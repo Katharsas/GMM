@@ -15,6 +15,7 @@ public interface DataAccess {
 	public <T extends Linkable> void remove(T data);
 	public <T extends Linkable> void removeAll(Collection<T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
+	public <T extends Linkable> void edit(T data);
 	public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	
@@ -23,6 +24,7 @@ public interface DataAccess {
 		public <T extends Task> void onAddAll(Collection<T> tasks);
 		public <T extends Task> void onRemove(T task);
 		public <T extends Task> void onRemoveAll(Collection<T> tasks);
+		public <T extends Task> void onEdit(T task);
 	}
 	
 	/**

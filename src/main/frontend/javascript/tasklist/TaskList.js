@@ -1,9 +1,8 @@
 /*jshint loopfunc: true */
 
-import Ajax from "./ajax";
-import Dialogs from "./dialogs";
-import { contextUrl, resortElementsById, runSerial } from "./default";
-import TaskSwitcher from "./taskswitcher";
+import Ajax from "../shared/ajax";
+import Dialogs from "../shared/dialogs";
+import { contextUrl, resortElementsById, runSerial } from "../shared/default";
 
 /**
  * @author Jan Mothes
@@ -18,7 +17,7 @@ import TaskSwitcher from "./taskswitcher";
  * @param {TaskListSettings} settings - Settings needed to create this taskList.
  * @param {TaskCache} cache - Task data container.
  */
-var TaskList = function(settings, cache) {
+var TaskList = function(settings, cache, taskSwitcher) {
 	
 	var taskListId = settings.taskListId;
 	var taskSelector = ".task:not(.removed)";
@@ -28,10 +27,6 @@ var TaskList = function(settings, cache) {
 	 */
 	var current = [];
 	
-	/**
-	 * Allows to expand/collapse task body on click.
-	 */
-	var taskSwitcher = TaskSwitcher();
 	taskSwitcher.registerTaskList(taskListId, {
 		
 		createBody : function($task) {

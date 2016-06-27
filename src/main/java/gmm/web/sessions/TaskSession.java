@@ -73,10 +73,10 @@ public class TaskSession {
 		if (currentlyEdited.getType().equals(finalForm.getType())) {
 			// since tasks are immutable, just edit their data
 			taskCreator.edit(currentlyEdited, finalForm);
+			// TODO make tasks immutable
 			// data relies on tasks being treated as immutable
 			// => do what we would have done if tasks were actually immutable
-			data.remove(currentlyEdited);
-			data.add(currentlyEdited);
+			data.edit(currentlyEdited);
 		} else {
 			throw new IllegalArgumentException("The type of a task cannot be edited!");
 		}

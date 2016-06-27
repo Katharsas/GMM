@@ -67,4 +67,20 @@ public abstract class TaskListEvent {
 			this.removedIds = removedIds;
 		}
 	}
+	
+	public static class EditSingle extends TaskListEvent {
+		public final String editedId;
+		public final boolean isVisible;
+		public final int newPos;
+		public EditSingle(String editedId, int newPos) {
+			this.editedId = editedId;
+			this.newPos = newPos;
+			this.isVisible = true;
+		}
+		public EditSingle(String editedId) {
+			this.editedId = editedId;
+			this.newPos = -1;
+			this.isVisible = false;
+		}
+	}
 }

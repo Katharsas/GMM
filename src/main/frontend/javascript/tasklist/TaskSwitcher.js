@@ -1,6 +1,6 @@
 import TweenLite from "../lib/tweenLite";
-import Queue from "./queue";
-import Errors from "./Errors";
+import Queue from "../shared/queue";
+import Errors from "../shared/Errors";
 
 /**
  * -------------------- TaskSwitcher -------------------------------------------------------------

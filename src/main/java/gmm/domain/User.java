@@ -1,15 +1,22 @@
 package gmm.domain;
 
-import gmm.web.forms.LoadForm;
-
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+import gmm.collections.LinkedList;
+import gmm.collections.List;
+import gmm.domain.task.Task;
+import gmm.web.forms.LoadForm;
+
 public class User extends NamedObject {
+	
+	//Constants
+	public final static User NULL = new User("EMPTY");
+	public final static String ROLE_ADMIN = "ROLE_ADMIN";
+	public final static String ROLE_USER = "ROLE_USER";
+	public final static String ROLE_GUEST = "ROLE_GUEST";
 	
 	//Variables-------------------------------------------
 	//Domain - Set by constructor
@@ -21,17 +28,13 @@ public class User extends NamedObject {
 	@XStreamAsAttribute
 	private String email="";
 	
-	final private List<Notification> oldNotifications = new LinkedList<Notification>();
-	final private List<Notification> newNotifications = new LinkedList<Notification>();
+	private final List<Task> pinnedTasks = new LinkedList<>(Task.class);
+	
+	private final List<Notification> oldNotifications = new LinkedList<>(Notification.class);
+	private final List<Notification> newNotifications = new LinkedList<>(Notification.class);
 	
 	//Options & Settings
 	private LoadForm loadForm = new LoadForm();
-	
-	//Constants
-	public final static User NULL = new User("EMPTY");
-	public final static String ROLE_ADMIN = "ROLE_ADMIN";
-	public final static String ROLE_USER = "ROLE_USER";
-	public final static String ROLE_GUEST = "ROLE_GUEST";
 	
 	//Methods--------------------------------------------
 	/**
@@ -48,7 +51,7 @@ public class User extends NamedObject {
 	 */
 	public static User getFromName(Collection<? extends User> c, String name) {
 		Objects.requireNonNull(c);
-		for(User user : c) {
+		for(final User user : c) {
 			if(user.getName().equalsIgnoreCase(name)) return user;
 		}
 		return null;

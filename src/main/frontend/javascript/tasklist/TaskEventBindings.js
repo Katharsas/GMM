@@ -1,8 +1,8 @@
 import $ from "../lib/jquery";
-import Ajax from "./ajax";
-import Dialogs from "./dialogs";
-import PreviewRenderer from "./PreviewRenderer";
-import { contextUrl, allVars, htmlDecode } from "./default";
+import Ajax from "../shared/ajax";
+import Dialogs from "../shared/dialogs";
+import PreviewRenderer from "../shared/PreviewRenderer";
+import { contextUrl, allVars, htmlDecode } from "../shared/default";
 
 /**
  * ------------- TaskEventBindings ---------------------------------------------
@@ -11,9 +11,7 @@ import { contextUrl, allVars, htmlDecode } from "./default";
  */
 export default function(onedit) {
 	
-	//if(1 == "text") console.log(x = 10);
 	//comments
-	
 	var hideCommentForm = function($commentForm) {
 		var $elementComments = $commentForm.parent();
 		if ($elementComments.is(":visible:blank")) {
@@ -27,17 +25,13 @@ export default function(onedit) {
 		$commentForm.show();
 	};
 	
-	
-	
 	//download
-	
 	var downloadFromPreview = function(taskId, version) {
 		var uri = contextUrl + "/tasks/download/" + taskId + "/preview/" + version + "/";
 		window.open(uri);
 	};
 	
 	// file trees
-	
 	var selectedFileIsAsset;
 	var $selectedFile = $();
 	

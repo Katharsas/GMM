@@ -71,6 +71,27 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		taskListEvents.add(new TaskListEvent.RemoveAll(getIds(tasks)));
 	}
 	
+	@Override
+	public <T extends Task> void onEdit(T task) {
+		// very similar to onAdd
+		final Class<T> type = Util.classOf(task);
+		final List<T> single = new LinkedList<T>(type, task);
+		if(isTaskTypeVisible(TaskType.fromClass(type))) {
+			final Collection<T> singleFiltered = filter(single);
+			synchronized (this) {
+				getVisible().remove(task);
+				if(singleFiltered.size() >= 1) {
+					getVisible().add(task);
+					sortVisible();
+					final int index = getVisible().indexOf(task);
+					taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink(), index));
+				} else {
+					taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink()));
+				}
+			}
+		}
+	}
+	
 	protected List<String> getIds(Collection<? extends Task> tasks) {
 		final List<String> ids = new LinkedList<>(String.class);
 		for(final Task task : tasks) {

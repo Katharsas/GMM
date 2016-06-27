@@ -58,6 +58,9 @@ public class DataBase implements DataAccess {
 		@Override public <T extends Task> void onAdd(T task) {
 			for(final TaskUpdateCallback c : weakCallbacks) {c.onAdd(task);}
 		}
+		@Override public <T extends Task> void onEdit(T task) {
+			for(final TaskUpdateCallback c : weakCallbacks) {c.onEdit(task);}
+		}
 	};
 	
 	@Autowired
@@ -164,6 +167,20 @@ public class DataBase implements DataAccess {
 		}
 	}
 	
+	@Override
+	public <T extends Linkable> void edit(T data) {
+		final Collection<T> collection = getDataList(Util.classOf(data));
+		if(!collection.contains(data)){
+			throw new IllegalArgumentException("Element cannot be edited because it does not exists!");
+		}
+		collection.remove(data);
+		collection.add(data);
+		if (data instanceof Task) {
+			final Task task = (Task) data;
+			callbacks.onEdit(task);
+		}
+	}
+	
 	private <T extends Linkable> void clearAll(Class<T> clazz) {
 		if(clazz.equals(Task.class)) {
 			generalTasks.clear();
@@ -230,4 +247,5 @@ public class DataBase implements DataAccess {
 		if (weakCallbacks.size() > 20)
 			logger.error("Memory leak: Callback objects not getting garbage collected!");
 	}
+
 }

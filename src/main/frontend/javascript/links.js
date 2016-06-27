@@ -1,7 +1,8 @@
 import $ from "./lib/jquery";
-import TaskCache from "./shared/TaskCache";
-import TaskList from "./shared/TaskList";
-import TaskEventBindings from "./shared/tasklisteners";
+import TaskCache from "./tasklist/TaskCache";
+import TaskList from "./tasklist/TaskList";
+import TaskSwitcher from "./tasklist/TaskSwitcher";
+import TaskEventBindings from "./tasklist/TaskEventBindings";
 
 /**
  * This function is executed when document is ready for interactivity!
@@ -11,6 +12,7 @@ $(document).ready(
 		
 		var taskBinders = TaskEventBindings(function(){});
 		var taskCache =  TaskCache("/public/linkedTasks/renderTaskData");
+		var taskSwitcher = TaskSwitcher();
 		
 		var taskListSettings = {
 			taskListId : "linkedTasks",
@@ -19,7 +21,7 @@ $(document).ready(
 			eventBinders : taskBinders,
 			onChange : null // TODO add count for list
 		};
-		var taskList = TaskList(taskListSettings, taskCache);
+		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher);
 		taskList.update();
 	}
 );
