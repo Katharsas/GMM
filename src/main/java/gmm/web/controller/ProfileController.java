@@ -1,15 +1,15 @@
 package gmm.web.controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import gmm.web.sessions.tasklist.WorkbenchSession;
+import gmm.service.users.CurrentUser;
 
 
 @Controller
@@ -18,8 +18,14 @@ import gmm.web.sessions.tasklist.WorkbenchSession;
 
 public class ProfileController {
 
-	@Autowired WorkbenchSession session;
-	@Autowired PasswordEncoder encoder;
+	private final PasswordEncoder encoder;
+	private final CurrentUser user;
+	
+	@Autowired
+	public ProfileController(PasswordEncoder encoder, CurrentUser user) {
+		this.encoder = encoder;
+		this.user = user;
+	}
 	
 	@RequestMapping(method = RequestMethod.GET)
     public String send(ModelMap model) {
@@ -32,12 +38,12 @@ public class ProfileController {
 			@RequestParam("oldPW") String oldPw,
 			@RequestParam("newPW") String newPw) {
 		
-		if(encoder.matches(oldPw, session.getUser().getPasswordHash())) {
+		if(encoder.matches(oldPw, user.get().getPasswordHash())) {
 			if(newPw.length() < 8) {
 				return new PasswordChangeResult("Error: Password too short!");
 			}
 			String newPwHash = encoder.encode(newPw);
-			session.getUser().setPasswordHash(newPwHash);
+			user.get().setPasswordHash(newPwHash);
 			return new PasswordChangeResult(null);
 		}
 		else {

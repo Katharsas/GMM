@@ -42,7 +42,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 	var taskListSettings = {
 		taskListId : "workbench",
 		$list : $workbenchList,
-		eventUrl : "/tasks/workbench/taskListEvents",
+		eventUrl : "/workbench/taskListEvents",
 		eventBinders : taskBinders,
 		onChange : function(newSize) {
 			$count.text(newSize);
@@ -56,7 +56,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 	taskForm.setOnCreate(taskList.update);
 	
 	var updateTasks = function() {
-		Ajax.get(contextUrl + "/tasks/selected")
+		Ajax.get(contextUrl + "/workbench/selected")
 			.then(function(selected) {
 				$loadButtons.each(function(index, element) {
 					if (selected[index]) {
@@ -69,7 +69,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 			});
 	};
 	this.load = function(type) {
-		Ajax.post(contextUrl + "/tasks/loadType", { type: type })
+		Ajax.post(contextUrl + "/workbench/loadType", { type: type })
 			.then(updateTasks);
 	};
 	var initWorkbenchTabMenu = function() {
@@ -131,7 +131,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 		var $loadForm = $tabs.find("form#workbench-loadForm");
 		
 		$loadForm.find(".form-element").change(function() {
-			Ajax.post(contextUrl + "/tasks/submitLoadOptions", null, $loadForm);
+			Ajax.post(contextUrl + "/workbench/loadOptions", null, $loadForm);
 		});
 		
 		//-------------------------------------------------------
@@ -140,7 +140,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 		var $sortForm = $tabs.find("form#workbench-sortForm");
 		
 		$sortForm.find("select, input").change(function() {
-			Ajax.post(contextUrl + "/tasks/submitSort", null, $sortForm)
+			Ajax.post(contextUrl + "/workbench/sort", null, $sortForm)
 				.then(taskList.update);
 		});
 		
@@ -161,7 +161,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 			});
 			var submitSearchForm = function(reset) {
 				var data = { reset: reset ? true : false };
-				Ajax.post(contextUrl + "/tasks/search", data, $searchForm)
+				Ajax.post(contextUrl + "/workbench/search", data, $searchForm)
 				.then(function(answer) {
 					onSubmitAnswer(answer);
 					taskList.update();
@@ -195,7 +195,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 			};
 			
 			//get initial searchForm
-			Ajax.get(contextUrl + "/tasks/search", {})
+			Ajax.get(contextUrl + "/workbench/search", {})
 			.then(onSubmitAnswer);
 		})();
 		
@@ -212,7 +212,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 			// ajax
 			var submitFilterForm = function(reset) {
 				var data = { reset: reset ? true : false };
-				Ajax.post(contextUrl + "/tasks/filter", data, $filterForm)
+				Ajax.post(contextUrl + "/workbench/filter", data, $filterForm)
 				.then(function(answer){
 					onSubmitAnswer(answer);
 					taskList.update();
@@ -248,7 +248,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 			});
 			
 			// get initial filterForm html
-			Ajax.get(contextUrl + "/tasks/filter", {})
+			Ajax.get(contextUrl + "/workbench/filter", {})
 			.then(onSubmitAnswer);
 		})();
 		
@@ -259,7 +259,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 		var $saveTasksForm = $saveTasks.find("#dialog-saveTasks-form");
 		
 		$saveTasks.find("#dialog-saveTasks-saveButton").click(function() {
-			Ajax.post(contextUrl + "/tasks/workbench/admin/save", {}, $saveTasksForm)
+			Ajax.post(contextUrl + "/workbench/saveVisible", {}, $saveTasksForm)
 				.then(function() {
 					Dialogs.hideDialog($("#dialog-saveTasks"));
 				});
@@ -270,7 +270,7 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 		$tabs.find("#workbench-admin-deleteButton").click(function() {
 			var $confirm = Dialogs.confirm(function() {
 				Dialogs.hideDialog($confirm);
-				Ajax.post(contextUrl + "/tasks/workbench/admin/delete")
+				Ajax.post(contextUrl + "/workbench/deleteVisible")
 					.then(function(){
 						taskList.update();
 					});

@@ -16,7 +16,6 @@ import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
-import gmm.web.sessions.tasklist.WorkbenchSession;
 
 /**
  * 
@@ -26,7 +25,6 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
-	@Autowired private WorkbenchSession session;
 	
 	protected abstract AssetTask<A> createNew(Path assetPath, User user);
 	public abstract A createAsset(Path fileName, AssetGroupType isOriginal);
@@ -34,9 +32,9 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	public abstract FileExtensionFilter getExtensions();
 	
 	@Override
-	public final AssetTask<A> create(TaskForm form) {
+	public final AssetTask<A> create(TaskForm form, User user) {
 		final Path relative = getAssetPath(form);
-		final AssetTask<A> task = createNew(relative, session.getUser());
+		final AssetTask<A> task = createNew(relative, user);
 		edit(task, form);
 		final A asset = createAsset(relative.getFileName(), AssetGroupType.ORIGINAL);
 		setupAssetUpdatePreview(task, asset);

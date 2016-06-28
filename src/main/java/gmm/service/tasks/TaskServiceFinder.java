@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.Asset;
 import gmm.domain.task.asset.AssetTask;
@@ -40,8 +41,8 @@ public class TaskServiceFinder {
 		return result;
 	}
 	
-	public <T extends Task> T create(Class<T> type, TaskForm form) {
-		final T task = getService(type).create(form);
+	public <T extends Task> T create(Class<T> type, TaskForm form, User user) {
+		final T task = getService(type).create(form, user);
 		return task;
 	}
 	

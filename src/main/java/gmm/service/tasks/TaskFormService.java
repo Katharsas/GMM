@@ -16,7 +16,7 @@ abstract class TaskFormService<T extends Task> {
 	@Autowired private UserProvider users;
 	
 	public abstract Class<? extends T> getTaskType();
-	public abstract T create(TaskForm form) ;
+	public abstract T create(TaskForm form, User user);
 	
 	public void edit(T task, TaskForm form) {
 		task.setName(form.getName());

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
 import gmm.service.ajax.BundledMessageResponses;
@@ -18,14 +19,23 @@ import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetPathConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskServiceFinder;
+import gmm.service.users.UserService;
 import gmm.web.forms.TaskForm;
 
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class TaskSession {
 	
-	@Autowired private DataAccess data;
-	@Autowired private TaskServiceFinder taskCreator;
+	private final DataAccess data;
+	private final TaskServiceFinder taskCreator;
+	private final User loggedInUser;
+	
+	@Autowired
+	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
+		this.data = data;
+		this.taskCreator = taskCreator;
+		loggedInUser = users.getLoggedInUser();
+	}
 	
 	public void cleanUp() {
 		importer = null;
@@ -93,7 +103,7 @@ public class TaskSession {
 		final TaskType type = form.getType();
 		if(type.equals(TaskType.GENERAL)) {
 			// if is general task, just create and add, there can be no conflicts
-			final Task task = taskCreator.create(type.toClass(), form);
+			final Task task = taskCreator.create(type.toClass(), form, loggedInUser);
 			data.add(task);
 			final String message = "Successfully added new task! ID: " + task.getId();
 			final MessageResponse finished =
@@ -104,7 +114,7 @@ public class TaskSession {
 			// else check for assetpath conflicts
 			final Consumer<String> onAssetPathChecked = (assetPath) -> {
 				form.setAssetPath(assetPath);
-				data.add(taskCreator.create(type.toClass(), form));
+				data.add(taskCreator.create(type.toClass(), form, loggedInUser));
 			};
 			final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
 			 

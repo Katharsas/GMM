@@ -118,4 +118,8 @@ public class User extends NamedObject {
 		Objects.requireNonNull(loadForm);
 		this.loadForm = loadForm;
 	}
+	
+	public List<Task> getPinnedTasks() {
+		return pinnedTasks;
+	}
 }

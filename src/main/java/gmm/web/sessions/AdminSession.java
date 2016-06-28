@@ -3,7 +3,6 @@ package gmm.web.sessions;
 
 import java.util.function.Consumer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.User;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
@@ -21,6 +21,7 @@ import gmm.service.ajax.operations.AssetPathConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.TaskBackupLoader;
 import gmm.service.tasks.TaskServiceFinder;
+import gmm.service.users.UserService;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -32,8 +33,15 @@ import gmm.web.forms.TaskForm;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AdminSession extends TaskBackupLoader {
 	
-	@Autowired private DataAccess data;
-	@Autowired private TaskServiceFinder taskCreator;
+	private DataAccess data;
+	private TaskServiceFinder taskCreator;
+	private final User loggedInUser;
+	
+	public AdminSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
+		this.data = data;
+		this.taskCreator = taskCreator;
+		loggedInUser = users.getLoggedInUser();
+	}
 	
 	/*--------------------------------------------------
 	 * Import asset tasks
@@ -72,7 +80,7 @@ public class AdminSession extends TaskBackupLoader {
 		
 		final Consumer<String> onAssetPathChecked = (assetPath) -> {
 			form.setAssetPath(assetPath);
-			data.add(taskCreator.create(type, form));
+			data.add(taskCreator.create(type, form, loggedInUser));
 		};
 		final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
 		

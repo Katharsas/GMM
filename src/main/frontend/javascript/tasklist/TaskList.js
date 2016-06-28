@@ -191,7 +191,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 				}
 				current.splice(pos, 0, id);
 				// select if task with same id was selected before (-> edit)
-				taskSwitcher.expandIfWanted($header, id, taskListId, true);
+				return taskSwitcher.expandIfWanted($header, id, taskListId, true);
 			});
 		},
 		
@@ -225,6 +225,20 @@ var TaskList = function(settings, cache, taskSwitcher) {
 				return promise;
 			}
 			return Promise.resolve();
+		},
+		
+		// TODO refactor everything ?
+		EditSingle : function(event) {
+			var id = event.editedId;
+			var isVisible = event.isVisible;
+			var newPos = event.newPos;
+			var that = this;
+			return this.RemoveSingle({removedId: id})
+			.then(function() {
+				if (isVisible) {
+					that.CreateSingle({createdId: id, insertedAtPos: newPos});
+				}
+			});
 		}
 	};
 	

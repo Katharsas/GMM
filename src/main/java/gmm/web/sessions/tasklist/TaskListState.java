@@ -20,17 +20,13 @@ public abstract class TaskListState implements TaskUpdateCallback {
 	
 	@Override
 	public <T extends Task> void onAdd(T task) {
-		final Class<T> type = Util.classOf(task);
-		final List<T> single = new LinkedList<T>(type, task);
-		if(isTaskTypeVisible(TaskType.fromClass(type))) {
-			final Collection<T> singleFiltered = filter(single);
-			if(singleFiltered.size() >= 1) {
-				synchronized (this) {
-					getVisible().add(task);
-					sortVisible();
-					final int index = getVisible().indexOf(task);
-					taskListEvents.add(new TaskListEvent.CreateSingle(task.getIdLink(), index));
-				}
+		final boolean isVisible = isSingleVisible(task);
+		synchronized (this) {
+			removeAdd(task, isVisible);
+			if(isVisible) {
+				sortVisible();
+				final int index = getVisible().indexOf(task);
+				taskListEvents.add(new TaskListEvent.CreateSingle(task.getIdLink(), index));
 			}
 		}
 	}
@@ -73,21 +69,15 @@ public abstract class TaskListState implements TaskUpdateCallback {
 	
 	@Override
 	public <T extends Task> void onEdit(T task) {
-		// very similar to onAdd
-		final Class<T> type = Util.classOf(task);
-		final List<T> single = new LinkedList<T>(type, task);
-		if(isTaskTypeVisible(TaskType.fromClass(type))) {
-			final Collection<T> singleFiltered = filter(single);
-			synchronized (this) {
-				getVisible().remove(task);
-				if(singleFiltered.size() >= 1) {
-					getVisible().add(task);
-					sortVisible();
-					final int index = getVisible().indexOf(task);
-					taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink(), index));
-				} else {
-					taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink()));
-				}
+		final boolean isVisible = isSingleVisible(task);
+		synchronized (this) {
+			removeAdd(task, isVisible);
+			if(isVisible) {
+				sortVisible();
+				final int index = getVisible().indexOf(task);
+				taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink(), index));
+			} else {
+				taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink()));
 			}
 		}
 	}
@@ -104,4 +94,39 @@ public abstract class TaskListState implements TaskUpdateCallback {
 	protected abstract List<Task> getVisible(); 
 	protected abstract void sortVisible();
 	protected abstract <T extends Task> Collection<T> filter(Collection<T> tasks);
+	
+	/**
+	 * Remove task from visible (if it was visible before) and re-add it (at same position if it
+	 * was visible before).
+	 * @param isVisible - Only add task if this is true
+	 */
+	private <T extends Task> void removeAdd(T task, boolean isVisible) {
+		final int oldPos = getVisible().indexOf(task);
+		final boolean wasVisible = oldPos >= 0;
+		if (wasVisible) {
+			getVisible().remove(task);
+		}
+		if (isVisible) {
+			if (wasVisible) {
+				getVisible().add(oldPos, task);
+			} else {
+				getVisible().add(task);
+			}
+		}
+	}
+	
+	/**
+	 * Find out if a task that was added or edited should be visible or not.
+	 * Checks type with {@link #isTaskTypeVisible(TaskType)} and filters with {@link #filter(Collection)}.
+	 */
+	private <T extends Task> boolean isSingleVisible(T task) {
+		final Class<T> type = Util.classOf(task);
+		final List<T> single = new LinkedList<T>(type, task);
+		if(isTaskTypeVisible(TaskType.fromClass(type))) {
+			final Collection<T> singleFiltered = filter(single);
+			return singleFiltered.size() >= 1;
+		} else {
+			return false;
+		}
+	}
 }

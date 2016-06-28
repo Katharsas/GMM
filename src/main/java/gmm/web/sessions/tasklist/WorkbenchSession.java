@@ -206,8 +206,8 @@ public class WorkbenchSession extends TaskListState {
 	 */
 	public synchronized void updateLoad(LoadForm load) {
 		this.load = load;
-		synchronized(getUser()) {
-			getUser().setLoadForm(load);
+		synchronized(user) {
+			user.setLoadForm(load);
 		}
 	}
 	
@@ -258,10 +258,6 @@ public class WorkbenchSession extends TaskListState {
 	
 	public boolean[] getSelectedTaskTypes() {
 		return selected;
-	}
-	
-	public User getUser() {
-		return user;
 	}
 	
 	public SortForm getSortForm() {

@@ -80,11 +80,25 @@ export default function(onedit) {
 			$operations.find(".task-operations-deleteTask").click(function() {
 				var $confirm = Dialogs.confirm(function() {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
-						.then(function() {
-							Dialogs.hideDialog($confirm);
-							markDeprecated($task, id);
-						});
+					.then(function() {
+						Dialogs.hideDialog($confirm);
+						markDeprecated($task, id);
+					});
 				}, "Are you sure you want to delete this task?");
+			});
+			//pin task
+			$operations.find(".task-operations-pin").click(function() {
+				Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
+				.then(function() {
+					markDeprecated($task, id);
+				});
+			});
+			// unpin task
+			$operations.find(".task-operations-unpin").click(function() {
+				Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
+				.then(function() {
+					markDeprecated($task, id);
+				});
 			});
 			
 			/* -------------------------------------------------------
