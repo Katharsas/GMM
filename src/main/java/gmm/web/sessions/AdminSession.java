@@ -3,6 +3,7 @@ package gmm.web.sessions;
 
 import java.util.function.Consumer;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
@@ -33,10 +34,11 @@ import gmm.web.forms.TaskForm;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AdminSession extends TaskBackupLoader {
 	
-	private DataAccess data;
-	private TaskServiceFinder taskCreator;
+	private final DataAccess data;
+	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
 	
+	@Autowired
 	public AdminSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
 		this.data = data;
 		this.taskCreator = taskCreator;

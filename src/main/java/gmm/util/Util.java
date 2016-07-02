@@ -97,4 +97,16 @@ public class Util {
 	    Iterator<A> i = as.iterator();
 	    bs.filter(x->i.hasNext()).forEach(b -> onPair.accept(i.next(), b));
 	}
+	
+	/**
+	 * Should only be used on array creation to apply the wanted type.
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T, E> T[] createArray(E[] array){
+	    return (T[]) array;
+	}
+	
+	public static Class<?> anyClass() {
+		return Object.class;
+	}
 }

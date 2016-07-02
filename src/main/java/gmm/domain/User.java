@@ -14,6 +14,9 @@ public class User extends NamedObject {
 	
 	//Constants
 	public final static User NULL = new User("EMPTY");
+	public final static User UNKNOWN = new User("UNKNOWN");
+	public final static User SYSTEM = new User("SYSTEM");
+	
 	public final static String ROLE_ADMIN = "ROLE_ADMIN";
 	public final static String ROLE_USER = "ROLE_USER";
 	public final static String ROLE_GUEST = "ROLE_GUEST";
@@ -48,6 +51,7 @@ public class User extends NamedObject {
 	/**
 	 * Returns the first user from a collection who has the same name as this user.
 	 * Ignores case of letters in name.
+	 * @return null if a user with the given name does not exist in the given collection.
 	 */
 	public static User getFromName(Collection<? extends User> c, String name) {
 		Objects.requireNonNull(c);

@@ -7,10 +7,11 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
-import gmm.service.data.DataAccess.TaskUpdateCallback;
+import gmm.service.data.DataAccess.DataChangeCallback;
+import gmm.service.data.DataChangeEvent;
 import gmm.util.Util;
 
-public abstract class TaskListState implements TaskUpdateCallback {
+public abstract class TaskListState implements DataChangeCallback {
 	
 	public TaskListState() {
 		taskListEvents = new LinkedList<>(TaskListEvent.class);
@@ -19,6 +20,40 @@ public abstract class TaskListState implements TaskUpdateCallback {
 	protected final List<TaskListEvent> taskListEvents;
 	
 	@Override
+	public void onEvent(DataChangeEvent event) {
+		Class<?> clazz = event.changed.getGenericType();
+		if (Task.class.isAssignableFrom(clazz)) {
+			Class<Task> target = Task.class;
+			if(event.isSingleItem) {
+				switch(event.type) {
+				case ADDED:
+					onAdd(event.getChangedSingle(target));
+					break;
+				case REMOVED:
+					onRemove(event.getChangedSingle(target));
+					break;
+				case EDITED:
+					onEdit(event.getChangedSingle(target));
+					break;
+				}
+			} else {
+				switch(event.type) {
+				case ADDED:
+					onAddAll(event.getChanged(target));
+					break;
+				case REMOVED:
+					onRemoveAll(event.getChanged(target));
+					break;
+				case EDITED:
+					for(Task task : event.getChanged(target)) {
+						onEdit(task);
+					}
+					break;
+				}
+			}
+		}
+	}
+	
 	public <T extends Task> void onAdd(T task) {
 		final boolean isVisible = isSingleVisible(task);
 		synchronized (this) {
@@ -31,7 +66,6 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		}
 	}
 	
-	@Override
 	public <T extends Task> void onAddAll(Collection<T> tasks) {
 		final Multimap<Class<? extends T>, T> typeToTask =
 				LinkedList.getMultiMap(tasks.getGenericType());
@@ -55,19 +89,16 @@ public abstract class TaskListState implements TaskUpdateCallback {
 		}
 	}
 	
-	@Override
 	public synchronized <T extends Task> void onRemove(T task) {
 		getVisible().remove(task);
 		taskListEvents.add(new TaskListEvent.RemoveSingle(task.getIdLink()));
 	}
 	
-	@Override
 	public synchronized <T extends Task> void onRemoveAll(Collection<T> tasks) {
 		getVisible().removeAll(tasks);
 		taskListEvents.add(new TaskListEvent.RemoveAll(getIds(tasks)));
 	}
 	
-	@Override
 	public <T extends Task> void onEdit(T task) {
 		final boolean isVisible = isSingleVisible(task);
 		synchronized (this) {

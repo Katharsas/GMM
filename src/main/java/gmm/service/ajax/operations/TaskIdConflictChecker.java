@@ -47,8 +47,10 @@ public class TaskIdConflictChecker extends ConflictChecker<Task> {
 	@Override public Conflict<Task> onLoad(Task t) {
 		t.onLoad();
 		UniqueObject.updateCounter(t);
-		if (data.hasIds(new long[]{t.getId()})) return conflict;
-		else {
+		
+		if (UniqueObject.getFromId(data.getList(t.getClass()), t.getId()) != null) {
+			return conflict;
+		} else {
 			return NO_CONFLICT;
 		}
 	}

@@ -2,35 +2,35 @@ package gmm.collections;
 
 import java.util.Arrays;
 
-public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
+public class LinkedHashSet<E> extends java.util.LinkedHashSet<E> implements Set<E> {
 	private static final long serialVersionUID = 895544914638784256L;
 
 	private final Class<E> genericType;
 	
-	public HashSet(Class<E> clazz, java.util.Collection<? extends E> set) {
+	public LinkedHashSet(Class<E> clazz, java.util.Collection<? extends E> set) {
 		super(set);
 		this.genericType = clazz;
 	}
 	
 	@SafeVarargs
-	public HashSet(Class<E> clazz, E... elements) {
+	public LinkedHashSet(Class<E> clazz, E... elements) {
 		super(Arrays.asList(elements));
 		this.genericType = clazz;
 	}
 	
-	public HashSet(Collection<E> set) {
+	public LinkedHashSet(Collection<E> set) {
 		super(set);
 		this.genericType = set.getGenericType();
 	}
 	
-	public HashSet(Class<E> clazz) {
+	public LinkedHashSet(Class<E> clazz) {
 		super();
 		this.genericType = clazz;
 	}
 	
 	@Override
-	public HashSet<E> copy() {
-		return new HashSet<E>(genericType, this);
+	public LinkedHashSet<E> copy() {
+		return new LinkedHashSet<E>(genericType, this);
 	}
 	
 	@Override

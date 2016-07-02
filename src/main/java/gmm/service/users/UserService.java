@@ -38,14 +38,44 @@ public class UserService extends UserProvider {
 	}
 	
 	public boolean isUserLoggedIn() {
-		return getAuth() != null && getAuth().isAuthenticated() &&
-				getAuth().getPrincipal() instanceof org.springframework.security.core.userdetails.User;
+		return isAuthenticated(getAuth());
 	}
 	
 	public User getLoggedInUser() {
-		if (!isUserLoggedIn()) throw new IllegalStateException("User is not logged in!");
-		return get(((org.springframework.security.core.userdetails.User)
-				getAuth().getPrincipal()).getUsername());
+		Authentication auth = getAuth();
+		if (!isUserLoggedIn(auth)) throw new IllegalStateException("User is not logged in!");
+		return get(
+				((org.springframework.security.core.userdetails.User) auth.getPrincipal())
+				.getUsername());
+	}
+	
+	/**
+	 * Finds a user that can be linked to the current thread execution. This is the logged in user
+	 * if called from a request session thread or "SYSTEM" if called from a non-session thread.
+	 * 
+	 * @return Always a user object, never null.
+	 */
+	public User getExecutingUser() {
+		Authentication auth = getAuth();
+		if (auth == null) {
+			return User.SYSTEM;
+		} else {
+			if (isUserLoggedIn(auth)) {
+				User user = getLoggedInUser();
+				return user == null ? User.NULL : user;
+			} else {
+				return User.UNKNOWN;
+			}
+		}
+	}
+	
+	private boolean isUserLoggedIn(Authentication auth) {
+		return auth != null && isAuthenticated(auth);
+	}
+	
+	private boolean isAuthenticated(Authentication auth) {
+		return auth.isAuthenticated() &&
+				auth.getPrincipal() instanceof org.springframework.security.core.userdetails.User;
 	}
 	
 	private Authentication getAuth() {

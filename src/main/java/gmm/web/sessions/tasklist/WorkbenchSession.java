@@ -19,6 +19,7 @@ import gmm.domain.task.TaskType;
 import gmm.service.TaskFilterService;
 import gmm.service.data.DataAccess;
 import gmm.service.sort.TaskSortService;
+import gmm.service.users.CurrentUser;
 import gmm.service.users.UserService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.LoadForm;
@@ -66,6 +67,9 @@ public class WorkbenchSession extends TaskListState {
 	//current task load settings
 	private LoadForm load;
 	
+	@Autowired
+	private CurrentUser current;
+	
 	
 	@Autowired
 	public WorkbenchSession(DataAccess data, UserService users,
@@ -89,6 +93,12 @@ public class WorkbenchSession extends TaskListState {
 		}
 		
 		data.registerForUpdates(this);
+	}
+	
+	@Override
+	public <T extends Task> void onAdd(T task) {
+		logger.debug("User proxy: " + current.get().getName());
+		super.onAdd(task);
 	}
 	
 	@Override

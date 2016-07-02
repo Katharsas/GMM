@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
-import gmm.domain.task.Task;
 
 @Service
 public interface DataAccess {
@@ -16,15 +15,12 @@ public interface DataAccess {
 	public <T extends Linkable> void removeAll(Collection<T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public <T extends Linkable> void edit(T data);
-	public boolean hasIds(long[] id);
+	@Deprecated public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	
-	public static interface TaskUpdateCallback {
-		public <T extends Task> void onAdd(T task);
-		public <T extends Task> void onAddAll(Collection<T> tasks);
-		public <T extends Task> void onRemove(T task);
-		public <T extends Task> void onRemoveAll(Collection<T> tasks);
-		public <T extends Task> void onEdit(T task);
+	@FunctionalInterface
+	public static interface DataChangeCallback {
+		public void onEvent(DataChangeEvent event);
 	}
 	
 	/**
@@ -35,5 +31,5 @@ public interface DataAccess {
 	 * Important: DOES NOT HOLD A (STRONG) REFERENCE TO onUpdate object.
 	 * => Caller must hold reference until it can be destroyed.
 	 */
-	public void registerForUpdates(TaskUpdateCallback onUpdate);
+	public void registerForUpdates(DataChangeCallback onUpdate);
 }
