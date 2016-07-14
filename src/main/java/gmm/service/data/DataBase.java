@@ -7,6 +7,7 @@ import static gmm.service.data.DataChangeType.REMOVED;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class DataBase implements DataAccess {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	final private UserService users;
+	final private Supplier<User> executingUser;
 	final private CombinedData combined;
 	
 	final private Set<Class<?>> listTypes = new HashSet<>(null, new Class<?>[]{});
@@ -56,8 +57,8 @@ public class DataBase implements DataAccess {
 	
 	@Autowired
 	private DataBase(CombinedData combined, UserService users) {
-		this.users = users;
 		this.combined = combined;
+		executingUser = () -> users.getExecutingUser();
 		
 		initDirectLists(new Class<?>[] {
 			User.class,
@@ -152,7 +153,7 @@ public class DataBase implements DataAccess {
 			final Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
 		}
-		callbacks.onEvent(new DataChangeEvent(ADDED, users.getLoggedInUser(), data));
+		callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
 	}
 	
 	@Override
@@ -170,7 +171,7 @@ public class DataBase implements DataAccess {
 				taskLabels.add(new Label(task.getLabel()));
 			}
 		}
-		callbacks.onEvent(new DataChangeEvent(ADDED, users.getExecutingUser(), data));
+		callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
 	}
 
 	@Override
@@ -180,7 +181,7 @@ public class DataBase implements DataAccess {
 			throw new IllegalArgumentException("Element cannot be removed because it does not exists!");
 		}
 		collection.remove(data);
-		callbacks.onEvent(new DataChangeEvent(REMOVED, users.getExecutingUser(), data));
+		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), data));
 	}
 	
 	@Override
@@ -198,7 +199,7 @@ public class DataBase implements DataAccess {
 		for(final Class<?> clazz : clazzToData.keySet()) {
 			Collection<T> part = (Collection<T>) clazzToData.get(clazz);
 			directOnly(clazz).removeAll(part);
-			callbacks.onEvent(new DataChangeEvent(REMOVED, users.getExecutingUser(), part));
+			callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), part));
 		}
 	}
 	
@@ -206,7 +207,7 @@ public class DataBase implements DataAccess {
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		final Collection<T> removed = getList(clazz);
 		directOrCompound(clazz).clear();
-		callbacks.onEvent(new DataChangeEvent(REMOVED, users.getExecutingUser(), removed));
+		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
 	}
 	
 	@Override
@@ -217,7 +218,7 @@ public class DataBase implements DataAccess {
 		}
 		collection.remove(data);
 		collection.add(data);
-		callbacks.onEvent(new DataChangeEvent(EDITED, users.getExecutingUser(), data));
+		callbacks.onEvent(new DataChangeEvent(EDITED, executingUser.get(), data));
 	}
 
 	@Override

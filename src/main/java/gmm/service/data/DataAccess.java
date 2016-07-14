@@ -20,6 +20,10 @@ public interface DataAccess {
 	
 	@FunctionalInterface
 	public static interface DataChangeCallback {
+		/**
+		 * Called when a data change occurs.
+		 * @param event - Event object which holds information about the changes.
+		 */
 		public void onEvent(DataChangeEvent event);
 	}
 	

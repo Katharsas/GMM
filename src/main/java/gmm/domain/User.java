@@ -12,14 +12,60 @@ import gmm.web.forms.LoadForm;
 
 public class User extends NamedObject {
 	
-	//Constants
-	public final static User NULL = new User("EMPTY");
-	public final static User UNKNOWN = new User("UNKNOWN");
-	public final static User SYSTEM = new User("SYSTEM");
+	public static class UserNameOccupiedException extends IllegalArgumentException {
+		private static final long serialVersionUID = -8126984959992853457L;
+		private final String userName;
+		public UserNameOccupiedException(String userName, String message) {
+			super(message);
+			Objects.requireNonNull(userName);
+			this.userName = userName;
+		}
+		public String getUserName() {
+			return userName;
+		}
+	}
+	
+	public static class UserId implements Linkable {
+		private final String idLink;
+		private final String name;
+		public UserId(String idLink, String name) {
+			Objects.requireNonNull(idLink);
+			Objects.requireNonNull(name);
+			this.idLink = idLink;
+			this.name = name;
+		}
+		@Override
+		public String getIdLink() {
+			return idLink;
+		}
+		public String getName() {
+			return name;
+		}
+	}
+	
+	//Constants-------------------------------------------
+	private static class PredefinedUser extends User {
+		public PredefinedUser(String name) {super(name);}
+		@Override
+		protected void validateUserName(String name) {}
+	}
+	
+	/**Represents the absence of a user. */
+	public final static User NULL = new PredefinedUser("EMPTY");
+	/** Represents a normal user thats is simply unknown at the moment. */
+	public final static User UNKNOWN = new PredefinedUser("UNKNOWN");
+	/** Represents the system/application itself as user. */
+	public final static User SYSTEM = new PredefinedUser("SYSTEM");
 	
 	public final static String ROLE_ADMIN = "ROLE_ADMIN";
 	public final static String ROLE_USER = "ROLE_USER";
 	public final static String ROLE_GUEST = "ROLE_GUEST";
+	
+	{
+		if (SYSTEM != null) {
+			SYSTEM.setRole(ROLE_ADMIN);
+		}
+	}
 	
 	//Variables-------------------------------------------
 	//Domain - Set by constructor
@@ -68,6 +114,20 @@ public class User extends NamedObject {
 	
 	public String toStringDebug() {
 		return "[Name: " + getName() + " Id:" + getId() + "]";
+	}
+	
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		validateUserName(name);
+	}
+	
+	protected void validateUserName(String name) {
+		if(name.equalsIgnoreCase(NULL.getName())
+				|| name.equalsIgnoreCase(UNKNOWN.getName())
+				|| name.equalsIgnoreCase(SYSTEM.getName())) {
+			throw new UserNameOccupiedException(name, "User name '" + name + "' is not available!");
+		}
 	}
 	
 	//Setters, Getters---------------------------------------
@@ -125,5 +185,9 @@ public class User extends NamedObject {
 	
 	public List<Task> getPinnedTasks() {
 		return pinnedTasks;
+	}
+	
+	public UserId getUserId() {
+		return new UserId(getIdLink(), getName());
 	}
 }

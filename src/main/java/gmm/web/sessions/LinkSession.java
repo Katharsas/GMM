@@ -11,6 +11,7 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.collections.Set;
 import gmm.domain.UniqueObject;
+import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.web.sessions.tasklist.StaticTaskListState;
@@ -60,7 +61,7 @@ public class LinkSession extends StaticTaskListState {
 			}
 			else throw new IllegalArgumentException("Taskgroup not found or wrong link key!");
 		}
-		taskListEvents.add(new TaskListEvent.FilterAll(getIds(tasks)));
+		taskListEvents.add(new TaskListEvent.FilterAll(User.NULL, getIds(tasks)));
 	}
 	
 	public List<Task> getLinkedTasks() {

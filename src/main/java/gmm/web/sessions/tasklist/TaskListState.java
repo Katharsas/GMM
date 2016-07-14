@@ -5,12 +5,18 @@ import com.google.common.collect.Multimap;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.util.Util;
 
+/**
+ * Buffer for events that need to be synced with a client task list.
+ * 
+ * @author Jan Mothes
+ */
 public abstract class TaskListState implements DataChangeCallback {
 	
 	public TaskListState() {
@@ -27,26 +33,26 @@ public abstract class TaskListState implements DataChangeCallback {
 			if(event.isSingleItem) {
 				switch(event.type) {
 				case ADDED:
-					onAdd(event.getChangedSingle(target));
+					onAdd(event.source, event.getChangedSingle(target));
 					break;
 				case REMOVED:
-					onRemove(event.getChangedSingle(target));
+					onRemove(event.source, event.getChangedSingle(target));
 					break;
 				case EDITED:
-					onEdit(event.getChangedSingle(target));
+					onEdit(event.source, event.getChangedSingle(target));
 					break;
 				}
 			} else {
 				switch(event.type) {
 				case ADDED:
-					onAddAll(event.getChanged(target));
+					onAddAll(event.source, event.getChanged(target));
 					break;
 				case REMOVED:
-					onRemoveAll(event.getChanged(target));
+					onRemoveAll(event.source, event.getChanged(target));
 					break;
 				case EDITED:
 					for(Task task : event.getChanged(target)) {
-						onEdit(task);
+						onEdit(event.source, task);
 					}
 					break;
 				}
@@ -54,19 +60,19 @@ public abstract class TaskListState implements DataChangeCallback {
 		}
 	}
 	
-	public <T extends Task> void onAdd(T task) {
+	public <T extends Task> void onAdd(User source, T task) {
 		final boolean isVisible = isSingleVisible(task);
 		synchronized (this) {
 			removeAdd(task, isVisible);
 			if(isVisible) {
 				sortVisible();
 				final int index = getVisible().indexOf(task);
-				taskListEvents.add(new TaskListEvent.CreateSingle(task.getIdLink(), index));
+				taskListEvents.add(new TaskListEvent.CreateSingle(source, task.getIdLink(), index));
 			}
 		}
 	}
 	
-	public <T extends Task> void onAddAll(Collection<T> tasks) {
+	public <T extends Task> void onAddAll(User source, Collection<T> tasks) {
 		final Multimap<Class<? extends T>, T> typeToTask =
 				LinkedList.getMultiMap(tasks.getGenericType());
 		for(final T task : tasks) {
@@ -84,31 +90,31 @@ public abstract class TaskListState implements DataChangeCallback {
 				sortVisible();
 				final List<String> visibleIdsOrdered = getIds(getVisible());
 				final List<String>  addedIds = getIds(filteredAdded);
-				taskListEvents.add(new TaskListEvent.CreateAll(visibleIdsOrdered, addedIds));
+				taskListEvents.add(new TaskListEvent.CreateAll(source, visibleIdsOrdered, addedIds));
 			}
 		}
 	}
 	
-	public synchronized <T extends Task> void onRemove(T task) {
+	public synchronized <T extends Task> void onRemove(User source, T task) {
 		getVisible().remove(task);
-		taskListEvents.add(new TaskListEvent.RemoveSingle(task.getIdLink()));
+		taskListEvents.add(new TaskListEvent.RemoveSingle(source, task.getIdLink()));
 	}
 	
-	public synchronized <T extends Task> void onRemoveAll(Collection<T> tasks) {
+	public synchronized <T extends Task> void onRemoveAll(User source, Collection<T> tasks) {
 		getVisible().removeAll(tasks);
-		taskListEvents.add(new TaskListEvent.RemoveAll(getIds(tasks)));
+		taskListEvents.add(new TaskListEvent.RemoveAll(source, getIds(tasks)));
 	}
 	
-	public <T extends Task> void onEdit(T task) {
+	public <T extends Task> void onEdit(User source, T task) {
 		final boolean isVisible = isSingleVisible(task);
 		synchronized (this) {
 			removeAdd(task, isVisible);
 			if(isVisible) {
 				sortVisible();
 				final int index = getVisible().indexOf(task);
-				taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink(), index));
+				taskListEvents.add(new TaskListEvent.EditSingle(source, task.getIdLink(), index));
 			} else {
-				taskListEvents.add(new TaskListEvent.EditSingle(task.getIdLink()));
+				taskListEvents.add(new TaskListEvent.EditSingle(source, task.getIdLink()));
 			}
 		}
 	}

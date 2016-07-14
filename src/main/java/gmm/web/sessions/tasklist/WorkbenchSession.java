@@ -19,7 +19,6 @@ import gmm.domain.task.TaskType;
 import gmm.service.TaskFilterService;
 import gmm.service.data.DataAccess;
 import gmm.service.sort.TaskSortService;
-import gmm.service.users.CurrentUser;
 import gmm.service.users.UserService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.LoadForm;
@@ -67,9 +66,6 @@ public class WorkbenchSession extends TaskListState {
 	//current task load settings
 	private LoadForm load;
 	
-	@Autowired
-	private CurrentUser current;
-	
 	
 	@Autowired
 	public WorkbenchSession(DataAccess data, UserService users,
@@ -95,10 +91,11 @@ public class WorkbenchSession extends TaskListState {
 		data.registerForUpdates(this);
 	}
 	
+	// TODO delete
 	@Override
-	public <T extends Task> void onAdd(T task) {
-		logger.debug("User proxy: " + current.get().getName());
-		super.onAdd(task);
+	public <T extends Task> void onAdd(User source, T task) {
+		logger.debug("User proxy: " + source.getName());
+		super.onAdd(source, task);
 	}
 	
 	@Override
@@ -185,7 +182,7 @@ public class WorkbenchSession extends TaskListState {
 			}
 		}
 		sortVisible();
-		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
+		taskListEvents.add(new TaskListEvent.FilterAll(user, getIds(visible)));
 	}
 	
 	private Collection<? extends Task> getTaskList (TaskType type) {
@@ -200,7 +197,7 @@ public class WorkbenchSession extends TaskListState {
 	 * Allow client to retrieve current TaskListState after reloading page.
 	 */
 	public synchronized void createInitEvent() {
-		taskListEvents.add(new TaskListEvent.CreateAll(getIds(visible), getIds(visible)));
+		taskListEvents.add(new TaskListEvent.FilterAll(User.NULL, getIds(visible)));
 	}
 	
 	/**
@@ -208,7 +205,7 @@ public class WorkbenchSession extends TaskListState {
 	 */
 	public synchronized void loadTasks(TaskType type) {
 		load(type, load.getLoadOperation());
-		taskListEvents.add(new TaskListEvent.FilterAll(getIds(visible)));
+		taskListEvents.add(new TaskListEvent.FilterAll(user, getIds(visible)));
 	}
 	
 	/**
@@ -243,7 +240,7 @@ public class WorkbenchSession extends TaskListState {
 	public synchronized void updateSort(SortForm sort) {
 		this.sort = sort;
 		sortVisible();
-		taskListEvents.add(new TaskListEvent.SortAll(getIds(visible)));
+		taskListEvents.add(new TaskListEvent.SortAll(user, getIds(visible)));
 	}
 	
 	/*--------------------------------------------------

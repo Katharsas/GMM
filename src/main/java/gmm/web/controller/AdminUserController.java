@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.Collection;
 import gmm.domain.User;
+import gmm.domain.User.UserNameOccupiedException;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.backup.BackupService;
@@ -44,21 +45,19 @@ public class AdminUserController {
 			@RequestParam(value="role", required=false) String role) {
 		
 		final User exists = User.getFromName(users.get(), name);
-		if(idLink.equals("new")) {
-			final User newUser = new User(name);
-			if (exists != null) {
-				throw new IllegalArgumentException(
-						"Can't add user. A user with this name already exists!");
-			}
-			data.add(newUser);
+		final String existsMessage = "Another user with name '" + name + "' already exists!";
+		boolean isNew = idLink.equals("new");
+		if (exists != null) {
+			String message = (isNew ? "Can't add user. " : "Can't change name. ") + existsMessage;
+			throw new UserNameOccupiedException(name, message);
 		}
-		else {
+		if(isNew) {
+			final User newUser = new User(name);
+			if(role != null) newUser.setRole(role);
+			data.add(newUser);
+		} else {
 			final User user = users.getByIdLink(idLink);
 			if(name != null) {
-				if (exists != null && user != exists) {
-					throw new IllegalArgumentException(
-							"Can't change name. Another user with this name already exists!");
-				}
 				user.setName(name);
 			}
 			if(role != null) user.setRole(role);

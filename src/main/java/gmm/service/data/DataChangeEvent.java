@@ -10,6 +10,9 @@ import gmm.domain.User;
 
 /**
  * Holds information about a data change on a uniform, same-type data-set.
+ * Also knows which user initiated the change. Non-user-changes are represented by
+ * either {@link User#NULL}, {@link User#SYSTEM} or {@link User#UNKNOWN}.
+ * 
  * @author Jan Mothes
  */
 public class DataChangeEvent {

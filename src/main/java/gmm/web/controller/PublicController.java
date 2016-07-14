@@ -68,7 +68,7 @@ public class PublicController {
 	}
 	
 	/**
-	 * Stores ids and waits for client ajax code to do more stuff.
+	 * Stores ids, returns page. Client ajax will then request tasks from {@link #renderTasks(List, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
 	@RequestMapping(value = "/link/{ids}/{key}", method = RequestMethod.GET)
 	public String showTasks(ModelMap model, 

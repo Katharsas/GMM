@@ -6,7 +6,7 @@ import java.util.Date;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
-public abstract class UniqueObject implements Linkable{
+public abstract class UniqueObject implements Linkable {
 	
 	//Variables-------------------------------------------------
 	private static long idCount = 0;
