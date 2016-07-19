@@ -5,6 +5,11 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
 
+/**
+ * DB interface, provides methods to change data, provides Observer pattern to notify on changes.
+ * 
+ * @author Jan Mothes
+ */
 @Service
 public interface DataAccess {
 
@@ -18,6 +23,10 @@ public interface DataAccess {
 	@Deprecated public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	
+	
+	/**
+	 * Observer/Callback interface.
+	 */
 	@FunctionalInterface
 	public static interface DataChangeCallback {
 		/**
@@ -28,12 +37,11 @@ public interface DataAccess {
 	}
 	
 	/**
-	 * Register to get method calls on task data changes.
-	 * Unregistering is unnecessary. All implementations of DataAccess must
-	 * use weak references to reference the callback objects.
-	 * 
-	 * Important: DOES NOT HOLD A (STRONG) REFERENCE TO onUpdate object.
-	 * => Caller must hold reference until it can be destroyed.
+	 * Register to get method calls on task data changes. Unregistering is unnecessary. All
+	 * implementations of this interface must use weak references to reference the callbacks.<br>
+	 * <br>
+	 * Important: DOES NOT HOLD A (STRONG) REFERENCE to onUpdate object.<br>
+	 * => Caller must ensure there is a reference so that the object does not get GCed.
 	 */
 	public void registerForUpdates(DataChangeCallback onUpdate);
 }

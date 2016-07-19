@@ -42,9 +42,9 @@ public class DataBase implements DataAccess {
 	final private Supplier<User> executingUser;
 	final private CombinedData combined;
 	
-	final private Set<Class<?>> listTypes = new HashSet<>(null, new Class<?>[]{});
-	final private CollectionTypeMap lists = new CollectionTypeMap();
-	final private CollectionTypeMap compounds = new CollectionTypeMap();
+	// ###################
+	// OBSERVER PATTERN
+	// ###################
 	
 	final private java.util.Set<DataChangeCallback> weakCallbacks =
 			Collections.newSetFromMap(new WeakHashMap<DataChangeCallback, Boolean>());
@@ -55,27 +55,50 @@ public class DataBase implements DataAccess {
 		}
 	};
 	
+	// ###################
+	// DATA
+	// ###################
+	
+	/** Contains all types (concrete & compound) which can be mapped to collections of data.
+	 */
+	final private Set<Class<?>> listTypes = new HashSet<>(null, new Class<?>[]{});
+	
+	/** Map concrete types to collections of objects of respective type.
+	 */
+	final private CollectionTypeMap lists = new CollectionTypeMap();
+	
+	/** Maps supertypes (=compounds) to collection views of objects of concrete types from {@link #lists}.
+	 */
+	final private CollectionTypeMap compounds = new CollectionTypeMap();
+	
+	// ###################
+	// INIT
+	// ###################
+	
 	@Autowired
 	private DataBase(CombinedData combined, UserService users) {
 		this.combined = combined;
 		executingUser = () -> users.getExecutingUser();
 		
-		initDirectLists(new Class<?>[] {
+		// Initialize lists for concrete types
+		initConcreteLists(new Class<?>[] {
 			User.class,
 			GeneralTask.class,
 			TextureTask.class,
 			ModelTask.class,
 			Label.class
 		});
+		// Initialize AssetTask compound view
 		initCompoundList(AssetTask.class, Util.createArray(new Class<?>[]
 				{ TextureTask.class, ModelTask.class }
 		));
+		// Initialize GeneralTask compound view
 		initCompoundList(Task.class, Util.createArray(new Class<?>[]
 				{ GeneralTask.class, AssetTask.class }
 		));
 	}
 	
-	public void initDirectLists(Class<?>[] types) {
+	private void initConcreteLists(Class<?>[] types) {
 		for (Class<?> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
@@ -84,7 +107,11 @@ public class DataBase implements DataAccess {
 		listTypes.addAll(Arrays.asList(types));
 	}
 	
-	public <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
+	/**
+	 * Initializes a live combined list view of the lists from given {@code includedTypes} and maps
+	 * them to given type in {@link DataBase#compounds}.
+	 */
+	private <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
 		Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
 		for (int i = 0; i < included.length; i++) {
 			Collection<T> list = lists.get(includedTypes[i]);
@@ -97,14 +124,20 @@ public class DataBase implements DataAccess {
 		listTypes.add(type);
 	}
 	
+	// ###################
+	// METHODS
+	// ###################
+	
 	/**
-	 * Returns a live collection view of elements of or extending the given type.
+	 * Get concrete or compound element collection.
 	 * 
-	 * @param clazz - Any list type or compound type. Compound collections do not support
-	 * 		add/remove operations and may have worse performance for other operations!
+	 * @param clazz - Any concrete type or compound type.
+	 * @return Live collection if concrete type was given, live collection view if compound was
+	 * 		given. Compound collections do not support add/remove operations and may have worse
+	 * 		performance for other operations!
 	 */
-	private <T> Collection<T> directOrCompound(Class<T> clazz) {
-		// direct list type
+	private <T> Collection<T> concreteOrCompound(Class<T> clazz) {
+		// concrete list type
 		Collection<T> result = lists.get(clazz);
 		if (result != null) {
 			return result;
@@ -121,12 +154,13 @@ public class DataBase implements DataAccess {
 	}
 	
 	/**
-	 * Returns a live collection view of elements of or extending the given type.
+	 * Get/modify concrete element collection.
 	 * 
-	 * @param clazz -Any list type, compound types not allowed! All returned collections support
-	 * 		add/remove operations.
+	 * @param clazz - Any concrete type, compound types not allowed! All returned collections
+	 * 		support add/remove operations.
+	 * @return Live collection.
 	 */
-	private <T> Collection<T> directOnly(Class<T> clazz) {
+	private <T> Collection<T> concreteOnly(Class<T> clazz) {
 		Collection<?> result = lists.get(clazz);
 		if (result != null) {
 			return Util.cast(result, clazz);
@@ -138,17 +172,17 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> Collection<T> getList(Class<T> clazz) {
-		return directOrCompound(clazz).copy();
+		return concreteOrCompound(clazz).copy();
 	}
 
 	@Override
 	public synchronized <T extends Linkable> void add(T data) {
-		final Collection<T> collection = directOnly(Util.classOf(data));
+		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if (collection.contains(data)) {
 			throw new IllegalArgumentException("Element cannot be added because it already exists!");
 		}
 		collection.add(data);
-		Collection<Label> taskLabels = directOnly(Label.class);
+		Collection<Label> taskLabels = concreteOnly(Label.class);
 		if(data instanceof Task) {
 			final Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
@@ -159,14 +193,14 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
 		// TODO split per type if data type is compound (see removeAll)
-		final Collection<T> collection = directOnly(data.getGenericType());
+		final Collection<T> collection = concreteOnly(data.getGenericType());
 		if(!Collections.disjoint(data, collection)) {
 			throw new IllegalArgumentException("Elements cannot be added because at least one of them already exists!");
 		}
 		collection.addAll(data);
 		if(Task.class.isAssignableFrom(data.getGenericType())) {
 			final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
-			Collection<Label> taskLabels = directOnly(Label.class);
+			Collection<Label> taskLabels = concreteOnly(Label.class);
 			for (final Task task : tasks) {
 				taskLabels.add(new Label(task.getLabel()));
 			}
@@ -176,7 +210,7 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> void remove(T data) {
-		final Collection<T> collection = directOnly(Util.classOf(data));
+		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
 			throw new IllegalArgumentException("Element cannot be removed because it does not exists!");
 		}
@@ -192,13 +226,13 @@ public class DataBase implements DataAccess {
 			clazzToData.put(Util.classOf(item), item);
 		}
 		for(final Class<?> clazz : clazzToData.keySet()) {
-			if(!directOnly(clazz).containsAll(clazzToData.get(clazz))) {
+			if(!concreteOnly(clazz).containsAll(clazzToData.get(clazz))) {
 				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exists!");
 			}
 		}
 		for(final Class<?> clazz : clazzToData.keySet()) {
 			Collection<T> part = (Collection<T>) clazzToData.get(clazz);
-			directOnly(clazz).removeAll(part);
+			concreteOnly(clazz).removeAll(part);
 			callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), part));
 		}
 	}
@@ -206,13 +240,13 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		final Collection<T> removed = getList(clazz);
-		directOrCompound(clazz).clear();
+		concreteOrCompound(clazz).clear();
 		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
 	}
 	
 	@Override
 	public <T extends Linkable> void edit(T data) {
-		final Collection<T> collection = directOnly(Util.classOf(data));
+		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
 			throw new IllegalArgumentException("Element cannot be edited because it does not exists!");
 		}
@@ -228,8 +262,8 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public boolean hasIds(long[] ids) {
-		return exists(directOrCompound(User.class), ids) == true ||
-				exists(directOrCompound(Task.class), ids) == true;
+		return exists(concreteOrCompound(User.class), ids) == true ||
+				exists(concreteOrCompound(Task.class), ids) == true;
 	}
 	
 	private boolean exists(Collection<? extends UniqueObject> c, long[] ids) {
