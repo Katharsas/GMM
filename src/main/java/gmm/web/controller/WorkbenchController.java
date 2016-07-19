@@ -195,7 +195,7 @@ public class WorkbenchController {
 	public List<TaskListEvent> taskListEvents() {
 		final List<TaskListEvent> events = workbench.retrieveEvents();
 		if (logger.isDebugEnabled()) {
-			logger.debug(user + " retrieved events: "
+			logger.debug(user.get() + " retrieved events: "
 					+ Arrays.toString(events.toArray()));
 		}
 		return events;

@@ -65,9 +65,9 @@ public class DataBase implements DataAccess {
 	
 	/** Map concrete types to collections of objects of respective type.
 	 */
-	final private CollectionTypeMap lists = new CollectionTypeMap();
+	final private CollectionTypeMap concretes = new CollectionTypeMap();
 	
-	/** Maps supertypes (=compounds) to collection views of objects of concrete types from {@link #lists}.
+	/** Maps supertypes (=compounds) to collection views of objects of concrete types from {@link #concretes}.
 	 */
 	final private CollectionTypeMap compounds = new CollectionTypeMap();
 	
@@ -102,7 +102,7 @@ public class DataBase implements DataAccess {
 		for (Class<?> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
-			lists.put(type, new ArrayList<>(type));
+			concretes.put(type, new ArrayList<>(type));
 		}
 		listTypes.addAll(Arrays.asList(types));
 	}
@@ -114,7 +114,7 @@ public class DataBase implements DataAccess {
 	private <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
 		Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
 		for (int i = 0; i < included.length; i++) {
-			Collection<T> list = lists.get(includedTypes[i]);
+			Collection<T> list = concretes.get(includedTypes[i]);
 			if (list == null) {
 				list = compounds.get(includedTypes[i]);
 			}
@@ -138,7 +138,7 @@ public class DataBase implements DataAccess {
 	 */
 	private <T> Collection<T> concreteOrCompound(Class<T> clazz) {
 		// concrete list type
-		Collection<T> result = lists.get(clazz);
+		Collection<T> result = concretes.get(clazz);
 		if (result != null) {
 			return result;
 		} else {
@@ -161,7 +161,7 @@ public class DataBase implements DataAccess {
 	 * @return Live collection.
 	 */
 	private <T> Collection<T> concreteOnly(Class<T> clazz) {
-		Collection<?> result = lists.get(clazz);
+		Collection<?> result = concretes.get(clazz);
 		if (result != null) {
 			return Util.cast(result, clazz);
 		} else {
@@ -177,6 +177,7 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> void add(T data) {
+		logger.debug("Adding element of type " + data.getClass().getSimpleName());
 		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if (collection.contains(data)) {
 			throw new IllegalArgumentException("Element cannot be added because it already exists!");
@@ -192,10 +193,11 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
+		logger.debug("Adding multiple elements of type " + data.getGenericType().getSimpleName());
 		// TODO split per type if data type is compound (see removeAll)
 		final Collection<T> collection = concreteOnly(data.getGenericType());
 		if(!Collections.disjoint(data, collection)) {
-			throw new IllegalArgumentException("Elements cannot be added because at least one of them already exists!");
+			throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
 		}
 		collection.addAll(data);
 		if(Task.class.isAssignableFrom(data.getGenericType())) {
@@ -210,9 +212,10 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public synchronized <T extends Linkable> void remove(T data) {
+		logger.debug("Removing element of type " + data.getClass().getSimpleName());
 		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
-			throw new IllegalArgumentException("Element cannot be removed because it does not exists!");
+			throw new IllegalArgumentException("Element cannot be removed because it does not exist!");
 		}
 		collection.remove(data);
 		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), data));
@@ -220,6 +223,7 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {	
+		logger.debug("Removing multiple elements of type " + data.getGenericType().getSimpleName());
 		// TODO split per type only if data type is compound
 		final Multimap<Class<?>, T> clazzToData = ArrayList.getMultiMap(data.getGenericType());
 		for(final T item : data) {
@@ -227,7 +231,7 @@ public class DataBase implements DataAccess {
 		}
 		for(final Class<?> clazz : clazzToData.keySet()) {
 			if(!concreteOnly(clazz).containsAll(clazzToData.get(clazz))) {
-				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exists!");
+				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
 			}
 		}
 		for(final Class<?> clazz : clazzToData.keySet()) {
@@ -239,6 +243,7 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
+		logger.debug("Removing all elements of type " + clazz.getSimpleName());
 		final Collection<T> removed = getList(clazz);
 		concreteOrCompound(clazz).clear();
 		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
@@ -246,9 +251,10 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public <T extends Linkable> void edit(T data) {
+		logger.debug("Replacing element of type " + data.getClass().getSimpleName());
 		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
-			throw new IllegalArgumentException("Element cannot be edited because it does not exists!");
+			throw new IllegalArgumentException("Element cannot be replaced because it does not exist!");
 		}
 		collection.remove(data);
 		collection.add(data);

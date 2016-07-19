@@ -91,12 +91,16 @@ public class WorkbenchSession extends TaskListState {
 		data.registerForUpdates(this);
 	}
 	
-	// TODO delete
 	@Override
-	public <T extends Task> void onAdd(User source, T task) {
-		logger.debug("User proxy: " + source.getName());
-		super.onAdd(source, task);
+	public String toString() {
+		return "[" + getClass().getSimpleName() + " of user '" + user + "']";
 	}
+	
+//	@Override
+//	public <T extends Task> void onAdd(User source, T task) {
+//		logger.debug("User proxy: " + source.getName());
+//		super.onAdd(source, task);
+//	}
 	
 	@Override
 	protected boolean isTaskTypeVisible(TaskType type) {

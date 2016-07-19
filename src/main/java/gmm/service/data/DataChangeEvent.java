@@ -7,6 +7,7 @@ import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.domain.User;
+import gmm.util.Util;
 
 /**
  * Holds information about a data change on a uniform, same-type data-set.
@@ -38,8 +39,8 @@ public class DataChangeEvent {
 		created = Instant.now();
 	}
 	
-	public DataChangeEvent(DataChangeType type, User source, Linkable changed) {
-		this(type, source, new ArrayList<Linkable>(Linkable.class, changed));
+	public <T extends Linkable> DataChangeEvent(DataChangeType type, User source, T changed) {
+		this(type, source, new ArrayList<>(Util.classOf(changed), changed));
 	}
 	
 	@SuppressWarnings("unchecked")

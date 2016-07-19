@@ -1,5 +1,8 @@
 package gmm.web.sessions.tasklist;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Multimap;
 
 import gmm.collections.Collection;
@@ -19,14 +22,17 @@ import gmm.util.Util;
  */
 public abstract class TaskListState implements DataChangeCallback {
 	
+	@SuppressWarnings("unused")
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	protected final List<TaskListEvent> taskListEvents;
+	
 	public TaskListState() {
 		taskListEvents = new LinkedList<>(TaskListEvent.class);
 	}
 	
-	protected final List<TaskListEvent> taskListEvents;
-	
 	@Override
-	public void onEvent(DataChangeEvent event) {
+	public void onEvent(DataChangeEvent event) {		
 		Class<?> clazz = event.changed.getGenericType();
 		if (Task.class.isAssignableFrom(clazz)) {
 			Class<Task> target = Task.class;
