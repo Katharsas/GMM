@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,7 +21,7 @@ import gmm.domain.task.Task;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.forms.CommentForm;
+import gmm.web.FtlTemplateService;
 import gmm.web.sessions.LinkSession;
 import gmm.web.sessions.tasklist.TaskListEvent;
 
@@ -30,11 +29,16 @@ import gmm.web.sessions.tasklist.TaskListEvent;
 @Controller
 public class PublicController {
 	
-	@Autowired private LinkSession session;
-	@Autowired private FtlRenderer ftlTaskRenderer;
+	private final LinkSession session;
+	private final FtlRenderer ftlRenderer;
 	
-	@ModelAttribute("comment")
-	public CommentForm getCommentForm() {return new CommentForm();}
+	@Autowired
+	public PublicController(LinkSession session, FtlRenderer ftlRenderer,
+			FtlTemplateService templates) {
+		
+		this.session = session;
+		this.ftlRenderer = ftlRenderer;
+	}
 	
 	/**
 	 * Serves task data to client ajax code.
@@ -48,14 +52,13 @@ public class PublicController {
 			HttpServletResponse response) {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
-		List<Task> tasks = new LinkedList<>(Task.class);
+		final List<Task> tasks = new LinkedList<>(Task.class);
 		for(Task task : session.getLinkedTasks()) {
 			boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
-		request.setAttribute("commentForm", getCommentForm());
-		ControllerArgs requestData = new ControllerArgs(model, request, response);
-		return ftlTaskRenderer.renderTasks(tasks, requestData);
+		final ControllerArgs requestData = new ControllerArgs(model, request, response);
+		return ftlRenderer.renderTasks(tasks, requestData);
 	}
 	
 	/**

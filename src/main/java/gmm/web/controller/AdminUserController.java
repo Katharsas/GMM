@@ -1,7 +1,5 @@
 package gmm.web.controller;
 
-import java.nio.file.Path;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,27 +10,31 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.User.UserNameOccupiedException;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
 import gmm.service.data.backup.BackupService;
-import gmm.service.data.xstream.XMLService;
 import gmm.service.users.UserService;
 
 @Controller
 @RequestMapping("admin")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
-
 public class AdminUserController {
 	
-	@Autowired private DataConfigService config;
-	@Autowired private DataAccess data;
-	@Autowired private XMLService xmlService;
-	@Autowired private UserService users;
-	@Autowired private PasswordEncoder encoder;
-	@Autowired private BackupService backups;
+	private final DataAccess data;
+	private final UserService users;
+	private final PasswordEncoder encoder;
+	private final BackupService backups;
+	
+	@Autowired
+	public AdminUserController(DataAccess data, UserService users, PasswordEncoder encoder,
+			BackupService backups) {
+		
+		this.data = data;
+		this.users = users;
+		this.encoder = encoder;
+		this.backups = backups;
+	}
 	
 	/**
 	 * Edit User
@@ -91,31 +93,13 @@ public class AdminUserController {
 	}
 	
 	/**
-	 * Save Users
+	 * Trigger User Backup
 	 * -----------------------------------------------------------------
 	 */
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
 	public @ResponseBody void saveUsers() {
 		
-		final Path path = config.USERS.resolve("users.xml");
 		backups.triggerUserBackup();
-		xmlService.serialize(users.get(), path);
-	}
-	
-	/**
-	 * Load Users
-	 * -----------------------------------------------------------------
-	 */
-	@RequestMapping(value = "/users/load", method = RequestMethod.POST)
-	public @ResponseBody void loadUsers() {	
-		
-		final Path path = config.USERS.resolve("users.xml");
-		final Collection<User> loadedUsers =  xmlService.deserializeAll(path, User.class);
-		for(final User user : loadedUsers) {
-			user.makeUnique();
-		}
-		data.removeAll(User.class);
-		data.addAll(loadedUsers);
 	}
 	
 	/**

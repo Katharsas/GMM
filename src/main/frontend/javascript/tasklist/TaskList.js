@@ -13,6 +13,7 @@ import { contextUrl, resortElementsById, runSerial } from "../shared/default";
  * @property {Callback} onChange - Executed whenever the taskList has changed. Can be null.
  * 		Count of current tasks will be passed as parameter.
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
+ * @property {UserId} currentUser - Current user or null if user is not logged in.
  * 
  * @param {TaskListSettings} settings - Settings needed to create this taskList.
  * @param {TaskCache} cache - Task data container.
@@ -32,9 +33,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		createBody : function($task) {
 			var idLink = $task.attr('id');
 			var $body = cache.getTaskBody(idLink);
-			settings.eventBinders.bindBody(idLink, $task, $body, function($task, idLink) {
-				markDeprecated($task, idLink, true);
-			});
+			settings.eventBinders.bindBody(idLink, $task, $body, updateTaskList);
 			return $body;
 		},
 		
@@ -91,18 +90,6 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		return promise.then(function() {
 			$task.remove();
 		});
-	};
-	
-	/**
-	 * Async.
-	 * @returns {Promise}
-	 */
-	var markDeprecated = function($task, idLink, instantly) {
-		if ($task === null) {
-			$task = findTask(idLink);
-		}
-		return removeTask($task, idLink, undefined, instantly)
-		.then(updateTaskList);
 	};
 	
 	/**
@@ -216,8 +203,9 @@ var TaskList = function(settings, cache, taskSwitcher) {
 				// remove task
 				var isExpanded = taskSwitcher.isTaskExpanded($task);
 				var promise = removeTask($task, id, isExpanded);
-				// if expanded, explain to user why task vanished
-				if (isExpanded) {
+				// if expanded and not revomed by himself,
+				// explain to user why task vanished
+				if (isExpanded && event.source.idLink !== settings.currentUser.idLink) {
 					var $confirm = Dialogs.alert(function() {
 						Dialogs.hideDialog($confirm);
 					}, "A task you had selected has been deleted or updated!");
@@ -227,16 +215,16 @@ var TaskList = function(settings, cache, taskSwitcher) {
 			return Promise.resolve();
 		},
 		
-		// TODO refactor everything ?
+		// TODO refactor EditSingle ?
 		EditSingle : function(event) {
 			var id = event.editedId;
 			var isVisible = event.isVisible;
 			var newPos = event.newPos;
 			var that = this;
-			return this.RemoveSingle({removedId: id})
+			return this.RemoveSingle({source: event.source, removedId: id})
 			.then(function() {
 				if (isVisible) {
-					that.CreateSingle({createdId: id, insertedAtPos: newPos});
+					that.CreateSingle({source: event.source, createdId: id, insertedAtPos: newPos});
 				}
 			});
 		}
@@ -254,13 +242,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		
 		size : function() {
 			return current.length;
-		},
-		
-		/**
-		 * Call this to remove a task from the list when the task or its data become outdated.
-		 * Also triggers tasklist update.
-		 */
-		markTaskDeprecated : markDeprecated
+		}
 		
 	};
 };

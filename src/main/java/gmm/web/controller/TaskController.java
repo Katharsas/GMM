@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +33,7 @@ import gmm.service.users.CurrentUser;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
-import gmm.web.TemplatingService;
+import gmm.web.FtlTemplateService;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
@@ -43,13 +42,14 @@ import gmm.web.sessions.tasklist.TaskListEvent;
 import gmm.web.sessions.tasklist.WorkbenchSession;
 
 /**
- * This controller is responsible for most task-CRUD operations requested by "tasks" page.
+ * Main task page controller.<br>
+ * This controller is responsible for most task-CRUD operations requested by "tasks" page:<br>
+ * Creating, editing or deleting tasks or task comments. State for these operations is managed by
+ * session object {@link #taskSession}.
  * 
- * The session state and flow is managed by the TaskSession object.
- * @see {@link gmm.web.sessions.tasklist.WorkbenchSession}
+ * @see {@link WorkbenchController}
  * 
  * @author Jan Mothes
- * 
  */
 @RequestMapping(value={"tasks"})
 @PreAuthorize("hasRole('ROLE_USER')")
@@ -64,39 +64,27 @@ public class TaskController {
 	private final PinnedSession pinned;
 	private final DataAccess data;
 	private final FtlRenderer ftlRenderer;
-	private final TemplatingService templates;
-	
+	private final FtlTemplateService ftlTemplates;
 	private final CurrentUser user;
 	
 	@Autowired
 	public TaskController(TaskSession taskSession, WorkbenchSession workbench, PinnedSession pinned,
-			DataAccess data, FtlRenderer ftlRenderer, CurrentUser user, TemplatingService templates) {
+			DataAccess data, FtlRenderer ftlRenderer, CurrentUser user, FtlTemplateService templates) {
 		this.taskSession = taskSession;
 		this.workbench = workbench;
 		this.pinned = pinned;
 		this.data = data;
 		this.ftlRenderer = ftlRenderer;
-		this.templates = templates;
-		
+		this.ftlTemplates = templates;
 		this.user = user;
-		init();
-	}
-	
-	private void init() {
+		
+		// taskForm template dependencies
+		templates.registerVariable("users", ()->data.getList(User.class));
+		templates.registerVariable("taskLabels", ()->data.getList(Label.class));
+		templates.registerVariable("taskForm", taskSession::getTaskForm);
 		templates.registerForm("taskForm", taskSession::getTaskForm);
-		templates.registerForm("commentForm", CommentForm::new);
-		// TODO convert to ftl and move to WorkbenchController
-		// -> removes all dependencies to WorkbenchSession
-		templates.registerForm("workbench-sortForm", workbench::getSortForm);
-		templates.registerForm("workbench-loadForm", ()->user.get().getLoadForm());
 		
-		templates.registerFtl("all_taskForm", new String[]{"taskForm"});
-		
-	}
-	
-	@ModelAttribute
-	public void populateModel(Model model) {
-		templates.populateModelWithForms(model);
+		templates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
 	}
 	
 	/**
@@ -130,7 +118,7 @@ public class TaskController {
 		if(comment.getAuthor().getId() == user.get().getId()) {
 			comment.setText(edited);
 		}
-		//TODO: Tasks imumtable
+		//TODO: Tasks immutable
 		data.edit(task);
 	}
 	
@@ -188,6 +176,7 @@ public class TaskController {
 	@ResponseBody
 	public List<MessageResponse> createTask(
 			@ModelAttribute("taskForm") TaskForm form) {
+		
 		return taskSession.firstTaskCheck(form);
 	}
 	
@@ -226,10 +215,7 @@ public class TaskController {
 			HttpServletResponse response) {
 		
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
-		model.addAttribute("users", data.getList(User.class));
-	    model.addAttribute("taskLabels", data.getList(Label.class));
-		templates.insert("all_taskForm", requestData);
-		final String taskFormHtml = (String) model.get("all_taskForm");
+		final String taskFormHtml = ftlTemplates.insertFtl("all_taskForm", requestData);
 		return new TaskFormResult(taskFormHtml, taskSession.getEditedIdLink());
 	}
 	
@@ -248,9 +234,13 @@ public class TaskController {
 	 * CLeansup leftover state from previous page and returns new tasks.jsp page.
 	 */
 	@RequestMapping(method = GET)
-	public String send() {
+	public String send(ModelMap model) {
 		taskSession.cleanUp();
 		workbench.createInitEvent();
+		
+		// TODO remove when converted to ftl to remove dependency on Workbench
+		model.addAttribute("workbench-sortForm", workbench.getSortForm());
+		model.addAttribute("workbench-loadForm", user.get().getLoadForm());
 	    return "tasks";
 	}
 	
@@ -295,7 +285,7 @@ public class TaskController {
 	@ResponseBody
 	public void pin(
 			@RequestParam("idLink") String idLink) {
-		Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
+		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
 		pinned.pin(task);
 	}
 	
@@ -303,7 +293,7 @@ public class TaskController {
 	@ResponseBody
 	public void unpin(
 			@RequestParam("idLink") String idLink) {
-		Task task = UniqueObject.getFromIdLink(pinned.getTasks(), idLink);
+		final Task task = UniqueObject.getFromIdLink(pinned.getTasks(), idLink);
 		pinned.unpin(task);
 	}
 }

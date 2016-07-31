@@ -16,10 +16,10 @@
     	<div class="admin-groupDesc"><fmt:message key="admin.customization"/></div>
         <div class="admin-group">
 			<div class="admin-inner customizationDescription left"><fmt:message key="admin.htmlCode"/></div>
-			<c:if test="${combinedData.isCustomAdminBannerActive()}">
+			<c:if test="${isCustomAdminBannerActive}">
 				<div  class="button pageButton right"><a href="admin/deactivateBanner"><fmt:message key="admin.deactivate"/><span></span></a></div>
 			</c:if>
-			<c:if test="${!combinedData.isCustomAdminBannerActive()}">
+			<c:if test="${!isCustomAdminBannerActive}">
 				<div  class="button pageButton right"><a href="admin/activateBanner"><fmt:message key="admin.activate"/><span></span></a></div>
 			</c:if>
         	<div class="clear"></div>
@@ -108,7 +108,6 @@
 			</div>
 			<div class="admin-users-new button pageButton left"><fmt:message key="admin.database.newuser"/></div>
 			<div class="admin-users-save button pageButton right"><fmt:message key="admin.database.saveuser"/></div>
-			<div class="admin-users-load button pageButton right"><fmt:message key="admin.database.loaduser"/></div>
 		</div>
 			
 	</jsp:body>

@@ -64,7 +64,7 @@ export default function(onedit) {
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
 		 */
-		bindBody : function(id, $task, $body, markDeprecated) {
+		bindBody : function(id, $task, $body, updateTaskList) {
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK
@@ -82,7 +82,7 @@ export default function(onedit) {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 					.then(function() {
 						Dialogs.hideDialog($confirm);
-						markDeprecated($task, id);
+						updateTaskList();
 					});
 				}, "Are you sure you want to delete this task?");
 			});
@@ -90,14 +90,14 @@ export default function(onedit) {
 			$operations.find(".task-operations-pin").click(function() {
 				Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
 				.then(function() {
-					markDeprecated($task, id);
+					updateTaskList();
 				});
 			});
 			// unpin task
 			$operations.find(".task-operations-unpin").click(function() {
 				Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
 				.then(function() {
-					markDeprecated($task, id);
+					updateTaskList();
 				});
 			});
 			
@@ -120,7 +120,7 @@ export default function(onedit) {
 						Ajax.post(url, {"editedComment" : textarea}) 
 							.then(function() {
 								Dialogs.hideDialog($confirm);
-								markDeprecated($task, id);
+								updateTaskList();
 							});
 					}, "Change your comment below:", undefined, comment, 700);
 			});
@@ -134,7 +134,7 @@ export default function(onedit) {
 				var url = contextUrl + "/tasks/submitComment/" + id;
 				Ajax.post(url, {}, $form)
 					.then(function() {
-						markDeprecated($task, id);
+						updateTaskList();
 					});
 			});
 			

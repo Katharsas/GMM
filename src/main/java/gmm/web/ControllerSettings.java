@@ -16,15 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import gmm.service.data.CombinedData;
 import gmm.service.data.DataAccess;
-import gmm.service.users.UserService;
+import gmm.service.users.CurrentUser;
 import gmm.web.binding.PathEditor;
 
 @ControllerAdvice
@@ -37,17 +37,35 @@ public class ControllerSettings {
 	
 //	@Autowired private MailSender mailSender;
 	
-	@Autowired private DataAccess data;
-	@Autowired private UserService users;
+	private final DataAccess data;
+	private final CurrentUser user;
 	
-	@ModelAttribute
-	public CombinedData getCombinedData() {
-		return data.getCombinedData();
+	@Autowired
+	public ControllerSettings(DataAccess data, CurrentUser user) {
+		this.data = data;
+		this.user = user;
+	}
+	
+	@ModelAttribute("customAdminBanner")
+	public String getCustomAdminBanner() {
+		return data.getCombinedData().getCustomAdminBanner();
+	}
+	@ModelAttribute("isCustomAdminBannerActive")
+	public boolean getIsCustomAdminBannerActive() {
+		return data.getCombinedData().isCustomAdminBannerActive();
+	}
+	@ModelAttribute("newLine")
+	public String getNewLine() {
+		return "\n";
 	}
 	
 	@ModelAttribute
-	public String getNewLine() {
-		return "\n";
+	public void populateModel(Model model) {
+		boolean isUserLoggedIn = user.isLoggedIn();
+		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
+		if (isUserLoggedIn) {
+			model.addAttribute("principal", user.get());
+		}
 	}
 	
 	@InitBinder
@@ -86,11 +104,11 @@ public class ControllerSettings {
 		if(jsonHasPriority(request.getHeader("accept"))) {
 			logger.info("Returning exception to client as json object");
 			headers.setContentType(MediaType.APPLICATION_JSON);
-			answer = errorJson(ex, users.isUserLoggedIn());
+			answer = errorJson(ex, user.isLoggedIn());
 		} else {
 			logger.info("Returning exception to client as html page");
 			headers.setContentType(MediaType.TEXT_HTML);
-			answer = errorHtml(ex, users.isUserLoggedIn());
+			answer = errorHtml(ex, user.isLoggedIn());
 		}
 		final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 		return new ResponseEntity<>(answer, headers, status);
@@ -154,7 +172,7 @@ public class ControllerSettings {
 		if (mime.length <= 1) {
 			return 1.0;
 		} else {
-			String quality = mime[1].split("=")[1];
+			final String quality = mime[1].split("=")[1];
 			return Double.parseDouble(quality);
 		}
 	}

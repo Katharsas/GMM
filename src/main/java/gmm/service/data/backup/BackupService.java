@@ -25,7 +25,7 @@ import gmm.service.data.CombinedData;
 import gmm.service.data.DataConfigService;
 
 /**
- * Saves names are contructed like:
+ * Saves names are constructed like:
  * backup_&lt;type&gt;_dd-mmm-yyyy_at_hh-mm.xml
  * 
  * e.g:

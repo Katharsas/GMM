@@ -24,7 +24,7 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.users.CurrentUser;
 import gmm.web.ControllerArgs;
-import gmm.web.TemplatingService;
+import gmm.web.FtlTemplateService;
 import gmm.web.forms.FilterForm;
 import gmm.web.forms.LoadForm;
 import gmm.web.forms.SearchForm;
@@ -42,7 +42,7 @@ public class WorkbenchController {
 	private final WorkbenchSession workbench;
 	private final DataAccess data;
 	private final ManualBackupService manualBackups;
-	private final TemplatingService templates;
+	private final FtlTemplateService templates;
 	
 	private final CurrentUser user;
 	
@@ -56,7 +56,7 @@ public class WorkbenchController {
 	
 	@Autowired
 	public WorkbenchController(WorkbenchSession workbench, DataAccess data,
-			ManualBackupService manualBackups, CurrentUser user, TemplatingService templates) {
+			ManualBackupService manualBackups, CurrentUser user, FtlTemplateService templates) {
 		
 		this.workbench = workbench;
 		this.data = data;
@@ -68,8 +68,8 @@ public class WorkbenchController {
 		templates.registerForm(filterFormName, workbench::getFilterForm);
 		templates.registerForm(searchFormName, workbench::getSearchForm);
 		
-		templates.registerFtl(filterFormTemplate, new String[]{filterFormName});
-		templates.registerFtl(searchFormTemplate, new String[]{searchFormName});
+		templates.registerFtl(filterFormTemplate, filterFormName);
+		templates.registerFtl(searchFormTemplate, searchFormName);
 	}
 	
 	/**
@@ -143,7 +143,7 @@ public class WorkbenchController {
 		final Map<String, String> answer = new HashMap<>();
 		answer.put("isInDefaultState", "" + workbench.getFilterForm().isInDefaultState());
 		if (reset || args.getRequestMethod().equals(GET)) {
-			answer.put("html", templates.insert(filterFormTemplate, args));
+			answer.put("html", templates.insertFtl(filterFormTemplate, args));
 		}
 		return answer;
 	}
@@ -168,7 +168,7 @@ public class WorkbenchController {
 		final Map<String, String> answer = new HashMap<>();
 		answer.put("isInDefaultState", "" + workbench.getSearchForm().isInDefaultState());
 		if (reset || args.getRequestMethod().equals(GET)) {
-			answer.put("html", templates.insert(searchFormTemplate, args));
+			answer.put("html", templates.insertFtl(searchFormTemplate, args));
 		}
 		return answer;
 	}

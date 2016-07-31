@@ -52,7 +52,12 @@ var allFuncs = {
 		}
 };
 
-allVars.adminBanner = global.allVars.adminBanner;
+allVars.adminBanner = global.templateVars.adminBanner;
+allVars.isUserLoggedIn = global.templateVars.isUserLoggedIn;
+allVars.currentUser = !allVars.isUserLoggedIn ? null : {
+	idLink : global.templateVars.userIdLink,
+	name : global.templateVars.userName
+};
 global.allVars = allVars;//TODO: remove it unused from html
 
 var contextUrl = global.contextUrl;//TODO: remove if unused in HTML

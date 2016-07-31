@@ -57,7 +57,7 @@ public class TaskSession {
 			currentlyEdited.getIdLink();
 	}
 	
-	// Call to prepare creation of a new wask from empty taskForm
+	// Call to prepare creation of a new task from empty taskForm
 	public void setupTaskFormNewTask() {
 		currentlyEdited = null;
 		currentTaskForm = new TaskForm();

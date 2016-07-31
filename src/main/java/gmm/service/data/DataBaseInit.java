@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
+import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.ajax.AutoResponseBundleHandler;
@@ -101,6 +102,9 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent>{
 			final Path latestBackup = backups.getLatestUserBackup();
 			if (latestBackup != null) {
 				final Collection<User> users = xmlService.deserializeAll(latestBackup, User.class);
+				for (User user : users) {
+					UniqueObject.updateCounter(user);
+				}
 				this.users.addAll(users);
 				logger.info("Autoloaded latest user backup file.");
 			} else {

@@ -7,16 +7,41 @@ import org.springframework.stereotype.Component;
 
 import gmm.domain.User;
 
+
+
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class CurrentUser {
 
-	private final User loggedInUser;
+	private boolean isUserLoggedIn = false;
+	private User loggedInUser;
+	
+	private final UserService users;
+	
 	@Autowired
 	public CurrentUser(UserService users) {
-		this.loggedInUser = users.getLoggedInUser();
+		this.users = users;
+		update();
 	}
+	
+	private void update() {
+		boolean before = isUserLoggedIn;
+		isUserLoggedIn = users.isUserLoggedIn();
+		if (isUserLoggedIn != before) {
+			loggedInUser = isUserLoggedIn ? users.getLoggedInUser() : null;
+		}
+	}
+	
 	public User get() {
-		return loggedInUser;
+		if (isUserLoggedIn) {
+			return loggedInUser;
+		} else {
+			throw new IllegalStateException("User is not logged in!");
+		}
+	}
+	
+	public boolean isLoggedIn() {
+		update();
+		return isUserLoggedIn;
 	}
 }

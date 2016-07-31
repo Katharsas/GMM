@@ -9,7 +9,7 @@ import gmm.domain.User;
 import gmm.domain.User.UserId;
 
 /**
- * Edit is implemented as "RemoveSingle" followed by "AddSingle".
+ * @author Jan Mothes
  */
 public abstract class TaskListEvent {
 	

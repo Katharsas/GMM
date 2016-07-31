@@ -2,6 +2,7 @@ package gmm.web.controller;
 
 import java.nio.file.Path;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,7 +35,7 @@ import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.ControllerArgs;
 import gmm.web.FileTreeScript;
-import gmm.web.FtlRenderer;
+import gmm.web.FtlTemplateService;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.AdminSession;
 
@@ -54,14 +55,28 @@ public class AdminController {
 	@Autowired private XMLService xmlService;
 	@Autowired private BackupService backups;
 	@Autowired private ManualBackupService manualBackups;
-	@Autowired private FtlRenderer ftlRenderer;
+	@Autowired private FtlTemplateService templates;
 	
-	@ModelAttribute("taskForm")
-	public TaskForm getTaskFacade() {
+	public AdminController() {
+	}
+	
+	@PostConstruct
+	private void init() {
+		// taskForm template dependencies
+		templates.registerVariable("users", ()->data.getList(User.class));
+		templates.registerVariable("taskLabels", ()->data.getList(Label.class));
+		templates.registerVariable("taskForm", this::createNewTaskForm);
+		templates.registerForm("taskForm", this::createNewTaskForm);
+		
+		templates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
+	}
+	
+	private TaskForm createNewTaskForm() {
 		final TaskForm defaultFacade = new TaskForm();
 		defaultFacade.setName("%filename%");
 		return defaultFacade;
 	}
+	
 	
 	/**
 	 * Default Handler <br>
@@ -74,16 +89,9 @@ public class AdminController {
 			HttpServletResponse response) {
 		
 		session.clearImportPaths();
-		model.addAttribute("users", data.getList(User.class));
-		model.addAttribute("taskLabels", data.getList(Label.class));
-		
-		model.addAttribute("taskForm", getTaskFacade());
 		
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
-		request.setAttribute("taskForm", getTaskFacade());
-		final String taskFormHtml = ftlRenderer.renderTemplate("all_taskForm", requestData);
-		model.addAttribute("all_taskForm", taskFormHtml);
-		
+		templates.insertFtl("all_taskForm", requestData);
 		return "admin";
 	}
 	
@@ -95,17 +103,20 @@ public class AdminController {
 	@RequestMapping(value = {"/changeBannerMessage"} , method = RequestMethod.POST)
 	public @ResponseBody void setBannerMessage(
 			@RequestParam("message") String message) {
+		System.out.println("new message: " + message);
 		data.getCombinedData().setCustomAdminBanner(message);
 	}
 	
 	@RequestMapping(value = {"/activateBanner"} , method = RequestMethod.GET)
 	public String activateBannerMessage() {
+		System.out.println("activated");
 		data.getCombinedData().setCustomAdminBannerActive(true);
 		return "redirect:/admin";
 	}
 	
 	@RequestMapping(value = {"/deactivateBanner"} , method = RequestMethod.GET)
 	public String deactivateBannerMessage() {
+		System.out.println("deactivated");
 		data.getCombinedData().setCustomAdminBannerActive(false);
 		return "redirect:/admin";
 	}

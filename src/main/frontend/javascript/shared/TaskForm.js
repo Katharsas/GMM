@@ -32,7 +32,9 @@ var TaskForm = (function() {
 				.then(function() {
 					var idBuffer = currentlyEditedId;
 					resetTaskForm();
-					onEdit(idBuffer);
+					if (onEdit !== null) {
+						onEdit(idBuffer);
+					}
 				});
 			} else {
 				// submit new task

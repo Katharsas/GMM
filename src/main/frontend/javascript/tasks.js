@@ -6,7 +6,7 @@ import TaskCache from "./tasklist/TaskCache";
 import TaskList from "./tasklist/TaskList";
 import TaskSwitcher from "./tasklist/TaskSwitcher";
 import TaskEventBindings from "./tasklist/TaskEventBindings";
-import { contextUrl, getURLParameter } from "./shared/default";
+import { contextUrl, getURLParameter, allVars } from "./shared/default";
 
 var tasksVars = {
 	"edit" : "",
@@ -46,12 +46,13 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 		eventBinders : taskBinders,
 		onChange : function(newSize) {
 			$count.text(newSize);
-		}
+		},
+		currentUser : allVars.currentUser
 	};
 	var taskList = TaskList(taskListSettings, taskCache, taskSwitcher);
 
 	taskForm.setOnEdit(function(id) {
-		taskList.markTaskDeprecated(null, id);
+		taskList.update();
 	});
 	taskForm.setOnCreate(taskList.update);
 	

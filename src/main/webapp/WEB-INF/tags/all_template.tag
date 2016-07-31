@@ -17,8 +17,15 @@
 		<!-- Javascript -->
 			<script type="text/javascript">
 				var contextUrl = '${contextUrl}';
-				var allVars = [];
-				allVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(combinedData.customAdminBanner))}';
+				var templateVars = [];
+				templateVars['adminBanner'] = '${fn:escapeXml(cfn:escapeJS(customAdminBanner))}';
+				<sec:authorize access="hasRole('ROLE_USER')">
+					templateVars['isUserLoggedIn'] = ${fn:escapeXml(cfn:escapeJS(isUserLoggedIn))};
+					<c:if test="${isUserLoggedIn}">
+						templateVars['userIdLink'] = '${fn:escapeXml(cfn:escapeJS(principal.getIdLink()))}';
+						templateVars['userName'] = '${fn:escapeXml(cfn:escapeJS(principal.getName()))}';
+					</c:if>
+				</sec:authorize>
 			</script>
 			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
@@ -96,7 +103,7 @@
 			Custom Admin Banner
 			###############################################################
 		-->
-		<c:if test="${combinedData.isCustomAdminBannerActive()}">
+		<c:if test="${isCustomAdminBannerActive}">
 			<div id="customAdminBanner" class="center">
 			</div>
 		</c:if>

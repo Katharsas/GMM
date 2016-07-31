@@ -19,7 +19,6 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
-import gmm.service.users.UserService;
 import gmm.web.forms.CommentForm;
 
 /**
@@ -30,13 +29,11 @@ import gmm.web.forms.CommentForm;
 @Service
 public class FtlRenderer {
 	
-	private final UserService users;
 	private final Configuration config;
 	
 	@Autowired
-	public FtlRenderer(FreeMarkerConfigurer ftlConfig, UserService users) throws IOException {
+	public FtlRenderer(FreeMarkerConfigurer ftlConfig) {
 		this.config = ftlConfig.getConfiguration();
-		this.users = users;
 	}
 	
 	public static class TaskRenderResult {
@@ -72,22 +69,12 @@ public class FtlRenderer {
 	
 	/**
 	 * Request must already include all needed forms.
-	 * Renders task to 2 html strings: taskheader and taskbody
-	 * @return WrapperObject for task html
-	 */
-	public TaskRenderResult renderTask(Task task, ControllerArgs requestData) {
-		
-		populateModel(requestData);
-		return renderSingleTask(task, requestData.model);
-	}
-	
-	/**
-	 * Request must already include all needed forms.
 	 * Renders tasks to a list with task html for JSON auto-convertion.
 	 * @see {@link #renderTask(Task, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
 	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ControllerArgs requestData) {
 		
+		requestData.request.setAttribute("commentForm", new CommentForm());
 		populateModel(requestData);
 		final List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
 		
@@ -113,21 +100,13 @@ public class FtlRenderer {
 	}
 	
 	private void populateModel(ControllerArgs requestData) {
-		// model
 		final ModelMap model = requestData.model;
-		final boolean isUserLoggedIn = users.isUserLoggedIn();
-		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
-	    if (isUserLoggedIn) {
-	    	model.addAttribute("principal", users.getLoggedInUser());
-	    }
 	    final RequestContext context = new RequestContext(
 				requestData.request,
 				requestData.response,
 				Spring.getServletContext(), null);
 		model.put("request", requestData.request);
 		model.put("springMacroRequestContext", context);
-		// forms that tasks bind to
-		requestData.request.setAttribute("commentForm", new CommentForm());
 	}
 	
 	/**

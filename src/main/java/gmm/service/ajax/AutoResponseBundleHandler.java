@@ -17,8 +17,9 @@ import gmm.service.ajax.operations.ConflictChecker;
 public class AutoResponseBundleHandler<T> {
 
 	/**
-	 * Creates a BundledMessageResponses instance with the given operations, starts loading all elements
-	 * and automatically answers to all responses. This only works as long as the rsponse is not a conflict.
+	 * Creates a BundledMessageResponses instance with the given operations, starts loading all
+	 * elements and automatically answers to all responses. This only works as long as the response
+	 * is not a conflict.
 	 * 
 	 * @param elements - see {@link BundledMessageResponses}
 	 * @param ops - see {@link BundledMessageResponses}
