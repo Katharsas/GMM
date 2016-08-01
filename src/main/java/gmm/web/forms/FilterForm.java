@@ -5,7 +5,7 @@ import gmm.domain.task.TaskPriority;
 import gmm.domain.task.TaskStatus;
 
 
-public class FilterForm {
+public class FilterForm implements Form {
 	private boolean createdByMe;
 	private boolean assignedToMe;
 	private boolean all;

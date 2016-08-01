@@ -2,7 +2,7 @@ package gmm.web.forms;
 
 import gmm.service.sort.TaskSortAttribute;
 
-public class SortForm {
+public class SortForm implements Form {
 	private TaskSortAttribute sortByPrimary;
 	private TaskSortAttribute sortBySecondary;
 	private boolean sortDownPrimary;

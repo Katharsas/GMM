@@ -9,7 +9,7 @@ import gmm.domain.task.TaskType;
  * 
  * @author Jan Mothes
  */
-public class LoadForm {
+public class LoadForm implements Form {
 	
 	private LoadOperation loadOperation;
 	

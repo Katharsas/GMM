@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
+import gmm.web.forms.Form;
+
 @Service
 @Scope("prototype")
 public class TemplatingService {
@@ -24,7 +26,7 @@ public class TemplatingService {
 	 * Forms that are used by EITHER jsp OR ftl must be in here.
 	 * Any form-receiving method needs this to get a form instance for filling request data in.
 	 */
-	private final HashMap<String, Supplier<?>> modelSuppliers = new HashMap<>();
+	private final HashMap<String, Supplier<Form>> modelSuppliers = new HashMap<>();
 	
 	/**
 	 * Includes all ftl templates and the form bindings they need to access.
@@ -33,7 +35,7 @@ public class TemplatingService {
 	private final HashMap<String, String[]> ftlTemplates = new HashMap<>();
 	
 	
-	public void registerForm(String name, Supplier<?> formCreator) {
+	public void registerForm(String name, Supplier<Form> formCreator) {
 		modelSuppliers.put(name, formCreator);
 	}
 	
@@ -42,7 +44,7 @@ public class TemplatingService {
 	}
 	
 	public void populateModelWithForms(Model model) {
-		for(final Entry<String, Supplier<?>> entry : modelSuppliers.entrySet()) {
+		for(final Entry<String, Supplier<Form>> entry : modelSuppliers.entrySet()) {
 			model.addAttribute(entry.getKey(), entry.getValue().get());
 		}
 	}

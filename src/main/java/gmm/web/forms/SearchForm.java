@@ -1,6 +1,6 @@
 package gmm.web.forms;
 
-public class SearchForm {
+public class SearchForm implements Form {
 	private boolean isEasySearch;
 	private String easy;
 	private String name;

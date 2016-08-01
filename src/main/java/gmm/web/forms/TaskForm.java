@@ -6,7 +6,7 @@ import gmm.domain.task.TaskStatus;
 import gmm.domain.task.TaskType;
 
 
-public class TaskForm {
+public class TaskForm implements Form {
 	
 	private String name;
 	private String label;

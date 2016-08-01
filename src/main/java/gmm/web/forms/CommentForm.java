@@ -1,6 +1,6 @@
 package gmm.web.forms;
 
-public class CommentForm {
+public class CommentForm implements Form {
 	private String text;
 
 	//Setters, Getters-------------------------------------------
