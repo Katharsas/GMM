@@ -117,6 +117,10 @@ public class DataBase implements DataAccess {
 			Collection<T> list = concretes.get(includedTypes[i]);
 			if (list == null) {
 				list = compounds.get(includedTypes[i]);
+				if (list == null) {
+					throw new IllegalArgumentException("Cannot build compound list:"
+							+ " Included type '" + includedTypes[i] + "' unknown!");
+				}
 			}
 			included[i] = Util.cast(list, includedTypes[i]);
 		}
@@ -194,20 +198,22 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
 		logger.debug("Adding multiple elements of type " + data.getGenericType().getSimpleName());
-		// TODO split per type if data type is compound (see removeAll)
-		final Collection<T> collection = concreteOnly(data.getGenericType());
-		if(!Collections.disjoint(data, collection)) {
-			throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
-		}
-		collection.addAll(data);
-		if(Task.class.isAssignableFrom(data.getGenericType())) {
-			final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
-			Collection<Label> taskLabels = concreteOnly(Label.class);
-			for (final Task task : tasks) {
-				taskLabels.add(new Label(task.getLabel()));
+		if (data.size() >= 1) {
+			// TODO split per type if data type is compound (see removeAll)
+			final Collection<T> collection = concreteOnly(data.getGenericType());
+			if(!Collections.disjoint(data, collection)) {
+				throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
 			}
+			collection.addAll(data);
+			if(Task.class.isAssignableFrom(data.getGenericType())) {
+				final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
+				Collection<Label> taskLabels = concreteOnly(Label.class);
+				for (final Task task : tasks) {
+					taskLabels.add(new Label(task.getLabel()));
+				}
+			}
+			callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
 		}
-		callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
 	}
 
 	@Override
@@ -224,20 +230,23 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {	
 		logger.debug("Removing multiple elements of type " + data.getGenericType().getSimpleName());
-		// TODO split per type only if data type is compound
-		final Multimap<Class<?>, T> clazzToData = ArrayList.getMultiMap(data.getGenericType());
-		for(final T item : data) {
-			clazzToData.put(Util.classOf(item), item);
-		}
-		for(final Class<?> clazz : clazzToData.keySet()) {
-			if(!concreteOnly(clazz).containsAll(clazzToData.get(clazz))) {
-				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
+		if (data.size() >= 1) {
+			// TODO split per type only if data type is compound
+			final Multimap<Class<T>, T> clazzToData = ArrayList.getMultiMap(data.getGenericType());
+			for(final T item : data) {
+				clazzToData.put(Util.classOf(item), item);
 			}
-		}
-		for(final Class<?> clazz : clazzToData.keySet()) {
-			Collection<T> part = (Collection<T>) clazzToData.get(clazz);
-			concreteOnly(clazz).removeAll(part);
-			callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), part));
+			for(final Class<T> clazz : clazzToData.keySet()) {
+				if(!concreteOnly(clazz).containsAll(clazzToData.get(clazz))) {
+					throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
+				}
+			}
+			for(final Class<T> clazz : clazzToData.keySet()) {
+				java.util.Collection<T> part = clazzToData.get(clazz);
+				concreteOnly(clazz).removeAll(part);
+				ArrayList<T> wrapped = new ArrayList<>(clazz, part);
+				callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), wrapped));
+			}
 		}
 	}
 	
@@ -245,8 +254,13 @@ public class DataBase implements DataAccess {
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		logger.debug("Removing all elements of type " + clazz.getSimpleName());
 		final Collection<T> removed = getList(clazz);
-		concreteOrCompound(clazz).clear();
-		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
+		if (removed.size() >= 1) {
+			for (T t : removed) {
+				logger.debug(t.toString());
+			}
+			concreteOrCompound(clazz).clear();
+			callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
+		}
 	}
 	
 	@Override

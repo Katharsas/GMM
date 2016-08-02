@@ -60,7 +60,7 @@ allVars.currentUser = !allVars.isUserLoggedIn ? null : {
 };
 global.allVars = allVars;//TODO: remove it unused from html
 
-var contextUrl = global.contextUrl;//TODO: remove if unused in HTML
+var contextUrl = global.contextUrl;
 
 String.prototype.nl2br = function(is_xhtml) {   
     var breakTag = (is_xhtml || typeof is_xhtml === 'undefined') ? '<br />' : '<br>';    

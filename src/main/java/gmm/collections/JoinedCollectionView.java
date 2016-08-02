@@ -106,7 +106,12 @@ public class JoinedCollectionView<E> implements Collection<E> {
 		for (final Collection<? extends E> coll : items) {
 			length += coll.size();
 		}
-		return new Object[length];
+		Object[] array = new Object[length];
+		Iterator<E> it = iterator();
+		for(int i = 0; i < length; i++) {
+			array[i] = it.next();
+		}
+		return array;
 	}
 
 	@Override

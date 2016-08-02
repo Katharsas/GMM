@@ -69,11 +69,11 @@ var Database = function() {
 	$database.find("#database-deleteAll").click(function() {
 		var $confirm = Dialogs.confirm(function() {
 			Dialogs.hideDialog($confirm);
-			Dialogs.confirm(function() {
+			var $confirm2 = Dialogs.confirm(function() {
 				Ajax.post(contextUrl + "/admin/deleteTasks")
 					.then(function(){
 						refreshDatabaseFileTree();
-						Dialogs.hideDialog($confirm);
+						Dialogs.hideDialog($confirm2);
 					});
 			}, "Are you really really sure?");
 		},"Delete all tasks?");

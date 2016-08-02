@@ -2,7 +2,7 @@ import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
 import PreviewRenderer from "../shared/PreviewRenderer";
-import { contextUrl, allVars, htmlDecode } from "../shared/default";
+import { contextUrl, htmlDecode } from "../shared/default";
 
 /**
  * ------------- TaskEventBindings ---------------------------------------------
@@ -218,17 +218,20 @@ export default function(onedit) {
 					};
 				};
 				var $fileTreeAssets = $files.find(".task-files-assets-tree");
-				$fileTreeAssets.fileTree(fileTreeOptions(true),
-					function($file) {
-						selectFile($file, true);
-					}
-				);
 				var $fileTreeOther = $files.find(".task-files-other-tree");
-				$fileTreeOther.fileTree(fileTreeOptions(false),
-					function($file) {
-						selectFile($file, false);
-					}
-				);
+				var createFileTrees = function() {
+					$fileTreeAssets.fileTree(fileTreeOptions(true),
+						function($file) {
+							selectFile($file, true);
+						}
+					);
+					$fileTreeOther.fileTree(fileTreeOptions(false),
+						function($file) {
+							selectFile($file, false);
+						}
+					);
+				};
+				createFileTrees();
 				
 				var $fileOps = $files.find(".task-files-operations");
 				
@@ -236,12 +239,12 @@ export default function(onedit) {
 				var $inputFile = $fileOps.find(".task-files-uploadInput");
 				//upload when a file is chosen (on hidden input tag)
 				$inputFile.change(function() {
-					allVars.$overlay.show();
+					Dialogs.showOverlay();
 					var file = $inputFile[0].files[0];
 					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 						.then(function() {
-							//TODO refresh filetree
-							Dialogs.alert(function(){}, "TODO: Refresh filetree only");
+							Dialogs.hideOverlay();
+							createFileTrees();
 						});
 				});
 				//bind triggering of filechooser to button
@@ -268,8 +271,7 @@ export default function(onedit) {
 								{dir: dir, asset: selectedFileIsAsset.toString()})
 							.then(function() {
 								Dialogs.hideDialog($dialog);
-								//TODO refresh filetree
-								Dialogs.alert(function(){}, "TODO: Refresh filetree only");
+								createFileTrees();
 							});
 					}, "Delete " + filePath() + " ?");
 				});

@@ -167,6 +167,9 @@ var Dialogs = (function() {
 		showDialog: showDialog,
 		hideDialog: hideDialog,
 		
+		showOverlay: showOverlay,
+		hideOverlay: hideOverlay,
+		
 		/**
 		 * Show a confirmation dialog to the user.
 		 * @see showConfirmMessage
@@ -189,10 +192,13 @@ var Dialogs = (function() {
 		},
 		
 		showException: function(jqXHR) {
-			hideDialog();
+			var $oldDialogs = $(".dialog");
+			$oldDialogs.each(function() {
+				hideDialog($(this));
+			});
 			showOverlay();
 			
-			var exception = $.parseJSON(jqXHR.responseText);
+			var exception = jqXHR.responseJSON;
 			var $exceptionDialog = $("#exceptionDialog");
 			$exceptionDialog.find("#exceptionDialog-message").text(exception.message);
 			var $instructions = $exceptionDialog.find("#exceptionDialog-instructions");
