@@ -5,7 +5,7 @@
 	<groupId>de.gothic-reloaded-mod</groupId>
 	<artifactId>gmm</artifactId>
 	<packaging>war</packaging>
-	<version>0.4.4-SNAPSHOT</version>
+	<version>0.4.5-SNAPSHOT</version>
 	<name>Gothic Mod Manager</name>
 	<url>https://github.com/Katharsas/GMM</url>
 	
@@ -467,8 +467,7 @@
 <!-- 								WEB-INF/data/assets/new/**, -->
 <!-- 								WEB-INF/data/assets/original/excluded/**, -->
 								WEB-INF/data/assets/**,
-								WEB-INF/data/tasks/**,
-								WEB-INF/data/users/**,
+								WEB-INF/data/db/**,
 								WEB-INF/dataTesting/**,
 								WEB-INF/blender/**
 							</packagingExcludes>
@@ -485,6 +484,20 @@
 					<port>8080</port>
 					<encoding>UTF-8</encoding>
 				</configuration>
+				<executions>
+					<execution>
+						<id>tomcat-run</id>
+						<goals>
+							<goal>exec-war-only</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+								<path>/GMM</path>                              
+                                <attachartifactclassifier>exec-war</attachartifactclassifier>
+                                <attachartifactclassifiertype>jar</attachartifactclassifiertype>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
