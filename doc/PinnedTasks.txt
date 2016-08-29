@@ -1,0 +1,25 @@
+Pinned Tasks (& multiple tasklists per page)
+
+Un/pinning only changes state for the local user, not other users, similar to searching or filtering the workbench. Un/pinning does change the task's GUI for EVERY tasklist of the user though (because tasks show only the pin OR unpin button depending on if the task is pinned or not, in every tasklist), searching and filtering only change THEIR respective tasklist, not other tasklists. This makes pinned tasks hard to implement in that regard.
+
+Pinning or unpinning must do 2 things:
+1. Emitting a addSingle / removeSingle event for the local-user for the pinnedTasklist (= client side list of pinned tasks).
+	=> This will cause the pinnedTaskList to synchronize with the pinned tasks on the server.
+2. Emitting the information, that a certain task has been un/pinned, to every other tasklist of the user and the pinnedTaskList itself.
+	=> This will change the GUI of every occurence of the respective task to show/hide un/pin operations.
+	
+1. is done, how to do 2. ?
+Possibilities:
+A) Bake the GUI into the HTML template and emit a user-local edit event to update all the taskLists (of the local-user).
+	+ Decuppled from the user action of pinning / unpinning
+	- Requires a rerendering / refetching of the task into cache and page if visible
+		=> without server push: requires 2 requests per tasklist (updateList & renderTask): O(2n)
+		=> with server push: requires 1 serverpush (update) and 1 request (render) per tasklist: O(2n)
+	- Mixes pinning with task state by being baked into tasbody html
+	- emitting user-local edit events that will only reach every tasklist of a user is not implemented yet
+B) Call a js updater whenever the pinnedTaskList receives an add/remove event to find every expanded task and switch hiding parts of the GUI (pin / unpin operations). Whenever a task expands, it checks pinned task list to decide on operations appearance (similar to inniting filetrees).
+	+ Decuppled from the user action of pinning / unpinning
+	- Requires finding all instances of expanded bodies of a task: O(maxExpandedPerList * tasklistCount)
+	- Requires additional API in TaskList to change pinned-operations state on expanded tasks and new API to allow to check tasks on expand if they are pinned. And wiring of those APIs.
+	
+How to implements B: Similar to inniting filetrees for asset tasks, but must be reinnited on certain events.

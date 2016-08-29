@@ -1,0 +1,36 @@
+Task synchronization
+=======================================
+Goals:
+There should never be any invalid data shown to the user. Synchronization must be split in three seperate mechanisms to enable proper and clean seperation between task caches/data and task lists. Needed because multiple task lists per cache are possible.
+
+
+1. Task data synchronizing
+---------------------------------------
+DataChangeEvents signify changes to task data itself, more specifically: Creation, Deletion or Editing of tasks.
+This information should be used by the client to synchronize the cache to the new state. When edit happens, all task data must be reloaded from the server and the old replaced. Deletion must remove the data from cache, creation mustnt do anything because the cache is not required to hold all tasks. The cache should load tasks laziliy when requested by task list.
+
+Notes:
+- DataChangeEvents can hold sensitive information (user actions and user names) and should only be exposed to logged in users.
+- These events can be used to implement notifications very easily, if they are simply stored even when a user is offline.
+- Currently the task lists explicitly request the cache to load task data from the server. What really should happen is that a task list just requests task data and the cache itself loads the data from the server if it happens to not have the data cached already. The current implmementation is very fast for single task list setups but too specialized for the same reason. This would make it much easier und more bugfree for any component to interact with the task cache.
+In the future one could even think about not-lazy behaviour (the cache loads ALL data from the server at the beinning and always has the data, never needs to load more from the server. For that, the data volume must be evaluated, or maybe as option for user?)
+
+
+2. Task list synchronizing
+---------------------------------------
+TaskListEvents signify changes specific to a single task list (and only that task list).
+This information should be used to synchronize the tasklist to the new state. As such, taskListEvents only signify additions, removals or changes in position.
+Remove events that were caused by a task deletion will not actually do anything (because of 3. the task will already be removed, see below) but should still be emited and handled. There is no way to find out if a removal was caused by a deletion and therefore it must be handled (Shouldnt really be costly anyway).
+
+
+3. Task cache to task list synchronizing (inside client)
+---------------------------------------
+If the task data in the cache changes, the task lists must reflect those changes, if they are currently displaying those tasks whose data changed:
+
+- If a task inside the cache gets deleted:
+Remove task from any task list it is currently visible in. If the task is currently expanded show a message that it got deleted and therefore removed (only if not caused by this user).
+- If a task inside the cache gets edited:
+Replace all those tasks in all task lists (retain expanded/collapsed state). If a task is currently expanded show a message that it got edited and therefore re-expanded (may have interrupted a user interaction with that task, only if not caused by this user).
+
+Notes:
+- A client task list implementation should implement an interface which allows the removal or replacement of one or more tasks as needed for the mentioned behaviour. These implementation could then be registered at a central instance (likly the cache itself) which is aware of the cache changes.
