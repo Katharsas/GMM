@@ -63,6 +63,7 @@ export default function(onedit) {
 		/**
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
+		 * @param {callback} updateTaskList - Function which returns a promise to finish updating.
 		 */
 		bindBody : function(id, $task, $body, updateTaskList) {
 			
@@ -206,6 +207,9 @@ export default function(onedit) {
 			 * ASSET TASK - FILES
 			 * -------------------------------------------------------
 			 */
+			
+			// TODO file tree changes need to be events received by all task lists.
+			// (instead of just rebuilding the filetree for the current task)
 			
 			var $files = $body.find(".task-files");
 			if ($files.length > 0) {

@@ -14,8 +14,8 @@ var TaskForm = (function() {
 		
 		// null if there is no editing going on, idLink otherwise
 		var currentlyEditedId = null;
-		var onEdit = null;
-		var onCreate = null;
+		var onEdit = [];
+		var onCreate = [];
 		
 		var $form = $("#taskForm");
 		var $new = $("#newTaskButton");
@@ -30,10 +30,9 @@ var TaskForm = (function() {
 				// submit edit
 				Ajax.post(contextUrl + "/tasks/editTask/submit", null, $form)
 				.then(function() {
-					var idBuffer = currentlyEditedId;
 					resetTaskForm();
-					if (onEdit !== null) {
-						onEdit(idBuffer);
+					for (let callback of onEdit) {
+						callback();
 					}
 				});
 			} else {
@@ -42,7 +41,9 @@ var TaskForm = (function() {
 				var ajaxChannel = new ResponseBundleHandler(url, "assets", true);
 				ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
 					resetTaskForm();
-					onCreate();
+					for (let callback of onCreate) {
+						callback();
+					}
 				});
 			}
 			// TODO refresh added /edited task from server
@@ -122,21 +123,21 @@ var TaskForm = (function() {
 		/**
 		 * @callback onEditCallback - called with edited tasks id on edit submit
 		 */
-		function setOnEdit(onEditCallback) {
-			onEdit = onEditCallback;
+		function registerOnEdit(onEditCallback) {
+			onEdit.push(onEditCallback);
 		}
 		/**
 		 * @callback onCreateCallback - called on create task
 		 */
-		function setOnCreate(onCreateCallback) {
-			onCreate = onCreateCallback;
+		function registerOnCreate(onCreateCallback) {
+			onCreate.push(onCreateCallback);
 		}
 		
 		return {
 			prepareEdit : prepareEdit,
 			resetFormIfUnderEdit : resetIfEdited,
-			setOnEdit : setOnEdit,
-			setOnCreate : setOnCreate
+			registerOnEdit : registerOnEdit,
+			registerOnCreate : registerOnCreate
 		};
 	};
 	return function() {

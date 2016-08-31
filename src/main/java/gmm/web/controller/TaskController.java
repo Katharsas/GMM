@@ -29,6 +29,7 @@ import gmm.domain.task.Task;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
 import gmm.service.users.CurrentUser;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
@@ -245,12 +246,12 @@ public class TaskController {
 	}
 	
 	/**
-	 * Task Lists <br>
+	 * Task data <br>
 	 * -----------------------------------------------------------------
 	 */
 	
 	/**
-	 * Get task data for specified ids, must be visible in workbench or pinned currently.
+	 * Get task data for specified ids.
 	 */
 	@RequestMapping(value = "/renderTaskData", method = POST)
 	@ResponseBody
@@ -262,12 +263,21 @@ public class TaskController {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		final List<Task> tasks = new LinkedList<>(Task.class);
-		for(final Task task : workbench.getTasks()) {
+		for(final Task task : data.getList(Task.class)) {
 			final boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
 		return ftlRenderer.renderTasks(tasks,
 				new ControllerArgs(model, request, response));
+	}
+	
+	/**
+	 * Get data change events.
+	 */
+	@RequestMapping(value = "/taskDataEvents", method = GET)
+	@ResponseBody
+	public List<ClientDataChangeEvent> syncTaskData() {
+		return taskSession.retrieveTaskDataEvents();
 	}
 	
 	/**

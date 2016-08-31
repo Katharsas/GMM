@@ -110,7 +110,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	 * create preview of it. If not, set asset to null (existing previews will not be deleted).
 	 * 
 	 * @param task - The tasks whose asset data to update.
-	 * @param type - Define which of the task's asset to be updated.
+	 * @param eventType - Define which of the task's asset to be updated.
 	 * @return True, if a corresponding file could be found for this asset.
 	 */
 	private boolean setupAssetUpdatePreview(AssetTask<A> task, A asset) {

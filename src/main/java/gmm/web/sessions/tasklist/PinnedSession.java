@@ -25,14 +25,31 @@ import gmm.service.users.UserService;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class PinnedSession extends TaskListState {
 	
+	public static class CreateSingle extends TaskListEvent {
+		public final String createdId;
+		public final int insertedAtPos;
+		public CreateSingle(User source, String createdId, int insertedAtPos) {
+			super(source);
+			this.createdId = createdId;
+			this.insertedAtPos = insertedAtPos;
+		}
+	}
+	
+	public static class DeleteSingle extends TaskListEvent {
+		public final String deletedId;
+		public DeleteSingle(User source, String deletedId) {
+			super(source);
+			this.deletedId = deletedId;
+		}
+	}
+	
 	//user logged into this session
 	private final User user;
-	private final DataAccess data;
 	
 	@Autowired
 	public PinnedSession(DataAccess data, UserService users) {
 		user = users.getLoggedInUser();
-		this.data = data;
+		data.registerForUpdates(this);
 	}
 
 	@Override
@@ -65,22 +82,20 @@ public class PinnedSession extends TaskListState {
 	
 	public void pin(Task task) {
 		if (user.getPinnedTasks().contains(task)) {
-			throw new IllegalArgumentException("Cannot pin a task task is already pinned!");
+			throw new IllegalArgumentException("Cannot pin a task that is already pinned!");
 		} else {
-			data.edit(task);
-//			user.getPinnedTasks().add(task);
-//			final int index = user.getPinnedTasks().indexOf(task);
-//			taskListEvents.add(new TaskListEvent.CreateSingle(task.getIdLink(), index));
+			user.getPinnedTasks().add(task);
+			final int index = user.getPinnedTasks().indexOf(task);
+			taskListEvents.add(new TaskListEvent.AddSingle(user, task.getIdLink(), index));
 		}
 	}
 	
 	public void unpin(Task task) {
 		if (!user.getPinnedTasks().contains(task)) {
-			throw new IllegalArgumentException("Cannot pin a task task is already pinned!");
+			throw new IllegalArgumentException("Cannot unpin a task that has not been pinned!");
 		} else {
-			data.edit(task);
-//			user.getPinnedTasks().remove(task);
-//			taskListEvents.add(new TaskListEvent.RemoveSingle(task.getIdLink()));
+			user.getPinnedTasks().remove(task);
+			taskListEvents.add(new TaskListEvent.RemoveSingle(user, task.getIdLink()));
 		}
 	}
 

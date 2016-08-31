@@ -9,6 +9,9 @@ import gmm.domain.User;
 import gmm.domain.User.UserId;
 
 /**
+ * Events representing a change to a SINGLE (!) task list, thus syncing that list.
+ * Do not mix up with task cache synching which always effects all tasklist of a session.
+ * 
  * @author Jan Mothes
  */
 public abstract class TaskListEvent {
@@ -29,6 +32,24 @@ public abstract class TaskListEvent {
 		return "Event[name:" + eventName + "]";
 	}
 	
+	/**
+	 * A single task has changed its position inside the list.
+	 * One possible result of a task having been edited (the other being removal of the task).
+	 */
+	public static class SortSingle extends TaskListEvent {
+		public final String movedId;
+		public final int newPos;
+		public SortSingle(User source, String movedId, int newPos) {
+			super(source);
+			this.movedId = movedId;
+			this.newPos = newPos;
+		}
+	}
+	
+	/**
+	 * The order of the list has changed arbitrarily.
+	 * Holds updated order information in form of a sorted id list.
+	 */
 	public static class SortAll extends TaskListEvent {
 		public final List<String> visibleIdsOrdered;
 		public SortAll(User source, List<String> visibleIdsOrdered) {
@@ -37,30 +58,48 @@ public abstract class TaskListEvent {
 		}
 	}
 	
+	/**
+	 * Multiple tasks have arbitrarily been added and/or removed.
+	 * Same as SortAll with the difference that the id list containing the new order may also have
+	 * additional elements or may miss elements that were present before.
+	 */
 	public static class FilterAll extends SortAll {
 		public FilterAll(User source, List<String> visibleIdsOrdered) {
 			super(source, visibleIdsOrdered);
 		}
 	}
 	
-	public static class CreateAll extends SortAll {
-		public final List<String> createdIds;
-		public CreateAll(User source, List<String> visibleIdsOrdered, List<String> createdIds) {
-			super(source, visibleIdsOrdered);
-			this.createdIds = createdIds;
-		}
-	}
-	
-	public static class CreateSingle extends TaskListEvent {
-		public final String createdId;
+	/**
+	 * A single task has been added to the list.
+	 * Holds position at which the task is to be inserted into the list.
+	 */
+	public static class AddSingle extends TaskListEvent {
+		public final String addedId;
 		public final int insertedAtPos;
-		public CreateSingle(User source, String createdId, int insertedAtPos) {
+		public AddSingle(User source, String addedId, int insertedAtPos) {
 			super(source);
-			this.createdId = createdId;
+			this.addedId = addedId;
 			this.insertedAtPos = insertedAtPos;
 		}
 	}
 	
+	/**
+	 * Multiple tasks have been added to the list in arbitrary order.
+	 * Holds information about which elements exactly were added. Includes new order information
+	 * similar to SortAll information.
+	 */
+	public static class AddAll extends SortAll {
+		public final List<String> addedIds;
+		public AddAll(User source, List<String> addedIds, List<String> visibleIdsOrdered) {
+			super(source, visibleIdsOrdered);
+			this.addedIds = addedIds;
+		}
+	}
+	
+	/**
+	 * A single task has been removed from the list.
+	 * Caused by task deletion or task edit (if the changed data causes it to get filtered away).
+	 */
 	public static class RemoveSingle extends TaskListEvent {
 		public final String removedId;
 		public RemoveSingle(User source, String removedId) {
@@ -69,29 +108,14 @@ public abstract class TaskListEvent {
 		}
 	}
 	
+	/**
+	 * Multiple tasks have been removed from the list.
+	 */
 	public static class RemoveAll extends TaskListEvent {
 		public final List<String> removedIds;
 		public RemoveAll(User source, List<String> removedIds) {
 			super(source);
 			this.removedIds = removedIds;
-		}
-	}
-	
-	public static class EditSingle extends TaskListEvent {
-		public final String editedId;
-		public final boolean isVisible;
-		public final int newPos;
-		public EditSingle(User source, String editedId, int newPos) {
-			super(source);
-			this.editedId = editedId;
-			this.newPos = newPos;
-			this.isVisible = true;
-		}
-		public EditSingle(User source, String editedId) {
-			super(source);
-			this.editedId = editedId;
-			this.newPos = -1;
-			this.isVisible = false;
 		}
 	}
 }

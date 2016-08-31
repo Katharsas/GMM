@@ -5,8 +5,10 @@ import java.util.Objects;
 
 import gmm.collections.ArrayList;
 import gmm.collections.Collection;
+import gmm.collections.List;
 import gmm.domain.Linkable;
 import gmm.domain.User;
+import gmm.domain.User.UserId;
 import gmm.util.Util;
 
 /**
@@ -54,6 +56,29 @@ public class DataChangeEvent {
 			throw new UnsupportedOperationException("Change was not on single item!");
 		} else {
 			return (T) changed.iterator().next();
+		}
+	}
+	
+	public ClientDataChangeEvent toClientEvent() {
+		List<String> changedIds = new ArrayList<>(String.class, changed.size());
+		for(Linkable linkable : changed) {
+			changedIds.add(linkable.getIdLink());
+		}
+		return new ClientDataChangeEvent(source.getUserId(), type.name(), changedIds);
+	}
+	
+	/**
+	 * Similar to the event class itself, but only contains data fields, no references.
+	 * Stripped of sensitive data and can be automatically converted to JSON for client.
+	 */
+	public static class ClientDataChangeEvent {
+		public final UserId source;
+		public final String eventType;
+		public final List<String> changedIds;
+		protected ClientDataChangeEvent(UserId source, String eventType, List<String> changedIds) {
+			this.source = source;
+			this.eventType = eventType;
+			this.changedIds = changedIds;
 		}
 	}
 }

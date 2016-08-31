@@ -263,15 +263,12 @@
 		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/bubble.svg">
 		    		<@s.message "to.comment"/>
 		    	</div>
-		    	<#if principal.getPinnedTasks()?seq_contains(task)>
-<!-- 			    	<div class="task-operations-unpin left task-button button"> -->
-<!-- 			    		Unpin -->
-<!-- 			    	</div> -->
-		    	<#else>
-<!-- 		    		<div class="task-operations-pin left task-button button"> -->
-<!-- 			    		Pin -->
-<!-- 			    	</div> -->
-		    	</#if>
+		    	<div class="task-operations-unpin left task-button button">
+		    		Unpin
+		    	</div>
+	    		<div class="task-operations-pin left task-button button">
+		    		Pin
+		    	</div>
 		    	<div class="left task-button button">
 			    	<a href="${request.contextPath}/public/link/${task.getId()}/${task.getLinkKey()}">
 		    			<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/link.svg">

@@ -61,7 +61,8 @@ public class LinkSession extends StaticTaskListState {
 			}
 			else throw new IllegalArgumentException("Taskgroup not found or wrong link key!");
 		}
-		taskListEvents.add(new TaskListEvent.FilterAll(User.NULL, getIds(tasks)));
+		List<String> addedIds = getIds(tasks);
+		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, addedIds, addedIds));
 	}
 	
 	public List<Task> getLinkedTasks() {

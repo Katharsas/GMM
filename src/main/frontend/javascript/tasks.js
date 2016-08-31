@@ -51,10 +51,8 @@ var Workbench = function(taskCache, taskForm, taskSwitcher) {
 	};
 	var taskList = TaskList(taskListSettings, taskCache, taskSwitcher);
 
-	taskForm.setOnEdit(function(id) {
-		taskList.update();
-	});
-	taskForm.setOnCreate(taskList.update);
+	taskForm.registerOnEdit(taskList.update);
+	taskForm.registerOnCreate(taskList.update);
 	
 	var updateTasks = function() {
 		Ajax.get(contextUrl + "/workbench/selected")
@@ -300,11 +298,8 @@ var PinnedTasks = function(taskCache, taskForm, taskSwitcher) {
 	};
 	var taskList = TaskList(taskListSettings, taskCache, taskSwitcher);
 	
-	// TODO create function registerTaskList on TaskForm which allows callbacks for multiple lists
-//	taskForm.setOnEdit(function(id) {
-//		taskList.markTaskDeprecated(null, id);
-//	});
-//	taskForm.setOnCreate(taskList.update);
+	taskForm.registerOnEdit(taskList.update);
+	taskForm.registerOnCreate(taskList.update);
 	
 	taskList.update();
 };
@@ -317,7 +312,10 @@ $(document).ready(
 		tasksVars.edit = getURLParameter("edit");
 		
 		var taskForm = TaskForm();
-		var taskCache =  TaskCache("/tasks/renderTaskData");
+		var taskCache = TaskCache({
+			renderUrl: "/tasks/renderTaskData",
+			eventUrl: "/tasks/taskDataEvents"
+		});
 		var taskSwitcher = TaskSwitcher();
 		
 		var workbench = new Workbench(taskCache, taskForm, taskSwitcher);

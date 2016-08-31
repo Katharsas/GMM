@@ -190,6 +190,11 @@ export default function() {
 			}
         },
         
+        /**
+         * Expands the task if the task had to be collapsed recently by the collapseTaskIfExpanded
+         * function. This is useful when an event forces a task to collapse and a later event allows
+         * the task state to be restored back to expanded.
+         */
         expandIfWanted : function($task, taskId, taskListId, instant) {
         	if(wantedExpandedIds.contains(taskId)) {
         		wantedExpandedIds.remove(taskId);

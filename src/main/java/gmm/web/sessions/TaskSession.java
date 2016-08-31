@@ -18,27 +18,57 @@ import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetPathConflictChecker;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataAccess.DataChangeCallback;
+import gmm.service.data.DataChangeEvent;
+import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
+import gmm.service.data.DataChangeType;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.users.UserService;
 import gmm.web.forms.TaskForm;
 
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
-public class TaskSession {
+public class TaskSession implements DataChangeCallback {
 	
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
+	
+	/**
+	 * Events that affect the task cache and all task lists on the page.
+	 * On removal, task data must be removed from cache and list if visible.
+	 * On edit, task data must be updated and task if visible must be be reinserted.
+	 */
+	private final List<ClientDataChangeEvent> taskDataEvents;
 	
 	@Autowired
 	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
 		this.data = data;
 		this.taskCreator = taskCreator;
 		loggedInUser = users.getLoggedInUser();
+		
+		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
+		data.registerForUpdates(this);
 	}
 	
 	public void cleanUp() {
 		importer = null;
+	}
+	
+	@Override
+	public void onEvent(DataChangeEvent event) {		
+		Class<?> clazz = event.changed.getGenericType();
+		if (Task.class.isAssignableFrom(clazz)) {
+			if (!event.type.equals(DataChangeType.ADDED)) {
+				taskDataEvents.add(event.toClientEvent());
+			}
+		}
+	}
+	
+	public List<ClientDataChangeEvent> retrieveTaskDataEvents() {
+		final List<ClientDataChangeEvent> result = taskDataEvents.copy();
+		taskDataEvents.clear();
+		return result;
 	}
 	
 	/*--------------------------------------------------
