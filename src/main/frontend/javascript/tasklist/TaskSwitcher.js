@@ -27,6 +27,8 @@ export default function() {
 	// {string} taskListId -> {TaskBodyCallbacks}
 	var listIdToCallbacks = {};
 	
+	var isPinnedTask;
+	
 	// animation settings
 	
 	var slideDownTime = 0.5;
@@ -40,6 +42,14 @@ export default function() {
 	function getBody($task) {
 		return $task.children(":last-child");
 	}
+	
+	var getIdOfTaskElement = function(task) {return task.id;};
+	
+	var switchPinOperation = function($task, isPinned) {
+		var $operations = $task.find(".task-operations");
+		$operations.find(".task-operations-unpin").toggle(isPinned !== null && isPinned);
+		$operations.find(".task-operations-pin").toggle(isPinned !== null && !isPinned);
+	};
 	
 	  /**
      * Plays a slideUp animation and removes task detail DOM from page.
@@ -97,6 +107,9 @@ export default function() {
     		$task.removeClass("collapsed");
     		$task.addClass("expanding");
     		
+    		var hide = isPinnedTask === undefined;
+    		switchPinOperation($task, hide ? null : isPinnedTask(taskId));
+    		
     		$body.show();
     		$body.css("height","");
     		var onComplete = function() {
@@ -121,6 +134,13 @@ export default function() {
     };
     
     return {
+    	
+    	/**
+    	 * @param {Callback} isPinnedTaskCallback - Takes task id as parameter, retuens boolean.
+    	 */
+    	setIsPinnedTask : function(isPinnedTaskCallback) {
+    		isPinnedTask = isPinnedTaskCallback;
+    	},
     	
     	/**
     	 * Allow tasks of the given taskListId to expand/collapse.
@@ -160,7 +180,7 @@ export default function() {
             	expanded.remove($task);
             	return collapse($task, taskId, taskListId);
             } else {
-            	// expand: if queue was full, collape element that got removed from queue
+            	// expand: if queue was full, collapse element that got removed from queue
             	var $oldest = expanded.add($task);
             	if($oldest !== null) {
             		 return Promise.all([
@@ -204,6 +224,14 @@ export default function() {
             	}
         	}
         	return Promise.resolve();
+        },
+        
+        switchPinOperations : function(taskId, isPinned) {
+        	for (let $task of expanded.get()) {
+        		if (getIdOfTaskElement($task[0]) === taskId) {
+        			switchPinOperation($task, isPinned);
+        		}
+        	}
         }
     };
 }

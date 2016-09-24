@@ -4,6 +4,8 @@ package gmm.web.controller;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -57,7 +59,6 @@ import gmm.web.sessions.tasklist.WorkbenchSession;
 @Controller
 public class TaskController {
 	
-	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final TaskSession taskSession;
@@ -237,9 +238,10 @@ public class TaskController {
 	@RequestMapping(method = GET)
 	public String send(ModelMap model) {
 		taskSession.cleanUp();
+		pinned.createInitEvent();
 		workbench.createInitEvent();
 		
-		// TODO remove when converted to ftl to remove dependency on Workbench
+		// TODO remove when converted to ftl to reduce dependencies on Workbench
 		model.addAttribute("workbench-sortForm", workbench.getSortForm());
 		model.addAttribute("workbench-loadForm", user.get().getLoadForm());
 	    return "tasks";
@@ -288,7 +290,11 @@ public class TaskController {
 	@RequestMapping(value = "/pinned/taskListEvents", method = GET)
 	@ResponseBody
 	public List<TaskListEvent> syncPinned() {
-		return pinned.retrieveEvents();
+		final List<TaskListEvent> events = pinned.retrieveEvents();
+		if (logger.isDebugEnabled()) {
+			logger.debug(user.get() + " retrieved events: " + Arrays.toString(events.toArray()));
+		}
+		return events;
 	}
 	
 	@RequestMapping(value = "/pinned/pin", method = POST)

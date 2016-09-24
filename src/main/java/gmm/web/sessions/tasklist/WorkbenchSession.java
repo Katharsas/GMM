@@ -198,14 +198,6 @@ public class WorkbenchSession extends TaskListState {
 	 * ---------------------------------------------------*/
 	
 	/**
-	 * Allow client to retrieve current TaskListState after reloading page.
-	 */
-	public synchronized void createInitEvent() {
-		List<String> initialIds =  getIds(visible);
-		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, initialIds, initialIds));
-	}
-	
-	/**
 	 * Change/update loaded tasks
 	 */
 	public synchronized void loadTasks(TaskType type) {

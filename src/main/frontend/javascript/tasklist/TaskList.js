@@ -7,6 +7,7 @@ import { contextUrl, resortElementsById, runSerial } from "../shared/default";
 /**
  * @author Jan Mothes
  * 
+ * 
  * @typedef TaskListSettings
  * @property {JQuery} $list - The container element which holds all task elements as children.
  * @property {string} eventUrl - The url path providing taskList events for synchronization.
@@ -15,10 +16,21 @@ import { contextUrl, resortElementsById, runSerial } from "../shared/default";
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
  * @property {UserId} currentUser - Current user or null if user is not logged in.
  * 
+ * 
+ * @callback TaskEventHandler
+ * @param {TaskListEvent} event - The event information depending on event type, see Java class.
+ * @param {Callback[]} funcs - Internal functions of TaskList are exposed here so they can be used
+ * 		by the event handler.
+ */
+
+/**
  * @param {TaskListSettings} settings - Settings needed to create this taskList.
  * @param {TaskCache} cache - Task data container.
+ * @param {Object.<string, TaskEventHandler>} eventHandlers - Map of event types to event handlers.
+ * 		Extends the existing baseEventHandlers with additional handlers, which will be executed
+ * 		after the baseEventHandlers.
  */
-var TaskList = function(settings, cache, taskSwitcher) {
+var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
 	
 	var taskListId = settings.taskListId;
 	var taskSelector = ".task:not(.removed)";
@@ -28,6 +40,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 	 */
 	var current = [];
 	
+	var getIdOfTask = function(task) {return task.id;};
 	
 	var findTask = function(idLink) {
 		if (current.indexOf(idLink) < 0) return null;
@@ -60,7 +73,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 	 * @param oldPos - Old position of the task or undefined if unknown.
 	 */
 	var moveTask = function(idLink, oldPos, newPos) {
-		if (typeof oldPos === "undefined") {
+		if (oldPos === undefined) {
 			oldPos = current.indexOf(idLink);
 		}
 		var $task = findTask(idLink);
@@ -77,12 +90,18 @@ var TaskList = function(settings, cache, taskSwitcher) {
 	
 	/**
 	 * Async. Remove task from current ids array and from list (after collapsing if expanded).
-	 * @param {bool} isExpanded - Should be undefined if unknown (will be figured out by this function).
+	 * @param {JQuery} $task - Task element inside the list, can be undefined if unknown.
+	 * @param {bool} isExpanded - Wether the task is currently expanded or collapsed.
+	 * 		Can be undefined, in which case this function will figure out if it is.
 	 * @param {bool} instantly - Wether an expanded task should collapse instantly or animated.
+	 * 		Can be undefined, in which case it defaults to false (animation will play).
 	 * @returns {Promise}
 	 */
 	var removeTask = function($task, idLink, isExpanded, instantly) {
-		if(typeof isExpanded === "undefined") {
+		if($task === undefined) {
+			$task = findTask(idLink);
+		}
+		if(isExpanded === undefined) {
 			isExpanded = taskSwitcher.isTaskExpanded($task);
 		}
 		$task.addClass("removed");
@@ -140,13 +159,20 @@ var TaskList = function(settings, cache, taskSwitcher) {
 	var updateTaskListOld = function() {
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(taskListEvents) {
-			var eventHandlers = [];
+			var asyncTasks = [];
 			for(let event of taskListEvents) {
-				eventHandlers.push(function() {
-					return taskListEventHandlers[event.eventName](event);
-				});
+				if (event.eventName in baseEventHandlers) {
+					asyncTasks.push(function() {
+						return baseEventHandlers[event.eventName](event);
+					});
+				}
+				if (event.eventName in eventHandlers) {
+					asyncTasks.push(function() {
+						return eventHandlers[event.eventName](event, eventHandlerInterface);
+					});
+				}
 			}
-			return runSerial(eventHandlers);
+			return runSerial(asyncTasks);
 		})
 		.then(function() {
 			if (settings.onChange !== null) {
@@ -155,41 +181,28 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		});
 	};
 	
-	var getIdOfTask = function(task) {return task.id;};
-	
 	var resortTaskList = function(visibleIdsOrdered) {
 		resortElementsById(visibleIdsOrdered, settings.$list, taskSelector, getIdOfTask);
 		current = visibleIdsOrdered;
 	};
 	
-	var taskListEventHandlers = {
+	var eventHandlerInterface = {
 			
-		FilterAll : function(event) {
-			var newVisibleIds = event.visibleIdsOrdered;
-			// remove tasks which became invisible
-			var hidden = current.filter(function(id) {
-				return newVisibleIds.indexOf(id) < 0;
-			});
-			return removeTasks(hidden, true)
-			.then(function() {
-				// add tasks which became visible
-				var addedIds = newVisibleIds.diff(current);
-				return addTasks(addedIds)
-				// resort
-				.then(function() {
-					resortTaskList(newVisibleIds);
-				});
-			});
+		getCurrent : function() {
+			return current;
 		},
 		
-		SortAll : function(event) {
-			resortTaskList(event.visibleIdsOrdered);
-			return Promise.resolve();
-		},
-		SortSingle : function(event) {
-			moveTask(event.movedId, undefined, event.newPos);
-			return Promise.resolve();
-		},
+		addTasks : addTasks,
+		addTask : addTask,
+		
+		removeTasks : removeTasks,
+		removeTask : removeTask,
+		
+		resortTasks : resortTaskList,
+		moveTask : moveTask,
+	};
+	
+	var baseEventHandlers = {
 		
 		AddAll : function(event) {
 			return addTasks(event.addedIds)
@@ -206,7 +219,7 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		},
 		RemoveSingle : function(event) {
 			var id = event.removedId;
-			return removeTask(findTask(id), id, undefined, true);
+			return removeTask(undefined, id, undefined, true);
 		}
 	};
 	
@@ -221,15 +234,15 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		case "EDITED" : handler = onEdited; break;
 		default : return Promise.resolve();
 		}
-		var tasks = [];
+		var asyncTasks = [];
 		for (let id of event.changedIds) {
 			if (current.indexOf(id) >= 0) {
-				tasks.push(function() {
+				asyncTasks.push(function() {
 					return handler(id, event.source.idLink);
 				});
 			}
 		}
-		return runSerial(tasks);
+		return runSerial(asyncTasks);
 	};
 	
 	var onDeleted = function(taskId, userId) {
@@ -252,19 +265,20 @@ var TaskList = function(settings, cache, taskSwitcher) {
 			}, "A task you had selected has been edited by another user!");
 		}
 		var pos = current.indexOf(taskId);
-		return removeTask($task, taskId, isExpanded)
+		return removeTask($task, taskId, isExpanded, true)
 		.then(function() {
 			return addTask(taskId, pos);
 		});
 	};
 	
 	var init = function() {
+		
 		taskSwitcher.registerTaskList(taskListId, {
 			
 			createBody : function($task) {
 				var idLink = $task.attr('id');
 				var $body = cache.getTaskBody(idLink);
-				settings.eventBinders.bindBody(idLink, $task, $body, updateTaskList);
+				settings.eventBinders.bindBody(idLink, $task, $body);
 				return $body;
 			},
 			
@@ -273,9 +287,10 @@ var TaskList = function(settings, cache, taskSwitcher) {
 			}
 		});
 		
-		settings.eventBinders.bindList(settings.$list, function($task) {
+		var onswitch = function($task) {
 			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
-		});
+		};
+		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
 		
 		cache.registerEventSubscriber(taskListId, onDataChangeEvent);
 	};
@@ -292,7 +307,11 @@ var TaskList = function(settings, cache, taskSwitcher) {
 		
 		size : function() {
 			return current.length;
-		}
+		},
+		
+		contains : function(idLink) {
+			return current.indexOf(idLink) >= 0;
+		},
 		
 	};
 };

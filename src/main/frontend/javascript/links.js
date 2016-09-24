@@ -25,7 +25,7 @@ $(document).ready(
 			onChange : null, // TODO add count for list
 			currentUser : allVars.currentUser
 		};
-		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher);
+		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher, {});
 		taskList.update();
 	}
 );

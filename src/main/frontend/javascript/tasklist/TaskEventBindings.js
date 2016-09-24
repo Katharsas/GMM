@@ -11,6 +11,20 @@ import { contextUrl, htmlDecode } from "../shared/default";
  */
 export default function(onedit) {
 	
+	var onTaskListChangeCallbacks = [];
+	var onPinnedChange;
+	
+	var updateTaskLists = function() {
+		for (let callback of onTaskListChangeCallbacks) {
+			callback();
+		}
+	};
+	var updatePinnedList = function() {
+		if (onPinnedChange !== undefined) {
+			onPinnedChange();
+		}
+	};
+	
 	//comments
 	var hideCommentForm = function($commentForm) {
 		var $elementComments = $commentForm.parent();
@@ -51,21 +65,25 @@ export default function(onedit) {
 	
 	return {
 		
-		bindList : function($list, onswitch) {
+		setOnPinnedChange : function(callback) {
+			onPinnedChange = callback;
+		},
+		
+		bindList : function($list, onswitch, onchange) {
 			$list.on("click", ".task-header", function() {
 				onswitch($(this).parent(".task"));
 			});
+			onTaskListChangeCallbacks.push(onchange);
 		},
 		
-		bindHeader : function($task) {
-		},
+		bindHeader : function($task) {},
 		
 		/**
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
 		 * @param {callback} updateTaskList - Function which returns a promise to finish updating.
 		 */
-		bindBody : function(id, $task, $body, updateTaskList) {
+		bindBody : function(id, $task, $body) {
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK
@@ -83,7 +101,7 @@ export default function(onedit) {
 					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 					.then(function() {
 						Dialogs.hideDialog($confirm);
-						updateTaskList();
+						updateTaskLists();
 					});
 				}, "Are you sure you want to delete this task?");
 			});
@@ -91,14 +109,14 @@ export default function(onedit) {
 			$operations.find(".task-operations-pin").click(function() {
 				Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
 				.then(function() {
-					updateTaskList();
+					updatePinnedList();
 				});
 			});
 			// unpin task
 			$operations.find(".task-operations-unpin").click(function() {
 				Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
 				.then(function() {
-					updateTaskList();
+					updatePinnedList();
 				});
 			});
 			
@@ -121,7 +139,7 @@ export default function(onedit) {
 						Ajax.post(url, {"editedComment" : textarea}) 
 							.then(function() {
 								Dialogs.hideDialog($confirm);
-								updateTaskList();
+								updateTaskLists();
 							});
 					}, "Change your comment below:", undefined, comment, 700);
 			});
@@ -135,7 +153,7 @@ export default function(onedit) {
 				var url = contextUrl + "/tasks/submitComment/" + id;
 				Ajax.post(url, {}, $form)
 					.then(function() {
-						updateTaskList();
+						updateTaskLists();
 					});
 			});
 			

@@ -127,6 +127,15 @@ public abstract class TaskListState implements DataChangeCallback {
 		}
 	}
 	
+	/**
+	 * Allow client to retrieve initial TaskListState after reloading page.
+	 */
+	public void createInitEvent() {
+		taskListEvents.clear();
+		final List<String> initialIds =  getIds(getVisible());
+		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, initialIds, initialIds));
+	}
+	
 	protected List<String> getIds(Collection<? extends Task> tasks) {
 		final List<String> ids = new LinkedList<>(String.class);
 		for(final Task task : tasks) {
