@@ -2,6 +2,8 @@ package gmm.web.controller;
 
 
 
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
+import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlRenderer;
 import gmm.web.FtlRenderer.TaskRenderResult;
@@ -53,12 +56,21 @@ public class PublicController {
 		
 		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
 		final List<Task> tasks = new LinkedList<>(Task.class);
-		for(Task task : session.getLinkedTasks()) {
-			boolean contains = idLinks.remove(task.getIdLink());
+		for(final Task task : session.getLinkedTasks()) {
+			final boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) tasks.add(task);
 		}
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
 		return ftlRenderer.renderTasks(tasks, requestData);
+	}
+	
+	/**
+	 * Get data change events.
+	 */
+	@RequestMapping(value = "/linkedTasks/taskDataEvents", method = GET)
+	@ResponseBody
+	public List<ClientDataChangeEvent> syncTaskData() {
+		return session.retrieveTaskDataEvents();
 	}
 	
 	/**

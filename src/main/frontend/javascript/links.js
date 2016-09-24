@@ -10,10 +10,12 @@ import { allVars } from "./shared/default";
  */
 $(document).ready(
 	function() {
-		
-		var taskBinders = TaskEventBindings(function(){});
-		var taskCache =  TaskCache("/public/linkedTasks/renderTaskData");
+		var taskCache = TaskCache({
+			renderUrl: "/public/linkedTasks/renderTaskData",
+			eventUrl: "/public/linkedTasks/taskDataEvents"
+		});
 		var taskSwitcher = TaskSwitcher();
+		var taskBinders = TaskEventBindings(function(){});
 		
 		var taskListSettings = {
 			taskListId : "linkedTasks",

@@ -33,9 +33,9 @@ public abstract class TaskListState implements DataChangeCallback {
 	
 	@Override
 	public void onEvent(DataChangeEvent event) {		
-		Class<?> clazz = event.changed.getGenericType();
+		final Class<?> clazz = event.changed.getGenericType();
 		if (Task.class.isAssignableFrom(clazz)) {
-			Class<Task> target = Task.class;
+			final Class<Task> target = Task.class;
 			if(event.isSingleItem) {
 				switch(event.type) {
 				case ADDED:
@@ -55,7 +55,7 @@ public abstract class TaskListState implements DataChangeCallback {
 				case REMOVED:
 					break;
 				case EDITED:
-					for(Task task : event.getChanged(target)) {
+					for(final Task task : event.getChanged(target)) {
 						onEdit(event.source, task);
 					}
 					break;
@@ -112,7 +112,7 @@ public abstract class TaskListState implements DataChangeCallback {
 	public <T extends Task> void onEdit(User source, T task) {
 		final boolean isVisible = isSingleVisible(task);
 		synchronized (this) {
-			boolean wasVisible = removeAdd(task, isVisible);
+			final boolean wasVisible = removeAdd(task, isVisible);
 			if(isVisible) {
 				sortVisible();
 				final int index = getVisible().indexOf(task);

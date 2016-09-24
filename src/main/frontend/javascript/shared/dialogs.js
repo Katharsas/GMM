@@ -87,7 +87,7 @@ var Dialogs = (function() {
 		showOverlay();
 		//apply elements and texts to dialog
 		var $dialog = createConfirmDialog(onConfirm);
-		$dialog.find(".confirmDialog-message").text(message);
+		$dialog.find(".confirmDialog-message").html(message);
 		var $input = $dialog.find(".confirmDialog-input");
 		var $textarea = $dialog.find(".confirmDialog-textarea");
 		var $cancelButton = $dialog.find(".confirmDialog-cancel");

@@ -41,7 +41,11 @@ var Ajax = (function() {
 		if(httpStatus === 403) {
 			Dialogs.alert(function(){
 				location.reload();
-			}, "Forbidden or Timeout. Confirm to reload page.");
+			}, "Server answer: 403 Forbidden or Timeout.<br> Confirm to reload page.");
+		} else if (httpStatus === 404) {
+			Dialogs.alert(function(){
+				location.reload();
+			}, "Server answer: 404 Not Found.<br> Confirm to reload page.");
 		} else {
 			Dialogs.showException(responseData);
 		}

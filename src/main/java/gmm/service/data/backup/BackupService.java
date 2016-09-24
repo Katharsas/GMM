@@ -46,7 +46,8 @@ public class BackupService implements ServletContextListener {
 	/**
 	 * Custom boolean supplier functional interface.
 	 */
-	private interface BoolSupplier {public boolean get(DateTime now);}
+	@FunctionalInterface
+	private interface TimeCondition {public boolean get(DateTime now, DateTime last);}
 	
 	/**
 	 * Creates backups in a certain subfolder when executed.
@@ -65,7 +66,7 @@ public class BackupService implements ServletContextListener {
 		}
 		/**
 		 * @param now - provide current DateTime to reduce unnecessary instancing
-		 * @param saveTasks - true if this exeuctor should backup all tasks
+		 * @param saveTasks - true if this executor should backup all tasks
 		 * @param saveUsers - true if this executor should backup all users
 		 */
 		public void execute(DateTime now, boolean saveTasks, boolean saveUsers) {
@@ -78,7 +79,8 @@ public class BackupService implements ServletContextListener {
 				final Path directory = config.USERS.resolve(backupPath).resolve(subDir);
 				service.createListBackup(now, directory, User.class, maxBackups);
 				// just assume we want backups for combinedData as often as for users
-				service.createBackupCombinedData(now, config.DB_OTHER, CombinedData.class.getSimpleName());
+				service.createBackupCombinedData(
+						now, config.DB_OTHER, CombinedData.class.getSimpleName());
 			}
 		}
 		public Path getSubDir() {return subDir;}
@@ -89,15 +91,17 @@ public class BackupService implements ServletContextListener {
 	 * Creates backups when executed if the supplied condition evaluates to true.
 	 */
 	private class ConditionalBackupExecutor extends BackupExecutor {
-		private final BoolSupplier condition;
-		 ConditionalBackupExecutor(String subDir, int maxBackups, BoolSupplier condition) {
-			 super(subDir, maxBackups);
-			 this.condition = condition;
-		 }
-		 @Override
-		 public void execute(DateTime now, boolean saveTasks, boolean saveUsers) {
-			if(condition.get(now)) super.execute(now, saveTasks, saveUsers);
-		 }
+		
+		private final TimeCondition condition;
+		
+		ConditionalBackupExecutor(String subDir, int maxBackups, TimeCondition condition) {
+			super(subDir, maxBackups);
+			this.condition = condition;
+		}
+		@Override
+		public void execute(DateTime now, boolean saveTasks, boolean saveUsers) {
+			if(condition.get(now, last())) super.execute(now, saveTasks, saveUsers);
+		}
 	}
 	
 	/*
@@ -126,18 +130,18 @@ public class BackupService implements ServletContextListener {
 	public BackupService() {
 		
 		// timed backups
-		monthlyBackup = new ConditionalBackupExecutor("monthly", 6, now -> {
-				final Months duration = Months.monthsBetween(BackupService.this.monthlyBackup.last(), now);
+		monthlyBackup = new ConditionalBackupExecutor("monthly", 6, (now, last) -> {
+				final Months duration = Months.monthsBetween(last, now);
 				return duration.getMonths() >= 1;
 			}
 		);
-		daylyBackup = new ConditionalBackupExecutor("dayly", 7, now -> {
-				final Days duration = Days.daysBetween(BackupService.this.daylyBackup.last(), now);
+		daylyBackup = new ConditionalBackupExecutor("dayly", 7, (now, last) -> {
+				final Days duration = Days.daysBetween(last, now);
 				return duration.getDays() >= 1;
 			}
 		);
-		hourlyBackup = new ConditionalBackupExecutor("hourly", 24, now -> {
-				final Hours duration = Hours.hoursBetween(BackupService.this.hourlyBackup.last(), now);
+		hourlyBackup = new ConditionalBackupExecutor("hourly", 24, (now, last) -> {
+				final Hours duration = Hours.hoursBetween(last, now);
 				return duration.getHours() >= 1;
 			}
 		);
@@ -162,8 +166,8 @@ public class BackupService implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		//Spring is not active anymore
-		// => exceptions must be catched manually, DI must be invoked (autowiring)
+		// Spring is not active anymore
+		// => exceptions must be caught manually, DI must be invoked (autowiring)
 		try {
 			WebApplicationContextUtils
 	        .getRequiredWebApplicationContext(sce.getServletContext())

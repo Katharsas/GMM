@@ -25,24 +25,6 @@ import gmm.service.users.UserService;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class PinnedSession extends TaskListState {
 	
-	public static class CreateSingle extends TaskListEvent {
-		public final String createdId;
-		public final int insertedAtPos;
-		public CreateSingle(User source, String createdId, int insertedAtPos) {
-			super(source);
-			this.createdId = createdId;
-			this.insertedAtPos = insertedAtPos;
-		}
-	}
-	
-	public static class DeleteSingle extends TaskListEvent {
-		public final String deletedId;
-		public DeleteSingle(User source, String deletedId) {
-			super(source);
-			this.deletedId = deletedId;
-		}
-	}
-	
 	//user logged into this session
 	private final User user;
 	
@@ -67,8 +49,8 @@ public class PinnedSession extends TaskListState {
 
 	@Override
 	protected <T extends Task> Collection<T> filter(Collection<T> tasks) {
-		Collection<T> filtered = new LinkedList<>(tasks.getGenericType());
-		for (T task : tasks) {
+		final Collection<T> filtered = new LinkedList<>(tasks.getGenericType());
+		for (final T task : tasks) {
 			if(user.getPinnedTasks().contains(task)) {
 				filtered.add(task);
 			}

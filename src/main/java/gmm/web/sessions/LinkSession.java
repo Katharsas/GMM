@@ -14,6 +14,9 @@ import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataChangeEvent;
+import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
+import gmm.service.data.DataChangeType;
 import gmm.web.sessions.tasklist.StaticTaskListState;
 import gmm.web.sessions.tasklist.TaskListEvent;
 
@@ -25,9 +28,13 @@ public class LinkSession extends StaticTaskListState {
 	
 	private final List<Task> tasks = new LinkedList<>(Task.class);
 	
+	private final List<ClientDataChangeEvent> taskDataEvents;
+	
 	@Autowired
 	public LinkSession(DataAccess data) {
 		this.data = data;
+		
+		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
 		data.registerForUpdates(this);
 	}
 	
@@ -36,32 +43,32 @@ public class LinkSession extends StaticTaskListState {
 	 * @param key - linkKey of given task or key from taskToLinkKeyMapping for multiple tasks.
 	 */
 	public void setTaskLinks(String ids, String key) {
-		String[] idArray = ids.split(",");
+		final String[] idArray = ids.split(",");
 		if (idArray.length < 1) throw new IllegalArgumentException("No task ID specified!");
 		tasks.clear();
-		Collection<Task> allTasks = data.getList(Task.class);
+		final Collection<Task> allTasks = data.getList(Task.class);
 		//if one, check key from task
 		if(idArray.length == 1) {
-			Task task = UniqueObject.getFromId(allTasks, Long.parseLong(idArray[0]));
+			final Task task = UniqueObject.getFromId(allTasks, Long.parseLong(idArray[0]));
 			if (task != null && task.getLinkKey().equals(key)) tasks.add(task);
 			else throw new IllegalArgumentException("Task not found or wrong link key!");
 		}
 		//if multiple, check key from mapping
 		else {
-			Set<Long> idSet = new HashSet<>(Long.class);
-			for (String id : idArray) {
+			final Set<Long> idSet = new HashSet<>(Long.class);
+			for (final String id : idArray) {
 				idSet.add(Long.parseLong(id));
 			}
-			String mappedKey = data.getCombinedData().getTaskToLinkKeys().get(idSet);
+			final String mappedKey = data.getCombinedData().getTaskToLinkKeys().get(idSet);
 			if (mappedKey != null && mappedKey.equals(key)) {
-				for (long id : idSet) {
-					Task task = UniqueObject.getFromId(allTasks, id);
+				for (final long id : idSet) {
+					final Task task = UniqueObject.getFromId(allTasks, id);
 					if (task != null) tasks.add(task);
 				}
 			}
 			else throw new IllegalArgumentException("Taskgroup not found or wrong link key!");
 		}
-		List<String> addedIds = getIds(tasks);
+		final List<String> addedIds = getIds(tasks);
 		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, addedIds, addedIds));
 	}
 	
@@ -75,7 +82,7 @@ public class LinkSession extends StaticTaskListState {
 	 */
 	public List<TaskListEvent> retrieveEvents() {
 		synchronized (taskListEvents) {
-			List<TaskListEvent> result = taskListEvents.copy();
+			final List<TaskListEvent> result = taskListEvents.copy();
 			taskListEvents.clear();
 			return result;
 		}
@@ -88,4 +95,22 @@ public class LinkSession extends StaticTaskListState {
 	
 	@Override
 	protected void sortVisible() {}
+	
+	
+	@Override
+	public void onEvent(DataChangeEvent event) {
+		final Class<?> clazz = event.changed.getGenericType();
+		if (Task.class.isAssignableFrom(clazz)) {
+			if (!event.type.equals(DataChangeType.ADDED)) {
+				taskDataEvents.add(event.toClientEvent());
+			}
+		}
+		super.onEvent(event);
+	}
+	
+	public List<ClientDataChangeEvent> retrieveTaskDataEvents() {
+		final List<ClientDataChangeEvent> result = taskDataEvents.copy();
+		taskDataEvents.clear();
+		return result;
+	}
 }
