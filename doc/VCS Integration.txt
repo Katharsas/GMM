@@ -1,0 +1,69 @@
+Die SVN-Integration bedarf einer Umstellung der Ordner-Struktur im SVN.
+
+
+
+SVN Assets & GMM Assets
+============
+Jedes Gothic Asset hat einen einzigartigen Dateinamen. Asset-Typen:
+Texturen (.tga), Meshes (.3ds), Worldmeshes (beliebig), Animationen (.asc)
+
+Pro Asset-Datei gibt es wip-Dateien (beliebige Dateien die zu diesem Asset speziell gehören) und preview-Dateien (lediglich intern für den GMM wichtig). Die Asset-Dateien selber sowie die wip-Dateien sollen versioniert werden und nicht nur über den GMM veränderbar sein, sondern auch direkt über das Versionierungssystem (SVN). Die preview-Dateien sind nur im Repo des GMM vorhanden und werden von SVN ignoriert (nicht versioniert).
+---
+Anforderungen an die Ordnerstruktur:
+1. SVN muss preview-Dateien identifizieren können, um sie zu ignorieren
+2. Der GMM muss in der Lage sein, bei jeder Datei zu wissen, ob es eine Asset-Datei ist oder nicht.
+3. Wenn der GMM eine Asset-Datei erkennt, muss er herausfinden können, ob wip oder preview Dateien vorhanden sind und falls ja, wo sich diese befinden.
+4. Der GMM muss den Typ einer Asset-Datei zweifelsfrei identifizieren können.
+5. Der ModBuilder muss ebenfalls Asset-Dateien und deren Typ erkennen können.
+---
+Bisherige Ordnerstruktur im SVN (pro Asset):
+<pfad>/<Asset_datei>
+
+Bisherige Ordnerstruktur im GMM (pro Asset):
+<pfad>/<name_der_asset_datei>/assets/<asset_datei>
+<pfad>/<name_der_asset_datei>/wip/<wip_dateien>
+<pfad>/<name_der_asset_datei>/preview/<preview_dateien>
+
+Vorschlag zur neuen Ordnerstruktur für SVN und GMM (pro Asset):
+<asset_typ>/<pfad>/<name_der_asset_datei>/<asset_datei>
+<asset_typ>/<pfad>/<name_der_asset_datei>/wip/<wip_dateien>
+<asset_typ>/<pfad>/<name_der_asset_datei>/preview/<preview_dateien>(nicht im SVN vorhanden)
+---
+Anforderungen erfüllt?
+1. SVN ignoriert alle Ordner namens "preview"
+2. Der Ordnername <name_der_asset_datei> ist der vollständige Name der Asset-Datei und beinhaltet somit auch eine Dateiendung (z.B. .tga). Da dies unüblich ist für Ordner, nimmt der GMM an, dass es sich um einen Asset-Ordner handelt, nicht um einen normalen Ordner. In diesem Ordner darf nur eine einzige Datei vorhanden sein, welche den gleichen Namen hat wie der Ordner. Dabei handelt es sich um die Asset-Datei.
+3. Im Asset-Ordner dürfen sich lediglich die beiden Unterordner "wip" und "preview" befinden, mit den jeweiligen Dateien. Falls nicht vorhanden, werden diese als "leer" interpretiert.
+4. Es gibt für jeden Asset-Typ einen Hauptordner, in dem sich alle Assets dieses Typs befinden.
+5. Wie der GMM, siehe 2. & 4.
+
+Nachteile: Die Navigation durch die Assets wird im Datei-Explorer unschöner.
+---
+Durchführung der Änderungen:
+Gruppieren nach Asset-Type sollte von Hand kein großer Aufwand sein. Für die Asset-Ordner sehe ich 2 Möglichkeiten:
+Möglichkeit 1: Batch-Skript, welche alle Dateien in Ordner mit dem gleichen Namen packt. Der GMM erzeugt selbstständig die dazugeörigen preview-Dateien, verknüpft die Assets mit den Original-Assets und erzeugt je nach Asset-Type einen passenden Task (siehe unten).
+Möglichkeit 2: Alle Dateien löschen und über das GMM Interface erneut einzeln hochladen. Hätte den Vorteil, dass Task-Metadaten (siehe unten) zu diesem Asset bei diesem Prozess gleich korrekt mit eingetragen werden können und die Ordner-Struktur verbessert. Nachteil = Hoher Aufwand.
+Möglichkeit 3: über das GMM-Interface per Mehrfachauswahl ganze Gruppen oder Ordner voll Assets hochladen. Für jede Gruppe können gemeinsame Task-Metadaten eingetragen werden. Vereint Vorteile aus 1. und 2., ist aber immer noch aufwendig und vor allem nicht implementiert im GMM (!).
+
+
+
+SVN Assets & GMM Tasks
+============
+Der GMM verwaltet eine Menge an Tasks. Spezielle Tasks (Asset-Tasks) können einem Asset zugeordnet werden. Damit der direkte Vergleich zwischen Original-Asset (Vanilla Gothic Assets) und GRM-Asset möglich ist, kann so ein Task gleichzeitig einem weiteren, gleichnamigen Original-Asset zugeordnet werden. Die Original-Assets befinden sich nicht im SVN sondern in einem externen Ordner.
+Damit ein Asset-Task schnell auf sein GRM-Asset und das Original-Asset zugreifen kann, muss er den Pfad zu diesen Assets speichern/cachen. Dieses Pfade müssen bei jedem Start des GMMs neu erkannt werden, da sich in der Zeit seit dem Beenden des GMMs Pfade geändert haben könnten. Der Asset-Task erkennt die richtigen Assets an ihren Namen, die im Asset-Task persistent gespeichert werden.
+Damit die Inhalte des GMMs (Tasks) und die Inhalte des SVNs (Assets) konsistent bleiben, sollte für jedes Asset immer ein Asset-Task existieren. Andersherum kann es aber Asset-Tasks geben, für die es (noch) keine Assets gibt. Tasks sind schließlich Aufgaben, nicht schon Ergebnisse.
+---
+Folgen von SVN-Commits:
+- Wenn ein Asset über SVN gelöscht wird, wird der dazugehörige Asset-Task nicht gelöscht. Es könnte ja sein, dass es sich lediglich um eine Verschiebung handelt. Asset-Tasks müssen manuell gelöscht werden, wenn sie nicht mehr benötigt werden!
+- Wenn ein Asset über SVN hochgeladen wird, für das es einen passenden Asset-Task gibt, wird der Asset-Task mit dem Asset (wieder) verknüpft.
+- Wenn ein Asset über SVN hochgeladen wird, für das es noch keinen passenden Asset-Task gibt, wird automatisch ein neuer Asset-Task erzeugt. Wenn das hinzugefügte Asset den gleichen Namen hat wie ein Original-Asset, wird auch das Original-Asset zum Vergleich mit dem Asset-Task verknüpft.
+
+Folgen & Auswirkungen bei GMM-Start und Benutztung der GMM-Weboberfläche (Interface):
+- Wenn der GMM nach dem Start Assets findet, für die es noch keinen Asset-Task gibt, so werden entsprechende neue Asset-Tasks erstellt.
+- Wenn im GMM-Interface ein neuer AssetTask erstellt wird, muss der Asset-Namen angegeben werden. Dieser Name wird benutzt, um wie vorher beschrieben beim SVN-Upload automatisch zu verknüpfen. Außerdem wird bei der Erstellung ein Original-Asset mit dem angegebenen Namen gesucht und verknüpft, falls vorhanden. Es kann nicht mehrere Asset-Tasks mit dem gleichen Asset-Namen geben!
+- Wenn im GMM-Interface ein Asset-Task gelöscht wird, wird der entsprechende Asset-Ordner ebenfalls gelöscht und daraufhin committet!
+- Wenn im GMM-Interface eine Asset-Datei oder eine wip-Datei zu einem Asset-Task hochgeladen wird, wird diese Datei ins SVN eingefügt und daraufhin committet!
+- Wenn im GMM-Interface eine Asset-Datei hochgeladen wird, die nicht dem Asset-Dateinamen des Asset-Tasks entspricht, wird der User gewarnt und die hochgeladene Datei wird umbenannt, sodass sie zum Asset-Task passt.
+---
+Fragen:
+- Ist es nötig, eine Funktion zu implementieren, die das Ändern des Asset-Dateinamen eines Asset-Tasks erlaubt? Dies hätte, wenn billig implementiert, eigentlich nur zur Folge, dass der Asset-Task neu verknüpft werden müsste, und bisher verknüpfte Dateien gelöscht werden müssten. Der User würde aber erwarten, dass so eine Funktion auch die verknüpften Asset-Dateien MIT umbenennt, das wäre dann schon komplizierter.
+- Was passiert, wenn ein User die Regeln der Ordnerstrukturen verletzt? z.B. Falscher Asset-Typ (.3ds im Texturordner) würde die GMM-Vorschau kaputt machen. Was ist mit Asset-Dateien, die anders heißen als der dazugehörige Asset-Ordner?
