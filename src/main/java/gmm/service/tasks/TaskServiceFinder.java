@@ -27,13 +27,14 @@ public class TaskServiceFinder {
 	
 	@PostConstruct
 	private void init() {
-		for(TaskFormService<?> service : taskServices) {
+		for(final TaskFormService<?> service : taskServices) {
 			classesToServices.put(service.getTaskType(), service);
 		}
 	}
 	
 	private <T extends Task> TaskFormService<T> getService(Class<? extends T> type) {
 		@SuppressWarnings("unchecked")
+		final
 		TaskFormService<T> result = (TaskFormService<T>) classesToServices.get(type);
 		if (result == null) {
 			throw new IllegalStateException("No service registered for task of type "+type.getName());

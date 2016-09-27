@@ -16,7 +16,8 @@ import gmm.domain.task.TaskType;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetPathConflictChecker;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory.AssetPathConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
@@ -33,6 +34,7 @@ public class TaskSession implements DataChangeCallback {
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
+	private final AssetPathConflictCheckerFactory assetPathConflictCheckerFactory;
 	
 	/**
 	 * Events that affect the task cache and all task lists on the page.
@@ -42,10 +44,12 @@ public class TaskSession implements DataChangeCallback {
 	private final List<ClientDataChangeEvent> taskDataEvents;
 	
 	@Autowired
-	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
+	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users,
+			AssetPathConflictCheckerFactory conflictCheckerFactory) {
 		this.data = data;
 		this.taskCreator = taskCreator;
 		loggedInUser = users.getLoggedInUser();
+		this.assetPathConflictCheckerFactory = conflictCheckerFactory;
 		
 		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
 		data.registerForUpdates(this);
@@ -57,7 +61,7 @@ public class TaskSession implements DataChangeCallback {
 	
 	@Override
 	public void onEvent(DataChangeEvent event) {		
-		Class<?> clazz = event.changed.getGenericType();
+		final Class<?> clazz = event.changed.getGenericType();
 		if (Task.class.isAssignableFrom(clazz)) {
 			if (!event.type.equals(DataChangeType.ADDED)) {
 				taskDataEvents.add(event.toClientEvent());
@@ -146,7 +150,8 @@ public class TaskSession implements DataChangeCallback {
 				form.setAssetPath(assetPath);
 				data.add(taskCreator.create(type.toClass(), form, loggedInUser));
 			};
-			final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
+			final AssetPathConflictChecker ops = 
+					assetPathConflictCheckerFactory.create(onAssetPathChecked);
 			 
 			importer = new BundledMessageResponses<>(
 					new LinkedList<>(String.class, form.getAssetPath()),

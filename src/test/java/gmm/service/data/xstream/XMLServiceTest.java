@@ -20,6 +20,7 @@ import gmm.domain.task.TaskPriority;
 import gmm.domain.task.TaskStatus;
 import gmm.service.FileService;
 import gmm.service.data.CombinedData;
+import gmm.service.users.UserProvider;
 import gmm.util.Util;
 
 /**
@@ -41,7 +42,7 @@ public class XMLServiceTest {
 	@BeforeClass
 	public static void init() {
 		fileService = new FileService();
-		xmlService = new XMLService(fileService, () -> users);
+		xmlService = new XMLService(fileService, new UserProvider(() -> users));
 		users = new LinkedList<>(User.class);
 	}
 	
@@ -58,7 +59,7 @@ public class XMLServiceTest {
 	}
 	
 	private User createTestUser(String suffix) {
-		User testUser = new User("testUser" + suffix);
+		final User testUser = new User("testUser" + suffix);
 		testUser.setPasswordHash("testPasswordHash" + suffix);
 		testUser.setEmail("testEmail" + suffix + "@test.org");
 		testUser.getNewNotifications().add(new Notification("testNotification" + suffix + "_1"));
@@ -69,15 +70,15 @@ public class XMLServiceTest {
 	@Test
 	public void testUserSerialization() {		
 		//add test users
-		Collection<User> users = new LinkedList<>(User.class);
+		final Collection<User> users = new LinkedList<>(User.class);
 		users.add(createTestUser("1"));
 		users.add(createTestUser("2"));
 		users.add(createTestUser("3"));
 		
 		//serialize and deserialize
-		Path file = testFolder.resolve("sub/user_test_file.xml");
+		final Path file = testFolder.resolve("sub/user_test_file.xml");
 		xmlService.serialize(users, file);
-		Collection<User> resultUsers = xmlService.deserializeAll(file, User.class);
+		final Collection<User> resultUsers = xmlService.deserializeAll(file, User.class);
 		
 		//compare
 		Util.zip(users, resultUsers, (expectedUser, resultUser)
@@ -87,13 +88,13 @@ public class XMLServiceTest {
 	@Test
 	public void testGeneralTaskSerialization() {		
 		//add referenced users
-		User author = createTestUser("Author");
-		User assigned = createTestUser("Assigned");
+		final User author = createTestUser("Author");
+		final User assigned = createTestUser("Assigned");
 		users.add(author);
 		users.add(assigned);
 		
 		// setup test task
-		GeneralTask task = new GeneralTask(author);
+		final GeneralTask task = new GeneralTask(author);
 		task.setAssigned(assigned);
 		task.setName("TestName");
 		task.setLabel("TestLabel");
@@ -102,9 +103,9 @@ public class XMLServiceTest {
 		task.setTaskStatus(TaskStatus.INPROGRESS);
 		
 		//serialize and deserialize
-		Path file = testFolder.resolve("sub/task_test_file.xml");
+		final Path file = testFolder.resolve("sub/task_test_file.xml");
 		xmlService.serialize(new LinkedList<>(GeneralTask.class, task), file);
-		GeneralTask result = xmlService.deserializeAll(file, GeneralTask.class).iterator().next();
+		final GeneralTask result = xmlService.deserializeAll(file, GeneralTask.class).iterator().next();
 		
 		//compare
 		AssertEquals.assertEqualsGeneralTask(task, result);
@@ -112,13 +113,13 @@ public class XMLServiceTest {
 	
 	@Test
 	public void testCombinedDataSerialization() {
-		CombinedData data = new CombinedData();
+		final CombinedData data = new CombinedData();
 		data.setCustomAdminBannerActive(true);
 		data.setCustomAdminBanner("<center>Hello World!</center>");
 		
-		Path file = testFolder.resolve("sub/combinedData_test_file.xml");
+		final Path file = testFolder.resolve("sub/combinedData_test_file.xml");
 		xmlService.serialize(data, file);
-		CombinedData result = xmlService.deserialize(file, CombinedData.class);
+		final CombinedData result = xmlService.deserialize(file, CombinedData.class);
 		
 		assertEquals(data.isCustomAdminBannerActive(), result.isCustomAdminBannerActive());
 		assertEquals(data.getCustomAdminBanner(), result.getCustomAdminBanner());

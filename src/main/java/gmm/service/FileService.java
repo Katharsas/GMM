@@ -24,16 +24,16 @@ import gmm.util.StringUtil;
 public class FileService {
 	
 	/**
-	 * Restricts dir path access to visisble directory or below.
+	 * Restricts dir path access to visible directory or below.
 	 * 
 	 * @param dir - Relative or absolute path that needs to be restricted.
 	 * @param visible - Relative or absolute path that represents the restriction.
 	 * @return Path relative to visible directory that points below the visible directory.
 	 */
 	public Path restrictAccess(Path dir, Path visible) {
-		if (!isChild(dir, visible)) {
+		if (!isChildOrSame(dir, visible)) {
 			//If dir is relative, check for back-paths
-			if (!isChild(visible.resolve(dir), visible)) {
+			if (!isChildOrSame(visible.resolve(dir), visible)) {
 				throw new IllegalArgumentException("Path restriction error: Path could not be resolved.");
 			}
 			return dir;
@@ -44,12 +44,19 @@ public class FileService {
 		}
 	}
 	
-	private boolean isChild(Path child, Path parent) {
+	private boolean isChildOrSame(Path child, Path parent) {
 		return normalize(child).startsWith(normalize(parent));
 	}
 	
+	/**
+	 * Converts a list of absolute paths to paths which are relative to another absolute other path.
+	 * Does not check if the absolute paths are child paths of the other path.
+	 */
 	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
-		final List<String> relPaths = new LinkedList<>(String.class);
+		if (!visible.isAbsolute()) {
+			throw new IllegalArgumentException("Given base path must be absolute!");
+		}
+		final Collection<String> relPaths = paths.newInstance(String.class);
 		for (final Path path : paths) {
 			relPaths.add(visible.relativize(path).toString());
 		}
@@ -57,13 +64,12 @@ public class FileService {
 	}
 	
 	/**
-	 * Returns the file paths of all files inside the given directory recursivly.
+	 * Returns the file paths of all files inside the given directory recursively.
 	 * This includes files inside directories inside the given directory.
 	 * 
-	 * @param fileExtensions - Filters the files by file extension.
-	 * @throws IOException 
+	 * @param filter - Paths that do not fulfil this filter predicate are not returned.
 	 */
-	public List<Path> getFilesRecursive(Path path, PathFilter filter) {
+	public List<Path> getFilesRecursive(Path path, Predicate<Path> filter) {
 		final List<Path> filePaths = new LinkedList<>(Path.class);
 		if (path.toFile().exists()) {
 			try(Stream<Path> stream = Files.walk(path)) {
@@ -78,12 +84,13 @@ public class FileService {
 		return filePaths;
 	}
 	
+	@FunctionalInterface
 	public static interface PathFilter extends Predicate<Path> {}
 	
 	/**
-	 * A Filter that only accepts extensions specified on construction.
+	 * A file filter that only accepts extensions specified on construction.
 	 * Does not accept hidden files (unix) or directories.
-	 * @author Jan
+	 * @author Jan Mothes
 	 */
 	public static class FileExtensionFilter implements PathFilter {
 		private final static StringUtil strings = new StringUtil().ignoreCase();

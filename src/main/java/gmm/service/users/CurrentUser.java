@@ -25,8 +25,8 @@ public class CurrentUser {
 	}
 	
 	private void update() {
-		boolean before = isUserLoggedIn;
-		isUserLoggedIn = users.isUserLoggedIn();
+		final boolean before = isUserLoggedIn;
+		isUserLoggedIn = UserProvider.isUserLoggedIn();
 		if (isUserLoggedIn != before) {
 			loggedInUser = isUserLoggedIn ? users.getLoggedInUser() : null;
 		}

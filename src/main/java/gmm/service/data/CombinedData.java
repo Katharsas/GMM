@@ -4,11 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
 import gmm.collections.Set;
 
-@Service
 public class CombinedData {
 	
 	private boolean isCustomAdminBannerActive = true;

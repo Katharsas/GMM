@@ -106,8 +106,8 @@ public class JoinedCollectionView<E> implements Collection<E> {
 		for (final Collection<? extends E> coll : items) {
 			length += coll.size();
 		}
-		Object[] array = new Object[length];
-		Iterator<E> it = iterator();
+		final Object[] array = new Object[length];
+		final Iterator<E> it = iterator();
 		for(int i = 0; i < length; i++) {
 			array[i] = it.next();
 		}
@@ -122,13 +122,15 @@ public class JoinedCollectionView<E> implements Collection<E> {
 		}
 		if (a.length < length) {
 			@SuppressWarnings("unchecked")
+			final
 			T[] result = (T[]) toArray();
 			return result;
 		} else {
-			Iterator<E> it = iterator();
+			final Iterator<E> it = iterator();
 			for(int i = 0; i < a.length; i++) {
 				if (it.hasNext()) {
 					@SuppressWarnings("unchecked")
+					final
 					T next = (T) it.next();
 					a[i] = next;
 				} else {
@@ -140,15 +142,14 @@ public class JoinedCollectionView<E> implements Collection<E> {
 	}
 
 	/**
-	 * Since copying a read-only-view just to get another read-only-view does not make much sense,
-	 * this copy method actually returns a proper collection as a caller of {@link Collection#copy()}
-	 * would expect it to do, not just another view.
-	 * <br>
+	 * Since copying a read-only-view just to get the same read-only-view does not make much sense,
+	 * this method actually returns a proper collection as the caller would probably expect it to
+	 * do, since he probably does not now that this is just a view. <br>
 	 * To make an copy of the actual view itself, use {@link #viewCopy()}.
 	 */
 	@Override
 	public Collection<E> copy() {
-		Collection<E> freshTarget = copyTarget.copy();
+		final Collection<E> freshTarget = copyTarget.copy();
 		for (final Collection<? extends E> coll : items) {
 			freshTarget.addAll(coll);
 		}
@@ -161,6 +162,17 @@ public class JoinedCollectionView<E> implements Collection<E> {
 			newItems[i] = items[i].copy();
 		}
 		return new JoinedCollectionView<>(copyTarget, newItems);
+	}
+	
+	/**
+	 * Since returning an empty read-only-view that cannot be populated with elements does not make
+	 * much sense, this method actually returns a new instance of a proper collection as the caller
+	 * would probably expect it to do, if he does not know this is a read-only-view (if he knew he
+	 * could just use the constructor).
+	 */
+	@Override
+	public <F> Collection<F> newInstance(Class<F> clazz) {
+		return copyTarget.newInstance(clazz);
 	}
 
 	@Override

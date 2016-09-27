@@ -28,7 +28,7 @@ import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.backup.BackupService;
+import gmm.service.data.backup.BackupExecutorService;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.data.xstream.XMLService;
 import gmm.service.tasks.ModelTaskService;
@@ -53,7 +53,7 @@ public class AdminController {
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	@Autowired private XMLService xmlService;
-	@Autowired private BackupService backups;
+	@Autowired private BackupExecutorService backups;
 	@Autowired private ManualBackupService manualBackups;
 	@Autowired private FtlTemplateService templates;
 	
@@ -142,7 +142,7 @@ public class AdminController {
 	@RequestMapping(value = {"/backups"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showBackups(@RequestParam("dir") Path dir) {
 		
-		final Path visible = config.TASKS;
+		final Path visible = config.dbTasks();
 		final Path dirPath = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dirPath, visible);
 	}
@@ -162,7 +162,7 @@ public class AdminController {
 	@RequestMapping(value = {"/deleteFile"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteFile(@RequestParam("dir") Path dir) {	
 		
-		final Path visible = config.TASKS;
+		final Path visible = config.dbTasks();
 		final Path dirAbsolute = visible.resolve(fileService.restrictAccess(dir, visible));
 		fileService.delete(dirAbsolute);
 	}
@@ -182,7 +182,7 @@ public class AdminController {
 			@RequestParam("dir") Path dir) {
 		
 		backups.triggerTaskBackup();
-		final Path visible = config.TASKS;
+		final Path visible = config.dbTasks();
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		final Collection<Task> tasks =
 				xmlService.deserializeAll(visible.resolve(dirRelative), Task.class);
@@ -237,7 +237,7 @@ public class AdminController {
 	@RequestMapping(value = {"/originalAssets"} , method = RequestMethod.POST)
 	public @ResponseBody String[] showOriginalAssets(@RequestParam("dir") Path dir) {
 		
-		final Path visible = config.ASSETS_ORIGINAL;
+		final Path visible = config.assetsOriginal();
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dirRelative, visible);
 	}
@@ -252,7 +252,7 @@ public class AdminController {
 			@RequestParam("dir") Path dir,
 			@RequestParam("textures") boolean textures) {
 		
-		final Path visible = config.ASSETS_ORIGINAL;
+		final Path visible = config.assetsOriginal();
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		final PathFilter filter = textures ?
 				TextureTaskService.extensions : ModelTaskService.extensions;

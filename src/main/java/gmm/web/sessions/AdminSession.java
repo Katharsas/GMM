@@ -18,7 +18,9 @@ import gmm.domain.task.asset.TextureTask;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetPathConflictChecker;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory.AssetPathConflictChecker;
+import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.TaskBackupLoader;
 import gmm.service.tasks.TaskServiceFinder;
@@ -34,14 +36,24 @@ import gmm.web.forms.TaskForm;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AdminSession extends TaskBackupLoader {
 	
+	private final TaskServiceFinder taskService;
 	private final DataAccess data;
-	private final TaskServiceFinder taskCreator;
+	
 	private final User loggedInUser;
+	private final AssetPathConflictCheckerFactory assetPathConflictCheckerFactory;
 	
 	@Autowired
-	public AdminSession(DataAccess data, TaskServiceFinder taskCreator, UserService users) {
+	public AdminSession(TaskServiceFinder taskService,
+			AssetPathConflictCheckerFactory assetPathConflictCheckerFactory,
+			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
+			DataAccess data, UserService users) {
+		
+		super(taskService, assetPathConflictCheckerFactory, taskIdConflictCheckerFactory);
+		
+		this.taskService = taskService;
+		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
 		this.data = data;
-		this.taskCreator = taskCreator;
+		
 		loggedInUser = users.getLoggedInUser();
 	}
 	
@@ -82,9 +94,10 @@ public class AdminSession extends TaskBackupLoader {
 		
 		final Consumer<String> onAssetPathChecked = (assetPath) -> {
 			form.setAssetPath(assetPath);
-			data.add(taskCreator.create(type, form, loggedInUser));
+			data.add(taskService.create(type, form, loggedInUser));
 		};
-		final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
+		final AssetPathConflictChecker ops =
+				assetPathConflictCheckerFactory.create(onAssetPathChecked);
 		
 		assetImporter = new BundledMessageResponses<>(
 				getImportPaths(), ops, ()->{assetImporter = null;});

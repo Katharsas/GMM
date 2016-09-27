@@ -87,7 +87,7 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	
 	@Override
 	public void deletePreview(Path taskFolder) {
-		final Path preview = taskFolder.resolve(config.SUB_PREVIEW);
+		final Path preview = taskFolder.resolve(config.subPreview());
 		final String version = AssetGroupType.NEW.getPreviewFileName();
 		Path previewFile;
 		previewFile = preview.resolve(version + "_full.png");
@@ -125,9 +125,9 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	 */
 	public void writePreview(TextureTask task, boolean small, String version, OutputStream target) {
 		final String imageName = version + (small ? "_small" : "_full") + ".png";		
-		final Path path = config.ASSETS_NEW
+		final Path path = config.assetsNew()
 				.resolve(task.getAssetPath())
-				.resolve(config.SUB_PREVIEW)
+				.resolve(config.subPreview())
 				.resolve(imageName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);

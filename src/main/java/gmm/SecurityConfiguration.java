@@ -17,20 +17,20 @@ import gmm.service.users.CustomUserDetailsService;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled=true)
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
-
-	@Autowired
-    private CustomUserDetailsService userDetailsService;
-
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+	
 	@Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 	
 	@Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobal(
+    		AuthenticationManagerBuilder auth,
+    		CustomUserDetailsService userDetailsService,
+    		PasswordEncoder passwordEncoder) throws Exception  {
         auth
-            .userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+            .userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 
 	@Bean
@@ -38,6 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		return new EventSendingAuthenticationFailureHandler("/login?error");
 	}
 	
+	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 	    http
 	        .formLogin()

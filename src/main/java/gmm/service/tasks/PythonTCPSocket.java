@@ -179,8 +179,8 @@ public class PythonTCPSocket {
 		}
 		
 		private void startPythonScript() {
-			final Path blenderPathAbsolute = config.blender.resolve("blender");
-			final Path scriptPathAbsolute = config.getBlenderPythonScript();
+			final Path blenderPathAbsolute = config.blender().resolve("blender");
+			final Path scriptPathAbsolute = config.blenderPythonScript();
 			try {
 				// create blender process
 				final ProcessBuilder pb = new ProcessBuilder(

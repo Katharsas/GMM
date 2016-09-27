@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.domain.User;
 import gmm.domain.User.UserNameOccupiedException;
 import gmm.service.data.DataAccess;
-import gmm.service.data.backup.BackupService;
+import gmm.service.data.backup.BackupExecutorService;
 import gmm.service.users.UserService;
 
 @Controller
@@ -24,11 +24,11 @@ public class AdminUserController {
 	private final DataAccess data;
 	private final UserService users;
 	private final PasswordEncoder encoder;
-	private final BackupService backups;
+	private final BackupExecutorService backups;
 	
 	@Autowired
 	public AdminUserController(DataAccess data, UserService users, PasswordEncoder encoder,
-			BackupService backups) {
+			BackupExecutorService backups) {
 		
 		this.data = data;
 		this.users = users;

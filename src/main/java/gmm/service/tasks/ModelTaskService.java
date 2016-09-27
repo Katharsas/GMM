@@ -54,7 +54,7 @@ public class ModelTaskService extends AssetTaskService<Model> {
 	
 	@Override
 	public void deletePreview(Path taskFolder) {
-		final Path previews = taskFolder.resolve(config.SUB_PREVIEW);
+		final Path previews = taskFolder.resolve(config.subPreview());
 		final String version = AssetGroupType.NEW.getPreviewFileName();
 		final Path previewFile = previews.resolve(version + ".js");
 		if(previewFile.toFile().exists()) {
@@ -79,9 +79,9 @@ public class ModelTaskService extends AssetTaskService<Model> {
 	
 	public void writePreview(ModelTask task, String version, OutputStream target) {
 		final String modelName = version + ".json";		
-		final Path path = config.ASSETS_NEW
+		final Path path = config.assetsNew()
 				.resolve(task.getAssetPath())
-				.resolve(config.SUB_PREVIEW)
+				.resolve(config.subPreview())
 				.resolve(modelName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);

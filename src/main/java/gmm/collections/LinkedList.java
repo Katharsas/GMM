@@ -43,6 +43,11 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	}
 	
 	@Override
+	public <F> LinkedList<F> newInstance(Class<F> clazz) {
+		return new LinkedList<F>(clazz);
+	}
+	
+	@Override
 	public String toString() {
 		if (this.size() == 1) return this.iterator().next().toString();
 		else {

@@ -1,7 +1,7 @@
 package gmm.domain;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -37,19 +37,13 @@ public class UserTest {
 	
 	@Test
 	public void testNullPointerExceptions() {
-		boolean thrown = true;
-	    try {objectUnderTest = new User(null);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    try {objectUnderTest.setEmail(null);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    try {objectUnderTest.setName(null);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    try {objectUnderTest.setPasswordHash(null);
-	    	thrown = false;}
-	    catch(NullPointerException e){}
-	    assertTrue(thrown);
+	    try {objectUnderTest = new User(null);fail();}
+	    catch(final NullPointerException e){}
+	    try {objectUnderTest.setEmail(null);fail();}
+	    catch(final NullPointerException e){}
+	    try {objectUnderTest.setName(null);fail();}
+	    catch(final NullPointerException e){}
+	    try {objectUnderTest.setPasswordHash(null);fail();}
+	    catch(final NullPointerException e){}
 	}
 }

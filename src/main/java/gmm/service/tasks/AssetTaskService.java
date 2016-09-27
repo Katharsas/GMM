@@ -47,7 +47,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		if(assetPathString.equals("")) {
 			throw new IllegalStateException("Form does not contain any asset path. Cannot create asset task!");
 		}
-		return fileService.restrictAccess(Paths.get(assetPathString), config.ASSETS_NEW);
+		return fileService.restrictAccess(Paths.get(assetPathString), config.assetsNew());
 	}
 	
 	@Override
@@ -73,9 +73,9 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		final String fileName = file.getOriginalFilename();
 		final boolean isAsset = getExtensions().test(fileName);
 		//Add file
-		final Path assetFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
+		final Path assetFolder = config.assetsNew().resolve(task.getAssetPath());
 		final Path filePath = assetFolder
-				.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER)
+				.resolve(isAsset ? config.subAssets() : config.subOther())
 				.resolve(fileName);
 		try {
 			fileService.createFile(filePath, file.getBytes());
@@ -84,7 +84,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 		}
 		if(isAsset) {
 			final A asset = createAsset(filePath.getFileName(), AssetGroupType.NEW);
-			boolean updated = setupAssetUpdatePreview(task, asset);
+			final boolean updated = setupAssetUpdatePreview(task, asset);
 			if(!updated) {
 				throw new IllegalStateException("Could not update task with new file '"+fileName+"' (not found)!");
 			}
@@ -114,7 +114,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	 * @return True, if a corresponding file could be found for this asset.
 	 */
 	private boolean setupAssetUpdatePreview(AssetTask<A> task, A asset) {
-		AssetGroupType type = asset.getGroupType();
+		final AssetGroupType type = asset.getGroupType();
 		final Path previewFolder = task.getPreviewFolderPath();
 		final Path assetPathAbsolute = task.getFilePathAbsolute(asset);
 		
@@ -132,8 +132,8 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	
 	public void deleteFile(AssetTask<A> task, Path relativeFile, boolean isAsset) {
 		//Restrict access
-		final Path taskFolder = config.ASSETS_NEW.resolve(task.getAssetPath());
-		final Path visible = taskFolder.resolve(isAsset ? config.SUB_ASSETS : config.SUB_OTHER);
+		final Path taskFolder = config.assetsNew().resolve(task.getAssetPath());
+		final Path visible = taskFolder.resolve(isAsset ? config.subAssets() : config.subOther());
 		final Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		//Delete previews
 		final A newestAsset = task.getNewestAsset();

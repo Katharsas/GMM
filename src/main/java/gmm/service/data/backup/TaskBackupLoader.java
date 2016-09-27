@@ -28,15 +28,17 @@ import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.BundledMessageResponsesProducer;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetPathConflictChecker;
-import gmm.service.ajax.operations.TaskIdConflictChecker;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory;
+import gmm.service.ajax.operations.AssetPathConflictCheckerFactory.AssetPathConflictChecker;
+import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
+import gmm.service.ajax.operations.TaskIdConflictCheckerFactory.TaskIdConflictChecker;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
 
 /**
  * Provides methods to load a collection of tasks of arbitrary subtype,
- * usually coming from a task backup file with full conflict managment.<br>
+ * usually coming from a task backup file with full conflict management.<br>
  * <br>
  * Usage:<br><ul>
  * <li>call {@link #prepareLoadTasks(Collection)}</li>
@@ -53,7 +55,18 @@ import gmm.util.Util;
 @Scope("prototype")
 public class TaskBackupLoader {
 	
-	@Autowired private TaskServiceFinder serviceFinder;
+	private final TaskServiceFinder serviceFinder;
+	private final AssetPathConflictCheckerFactory assetPathConflictCheckerFactory;
+	private final TaskIdConflictCheckerFactory taskIdConflictCheckerFactory;
+	
+	@Autowired
+	public TaskBackupLoader(TaskServiceFinder serviceFinder,
+			AssetPathConflictCheckerFactory assetPathConflictCheckerFactory,
+			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory) {
+		this.serviceFinder = serviceFinder;
+		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
+		this.taskIdConflictCheckerFactory = taskIdConflictCheckerFactory;
+	}
 
 	private BundledMessageResponses<? extends Task> generalTaskLoader;
 	private BundledMessageResponses<String> assetTaskLoader;
@@ -101,7 +114,8 @@ public class TaskBackupLoader {
 			final AssetTask<?> taskWithAssets = updateAssetTaskAssets(task);
 			assetImportChecked.add(taskWithAssets);
 		};
-		final AssetPathConflictChecker ops = new AssetPathConflictChecker(onAssetPathChecked);
+		final AssetPathConflictChecker ops =
+				assetPathConflictCheckerFactory.create(onAssetPathChecked);
 		
 		final Runnable onFinished = () -> {
 			assetTaskLoader = null;
@@ -120,7 +134,7 @@ public class TaskBackupLoader {
 		final java.util.Collection<Task> tasks = multiMap.get(GeneralTask.class);
 		tasks.addAll(assetImportChecked);
 		
-		final TaskIdConflictChecker ops = new TaskIdConflictChecker();
+		final TaskIdConflictChecker ops = taskIdConflictCheckerFactory.create();
 		generalTaskLoader = new BundledMessageResponses<>(
 				tasks, ops, ()->{generalTaskLoader = null;});
 		

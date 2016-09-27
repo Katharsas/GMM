@@ -61,7 +61,7 @@ public abstract class AssetTask<A extends Asset> extends Task {
 	}
 	
 	public Path getPreviewFolderPath() {
-		return config.ASSETS_NEW.resolve(getAssetPath()).resolve(config.SUB_PREVIEW);
+		return config.assetsNew().resolve(getAssetPath()).resolve(config.subPreview());
 	}
 	
 	/**
@@ -72,10 +72,10 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		Objects.requireNonNull(asset);
 		Objects.requireNonNull(config);
 		if(asset.getGroupType().isOriginal()) {
-			return config.ASSETS_ORIGINAL.resolve(getAssetPath());
+			return config.assetsOriginal().resolve(getAssetPath());
 		} else {
-			return config.ASSETS_NEW.resolve(getAssetPath())
-					.resolve(config.SUB_ASSETS).resolve(asset.getFileName());
+			return config.assetsNew().resolve(getAssetPath())
+					.resolve(config.subAssets()).resolve(asset.getFileName());
 		}
 	}
 	

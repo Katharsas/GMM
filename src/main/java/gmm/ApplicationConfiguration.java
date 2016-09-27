@@ -37,6 +37,7 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateHashModel;
+import freemarker.template.Version;
 import gmm.util.ElFunctions;
 import gmm.web.ControllerArgsResolver;
 import gmm.web.binding.PathEditor;
@@ -127,7 +128,8 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 		result.setDefaultEncoding("UTF-8");
 
 		// static access
-		final BeansWrapper wrapper = new BeansWrapper();
+		final Version version = freemarker.template.Configuration.getVersion();
+		final BeansWrapper wrapper = new BeansWrapper(version);
 		final TemplateHashModel statics = wrapper.getStaticModels();
 		final Map<String, Object> shared = new HashMap<>();
 		for (final Class<?> clazz : ElFunctions.staticClasses) {

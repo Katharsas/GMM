@@ -15,12 +15,20 @@ import gmm.service.data.xstream.XMLService;
 @Service
 public class ManualBackupService {
 	
-	@Autowired private DataConfigService config;
-	@Autowired private XMLService xmlService;
-	@Autowired private FileService fileService;
+	private final FileService fileService;
+	private final DataConfigService config;
+	private final XMLService xmlService;
+	
+	@Autowired
+	public ManualBackupService(
+			FileService fileService, DataConfigService config, XMLService xmlService) {
+		this.fileService = fileService;
+		this.config = config;
+		this.xmlService = xmlService;
+	}
 	
 	public void saveTasksToXml(Collection<? extends Task> tasks, String pathString) {
-		final Path visible = config.TASKS;
+		final Path visible = config.dbTasks();
 		final Path path = visible.resolve(fileService.restrictAccess(Paths.get(pathString+".xml"), visible));
 		xmlService.serialize(tasks, path);
 	}

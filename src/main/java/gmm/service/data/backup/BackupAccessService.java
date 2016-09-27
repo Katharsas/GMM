@@ -3,10 +3,6 @@ package gmm.service.data.backup;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Hours;
@@ -14,14 +10,14 @@ import org.joda.time.Months;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.CombinedData;
+import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 
 /**
@@ -34,8 +30,7 @@ import gmm.service.data.DataConfigService;
  * @author Jan Mothes
  */
 @Service
-@WebListener
-public class BackupService implements ServletContextListener {
+public class BackupAccessService {
 	
 	/*
 	 * ###############################
@@ -53,7 +48,7 @@ public class BackupService implements ServletContextListener {
 	 * Creates backups in a certain subfolder when executed.
 	 * Starts deleting old backups when there are maxBackups backups.
 	 */
-	private class BackupExecutor {
+	protected class BackupExecutor {
 		
 		private final Path subDir;
 		private final int maxBackups;
@@ -69,18 +64,18 @@ public class BackupService implements ServletContextListener {
 		 * @param saveTasks - true if this executor should backup all tasks
 		 * @param saveUsers - true if this executor should backup all users
 		 */
-		public void execute(DateTime now, boolean saveTasks, boolean saveUsers) {
-			last = now;
+		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
+			last = new DateTime();
 			if (saveTasks) {
-				final Path directory = config.TASKS.resolve(backupPath).resolve(subDir);
-				service.createListBackup(now, directory, Task.class, maxBackups);
+				
+				final Path directory = config.dbTasks().resolve(backupPath).resolve(subDir);
+				fileService.createBackup(directory, data.getList(Task.class), maxBackups);
 			}
 			if (saveUsers) {
-				final Path directory = config.USERS.resolve(backupPath).resolve(subDir);
-				service.createListBackup(now, directory, User.class, maxBackups);
+				final Path directory = config.dbUsers().resolve(backupPath).resolve(subDir);
+				fileService.createBackup(directory, data.getList(User.class), maxBackups);
 				// just assume we want backups for combinedData as often as for users
-				service.createBackupCombinedData(
-						now, config.DB_OTHER, CombinedData.class.getSimpleName());
+				fileService.createBackup(config.dbOther(), data.getCombinedData(), maxBackups);
 			}
 		}
 		public Path getSubDir() {return subDir;}
@@ -90,7 +85,7 @@ public class BackupService implements ServletContextListener {
 	/**
 	 * Creates backups when executed if the supplied condition evaluates to true.
 	 */
-	private class ConditionalBackupExecutor extends BackupExecutor {
+	protected class ConditionalBackupExecutor extends BackupExecutor {
 		
 		private final TimeCondition condition;
 		
@@ -99,8 +94,9 @@ public class BackupService implements ServletContextListener {
 			this.condition = condition;
 		}
 		@Override
-		public void execute(DateTime now, boolean saveTasks, boolean saveUsers) {
-			if(condition.get(now, last())) super.execute(now, saveTasks, saveUsers);
+		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
+			final DateTime now = new DateTime();
+			if(condition.get(now, last())) super.execute(saveTasks, saveUsers, data);
 		}
 	}
 	
@@ -110,24 +106,23 @@ public class BackupService implements ServletContextListener {
 	 * ###############################
 	 */
 	
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	private final DataConfigService config;
+	private final BackupFileService fileService;
 	
-	@Autowired private DataConfigService config;
-	@Autowired private BackupFileService service;
+	private final Path backupPath = Paths.get("autoBackups");
 	
+	protected final ConditionalBackupExecutor monthlyBackup;
+	protected final ConditionalBackupExecutor daylyBackup;
+	protected final ConditionalBackupExecutor hourlyBackup;
+	protected final BackupExecutor triggeredBackup;
 	
-	protected final Path backupPath = Paths.get("autoBackups");
-	
-	private final ConditionalBackupExecutor monthlyBackup;
-	private final ConditionalBackupExecutor daylyBackup;
-	private final ConditionalBackupExecutor hourlyBackup;
-	private final BackupExecutor triggeredBackup;
-	
-
-	
-	
-	public BackupService() {
+	@Autowired
+	public BackupAccessService(DataConfigService config, BackupFileService service) {
+		this.config = config;
+		this.fileService = service;
 		
 		// timed backups
 		monthlyBackup = new ConditionalBackupExecutor("monthly", 6, (now, last) -> {
@@ -149,62 +144,23 @@ public class BackupService implements ServletContextListener {
 		triggeredBackup = new BackupExecutor("triggered", 100);
 	}
 	
-	/**
-	 * fixedRate should not influence backup rate
-	 */
-	@Scheduled(fixedRate=600000)
-	private void callback() {
-		final DateTime now = new DateTime();
-		monthlyBackup.execute(now, true, true);
-		hourlyBackup.execute(now, true, true);
-		daylyBackup.execute(now, false, true);
+	public Collection<User> getLatestUserBackup() {
+		final Path folder = config.dbUsers().resolve(backupPath);
+		return getLatestListBackup(folder, User.class);
 	}
 	
-	@Override
-	public void contextInitialized(ServletContextEvent sce) {
-	}
-
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		// Spring is not active anymore
-		// => exceptions must be caught manually, DI must be invoked (autowiring)
-		try {
-			WebApplicationContextUtils
-	        .getRequiredWebApplicationContext(sce.getServletContext())
-	        .getAutowireCapableBeanFactory()
-	        .autowireBean(this);
-			triggeredBackup.execute(DateTime.now(), true, true);
-		}
-		catch (final Exception e) {
-			logger.error(e.getMessage(), e);;
-		}
+	public Collection<Task> getLatestTaskBackup() {
+		final Path folder = config.dbTasks().resolve(backupPath);
+		return getLatestListBackup(folder, Task.class);
 	}
 	
-	public void triggerTaskBackup() {
-		triggeredBackup.execute(DateTime.now(), true, false);
+	public CombinedData getLatestCombinedDataBackup() {
+		final Path folder = config.dbOther();
+		return fileService.getFromLatestObjectBackup(CombinedData.class, folder);
 	}
 	
-	public void triggerUserBackup() {
-		triggeredBackup.execute(DateTime.now(), false, true);
-	}
-	
-	public Path getLatestUserBackup() {
-		final Path folder = config.USERS.resolve(backupPath);
-		return getLatestBackup(folder, User.class);
-	}
-	
-	public Path getLatestTaskBackup() {
-		final Path folder = config.TASKS.resolve(backupPath);
-		return getLatestBackup(folder, Task.class);
-	}
-	
-	public Path getLatestCombinedDataBackup() {
-		final Path folder = config.DB_OTHER;
-		return service.getLatestBackup(CombinedData.class, folder);
-	}
-	
-	private Path getLatestBackup(Path folder, Class<? extends Linkable> type) {
-		return service.getLatestBackup(
+	private <T extends Linkable> Collection<T> getLatestListBackup(Path folder, Class<T> type) {
+		return fileService.getFromLatestListBackup(
 				type,
 				folder.resolve(triggeredBackup.getSubDir()),
 				folder.resolve(monthlyBackup.getSubDir()),

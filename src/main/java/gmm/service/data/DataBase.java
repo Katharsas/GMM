@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Multimap;
@@ -31,7 +30,7 @@ import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
-import gmm.service.users.UserService;
+import gmm.service.users.UserProvider;
 import gmm.util.Util;
 
 @Service
@@ -75,10 +74,7 @@ public class DataBase implements DataAccess {
 	// INIT
 	// ###################
 	
-	@Autowired
-	private DataBase(CombinedData combined, UserService users) {
-		this.combined = combined;
-		executingUser = () -> users.getExecutingUser();
+	private DataBase() {
 		
 		// Initialize lists for concrete types
 		initConcreteLists(new Class<?>[] {
@@ -96,10 +92,15 @@ public class DataBase implements DataAccess {
 		initCompoundList(Task.class, Util.createArray(new Class<?>[]
 				{ GeneralTask.class, AssetTask.class }
 		));
+		
+		// must be set early since used by all data-adding methods (initialization)
+		executingUser = () -> UserProvider.getExecutingUser(getList(User.class));
+		
+		combined = new CombinedData();
 	}
 	
 	private void initConcreteLists(Class<?>[] types) {
-		for (Class<?> type : types) {
+		for (final Class<?> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
 			concretes.put(type, new ArrayList<>(type));
@@ -112,7 +113,7 @@ public class DataBase implements DataAccess {
 	 * them to given type in {@link DataBase#compounds}.
 	 */
 	private <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
-		Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
+		final Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
 		for (int i = 0; i < included.length; i++) {
 			Collection<T> list = concretes.get(includedTypes[i]);
 			if (list == null) {
@@ -142,12 +143,12 @@ public class DataBase implements DataAccess {
 	 */
 	private <T> Collection<T> concreteOrCompound(Class<T> clazz) {
 		// concrete list type
-		Collection<T> result = concretes.get(clazz);
+		final Collection<T> result = concretes.get(clazz);
 		if (result != null) {
 			return result;
 		} else {
 			// compound type
-			Collection<T> multi = compounds.get(clazz);
+			final Collection<T> multi = compounds.get(clazz);
 			if (multi != null) {
 				return multi;
 			} else {
@@ -165,7 +166,7 @@ public class DataBase implements DataAccess {
 	 * @return Live collection.
 	 */
 	private <T> Collection<T> concreteOnly(Class<T> clazz) {
-		Collection<?> result = concretes.get(clazz);
+		final Collection<?> result = concretes.get(clazz);
 		if (result != null) {
 			return Util.cast(result, clazz);
 		} else {
@@ -187,7 +188,7 @@ public class DataBase implements DataAccess {
 			throw new IllegalArgumentException("Element cannot be added because it already exists!");
 		}
 		collection.add(data);
-		Collection<Label> taskLabels = concreteOnly(Label.class);
+		final Collection<Label> taskLabels = concreteOnly(Label.class);
 		if(data instanceof Task) {
 			final Task task = (Task) data;
 			taskLabels.add(new Label(task.getLabel()));
@@ -207,7 +208,7 @@ public class DataBase implements DataAccess {
 			collection.addAll(data);
 			if(Task.class.isAssignableFrom(data.getGenericType())) {
 				final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
-				Collection<Label> taskLabels = concreteOnly(Label.class);
+				final Collection<Label> taskLabels = concreteOnly(Label.class);
 				for (final Task task : tasks) {
 					taskLabels.add(new Label(task.getLabel()));
 				}
@@ -242,9 +243,9 @@ public class DataBase implements DataAccess {
 				}
 			}
 			for(final Class<T> clazz : clazzToData.keySet()) {
-				java.util.Collection<T> part = clazzToData.get(clazz);
+				final java.util.Collection<T> part = clazzToData.get(clazz);
 				concreteOnly(clazz).removeAll(part);
-				ArrayList<T> wrapped = new ArrayList<>(clazz, part);
+				final ArrayList<T> wrapped = new ArrayList<>(clazz, part);
 				callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), wrapped));
 			}
 		}
@@ -255,7 +256,7 @@ public class DataBase implements DataAccess {
 		logger.debug("Removing all elements of type " + clazz.getSimpleName());
 		final Collection<T> removed = getList(clazz);
 		if (removed.size() >= 1) {
-			for (T t : removed) {
+			for (final T t : removed) {
 				logger.debug(t.toString());
 			}
 			concreteOrCompound(clazz).clear();

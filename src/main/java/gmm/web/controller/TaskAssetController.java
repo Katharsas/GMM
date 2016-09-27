@@ -141,9 +141,9 @@ public class TaskAssetController {
 
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		
-		final Path visible = config.ASSETS_NEW
+		final Path visible = config.assetsNew()
 				.resolve(task.getAssetPath())
-				.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER);
+				.resolve(isAssets ? config.subAssets() : config.subOther());
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		return new FileTreeScript().html(dirRelative, visible);
 	}
@@ -193,20 +193,20 @@ public class TaskAssetController {
 		final Path base;
 		if(subDir.equals("preview")) {
 			if(dir.equals("original")) {
-				base = config.ASSETS_ORIGINAL;
+				base = config.assetsOriginal();
 				relative = task.getOriginalAssetPath();
 			}
 			else if(dir.equals("newest")) {
-				base = config.ASSETS_NEW;
+				base = config.assetsNew();
 				relative = task.getNewestAssetPath();
 			}
 			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
 		}
 		else if (subDir.equals("asset") || subDir.equals("other") ){
 			final boolean isAssets = subDir.equals("asset");
-			base = config.ASSETS_NEW;
+			base = config.assetsNew();
 			relative = task.getAssetPath()
-					.resolve(isAssets ? config.SUB_ASSETS : config.SUB_OTHER)
+					.resolve(isAssets ? config.subAssets() : config.subOther())
 					.resolve(dir);
 		}
 		else throw new IllegalArgumentException("Sub directory '"+subDir+"' is invalid. Valid values are 'preview', 'asset' and 'other'");

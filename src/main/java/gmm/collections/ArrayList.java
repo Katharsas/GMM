@@ -48,6 +48,11 @@ public class ArrayList<E> extends java.util.ArrayList<E> implements List<E> {
 	}
 	
 	@Override
+	public <F> ArrayList<F> newInstance(Class<F> clazz) {
+		return new ArrayList<F>(clazz);
+	}
+	
+	@Override
 	public String toString() {
 		if (this.size() == 1) return this.iterator().next().toString();
 		else {

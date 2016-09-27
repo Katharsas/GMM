@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
-import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,7 @@ import com.thoughtworks.xstream.XStream;
 
 import gmm.collections.Collection;
 import gmm.service.FileService;
+import gmm.service.users.UserProvider;
 
 @Service
 public class XMLService {
@@ -25,8 +25,7 @@ public class XMLService {
 			"<?xml version=\"1.0\" encoding=\"" + xmlEncoding + "\" ?>\n";
 	
 	@Autowired
-	public XMLService(FileService fileService,
-			Supplier<Collection<gmm.domain.User>> userProvider) {
+	public XMLService(FileService fileService, UserProvider getUsers) {
 		
 		this.fileService = fileService;
 		xstream = new XStream();
@@ -52,9 +51,8 @@ public class XMLService {
 		for (final Class<?> clazz : supportedClasses) {
 			xstream.alias(clazz.getSimpleName(), clazz);
 		}
-		// converters
 		xstream.registerConverter(new PathConverter());
-		UserReferenceConverter userConverter = new UserReferenceConverter(userProvider);
+		final UserReferenceConverter userConverter = new UserReferenceConverter(getUsers);
 		// the following fields will reference user by id:
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "author", userConverter);
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "assigned", userConverter);

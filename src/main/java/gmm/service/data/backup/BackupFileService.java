@@ -24,8 +24,6 @@ import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
-import gmm.service.data.CombinedData;
-import gmm.service.data.DataAccess;
 import gmm.service.data.xstream.XMLService;
 
 /**
@@ -39,41 +37,40 @@ public class BackupFileService {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired private FileService fileService;
-	@Autowired private XMLService serializer;
-	@Autowired private DataAccess data;
+	private final FileService fileService;
+	private final XMLService serializer;
 	
 	private final FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
 	private final DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
 			.withLocale(Locale.ENGLISH);
 	
+	@Autowired
+	public BackupFileService(FileService fileService, XMLService serializer) {
+		this.fileService = fileService;
+		this.serializer = serializer;
+	}
+	
 	/**
 	 * Save backup to a folder. All xml files in that folder must also be
-	 * previously created backup files.
+	 * previously created backup files. The files will be named by the given objects class
+	 * or if it is a collection, by the generic class of the collection.
 	 * 
-	 * @param timeStamp - Determines time of backup / filename, usually now.
 	 * @param directory - Target directory for backup file.
-	 * @param type - Type to use to get data for backup from DataAccess.
+	 * @param toSave - Object which to create backup from.
 	 * @param maxSaveFiles - max number of xml files in this folder. If this 
 	 * 		backup would cause the files to exceed this number, the oldest backup
 	 * 		will be deleted. All files in the directory with ".xml" ending are
 	 * 		expected to be valid backup files with expected file name pattern!
 	 */
-	protected void createListBackup(DateTime timeStamp, Path directory, Class<? extends Linkable> type, int maxSaveFiles) {
-		//add backup file
-		final Collection<? extends Linkable> toSave = data.getList(type);
-		if(toSave.size() > 0) {
-			createBackup(timeStamp, directory, type, toSave, maxSaveFiles);
+	protected void createBackup(Path directory, Object toSave, int maxSaveFiles) {
+		final Class<?> fileNameType;
+		if (toSave instanceof Collection) {
+			fileNameType = ((Collection<?>)toSave).getGenericType();
+		} else {
+			fileNameType = toSave.getClass();
 		}
-	}
-	
-	protected void createBackupCombinedData(DateTime timeStamp, Path directory, String fileName) {
-		final CombinedData toSave = data.getCombinedData();
-		createBackup(timeStamp, directory, toSave.getClass(), toSave, 10);
-	}
-	
-	protected void createBackup(DateTime timeStamp, Path directory, Class<?> fileNameType, Object toSave, int maxSaveFiles) {
 		//add backup file
+		final DateTime timeStamp = new DateTime();
 		final Path path = directory.resolve(getFileName(fileNameType.getSimpleName(), timeStamp));
 		try {
 			logger.info("Creating backup for type '" + fileNameType.getSimpleName() + "' at " + path);
@@ -85,7 +82,7 @@ public class BackupFileService {
 		}
 	}
 	
-	protected void removeOldestBackup(Class<?> type, Path parent, int maxSaveFiles) {
+	private void removeOldestBackup(Class<?> type, Path parent, int maxSaveFiles) {
 		final TreeSet<Path> paths = new TreeSet<>(new BackupFileComparator(type.getSimpleName()));
 		try {
 			try(Stream<Path> dir = Files.list(parent)) {
@@ -104,11 +101,37 @@ public class BackupFileService {
 	}
 	
 	/**
-	 * @param type - Type that was used to create backups in specified parent directories.
+	 * Load a collection of objects from file.
+	 * @param type - Generic type of the collection, which is the type of its elements.
+	 * @return Data from latest backup file, or null if no file exists.
+	 */
+	protected <T extends Linkable> Collection<T> getFromLatestListBackup(Class<T> type, Path... parents) {
+		final Path path = getLatestBackupPath(type, parents);
+		if (path == null) return null;
+		else {
+			return serializer.deserializeAll(path, type);
+		}
+	}
+	
+	/**
+	 * Load a single object from file.
+	 * @param type - Type of the object.
+	 * @return Data from latest backup file, or null if no file exists.
+	 */
+	protected <T> T getFromLatestObjectBackup(Class<T> type, Path... parents) {
+		final Path path = getLatestBackupPath(type, parents);
+		if (path == null) return null;
+		else {
+			return serializer.deserialize(path, type);
+		}
+	}
+	
+	/**
+	 * @param type - Type that was used as name to create backups in specified parent directories.
 	 * @param parents - Directories directly containing backup files of specified type (only!).
 	 * @return Path to backup file that was created most recently. Null if no backup file exists.
 	 */
-	protected Path getLatestBackup(Class<?> type, Path... parents) {
+	private Path getLatestBackupPath(Class<?> type, Path... parents) {
 		final TreeSet<Path> paths = new TreeSet<>(new BackupFileComparator(type.getSimpleName()));
 		for (final Path parent : parents) {
 			if(parent.toFile().exists()) {

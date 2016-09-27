@@ -8,7 +8,7 @@ import gmm.service.ajax.BundledMessageResponses;
 /**
  * Defines of a set of {@link Conflict}s that can occur on loading an element of type T.<br>
  * To load an element, call {@link #onLoad(UniqueObject)}, which returns one of those conflicts or
- * {@link #NO_CONFLICT}. If no conflict occured, the {@link #onDefault(Object)} method must be
+ * {@link #NO_CONFLICT}. If no conflict occurred, the {@link #onDefault(Object)} method must be
  * called.<br>
  * <br>
  * Each conflict is expected to be resolved by executing a corresponding conflict operation.
@@ -71,12 +71,12 @@ public abstract class ConflictChecker<T> {
 	public abstract Map<String, Operation<T>> getAllOperations();
 	
 	/**
-	 * @return {@link #NO_CONFLICT} if no conflict occured, otherwise the conflict which occured.
+	 * @return {@link #NO_CONFLICT} if no conflict occurred, otherwise the conflict which occurred.
 	 */
 	public abstract Conflict<T> onLoad(T element);
 	
 	/**
-	 * Executed when no conflict occured on the last element processed.
+	 * Executed when no conflict occurred on the last element processed.
 	 * @return MessageResponse message
 	 */
 	public abstract String onDefault(T element);

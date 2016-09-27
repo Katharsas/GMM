@@ -34,6 +34,11 @@ public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 	}
 	
 	@Override
+	public <F> HashSet<F> newInstance(Class<F> clazz) {
+		return new HashSet<F>(clazz);
+	}
+	
+	@Override
 	public Class<E> getGenericType() {
 		return genericType;
 	}

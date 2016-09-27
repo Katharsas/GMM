@@ -34,6 +34,11 @@ public class LinkedHashSet<E> extends java.util.LinkedHashSet<E> implements Set<
 	}
 	
 	@Override
+	public <F> LinkedHashSet<F> newInstance(Class<F> clazz) {
+		return new LinkedHashSet<F>(clazz);
+	}
+	
+	@Override
 	public Class<E> getGenericType() {
 		return genericType;
 	}
