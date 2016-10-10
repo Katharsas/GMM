@@ -24,7 +24,7 @@ import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
-import gmm.service.data.xstream.XMLService;
+import gmm.service.data.PersistenceService;
 
 /**
  * Lower level service for BackupService.
@@ -38,14 +38,14 @@ public class BackupFileService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final FileService fileService;
-	private final XMLService serializer;
+	private final PersistenceService serializer;
 	
 	private final FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
 	private final DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
 			.withLocale(Locale.ENGLISH);
 	
 	@Autowired
-	public BackupFileService(FileService fileService, XMLService serializer) {
+	public BackupFileService(FileService fileService, PersistenceService serializer) {
 		this.fileService = fileService;
 		this.serializer = serializer;
 	}

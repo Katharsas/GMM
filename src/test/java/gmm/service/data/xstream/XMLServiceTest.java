@@ -1,7 +1,9 @@
 package gmm.service.data.xstream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
 import org.junit.After;
@@ -24,7 +26,7 @@ import gmm.service.users.UserProvider;
 import gmm.util.Util;
 
 /**
- * TODO: Mock filesystem/fileservice (use memory instead).
+ * TODO: Mock file-system/FileService (use memory instead).
  * Maybe create MockFileService with map Path->File to simulate files
  * 
  * @author Jan Mothes
@@ -55,7 +57,6 @@ public class XMLServiceTest {
 	public void tearDown() throws Exception {
 		fileService.delete(testFolder);
 		users.clear();
-		
 	}
 	
 	private User createTestUser(String suffix) {
@@ -68,6 +69,26 @@ public class XMLServiceTest {
 	}
 	
 	@Test
+	public void testInvalidArguments() {
+		final Path file = testFolder.resolve("null_test_file.xml");
+		xmlService.serialize(null, file);
+		final Object nullObject = xmlService.deserializeAll(file, Object.class);
+		assertEquals(null, nullObject);
+		try {
+			xmlService.deserialize(file.resolve("does_not_exist"), Object.class); fail();
+		} catch(final UncheckedIOException e) {}
+		try {
+			xmlService.deserializeAll(file.resolve("does_not_exist"), Object.class); fail();
+		} catch(final UncheckedIOException e) {}
+		try {
+			xmlService.deserialize(null, Object.class); fail();
+		} catch(final NullPointerException e) {}
+		try {
+			xmlService.deserializeAll(null, Object.class); fail();
+		} catch(final NullPointerException e) {}
+	}
+	
+	@Test
 	public void testUserSerialization() {		
 		//add test users
 		final Collection<User> users = new LinkedList<>(User.class);
@@ -76,7 +97,7 @@ public class XMLServiceTest {
 		users.add(createTestUser("3"));
 		
 		//serialize and deserialize
-		final Path file = testFolder.resolve("sub/user_test_file.xml");
+		final Path file = testFolder.resolve("user_test_file.xml");
 		xmlService.serialize(users, file);
 		final Collection<User> resultUsers = xmlService.deserializeAll(file, User.class);
 		

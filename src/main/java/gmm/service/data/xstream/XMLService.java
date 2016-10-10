@@ -12,10 +12,11 @@ import com.thoughtworks.xstream.XStream;
 
 import gmm.collections.Collection;
 import gmm.service.FileService;
+import gmm.service.data.PersistenceService;
 import gmm.service.users.UserProvider;
 
 @Service
-public class XMLService {
+public class XMLService implements PersistenceService {
 	
 	final private FileService fileService;
 	final private XStream xstream;
@@ -59,6 +60,7 @@ public class XMLService {
 		xstream.registerLocalConverter(gmm.domain.Comment.class, "author", userConverter);
 	}
 	
+	@Override
 	public synchronized void serialize(Object object, Path path) {
 		final String xml = xmlEncodingHeader + xstream.toXML(object);
 		byte[] bytes;
@@ -70,6 +72,7 @@ public class XMLService {
     	fileService.createFile(path, bytes);
 	}
 	
+	@Override
 	public synchronized <T> T deserialize(Path path, Class<T> clazz) {
 		if(!path.toFile().exists()) {
 			throw new UncheckedIOException(new IOException(
@@ -81,6 +84,7 @@ public class XMLService {
 		return result;
 	}
 
+	@Override
 	public synchronized <T> Collection<T> deserializeAll(Path path, Class<T> clazz) {
 		return deserialize(path, Collection.getClassGeneric(clazz));
 	}
