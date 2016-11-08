@@ -61,7 +61,7 @@ Folgen von SVN-Commits:
 
 Folgen & Auswirkungen bei GMM-Start und Benutztung der GMM-Weboberfläche (Interface):
 - Wenn der GMM nach dem Start Assets findet, für die es noch keinen Asset-Task gibt, so werden entsprechende neue Asset-Tasks erstellt.
-- Wenn im GMM-Interface ein neuer AssetTask erstellt wird, muss der Asset-Namen angegeben werden. Dieser Name wird benutzt, um wie vorher beschrieben beim SVN-Upload automatisch zu verknüpfen. Außerdem wird bei der Erstellung ein Original-Asset mit dem angegebenen Namen gesucht und verknüpft, falls vorhanden. Es kann nicht mehrere Asset-Tasks mit dem gleichen Asset-Namen geben!
+- Wenn im GMM-Interface ein neuer AssetTask erstellt wird, muss der Asset-Name angegeben werden. Dieser Name wird benutzt, um wie vorher beschrieben beim SVN-Upload automatisch zu verknüpfen. Außerdem wird bei der Erstellung ein Original-Asset mit dem angegebenen Namen gesucht und verknüpft, falls vorhanden. Es kann nicht mehrere Asset-Tasks mit dem gleichen Asset-Namen geben!
 - Wenn im GMM-Interface ein Asset-Task gelöscht wird, wird der entsprechende Asset-Ordner ebenfalls gelöscht und daraufhin committet!
 - Wenn im GMM-Interface eine Asset-Datei oder eine wip-Datei zu einem Asset-Task hochgeladen wird, wird diese Datei ins SVN eingefügt und daraufhin committet!
 - Wenn im GMM-Interface eine Asset-Datei hochgeladen wird, die nicht dem Asset-Dateinamen des Asset-Tasks entspricht, wird der User gewarnt und die hochgeladene Datei wird umbenannt, sodass sie zum Asset-Task passt.

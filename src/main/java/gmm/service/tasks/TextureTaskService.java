@@ -120,6 +120,11 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 		return TextureTaskService.extensions;
 	}
 	
+	@Override
+	public Path getAssetTypeSubFolder() {
+		return config.subNewTextures();
+	}
+	
 	/**
 	 * Returns a texture preview image (png) as byte array.
 	 */

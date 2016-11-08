@@ -8,9 +8,24 @@
 	<version>0.4.5-SNAPSHOT</version>
 	<name>Gothic Mod Manager</name>
 	<url>https://github.com/Katharsas/GMM</url>
+
+	<repositories>
+		<repository>
+			<!-- Needed by svnkit > 1.8.12 -->
+			<id>upstream</id>
+			<url>http://repo.jenkins-ci.org/releases/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 	
 	<pluginRepositories>
 		<pluginRepository>
+			<!-- Needed by tomcat7-maven-plugin 2.3 -->
 			<id>apache.snapshots</id>
 			<name>Apache Snapshots</name>
 			<url>http://repository.apache.org/snapshots</url>
@@ -54,6 +69,12 @@
 	</properties>
 
 	<dependencies>
+		<!-- SVN -->
+		<dependency>
+			<groupId>org.tmatesoft.svnkit</groupId>
+			<artifactId>svnkit</artifactId>
+			<version>1.8.14</version>
+		</dependency>
 		<!-- Mail, excluded JAF because newer JAF version included in Java SE 1.6 -->
 		<dependency>
 			<groupId>com.sun.mail</groupId>

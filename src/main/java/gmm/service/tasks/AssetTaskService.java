@@ -30,6 +30,7 @@ public abstract class AssetTaskService<A extends Asset> extends TaskFormService<
 	public abstract A createAsset(Path fileName, AssetGroupType isOriginal);
 	public abstract void createPreview(Path sourceFile, Path previewFolder, A asset);
 	public abstract FileExtensionFilter getExtensions();
+	public abstract Path getAssetTypeSubFolder();
 	
 	@Override
 	public final AssetTask<A> create(TaskForm form, User user) {

@@ -77,6 +77,11 @@ public class ModelTaskService extends AssetTaskService<Model> {
 		return ModelTaskService.extensions;
 	}
 	
+	@Override
+	public Path getAssetTypeSubFolder() {
+		return config.subNewModels();
+	}
+	
 	public void writePreview(ModelTask task, String version, OutputStream target) {
 		final String modelName = version + ".json";		
 		final Path path = config.assetsNew()
