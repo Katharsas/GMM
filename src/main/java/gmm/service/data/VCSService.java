@@ -1,5 +1,6 @@
 package gmm.service.data;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
@@ -15,12 +16,80 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.tmatesoft.svn.core.SVNDepth;
+import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNUpdateClient;
+import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
+import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import gmm.domain.task.asset.AssetTypeService;
 import gmm.service.tasks.AssetTaskService;
 
 @Service
 public class VCSService {
+	
+	public static class SVNTest {
+		
+		// TODO Open Working Copy (= client) or checkout one
+		// TODO hook into repository to get changes always, immediately
+		// TODO when access to repository is not possible, any file uploads cannot be made and must be disabled.
+		// TODO when access to repository is not possible, file downloads must be disabled because the files could
+		// be outdated and the GMM woudn't know that.
+		
+		public static void initAndCheckoutWithOldApi() throws SVNException {
+			
+			SVNURL svnRoot = SVNURL.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
+			
+			ISVNAuthenticationManager authManager =
+	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
+			
+//			// Once (initialize File System driver):
+//			FSRepositoryFactory.setup();
+//			
+//			// Open session (needed because could be changed from FS driver to https driver):
+//			SVNRepository repository = SVNRepositoryFactory.create(svnRoot);
+//			
+//			repository.setAuthenticationManager(authManager);
+//			repository.closeSession();
+			
+			SVNClientManager clientManager = SVNClientManager.newInstance(null, authManager);
+			
+			SVNUpdateClient updateClient = clientManager.getUpdateClient( );
+			
+			File workingCopyPath = new File("workspace/newAssets");
+			updateClient.doCheckout(svnRoot, workingCopyPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
+		}
+		
+		
+		public static void initAndCheckoutWithNewApi() throws SVNException {
+			
+			SvnTarget svnRoot = SvnTarget.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
+			SvnTarget workingCopyPath = SvnTarget.fromFile(new File("workspace/newAssets"));
+			
+			ISVNAuthenticationManager authManager =
+	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
+			
+			final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
+			svnOperationFactory.setAuthenticationManager(authManager);
+			try {
+			    final SvnCheckout checkout = svnOperationFactory.createCheckout();
+			    checkout.setSingleTarget(workingCopyPath);
+			    checkout.setSource(svnRoot);
+			    checkout.setRevision(SVNRevision.HEAD);// TODO: needed? maybe even wrong?
+			    //... other options
+			    checkout.run();
+			} finally {
+			    svnOperationFactory.dispose();
+			}
+		}
+	}
+	
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
