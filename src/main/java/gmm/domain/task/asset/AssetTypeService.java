@@ -1,11 +1,13 @@
 package gmm.domain.task.asset;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import gmm.collections.ArrayList;
 import gmm.collections.List;
 import gmm.service.tasks.AssetTaskService;
 
+@Service
 public class AssetTypeService {
 	
 	private List<? extends AssetTaskService<?>> list;

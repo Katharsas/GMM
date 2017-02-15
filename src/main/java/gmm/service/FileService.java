@@ -93,7 +93,7 @@ public class FileService {
 	 * @author Jan Mothes
 	 */
 	public static class FileExtensionFilter implements PathFilter {
-		private final static StringUtil strings = new StringUtil().ignoreCase();
+		private final static StringUtil strings = StringUtil.ignoreCase();
 		private final String[] extensions;
 		/**
 		 * @param extensions - An array with file extensions like "txt","jpg".

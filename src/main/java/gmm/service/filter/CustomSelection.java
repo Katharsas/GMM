@@ -38,7 +38,7 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	private boolean REMOVE = false;
 	
 	private final static boolean DEBUG = false;
-	private final StringUtil strings = new StringUtil();
+	private final StringUtil strings = StringUtil.ignoreCase();
 	
 	/**
 	 * The given elements will be the elements this selection operates on. The collection itself
@@ -160,8 +160,6 @@ public class CustomSelection<T,I extends Collection<T>> implements Selection<T,I
 	}
 	
 	private boolean doStringsMatch(String result, String filter) {
-		strings.IGNORE_CASE = true;
-		strings.ALWAYS_CONTAINS_EMPTY = true;
 		if(filter==null || result==null) {
 			return NULL_EQUALS_EMPTY &&
 					((filter==null && result.equals("")) ||

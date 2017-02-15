@@ -8,10 +8,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +32,7 @@ import org.tmatesoft.svn.core.wc2.SvnCheckout;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 
+import gmm.collections.HashSet;
 import gmm.domain.task.asset.AssetTypeService;
 import gmm.service.tasks.AssetTaskService;
 
@@ -44,9 +49,9 @@ public class VCSService {
 		
 		public static void initAndCheckoutWithOldApi() throws SVNException {
 			
-			SVNURL svnRoot = SVNURL.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
+			final SVNURL svnRoot = SVNURL.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
 			
-			ISVNAuthenticationManager authManager =
+			final ISVNAuthenticationManager authManager =
 	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
 			
 //			// Once (initialize File System driver):
@@ -58,21 +63,21 @@ public class VCSService {
 //			repository.setAuthenticationManager(authManager);
 //			repository.closeSession();
 			
-			SVNClientManager clientManager = SVNClientManager.newInstance(null, authManager);
+			final SVNClientManager clientManager = SVNClientManager.newInstance(null, authManager);
 			
-			SVNUpdateClient updateClient = clientManager.getUpdateClient( );
+			final SVNUpdateClient updateClient = clientManager.getUpdateClient( );
 			
-			File workingCopyPath = new File("workspace/newAssets");
+			final File workingCopyPath = new File("workspace/newAssets");
 			updateClient.doCheckout(svnRoot, workingCopyPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
 		}
 		
 		
 		public static void initAndCheckoutWithNewApi() throws SVNException {
 			
-			SvnTarget svnRoot = SvnTarget.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
-			SvnTarget workingCopyPath = SvnTarget.fromFile(new File("workspace/newAssets"));
+			final SvnTarget svnRoot = SvnTarget.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
+			final SvnTarget workingCopyPath = SvnTarget.fromFile(new File("workspace/newAssets"));
 			
-			ISVNAuthenticationManager authManager =
+			final ISVNAuthenticationManager authManager =
 	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
 			
 			final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
@@ -91,6 +96,48 @@ public class VCSService {
 	}
 	
 	
+	public void onVcsRepoChanged() {
+		
+		// TODO make sure working copy is up to date when this is called
+		
+		final Map<Path, AssetTaskService<?>> assetTypeFolders = getVcsAssetTypeFolders();
+		
+		final Map<String, AssetFolderInfo> allAssetFolders = new CaseInsensitiveMap<>();
+		
+		for (final Entry<Path, AssetTaskService<?>> entry : assetTypeFolders.entrySet()) {
+			
+			final Path assetTypeFolder = entry.getKey();
+			final AssetTaskService<?> service = entry.getValue();
+			
+			final BiConsumer<String, AssetFolderInfo> onHit = (folderName, folderInfo) -> {
+				final AssetFolderInfo duplicate = allAssetFolders.get(folderName);
+				if (duplicate != null) {
+					allAssetFolders.put(folderName, AssetFolderInfo.createInvalidNotUnique(duplicate, folderInfo));
+				} else {
+					allAssetFolders.put(folderName, folderInfo);
+				}
+			};
+			
+			scanVcsAssetTypeFolder(assetTypeFolder, service, onHit);
+			
+			// TODO
+			// There must be mapping between AssetTasks and AssetFolder.
+			// This mapping must be updated to reflect changes since the last update.
+			// The update can cause very costly operations like generating previews for all changed files.
+			// Question:
+			// Do we just re-initialize all files on every update?
+			// -> This means new previews get generated and so on.
+			// Or do we somehow keep track of which files changed and which didnt?
+			// We mostly need to determine then:
+			// - Do all mapped folders and assetfiles still exist? 
+			// - Did the status of an asset folder change (become invalid or valid etc.) ?
+			// - Did the asset file itself change (either by hash or by somehow keeping track of svn changes) ?
+			// - What about multiple asset folders, were all duplicates removed, or some added ?
+			// Then only the needed actions could ne taken.
+			
+		}
+	}
+	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	public DataConfigService config;
@@ -100,7 +147,8 @@ public class VCSService {
 
 	public static enum AssetFolderStatus {
 		
-		INVALID_ASSET_FOLDER_NAME(false),
+		INVALID_ASSET_FOLDER_NOT_UNIQUE(false),
+		INVALID_ASSET_FOLDER_EXTENSION(false),
 		INVALID_ASSET_FOLDER_CONTENT(false),
 		INVALID_ASSET_FILE_NAME(false),
 		
@@ -113,22 +161,57 @@ public class VCSService {
 		}
 	}
 	
-	public class AssetFolder {
-//		private final Path assetFolder;
-//		private final String assetFileName;
+	public static class AssetFolderInfo {
+		
+		public static AssetFolderInfo createInvalidNotUnique(AssetFolderInfo duplicate, AssetFolderInfo current) {
+			return new AssetFolderInfo(duplicate, current);
+		}
+		
+		private final Path assetFolder;
+		private final String assetFileName;
 		
 		private final AssetFolderStatus status;
 		
-		/**
-		 * @param assetTypeFolder - relative to VCS root folder, must exist
-		 * @param assetFolder - relative to assetTypeFolder, must exist
-		 */
-		public AssetFolder(AssetTaskService<?> service, Path assetFolderAbs, Path assetFolder, String assetFolderName) {
+		private final HashSet<Path> nonUniqueDuplicates;
+		
+		private AssetFolderInfo(AssetFolderInfo duplicate, AssetFolderInfo current) {
+			this.assetFolder = null;
+			this.assetFileName = null;
 			
+			final AssetFolderStatus notUnique = AssetFolderStatus.INVALID_ASSET_FOLDER_NOT_UNIQUE;
+			this.status = notUnique;
+			this.nonUniqueDuplicates = new HashSet<>(Path.class);
+			
+			if (duplicate.status == notUnique) {
+				this.nonUniqueDuplicates.addAll(duplicate.nonUniqueDuplicates);
+			} else {
+				this.nonUniqueDuplicates.add(duplicate.assetFolder);
+			}
+			
+			if (current.status == notUnique) {
+				this.nonUniqueDuplicates.addAll(current.nonUniqueDuplicates);
+			} else {
+				this.nonUniqueDuplicates.add(current.assetFolder);
+			}
+		}
+		
+		/**
+		 * @param base - absolute path up to and including the asset type folder inside svn root, must exist
+		 * @param relative - relative to assetTypeFolder, pointing to an asset folder inside base, must exist
+		 */
+		public AssetFolderInfo(AssetTaskService<?> service, Path base, Path relative) {
+			this.nonUniqueDuplicates = null;
+			this.assetFolder = relative;
+			
+			final Path assetFolderAbs = base.resolve(relative);
+			
+			final String assetFolderName = assetFolderAbs.getFileName().toString();
 			final boolean isValidAssetFolderName = service.getExtensions().test(assetFolderName);
 			
+			String assetFileName = null;
+			
 			if (!isValidAssetFolderName) {
-				status = AssetFolderStatus.INVALID_ASSET_FOLDER_NAME;
+				status = AssetFolderStatus.INVALID_ASSET_FOLDER_EXTENSION;
 			} else {
 				final List<Path> files;
 				try {
@@ -136,82 +219,83 @@ public class VCSService {
 						.filter(path -> path.toFile().isFile())
 						.collect(Collectors.toList());
 					
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					throw new UncheckedIOException(e);
 				}
+				
 				if (files.size() > 1) {
-					status = AssetFolderStatus.INVALID_ASSET_FILE_NAME;
+					status = AssetFolderStatus.INVALID_ASSET_FOLDER_CONTENT;
 				} else if (files.size() == 0) {
 					status = AssetFolderStatus.VALID_NO_ASSET;
 				} else {
-					Path assetFile = files.iterator().next();
-					if (!assetFolderName.equalsIgnoreCase(assetFile.toFile().getName())) {
+					final Path assetFile = files.iterator().next();
+					assetFileName = assetFile.getFileName().toString();
+					
+					if (!assetFolderName.equalsIgnoreCase(assetFileName)) {
 						status = AssetFolderStatus.INVALID_ASSET_FILE_NAME;
 					} else  {
 						status = AssetFolderStatus.VALID_WITH_ASSET;
 					}
 				}
 			}
-			
-			// TODO which data to should this object hold?
-			
-			if (status.isValid) {
-				
-			} else {
-				
-			}
+			this.assetFileName = assetFileName;
 		}
 	}
 	
-	public Map<String, AssetFolder> scanVCSDirectory() {
+	private Map<Path, AssetTaskService<?>> getVcsAssetTypeFolders() {
 		
-		for (AssetTaskService<?> service : assetTypeService.getAssetTaskServices()) {
+		final Map<Path, AssetTaskService<?>> result = new HashMap<>();
+		
+		for (final AssetTaskService<?> service : assetTypeService.getAssetTaskServices()) {
+			
 			final Path assetTypeFolder = config.assetsNew().resolve(service.getAssetTypeSubFolder());
-			if (assetTypeFolder.toFile().isDirectory()) {
-				logger.info("Scanning asset type folder '" + assetTypeFolder + "' for assets.");
-				try {
-					Files.walkFileTree(assetTypeFolder, new SimpleFileVisitor<Path>() {
-						@Override
-						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-							final String dirName = dir.toFile().getName();
-							final String[] dirNameParts = dirName.split(".");
-							// if dir name has minimum of two parts (name, extension) separated by '.'
-							if (dirNameParts.length >= 2) {
-								final Path assetFolder = assetTypeFolder.relativize(dir);
-								final AssetFolder folderInfo
-										= new AssetFolder(service, dir, assetFolder, dirName);
-								
-								// TODO put folderInfo into map ?
-								// TODO should AssetFolder contain Service reference ? this would AsseTasks
-								// when linked to directly use that service or hold it for later (previews?)
-								
-								
-								return FileVisitResult.SKIP_SUBTREE;
-							}
-							return FileVisitResult.CONTINUE;
-						}
-					});
-				} catch (IOException e) {
-					throw new UncheckedIOException(e);
-				}
+			final String taskTypeName = service.getTaskType().getSimpleName();
+			
+			if (!assetTypeFolder.toFile().isDirectory()) {
+				logger.warn("Could not find asset folder for type '" + taskTypeName + "' at '" + assetTypeFolder + "'!");
 			} else {
-				logger.warn("Could not find asset folder at '" + assetTypeFolder + "'!");
+				logger.info("Found asset type folder for type '" + taskTypeName + "' at '" + assetTypeFolder + "'.");
+				
+				result.put(assetTypeFolder, service);
 			}
 		}
-		
-		return null;
+		return result;
 	}
 	
-//	public static class AssetFolderVisitor extends SimpleFileVisitor<Path> {
-//		
-//		private final AssetTaskService<?> service;
-//		private final Path assetTypeFolderAbs;
-//		
-//		public AssetFolderVisitor(AssetTaskService<?> service, Path assetTypeFolderAbs) {
-//			this.service = service;
-//			this.assetTypeFolderAbs = assetTypeFolderAbs;
-//		}
-//		
-//		
-//	}
+	public void scanVcsAssetTypeFolder(Path assetTypeFolder, AssetTaskService<?> service,
+			BiConsumer<String, AssetFolderInfo> onHit) {
+
+		if (!assetTypeFolder.toFile().isDirectory()) {
+			throw new IllegalArgumentException("Directory expected!");
+		}
+		
+		try {
+			Files.walkFileTree(assetTypeFolder, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+					
+					final String dirName = dir.getFileName().toString();
+					if (isAssetFolderByConvention(dirName)) {
+						
+						final Path relative = assetTypeFolder.relativize(dir);
+						final AssetFolderInfo folderInfo = new AssetFolderInfo(service, assetTypeFolder, relative);
+						onHit.accept(dirName, folderInfo);
+						
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+	
+	private boolean isAssetFolderByConvention(String folderName) {
+		// by convention, an asset folder is named like a file, with file name and file extension
+		// separated by a point.
+		final String[] folderNameParts = folderName.split(".");
+		return folderNameParts.length >= 2;
+	}
+	
 }
