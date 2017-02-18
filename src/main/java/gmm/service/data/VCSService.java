@@ -20,18 +20,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
-import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
-import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
-import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnDiffStatus;
+import org.tmatesoft.svn.core.wc2.SvnDiffSummarize;
+import org.tmatesoft.svn.core.wc2.SvnGetInfo;
+import org.tmatesoft.svn.core.wc2.SvnInfo;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
+import org.tmatesoft.svn.core.wc2.SvnUpdate;
 
+import gmm.collections.ArrayList;
+import gmm.collections.Collection;
 import gmm.collections.HashSet;
 import gmm.domain.task.asset.AssetTypeService;
 import gmm.service.tasks.AssetTaskService;
@@ -41,58 +44,79 @@ public class VCSService {
 	
 	public static class SVNTest {
 		
-		// TODO Open Working Copy (= client) or checkout one
-		// TODO hook into repository to get changes always, immediately
+		final SvnTarget svnRepoRoot = SvnTarget.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
+		
+		final SvnTarget workingCopyPath = SvnTarget.fromFile(new File("workspace/newAssets"));
+		
+		final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();//TODO call dispose always (finally) even on exception of any method
+		
+		long currentRevision;// TODO should be most recent one, when repo gets new revision, use method getChangedFilesSinceRevision to get file changes.
+		
 		// TODO when access to repository is not possible, any file uploads cannot be made and must be disabled.
-		// TODO when access to repository is not possible, file downloads must be disabled because the files could
-		// be outdated and the GMM woudn't know that.
+		// TODO when access to repository is not possible, file downloads must be disabled because the files could be outdated and the GMM woudn't know that.
 		
-		public static void initAndCheckoutWithOldApi() throws SVNException {
-			
-			final SVNURL svnRoot = SVNURL.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
-			
-			final ISVNAuthenticationManager authManager =
-	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
-			
-//			// Once (initialize File System driver):
-//			FSRepositoryFactory.setup();
-//			
-//			// Open session (needed because could be changed from FS driver to https driver):
-//			SVNRepository repository = SVNRepositoryFactory.create(svnRoot);
-//			
-//			repository.setAuthenticationManager(authManager);
-//			repository.closeSession();
-			
-			final SVNClientManager clientManager = SVNClientManager.newInstance(null, authManager);
-			
-			final SVNUpdateClient updateClient = clientManager.getUpdateClient( );
-			
-			final File workingCopyPath = new File("workspace/newAssets");
-			updateClient.doCheckout(svnRoot, workingCopyPath, SVNRevision.HEAD, SVNRevision.HEAD, SVNDepth.INFINITY, false);
-		}
-		
-		
-		public static void initAndCheckoutWithNewApi() throws SVNException {
-			
-			final SvnTarget svnRoot = SvnTarget.fromFile(new File("C:/SVNServer/trunk/project/newAssets"));
-			final SvnTarget workingCopyPath = SvnTarget.fromFile(new File("workspace/newAssets"));
+		public void init() throws SVNException {
 			
 			final ISVNAuthenticationManager authManager =
 	                   SVNWCUtil.createDefaultAuthenticationManager("(login name)", "(login password)".toCharArray());
 			
 			final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
 			svnOperationFactory.setAuthenticationManager(authManager);
-			try {
-			    final SvnCheckout checkout = svnOperationFactory.createCheckout();
-			    checkout.setSingleTarget(workingCopyPath);
-			    checkout.setSource(svnRoot);
-			    checkout.setRevision(SVNRevision.HEAD);// TODO: needed? maybe even wrong?
-			    //... other options
-			    checkout.run();
-			} finally {
-			    svnOperationFactory.dispose();
-			}
 		}
+		
+		/**
+		 * Checkout(SVN) / Clone(Git) to create a local working copy from repo.
+		 * Only needed when there is no working copy yet.
+		 */
+		public void createWorkingCopy() throws SVNException {
+			
+		    final SvnCheckout checkout = svnOperationFactory.createCheckout();
+		    checkout.setSingleTarget(workingCopyPath);
+		    checkout.setSource(svnRepoRoot);
+		    
+		    final long revision = checkout.run();
+		    svnOperationFactory.dispose();
+		}
+		
+		/**
+		 * Update(SVN) / Fetch(Git) local working copy with latest files from repo.
+		 */
+		public void updateWorkingCopy() throws SVNException {
+			
+			final SvnUpdate update = svnOperationFactory.createUpdate();
+			update.setSingleTarget(workingCopyPath);
+			
+			final long[] revisions = update.run();
+		}
+		
+		/**
+		 * Find out at which revision number the repo is at.
+		 * Can also be used on single files to find out in which revision the last changed occured to them.
+		 */
+		public void latestRevision() throws SVNException {
+			
+			final SvnGetInfo operation = svnOperationFactory.createGetInfo();
+			operation.setSingleTarget(workingCopyPath);
+			
+			final SvnInfo info = operation.run();
+			final long revision = info.getRevision();
+		}
+		
+		/**
+		 * Get all paths to all changed files since an older revision.
+		 */
+		public void getChangedFilesSinceRevision() throws SVNException {
+			
+			final SVNRevision oldRevision = SVNRevision.create(0);
+			final SVNRevision latestRevision = SVNRevision.create(1);
+			
+			final SvnDiffSummarize op = svnOperationFactory.createDiffSummarize();
+			op.setSource(svnRepoRoot, oldRevision, latestRevision);
+			
+			final Collection<SvnDiffStatus> result = new ArrayList<>(SvnDiffStatus.class);
+			op.run(result);
+		}
+		
 	}
 	
 	
@@ -123,15 +147,10 @@ public class VCSService {
 			// TODO
 			// There must be mapping between AssetTasks and AssetFolder.
 			// This mapping must be updated to reflect changes since the last update.
-			// The update can cause very costly operations like generating previews for all changed files.
-			// Question:
-			// Do we just re-initialize all files on every update?
-			// -> This means new previews get generated and so on.
-			// Or do we somehow keep track of which files changed and which didnt?
-			// We mostly need to determine then:
+			// Thus, when we know which files changed from SVN diff, we need to determine:
 			// - Do all mapped folders and assetfiles still exist? 
 			// - Did the status of an asset folder change (become invalid or valid etc.) ?
-			// - Did the asset file itself change (either by hash or by somehow keeping track of svn changes) ?
+			// - Did the asset file itself change (save revision the gmm is currently at, get changed files since that revision from svn)
 			// - What about multiple asset folders, were all duplicates removed, or some added ?
 			// Then only the needed actions could ne taken.
 			

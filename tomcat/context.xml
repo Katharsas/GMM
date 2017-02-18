@@ -1,7 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Context for Hot Reload
 	see: https://github.com/spring-projects/spring-loaded/issues/97
  -->
-<?xml version="1.0" encoding="UTF-8"?>
 <Context>
 	<Resources
 		className="org.apache.naming.resources.VirtualDirContext"

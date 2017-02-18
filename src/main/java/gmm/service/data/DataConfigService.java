@@ -65,7 +65,7 @@ public class DataConfigService {
 	@Value("${path.assets.new.3ds}") private Path subNewModels;
 //	@Value("${path.assets.new.worlds}") private Path subNewWorlds;
 	
-	private final Path subAssets = Paths.get("assets");
+	private final Path subAssets = Paths.get(".");
 	private final Path subPreview = Paths.get("preview");
 	private final Path subOther = Paths.get("wip");
 	

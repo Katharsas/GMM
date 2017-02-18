@@ -9,15 +9,15 @@ import java.util.Map;
 
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -52,10 +52,8 @@ import gmm.web.binding.PathEditor;
 @EnableWebMvc
 @EnableScheduling
 @Import({ WebSocketConfiguration.class })
+@PropertySource("classpath:config.properties")
 public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
-	
-	private static Resource configFile = new ClassPathResource("config.properties");
-	private static Resource metaFile = new ClassPathResource("meta.properties");
 
 	/**
 	 * ----------------------------- Basic Config -----------------------------
@@ -163,13 +161,12 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	}
 	
 	/**
-	 * Exposes property file with meta information to @Value annotation.
+	 * Exposes environment properties to @Value annotations.
+	 * Environment properties are configured using @PropertySource on @Configuration classes.
 	 */
 	@Bean
-	public static PropertyPlaceholderConfigurer propertyConfigurer() {
-		final PropertyPlaceholderConfigurer conf =  new PropertyPlaceholderConfigurer();
-		conf.setLocations(configFile, metaFile);
-		return conf;
+	public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
 	}
 	
 	/**
@@ -178,7 +175,7 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	@Bean
 	public PropertiesFactoryBean config() {
 		final PropertiesFactoryBean factory = new PropertiesFactoryBean();
-		factory.setLocation(metaFile);
+		factory.setLocation(new ClassPathResource("meta.properties"));
 		return factory;
 	}
 	
