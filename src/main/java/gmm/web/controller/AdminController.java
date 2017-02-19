@@ -31,8 +31,7 @@ import gmm.service.data.DataConfigService;
 import gmm.service.data.backup.BackupExecutorService;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.data.xstream.XMLService;
-import gmm.service.tasks.ModelTaskService;
-import gmm.service.tasks.TextureTaskService;
+import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.ControllerArgs;
 import gmm.web.FileTreeScript;
 import gmm.web.FtlTemplateService;
@@ -56,6 +55,7 @@ public class AdminController {
 	@Autowired private BackupExecutorService backups;
 	@Autowired private ManualBackupService manualBackups;
 	@Autowired private FtlTemplateService templates;
+	@Autowired private TaskServiceFinder serviceFinder;
 	
 	public AdminController() {
 	}
@@ -254,8 +254,7 @@ public class AdminController {
 		
 		final Path visible = config.assetsOriginal();
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
-		final PathFilter filter = textures ?
-				TextureTaskService.extensions : ModelTaskService.extensions;
+		final PathFilter filter = serviceFinder.getCombinedExtensionFilter();
 		final List<Path> paths = fileService.getFilesRecursive(visible.resolve(dirRelative), filter);
 		session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
 		return session.getImportPaths();

@@ -38,10 +38,10 @@ public class TaskFilterService {
 			final User assigned = task.getAssigned();
 			return assigned == null ? "" : assigned.getName();
 		};
-		final Function<T, String> getAssetPath = task -> {
+		final Function<T, String> getAssetName = task -> {
 			if (task instanceof AssetTask<?>) {
 				final AssetTask<?> assetTask = (AssetTask<?>) task;
-				return assetTask.getAssetPath().toString();
+				return assetTask.getAssetName().get();
 			} else {
 				return "";
 			}
@@ -52,7 +52,7 @@ public class TaskFilterService {
 			selected = new GmmSelection<T,I>(tasks, false)
 				.uniteWith()
 				.matchingAll(search.getEasy(),
-						getName, getAuthor, getDetails, getLabel, getAssigned, getAssetPath)
+						getName, getAuthor, getDetails, getLabel, getAssigned, getAssetName)
 				.getSelected();
 		}
 		else {
@@ -64,7 +64,7 @@ public class TaskFilterService {
 				.matching(getLabel, search.getLabel())
 				.matching(getAuthor, search.getAuthor())
 				.matching(getAssigned, search.getAssigned())
-				.matching(getAssetPath, search.getPath())
+				.matching(getAssetName, search.getAssetName())
 				.getSelected();
 		}
 		return selected;

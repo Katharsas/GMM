@@ -13,11 +13,12 @@ import gmm.collections.List;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
+import gmm.domain.task.asset.AssetName;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetPathConflictCheckerFactory;
-import gmm.service.ajax.operations.AssetPathConflictCheckerFactory.AssetPathConflictChecker;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
@@ -34,7 +35,7 @@ public class TaskSession implements DataChangeCallback {
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
-	private final AssetPathConflictCheckerFactory assetPathConflictCheckerFactory;
+	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
 	
 	/**
 	 * Events that affect the task cache and all task lists on the page.
@@ -45,7 +46,7 @@ public class TaskSession implements DataChangeCallback {
 	
 	@Autowired
 	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users,
-			AssetPathConflictCheckerFactory conflictCheckerFactory) {
+			AssetNameConflictCheckerFactory conflictCheckerFactory) {
 		this.data = data;
 		this.taskCreator = taskCreator;
 		loggedInUser = users.getLoggedInUser();
@@ -130,7 +131,7 @@ public class TaskSession implements DataChangeCallback {
 	 * Create new task (& conflict checking)
 	 * ---------------------------------------------------*/
 	
-	private BundledMessageResponses<String> importer;
+	private BundledMessageResponses<AssetName> importer;
 	
 	public List<MessageResponse> firstTaskCheck(TaskForm form) {
 		importer = null;
@@ -145,16 +146,16 @@ public class TaskSession implements DataChangeCallback {
 			
 			return new LinkedList<>(MessageResponse.class, finished);
 		} else {
-			// else check for assetpath conflicts
-			final Consumer<String> onAssetPathChecked = (assetPath) -> {
-				form.setAssetPath(assetPath);
+			// else check for asset filename conflicts
+			final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
+				form.setAssetName(assetName.get());
 				data.add(taskCreator.create(type.toClass(), form, loggedInUser));
 			};
-			final AssetPathConflictChecker ops = 
-					assetPathConflictCheckerFactory.create(onAssetPathChecked);
+			final AssetNameConflictChecker ops = 
+					assetPathConflictCheckerFactory.create(onAssetNameChecked);
 			 
 			importer = new BundledMessageResponses<>(
-					new LinkedList<>(String.class, form.getAssetPath()),
+					new LinkedList<>(AssetName.class, new AssetName(form.getAssetName())),
 					ops, ()->{importer = null;});
 			
 			return importer.firstBundle();

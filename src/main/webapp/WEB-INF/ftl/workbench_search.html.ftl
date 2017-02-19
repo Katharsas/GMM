@@ -54,8 +54,8 @@
 				<div class="workbench-search-desc"><@s.message "tasks.assigned" />:</div>
 				<@m.formInput path=(path+".assigned") class="form-element" />
 				
-				<div class="workbench-search-desc"><@s.message "tasks.path" />:</div>
-				<@m.formInput path=(path+".path") class="form-element" />
+				<div class="workbench-search-desc"><@s.message "tasks.asset_name" />:</div>
+				<@m.formInput path=(path+".assetName") class="form-element" />
 				
 			</div>
 			<div class="workbench-search-submit button">

@@ -42,17 +42,17 @@ public class TaskIdConflictCheckerFactory {
 		final Map<String, Operation<Task>> map = new HashMap<>();
 		
 		map.put("skip", (conflict, element) -> {
-			return "Skipping conflicting "+print(element);
+			return "Skipping this conflicting "+print(element);
 		});
 		map.put("overwrite", (conflict, element) -> {
 			data.remove(element);
 			data.add(element);
-			return "Overwriting task with conflicting "+print(element);
+			return "Overwriting existing task with this "+print(element);
 		});
 		map.put("both", (conflict, element) -> {
 			element.makeUnique();
 			data.add(element);
-			return "Adding conflicting task as new "+print(element);
+			return "Adding this as new "+print(element);
 		});
 		return map;
 	}

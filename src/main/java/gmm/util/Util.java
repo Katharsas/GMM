@@ -17,14 +17,16 @@ public class Util {
 	
 	/**
 	 * Allows you to change the upper bound of a collection if the actual generic type of the
-	 * collection is a subtype of the target bound.<br/>
-	 * This is usefull in particular if runtime checks can garantee that the cast cannot fail by
-	 * checking the collections generic type instead of iterating through every element.
+	 * collection is a subtype of the target bound.<br>
+	 * This is useful in particular if runtime checks can guarantee that the cast cannot fail by
+	 * checking the collections generic type instead of iterating through every element. <br>
+	 * <br>
+	 * Example:
+	 * <pre>{@code 
+	 * Collection<?> data = new List<ChildClass>();
+	 * Collection<? extends ChildClass> = downCastBound(data, ChildClass.class);
+	 * }</pre>
 	 * 
-	 * Example:<pre>
-	 * Colllection<?> data;
-	 * Collection<? extends ChildClass> = downCastBound(data, ChildClass.class)
-	 * </pre>
 	 * @param <T> - upper bound target type
 	 * @param data - collection with unknown generic type
 	 * @param to - used to make runtime check
@@ -68,7 +70,7 @@ public class Util {
 	
 	public static class SingleIterator<T> implements Iterator<T> {
 		private boolean hasNext = true;
-		private T element;
+		private final T element;
 		public SingleIterator(T element) {
 			this.element = element;
 		}
@@ -94,7 +96,7 @@ public class Util {
 	}
 	
 	public static <A, B> void zip(Stream<A> as, Stream<B> bs, BiConsumer<A, B> onPair) {
-	    Iterator<A> i = as.iterator();
+	    final Iterator<A> i = as.iterator();
 	    bs.filter(x->i.hasNext()).forEach(b -> onPair.accept(i.next(), b));
 	}
 	

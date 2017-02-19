@@ -8,7 +8,7 @@ public class SearchForm implements Form {
 	private String details;
 	private String label;
 	private String assigned;
-	private String path;
+	private String assetName;
 	
 	public SearchForm() {
 		setDefaultState();
@@ -21,7 +21,7 @@ public class SearchForm implements Form {
 		details="";
 		label="";
 		assigned="";
-		path="";
+		assetName="";
 	}
 	public boolean isInDefaultState() {
 		boolean isEmpty;
@@ -29,7 +29,7 @@ public class SearchForm implements Form {
 			isEmpty = easy.isEmpty();
 		} else {
 			isEmpty = name.isEmpty() && author.isEmpty() && details.isEmpty() && label.isEmpty()
-					&& assigned.isEmpty() && path.isEmpty();
+					&& assigned.isEmpty() && assetName.isEmpty();
 		}
 		return isEmpty;
 	}
@@ -77,10 +77,10 @@ public class SearchForm implements Form {
 	public void setAssigned(String assigned) {
 		this.assigned = assigned;
 	}
-	public String getPath() {
-		return path;
+	public String getAssetName() {
+		return assetName;
 	}
-	public void setPath(String path) {
-		this.path = path;
+	public void setAssetName(String assetName) {
+		this.assetName = assetName;
 	}
 }

@@ -1,16 +1,14 @@
 package gmm.domain.task.asset;
 
-import java.nio.file.Path;
-
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
-public class Texture extends Asset {
+public class TextureProperties extends AssetProperties {
 	
 	@XStreamAsAttribute
 	private int height = -1, width = -1;
 	
-	public Texture(Path relative, AssetGroupType groupType) {
-		super(relative, groupType);
+	public TextureProperties(AssetGroupType groupType) {
+		super(groupType);
 	}
 	
 	@Override

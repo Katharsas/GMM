@@ -19,8 +19,8 @@ import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.GeneralTask;
 import gmm.domain.task.Task;
-import gmm.domain.task.asset.Asset;
-import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
@@ -28,13 +28,11 @@ import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.BundledMessageResponsesProducer;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
-import gmm.service.ajax.operations.AssetPathConflictCheckerFactory;
-import gmm.service.ajax.operations.AssetPathConflictCheckerFactory.AssetPathConflictChecker;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory.TaskIdConflictChecker;
-import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
-import gmm.util.Util;
 
 /**
  * Provides methods to load a collection of tasks of arbitrary subtype,
@@ -56,12 +54,12 @@ import gmm.util.Util;
 public class TaskBackupLoader {
 	
 	private final TaskServiceFinder serviceFinder;
-	private final AssetPathConflictCheckerFactory assetPathConflictCheckerFactory;
+	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
 	private final TaskIdConflictCheckerFactory taskIdConflictCheckerFactory;
 	
 	@Autowired
 	public TaskBackupLoader(TaskServiceFinder serviceFinder,
-			AssetPathConflictCheckerFactory assetPathConflictCheckerFactory,
+			AssetNameConflictCheckerFactory assetPathConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory) {
 		this.serviceFinder = serviceFinder;
 		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
@@ -69,7 +67,7 @@ public class TaskBackupLoader {
 	}
 
 	private BundledMessageResponses<? extends Task> generalTaskLoader;
-	private BundledMessageResponses<String> assetTaskLoader;
+	private BundledMessageResponses<AssetName> assetTaskLoader;
 	
 	private Multimap<Class<? extends Task>, Task> multiMap;
 	private Collection<AssetTask<?>> assetImportChecked;
@@ -103,25 +101,25 @@ public class TaskBackupLoader {
 		assetTasks.addAll(multiMap.get(TextureTask.class));
 		assetTasks.addAll(multiMap.get(ModelTask.class));
 		
-		final HashMap<String, AssetTask<?>> pathToTask = new HashMap<>();
+		final HashMap<AssetName, AssetTask<?>> assetNameToTask = new HashMap<>();
 		for(final Task task : assetTasks) {
 			final AssetTask<?> assetTask = (AssetTask<?>) task;
-			pathToTask.put(assetTask.getAssetPath().toString(), assetTask);
+			assetNameToTask.put(assetTask.getAssetName(), assetTask);
 		}
-		final Consumer<String> onAssetPathChecked = (assetPath) -> {
-			final AssetTask<?> task = pathToTask.get(assetPath);
+		final Consumer<AssetName> onAssetNameChecked = (assetPath) -> {
+			final AssetTask<?> task = assetNameToTask.get(assetPath);
 			task.onLoad();
 			final AssetTask<?> taskWithAssets = updateAssetTaskAssets(task);
 			assetImportChecked.add(taskWithAssets);
 		};
-		final AssetPathConflictChecker ops =
-				assetPathConflictCheckerFactory.create(onAssetPathChecked);
+		final AssetNameConflictChecker ops =
+				assetPathConflictCheckerFactory.create(onAssetNameChecked);
 		
 		final Runnable onFinished = () -> {
 			assetTaskLoader = null;
 			isAssetImportCheckDone = true;
 		};
-		assetTaskLoader = new BundledMessageResponses<String>(pathToTask.keySet(), ops, onFinished);
+		assetTaskLoader = new BundledMessageResponses<AssetName>(assetNameToTask.keySet(), ops, onFinished);
 		
 		return assetTaskLoader.firstBundle();
 	}
@@ -141,10 +139,10 @@ public class TaskBackupLoader {
 		return generalTaskLoader.firstBundle();
 	}
 	
-	private <A extends Asset> AssetTask<A> updateAssetTaskAssets(AssetTask<A> task) {
-		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
-		service.updateAssetUpdatePreview(task, AssetGroupType.ORIGINAL);
-		service.updateAssetUpdatePreview(task, AssetGroupType.NEW);
+	private <A extends AssetProperties> AssetTask<A> updateAssetTaskAssets(AssetTask<A> task) {
+//		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+//		service.updateAssetUpdatePreview(task, AssetGroupType.ORIGINAL);
+//		service.updateAssetUpdatePreview(task, AssetGroupType.NEW);
 		return task;
 	}
 	

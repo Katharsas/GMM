@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import gmm.service.data.vcs.SvnPlugin;
+import gmm.service.assets.vcs.SvnPlugin;
+import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 
 @Controller
+@ConditionalOnConfigSelector("svn")
 public class SvnController {
 
 	private final SvnPlugin svn;

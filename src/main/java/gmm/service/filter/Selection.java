@@ -18,19 +18,19 @@ import java.util.function.Function;
  * </ul>
  * Example:<br/>
  * The element type is defined as:<br/>
- * <pre>
+ * <pre>{@code
  * interface Person {
  * 	abstract String getName();
  * 	abstract Integer getAge();
  * 	abstract String getHometown();
  * 	abstract String getSex();
  * }
- * </pre>
+ * }</pre>
  * <br/>
  * You want get all persons which are "male", are 20 to 22 years old and
  * either do not have "Tom" in their name or have "Boston" being their hometown.<br/>
  * You could build an according filter as follows:<br/>
- * <pre>
+ * <pre>{@code
  * Collection<Person> selected =
  * 	new Selection<>(allPersons, true)
  * 		.remove().matching(p -> p.getName(), "Tom")
@@ -41,9 +41,9 @@ import java.util.function.Function;
  *		.negateAll()
  *		.uniteWith().matchingAll(p -> p.getAge(), 20, 21, 22)
  *		.getSelected();
- * </pre>
+ * }</pre>
  * 
- * @author Jan Mothes aka Kellendil
+ * @author Jan Mothes
  * @param <T> - type of elements to be selected & filtered
  * @param <I> - type of data structure that gives access to the elements
  */

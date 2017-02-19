@@ -1,33 +1,29 @@
 package gmm.domain.task.asset;
 
-import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Objects;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
-
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.service.Spring;
-import gmm.service.data.DataConfigService;
 
 /**
- * After creation & after loading the path configuration must be injected by calling {@link #setConfig(DataConfigService)}.
+ * An asset task may contain a path to an original asset. In this case, both the path and the 
+ * {@link AssetProperties} for the original asset are both not-null, otherwise not null.
+ * 
+ * An asset task may contain a path to an assetFolder for a new asset. If it has, it may also
+ * contain {@link AssetProperties} for a new asset inside the assetFolder. If it hasn't, it cannot.
  * 
  * @author Jan Mothes
  *
  * @param <A> type of asset
  */
-public abstract class AssetTask<A extends Asset> extends Task {
-
-	@XStreamOmitField
-	protected DataConfigService config;
+public abstract class AssetTask<A extends AssetProperties> extends Task {
 	
-	private final Path assetPath;
+	private final AssetName assetName;
+	
 	private A originalAsset = null;
 	private A newestAsset = null;
 	
@@ -37,9 +33,9 @@ public abstract class AssetTask<A extends Asset> extends Task {
 			DateTimeFormat.forPattern("MM-dd-HH-mm-ss").withLocale(Locale.ENGLISH);
 	
 	//Methods--------------------------------------------
-	public AssetTask(User author, Path assetPath) {
+	public AssetTask(User author, AssetName assetName) {
 		super(author);
-		this.assetPath = assetPath;
+		this.assetName = assetName;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -47,73 +43,31 @@ public abstract class AssetTask<A extends Asset> extends Task {
 		return (Class<AssetTask<?>>) (Class<?>) AssetTask.class;
 	}
 	
-	@Override
-	public void onLoad() {
-		this.config = Spring.get(DataConfigService.class);
+	public AssetName getAssetName() {
+		return assetName;
 	}
 	
-	public Path getOriginalAssetPath() {
-		return getFilePathAbsolute(getOriginalAsset());
-	}
-	
-	public Path getNewestAssetPath() {
-		return getFilePathAbsolute(getNewestAsset());
-	}
-	
-	public Path getPreviewFolderPath() {
-		return config.assetsNew().resolve(getAssetPath()).resolve(config.subPreview());
-	}
-	
-	/**
-	 * @return Absolute file path to the given asset file assuming the asset can be found under
-	 * 		this AssetTask's relative path.
-	 */
-	public Path getFilePathAbsolute(Asset asset) {
-		Objects.requireNonNull(asset);
-		Objects.requireNonNull(config);
-		if(asset.getGroupType().isOriginal()) {
-			return config.assetsOriginal().resolve(getAssetPath());
-		} else {
-			return config.assetsNew().resolve(getAssetPath())
-					.resolve(config.subAssets()).resolve(asset.getFileName());
+	public void setOriginalAsset(A assetProps) {
+		if (assetProps != null) {
+			assetProps.assertAttributes();
 		}
-	}
-	
-	public Path getAssetPath() {
-		return assetPath;
-	}
-	
-	public A getAsset(AssetGroupType type) {
-		return type.isOriginal() ? getOriginalAsset() : getNewestAsset();
-	}
-	
-	public void setAsset(A asset, AssetGroupType type) {
-		if(asset != null) {
-			asset.setFileSize(getFilePathAbsolute(asset));
-			asset.assertAttributes();
-		}
-		if(type.isOriginal()) {
-			this.originalAsset = asset;
-		} else {
-			this.newestAsset = asset;
-			this.newestAssetLastUpdate = DateTime.now();
-		}
+		this.originalAsset = assetProps;
 	}
 	
 	public A getOriginalAsset() {
 		return originalAsset;
 	}
-
-	public void setOriginalAsset(A originalAsset) {
-		setAsset(originalAsset, AssetGroupType.ORIGINAL);
+	
+	public void setNewAsset(A asset) {
+		if(asset != null) {
+			asset.assertAttributes();
+		}
+		this.newestAsset = asset;
+		this.newestAssetLastUpdate = DateTime.now();
 	}
 	
 	public A getNewestAsset() {
 		return newestAsset;
-	}
-	
-	public void setNewestAsset(A newestAsset) {
-		setAsset(newestAsset, AssetGroupType.NEW);
 	}
 	
 	public String getNewestAssetNocache() {

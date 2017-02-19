@@ -1,20 +1,18 @@
 package gmm.domain.task.asset;
 
-import java.nio.file.Path;
-
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 import gmm.collections.Set;
 
-public class Model extends Asset {
+public class ModelProperties extends AssetProperties {
 
 	@XStreamAsAttribute
 	private int polyCount = -1;
 	
 	private Set<String> textureNames;
 
-	public Model(Path relative, AssetGroupType groupType) {
-		super(relative, groupType);
+	public ModelProperties(AssetGroupType groupType) {
+		super(groupType);
 	}
 	
 	@Override

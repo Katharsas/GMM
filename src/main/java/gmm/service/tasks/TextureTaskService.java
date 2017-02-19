@@ -18,10 +18,10 @@ import org.springframework.stereotype.Service;
 
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
-import gmm.domain.task.asset.Texture;
+import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.TextureProperties;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
-import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataConfigService;
 
 /**
@@ -30,15 +30,19 @@ import gmm.service.data.DataConfigService;
  * @author Jan
  */
 @Service
-public class TextureTaskService extends AssetTaskService<Texture> {
+public class TextureTaskService extends AssetTaskService<TextureProperties> {
 
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	
-	public static final FileExtensionFilter extensions =
-			new FileService.FileExtensionFilter(new String[] {"tga"});
+	private static final String[] extensions = new String[] {"tga"};
 	
 	private static final int SMALL_SIZE = 300;
+	
+	@Override
+	protected String[] getExtensions() {
+		return extensions;
+	}
 	
 	@PostConstruct
 	private void init() {
@@ -52,16 +56,16 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
-	public void createPreview(Path sourceFile, Path preview, Texture asset) {
+	public void recreatePreview(Path sourceFile, Path previewFolder, TextureProperties asset) {
 		BufferedImage image = readImage(sourceFile);
 		asset.setDimensions(image.getHeight(), image.getWidth());
 		Path targetFile;
-		final String version = asset.getGroupType().getPreviewFileName();
+		final String isOriginalString = asset.getGroupType().getPreviewFileName();
 		//full preview 
-		targetFile = preview.resolve(version+"_full.png");
+		targetFile = previewFolder.resolve(isOriginalString + "_full.png");
 		writeImage(image, targetFile);
 		//small preview
-		targetFile = preview.resolve(version+"_small.png");
+		targetFile = previewFolder.resolve(isOriginalString + "_small.png");
 		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 			image = Scalr.resize(image, SMALL_SIZE);
 		}
@@ -86,23 +90,22 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	}
 	
 	@Override
-	public void deletePreview(Path taskFolder) {
-		final Path preview = taskFolder.resolve(config.subPreview());
-		final String version = AssetGroupType.NEW.getPreviewFileName();
+	public void deletePreview(Path previewFolder, AssetGroupType isOriginal) {
+		final String isOriginalString = isOriginal.getPreviewFileName();
 		Path previewFile;
-		previewFile = preview.resolve(version + "_full.png");
+		previewFile = previewFolder.resolve(isOriginalString + "_full.png");
 		if(previewFile.toFile().exists()) {
 			fileService.delete(previewFile);
 		}
-		previewFile = preview.resolve(version + "_small.png");
+		previewFile = previewFolder.resolve(isOriginalString + "_small.png");
 		if(previewFile.toFile().exists()) {
 			fileService.delete(previewFile);
 		}
 	}
 
 	@Override
-	public Texture createAsset(Path relative, AssetGroupType isOriginal) {
-		return new Texture(relative, isOriginal);
+	protected TextureProperties newPropertyInstance(AssetGroupType isOriginal) {
+		return new TextureProperties(isOriginal);
 	}
 
 	@Override
@@ -111,13 +114,8 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	}
 
 	@Override
-	protected TextureTask createNew(Path assetPath, User user) {
-		return new TextureTask(user, assetPath);
-	}
-	
-	@Override
-	public FileExtensionFilter getExtensions() {
-		return TextureTaskService.extensions;
+	protected TextureTask newInstance(AssetName assetName, User user) {
+		return new TextureTask(user, assetName);
 	}
 	
 	@Override
@@ -130,9 +128,8 @@ public class TextureTaskService extends AssetTaskService<Texture> {
 	 */
 	public void writePreview(TextureTask task, boolean small, String version, OutputStream target) {
 		final String imageName = version + (small ? "_small" : "_full") + ".png";		
-		final Path path = config.assetsNew()
-				.resolve(task.getAssetPath())
-				.resolve(config.subPreview())
+		final Path path = config.assetPreviews()
+				.resolve(task.getAssetName().getFolded())
 				.resolve(imageName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);

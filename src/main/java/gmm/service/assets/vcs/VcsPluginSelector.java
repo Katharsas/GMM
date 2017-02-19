@@ -1,4 +1,4 @@
-package gmm.service.data.vcs;
+package gmm.service.assets.vcs;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

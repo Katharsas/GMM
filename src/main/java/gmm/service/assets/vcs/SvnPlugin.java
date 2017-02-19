@@ -1,4 +1,4 @@
-package gmm.service.data.vcs;
+package gmm.service.assets.vcs;
 
 import java.io.File;
 import java.net.URI;
@@ -22,8 +22,8 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import gmm.ConfigurationException;
 import gmm.service.FileService;
+import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.DataConfigService;
-import gmm.service.data.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 
 @Service
 @ConditionalOnConfigSelector("svn")

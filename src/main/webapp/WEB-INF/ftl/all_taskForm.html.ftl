@@ -95,18 +95,17 @@
 				enum = taskForm.type />
 		</div>
 	</div>
-	<!-- ####################### PATH -->
+	<!-- ####################### ASSET NAME -->
 	<div id="taskForm-element-path" class="taskForm-element">
 		<div class="taskForm-hint">
 			<@s.message "all_taskForm.text" /><br/>
-			<@s.message "all_taskForm.text2" /><br/><br/>
-			<@s.message "all_taskForm.text3" />
+			<@s.message "all_taskForm.text2" /><br/>
 		</div>
 		<div class="taskForm-description">
-			<@s.message "all_taskForm.file" />
+			<@s.message "all_taskForm.asset_name" />
 		</div>
 		<div class="taskForm-input input">
-			<@m.formInput path=(path+".assetPath") value="" />
+			<@m.formInput path=(path+".assetName") value="" />
 		</div>
 	</div>
 </div>

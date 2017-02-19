@@ -1,34 +1,59 @@
 package gmm.service.tasks;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.domain.task.asset.Asset;
+import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
+import gmm.service.FileService.FileExtensionFilter;
 import gmm.util.Util;
 import gmm.web.forms.TaskForm;
 
 @Service
 public class TaskServiceFinder {
 	
-	@Autowired private List<TaskFormService<?>> taskServices;
+	private final List<TaskFormService<?>> taskServices;
+	private final List<AssetTaskService<?>> assetTaskServices;
 	
 	final private Map<Class<? extends Task>, TaskFormService<?>> classesToServices = new HashMap<>();
 	
-	@PostConstruct
-	private void init() {
+	final private Map<String, AssetTaskService<?>> extensionToServices = new CaseInsensitiveMap<>();
+	
+	final private FileExtensionFilter combinedExtensionFilter;
+	
+	@Autowired
+	public TaskServiceFinder(
+			List<TaskFormService<?>> taskServices, List<AssetTaskService<?>> assetTaskServices) {
+		this.taskServices = taskServices;
+		this.assetTaskServices = assetTaskServices;
+		
+		initMaps();
+		String[] combinedExtension = new String[] {};
+		for (final AssetTaskService<?> service : assetTaskServices) {
+			combinedExtension = ArrayUtils.addAll(combinedExtension, service.getExtensions());
+		}
+		combinedExtensionFilter = new FileExtensionFilter(combinedExtension);
+	}
+	
+	private void initMaps() {
 		for(final TaskFormService<?> service : taskServices) {
 			classesToServices.put(service.getTaskType(), service);
+			if (service instanceof AssetTaskService<?>) {
+				final AssetTaskService<?> assetTaskService = (AssetTaskService<?>) service;
+				for (final String extension : assetTaskService.getExtensions()) {
+					extensionToServices.put(extension, assetTaskService);
+				}
+			}
 		}
 	}
 	
@@ -57,18 +82,63 @@ public class TaskServiceFinder {
 		return taskService.prepareForm(task);
 	}
 	
-	public <E extends Asset> AssetTaskService<E> getAssetService(Class<AssetTask<E>> type) {
+	public <E extends AssetProperties> AssetTaskService<E> getAssetService(Class<AssetTask<E>> type) {
 		final AssetTaskService<E> taskService = (AssetTaskService<E>) getService(type);
 		return taskService;
 	}
 	
-	public <E extends Asset> void addFile(AssetTask<E> task, MultipartFile file) {
-		final AssetTaskService<E> taskService = getAssetService(Util.classOf(task));
-		taskService.addFile(file, task);
+	/**
+	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
+	 * filter that will accept the given assetName, or null if no service matches the assetName.
+	 */
+//	public AssetTaskService<?> getAssetService(String assetName) {
+//		final String extension = FileExtensionFilter.getExtension(assetName);
+//		if (extension == null) return null;
+//		return extensionToServices.get(extension);
+//	}
+	
+	/**
+	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
+	 * filter that will accept the given assetName.
+	 */
+	public AssetTaskService<?> getAssetService(AssetName assetName) {
+		Objects.requireNonNull(assetName);
+		final String extension = FileExtensionFilter.getExtension(assetName.get());
+		if (extension == null) {
+			throw new IllegalArgumentException("Asset name '" + assetName.get() + "' does not have an extension!");
+		}
+		final AssetTaskService<?> service = getAssetService(extension);
+		if (service == null) {
+			throw new IllegalStateException("No service registered for asset task with extension " + extension);
+		}
+		return service;
 	}
 	
-	public <E extends Asset> void deleteFile(AssetTask<E> task, Path relativeFile, boolean isAsset) {
-		final AssetTaskService<E> taskService = getAssetService(Util.classOf(task));
-		taskService.deleteFile(task, relativeFile, isAsset);
+	/**
+	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a
+	 * filter that will accept a fileName for which {@link FileExtensionFilter#getExtension(String)}
+	 * produced the given argument, or null if no service matches the extension.
+	 */
+	public AssetTaskService<?> getAssetService(String extension) {
+		Objects.requireNonNull(extension);
+		return extensionToServices.get(extension);
 	}
+	
+	public List<? extends AssetTaskService<?>> getAssetTaskServices() {
+		return assetTaskServices;
+	}
+	
+	public FileExtensionFilter getCombinedExtensionFilter() {
+		return combinedExtensionFilter;
+	}
+	
+//	public <E extends AssetProperties> void addFile(AssetTask<E> task, MultipartFile file) {
+//		final AssetTaskService<E> taskService = getAssetService(Util.classOf(task));
+//		taskService.addFile(file, task);
+//	}
+//	
+//	public <E extends AssetProperties> void deleteFile(AssetTask<E> task, Path relativeFile, boolean isAsset) {
+//		final AssetTaskService<E> taskService = getAssetService(Util.classOf(task));
+//		taskService.deleteFile(task, relativeFile, isAsset);
+//	}
 }

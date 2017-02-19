@@ -36,6 +36,7 @@ public class DataConfigService {
 	
 	@Value("${path.assets.original}") private Path assetsOriginal;
 	@Value("${path.assets.new}") private Path assetsNew;
+	@Value("${path.assets.previews}") private Path assetPreviews;
 	
 	@Value("${path.users}") private Path dbUsers;
 	@Value("${path.tasks}") private Path dbTasks;
@@ -49,9 +50,12 @@ public class DataConfigService {
 	 * Absolute paths, updated on workspace change:
 	 */
 	
+	private Path WORKSPACE;
+	
 	private Path USERS;
 	private Path ASSETS_ORIGINAL;
 	private Path ASSETS_NEW;
+	private Path ASSET_PREVIEWS;
 	private Path TASKS;
 //	private Path UPLOAD;
 	private Path DB_OTHER;
@@ -66,7 +70,7 @@ public class DataConfigService {
 //	@Value("${path.assets.new.worlds}") private Path subNewWorlds;
 	
 	private final Path subAssets = Paths.get(".");
-	private final Path subPreview = Paths.get("preview");
+//	private final Path subPreview = Paths.get("preview");
 	private final Path subOther = Paths.get("wip");
 	
 	@Autowired
@@ -88,21 +92,22 @@ public class DataConfigService {
 	
 	protected void updateWorkspace(Path workspace) {
 		Objects.requireNonNull(workspace);
-		final Path wsAbsolute = base.resolve(workspace).normalize();
-		this.workspace = wsAbsolute;
+		WORKSPACE = base.resolve(workspace).normalize();
 		
 		logger.info("\n"
 				+	"##########################################################" + "\n\n"
 				+	"  Registered workspace folder at: " + "\n"
-				+	"  " + wsAbsolute + "\n\n"
+				+	"  " + WORKSPACE + "\n\n"
 				+	"##########################################################");
 		
-		TASKS = wsAbsolute.resolve(fileService.restrictAccess(dbTasks, wsAbsolute));
-		ASSETS_ORIGINAL = wsAbsolute.resolve(fileService.restrictAccess(assetsOriginal, wsAbsolute));
-		ASSETS_NEW = wsAbsolute.resolve(fileService.restrictAccess(assetsNew, wsAbsolute));
+
+		TASKS = WORKSPACE.resolve(fileService.restrictAccess(dbTasks, WORKSPACE));
+		ASSETS_ORIGINAL = WORKSPACE.resolve(fileService.restrictAccess(assetsOriginal, WORKSPACE));
+		ASSETS_NEW = WORKSPACE.resolve(fileService.restrictAccess(assetsNew, WORKSPACE));
+		ASSET_PREVIEWS = WORKSPACE.resolve(fileService.restrictAccess(assetPreviews, WORKSPACE));
 //		UPLOAD = wsAbsolute.resolve(fileService.restrictAccess(upload, wsAbsolute));
-		USERS = wsAbsolute.resolve(fileService.restrictAccess(dbUsers, wsAbsolute));
-		DB_OTHER = wsAbsolute.resolve(fileService.restrictAccess(dbOther, wsAbsolute));
+		USERS = WORKSPACE.resolve(fileService.restrictAccess(dbUsers, WORKSPACE));
+		DB_OTHER = WORKSPACE.resolve(fileService.restrictAccess(dbOther, WORKSPACE));
 		
 		if (subNewTextures.isAbsolute() || subNewModels.isAbsolute() /*|| subNewWorlds.isAbsolute()*/) {
 			throw new IllegalArgumentException("Asset type folder paths must be relative, not absolute!");
@@ -117,6 +122,9 @@ public class DataConfigService {
 	}
 	public Path assetsNew() {
 		return ASSETS_NEW;
+	}
+	public Path assetPreviews() {
+		return ASSET_PREVIEWS;
 	}
 	
 	public Path dbUsers() {
@@ -152,9 +160,9 @@ public class DataConfigService {
 	public Path subAssets() {
 		return subAssets;
 	}
-	public Path subPreview() {
-		return subPreview;
-	}
+//	public Path subPreview() {
+//		return subPreview;
+//	}
 	public Path subOther() {
 		return subOther;
 	}

@@ -45,9 +45,11 @@ public class DataChangeEvent {
 		this(type, source, new ArrayList<>(Util.classOf(changed), changed));
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T> Collection<T> getChanged(Class<T> clazz) {
-		return (Collection<T>) changed;
+	/**
+	 * Convenience function to cast {@link DataChangeEvent#changed} generics to a caller-known type.
+	 */
+	public <T> Collection<? extends T> getChanged(Class<T> clazz) {
+		return Util.castBound(changed, clazz);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -60,8 +62,8 @@ public class DataChangeEvent {
 	}
 	
 	public ClientDataChangeEvent toClientEvent() {
-		List<String> changedIds = new ArrayList<>(String.class, changed.size());
-		for(Linkable linkable : changed) {
+		final List<String> changedIds = new ArrayList<>(String.class, changed.size());
+		for(final Linkable linkable : changed) {
 			changedIds.add(linkable.getIdLink());
 		}
 		return new ClientDataChangeEvent(source.getUserId(), type.name(), changedIds);

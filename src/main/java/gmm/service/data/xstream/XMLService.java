@@ -39,9 +39,9 @@ public class XMLService implements PersistenceService {
 				gmm.domain.task.asset.AssetTask.class,
 				gmm.domain.task.asset.ModelTask.class,
 				gmm.domain.task.asset.TextureTask.class,
-				gmm.domain.task.asset.Asset.class,
-				gmm.domain.task.asset.Texture.class,
-				gmm.domain.task.asset.Model.class,
+				gmm.domain.task.asset.AssetProperties.class,
+				gmm.domain.task.asset.TextureProperties.class,
+				gmm.domain.task.asset.ModelProperties.class,
 				// Other
 				gmm.domain.Comment.class,
 				gmm.domain.User.class,

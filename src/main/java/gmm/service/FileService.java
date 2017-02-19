@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.domain.task.asset.AssetName;
 import gmm.util.StringUtil;
 
 /**
@@ -105,11 +106,27 @@ public class FileService {
 		public boolean test(Path entry) {
 			return test(entry.getFileName().toString());
 		}
+		public boolean test(AssetName name) {
+			return test(name.get());
+		}
 		public boolean test(String name) {
 			for(final String ext : this.extensions) {
 				if(strings.endsWith(name, "." + ext)) return name.charAt(0) != '.';
 			}
 			return false;
+		}
+		/**
+		 * Returns the extension of a file if existent, otherwise null, with following contract if
+		 * not null:  A FileExtensionFilter that is constructed with the extension this method
+		 * returns, will return true from test method when given the same argument as this method.
+		 */
+		public static String getExtension(String name) {
+			final String[] parts = name.split(".");
+			if (parts.length <= 1) {
+				return null;
+			} else {
+				return parts[parts.length - 1];
+			}
 		}
 	}
 	
