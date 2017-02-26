@@ -20,7 +20,6 @@ import gmm.collections.List;
 import gmm.domain.task.GeneralTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetName;
-import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
@@ -32,7 +31,6 @@ import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory.TaskIdConflictChecker;
-import gmm.service.tasks.TaskServiceFinder;
 
 /**
  * Provides methods to load a collection of tasks of arbitrary subtype,
@@ -53,15 +51,13 @@ import gmm.service.tasks.TaskServiceFinder;
 @Scope("prototype")
 public class TaskBackupLoader {
 	
-	private final TaskServiceFinder serviceFinder;
 	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
 	private final TaskIdConflictCheckerFactory taskIdConflictCheckerFactory;
 	
 	@Autowired
-	public TaskBackupLoader(TaskServiceFinder serviceFinder,
+	public TaskBackupLoader(
 			AssetNameConflictCheckerFactory assetPathConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory) {
-		this.serviceFinder = serviceFinder;
 		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
 		this.taskIdConflictCheckerFactory = taskIdConflictCheckerFactory;
 	}
@@ -109,8 +105,7 @@ public class TaskBackupLoader {
 		final Consumer<AssetName> onAssetNameChecked = (assetPath) -> {
 			final AssetTask<?> task = assetNameToTask.get(assetPath);
 			task.onLoad();
-			final AssetTask<?> taskWithAssets = updateAssetTaskAssets(task);
-			assetImportChecked.add(taskWithAssets);
+			assetImportChecked.add(task);
 		};
 		final AssetNameConflictChecker ops =
 				assetPathConflictCheckerFactory.create(onAssetNameChecked);
@@ -137,13 +132,6 @@ public class TaskBackupLoader {
 				tasks, ops, ()->{generalTaskLoader = null;});
 		
 		return generalTaskLoader.firstBundle();
-	}
-	
-	private <A extends AssetProperties> AssetTask<A> updateAssetTaskAssets(AssetTask<A> task) {
-//		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
-//		service.updateAssetUpdatePreview(task, AssetGroupType.ORIGINAL);
-//		service.updateAssetUpdatePreview(task, AssetGroupType.NEW);
-		return task;
 	}
 	
 	public List<MessageResponse> nextCheckBundle(ConflictAnswer answer) {

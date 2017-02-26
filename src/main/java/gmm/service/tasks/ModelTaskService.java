@@ -37,8 +37,8 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	}
 	
 	@Override
-	protected ModelProperties newPropertyInstance(AssetGroupType isOriginal) {
-		return new ModelProperties(isOriginal);
+	protected ModelProperties newPropertyInstance(String filename, AssetGroupType isOriginal) {
+		return new ModelProperties(filename, isOriginal);
 	}
 
 	@Override

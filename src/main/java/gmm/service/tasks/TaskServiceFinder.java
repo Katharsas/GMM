@@ -59,8 +59,7 @@ public class TaskServiceFinder {
 	
 	private <T extends Task> TaskFormService<T> getService(Class<? extends T> type) {
 		@SuppressWarnings("unchecked")
-		final
-		TaskFormService<T> result = (TaskFormService<T>) classesToServices.get(type);
+		final TaskFormService<T> result = (TaskFormService<T>) classesToServices.get(type);
 		if (result == null) {
 			throw new IllegalStateException("No service registered for task of type "+type.getName());
 		}
@@ -82,20 +81,11 @@ public class TaskServiceFinder {
 		return taskService.prepareForm(task);
 	}
 	
-	public <E extends AssetProperties> AssetTaskService<E> getAssetService(Class<AssetTask<E>> type) {
+	public <E extends AssetProperties> AssetTaskService<E> getAssetService(Class<? extends AssetTask<E>> type) {
+		@SuppressWarnings("unchecked")
 		final AssetTaskService<E> taskService = (AssetTaskService<E>) getService(type);
 		return taskService;
 	}
-	
-	/**
-	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
-	 * filter that will accept the given assetName, or null if no service matches the assetName.
-	 */
-//	public AssetTaskService<?> getAssetService(String assetName) {
-//		final String extension = FileExtensionFilter.getExtension(assetName);
-//		if (extension == null) return null;
-//		return extensionToServices.get(extension);
-//	}
 	
 	/**
 	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 

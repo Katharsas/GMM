@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +16,7 @@ import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
+import gmm.service.assets.AssetInfo;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.OriginalAssetFileInfo;
@@ -26,10 +29,12 @@ import gmm.web.forms.TaskForm;
  */
 public abstract class AssetTaskService<A extends AssetProperties> extends TaskFormService<AssetTask<A>>{
 	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	
-	protected abstract A newPropertyInstance(AssetGroupType isOriginal);
+	protected abstract A newPropertyInstance(String filename, AssetGroupType isOriginal);
 	
 	protected abstract void recreatePreview(Path sourceFile, Path previewFolder, A props);
 	protected abstract void deletePreview(Path previewFolder, AssetGroupType isOriginal);
@@ -66,14 +71,14 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	@Override
 	public void edit(AssetTask<A> task, TaskForm form) {
 		super.edit(task, form);
-		final String assetName = getAssetName(form);
-		if(!assetName.equals(task.getAssetName())) {
+		final AssetName newAssetName = new AssetName(getAssetName(form));
+		if(!newAssetName.equals(task.getAssetName())) {
 			throw new IllegalArgumentException("Asset path cannot be edited!");
 			// TODO if caller makes AssetNameConflictCheck and uses AssetService to relink assets, asset name editing could be enabled.
 		}
 		//Substitute wildcards
-		task.setName(form.getName().replace("%filename%", assetName));
-		task.setDetails(form.getDetails().replace("%filename%", assetName));
+		task.setName(form.getName().replace("%filename%", newAssetName.get()));
+		task.setDetails(form.getDetails().replace("%filename%", newAssetName.get()));
 	}
 	
 	@Override
@@ -84,60 +89,73 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	}
 	
 	/**
-	 * Create new preview, create properties from preview, set them on task.
+	 * If asset exists, create new preview, create properties from preview, set them on task.
+	 * Otherwise, remove any existing properties from task.
+	 * @param folderInfo - optional
 	 */
 	public void recreateAssetProperties(AssetTask<A> task, OriginalAssetFileInfo fileInfo) {
-		final Path assetPathAbs = config.assetsOriginal().resolve(fileInfo.getAssetFile());
-		fileService.restrictAccess(assetPathAbs, config.assetsOriginal());
-		
-		final A assetProps = newPropertyInstance(AssetGroupType.ORIGINAL);
-		assetProps.setFileSize(assetPathAbs.toFile().length());
-		
-		final String previewFolderName = fileInfo.getAssetFileName().getFolded();
-		final Path previewFolder = config.assetPreviews().resolve(previewFolderName);
-		recreatePreview(assetPathAbs, previewFolder, assetProps);
-		
-		task.setOriginalAsset(assetProps);
+		if (fileInfo == null) {
+			removeAssetProperties(task, AssetGroupType.ORIGINAL);
+		} else {
+			overwriteAssetProperties(task, fileInfo);
+			logger.debug("Set properties of original asset file '" + task.getAssetName() + "' on task" + task);
+		}
 	}
 	
 	/**
 	 * If folder contains asset file, create new preview, create properties, set them on task.
 	 * Otherwise, remove any existing properties from task.
+	 * @param folderInfo - optional
 	 */
 	public void recreateAssetProperties(AssetTask<A> task, NewAssetFolderInfo folderInfo) {
-		if (folderInfo.getStatus() == AssetFolderStatus.VALID_NO_ASSET) {
-			task.setNewAsset(null);
+		if (folderInfo == null || folderInfo.getStatus() == AssetFolderStatus.VALID_NO_ASSET) {
+			removeAssetProperties(task, AssetGroupType.NEW);
 		} else if (folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
-			
-			final Path assetPathAbs = config.assetsNew().resolve(folderInfo.getAssetFolder()
-					.resolve(config.subAssets().resolve(folderInfo.getAssetFileName().get())));
-			fileService.restrictAccess(assetPathAbs, config.assetsNew());
-			
-			final A assetProps = newPropertyInstance(AssetGroupType.NEW);
-			assetProps.setFileSize(assetPathAbs.toFile().length());
-			
-			final String previewFolderName = folderInfo.getAssetFileName().getFolded();
-			final Path previewFolder = config.assetPreviews().resolve(previewFolderName);
-			recreatePreview(assetPathAbs, previewFolder, assetProps);
-			
-			task.setNewAsset(assetProps);
+			overwriteAssetProperties(task, folderInfo);
+			logger.debug("Set properties of new asset file '" + task.getAssetName() + "' on task" + task);
 		} else {
 			throw new IllegalArgumentException("Invalid asset folder state, cannot recreate preview!");
 		}
+	}
+	
+	public boolean isValidAssetProperties(AssetProperties props, AssetInfo info) {
+		// TODO check if file length matches props
+		// TODO let subclasses check if previewfiles exist
+		// TODO check if prop filename matches info filename (exact case-sensitive!)
+		return true;
+	}
+	
+	private void overwriteAssetProperties(AssetTask<A> task, AssetInfo info) {
+		
+		final AssetGroupType type = info.getType();
+		
+		final Path base = config.assetsBase(type);
+		final Path assetPathAbs = base.resolve(info.getAssetFilePathAbsolute(config));
+		fileService.restrictAccess(assetPathAbs, base);
+		
+		final A assetProps = newPropertyInstance(info.getAssetFileName().get(), type);
+		assetProps.setFileSize(assetPathAbs.toFile().length());
+		
+		final String previewFolderName = info.getAssetFileName().getFolded();
+		final Path previewFolder = config.assetPreviews().resolve(previewFolderName);
+		recreatePreview(assetPathAbs, previewFolder, assetProps);
+		
+		task.setAssetProperties(assetProps, type);
 	}
 	
 	/**
 	 * Remove existing properties from task, delete preview.
 	 */
 	public void removeAssetProperties(AssetTask<A> task, AssetGroupType isOriginal) {
-		if(isOriginal.isOriginal()) {
-			task.setOriginalAsset(null);
-		} else {
-			task.setNewAsset(null);
+		if (task.getAssetProperties(isOriginal) == null) {
+			return;
 		}
+		task.setAssetProperties(null, isOriginal);
 		final String previewFolderName = task.getAssetName().getFolded();
 		final Path previewFolder = config.assetPreviews().resolve(previewFolderName);
 		deletePreview(previewFolder, isOriginal);
+		final String type = isOriginal.isOriginal() ? "original asset file" : "new asset file";
+		logger.debug("Removed properties of " + type + " '" + task.getAssetName() + "' from task " + task);
 	}
 	
 	// TODO caller must check if the linked task has a new asset folder, otherwise it must ask the user to specifify asset folder path

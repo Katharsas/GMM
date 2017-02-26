@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import gmm.domain.Linkable;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.DataAccess;
@@ -32,6 +35,7 @@ import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
+import gmm.util.Util;
 
 /**
  * Manages the relationships between AssetTasks's and their asset files. This service knows which
@@ -45,8 +49,9 @@ import gmm.service.tasks.TaskServiceFinder;
  * - Adding / removing linked asset files to / from AssetTasks.
  * - Creating / Updating / Deleting asset file previews.
  * 
- * This service assumes that original asset files do not change during the lifetime of the service
- * and that original asset folder structure is valid (no multiple asset files with same filename etc.)
+ * This service assumes that original asset files with same filename do not change their content,
+ * that original assets are not added/removed/moved during the lifetime of this service and that
+ * original asset folder structure is valid (no multiple asset files with same filename etc.)
  * 
  * @author Jan Mothes
  */
@@ -64,6 +69,8 @@ public class AssetService {
 	
 	public final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
 	public final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
+	
+	public DataChangeCallback reference;
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetName assetName) {
 		return newAssetFolders.get(assetName);
@@ -89,7 +96,7 @@ public class AssetService {
 			assetTasks.put(assetTask.getAssetName(), assetTask);
 		}
 		
-		data.registerForUpdates(new DataChangeCallback() {
+		reference = new DataChangeCallback() {
 			@Override
 			public void onEvent(DataChangeEvent event) {
 				// TODO should DataChangeEvent only have concrete classes as generic type for easier checking?
@@ -99,8 +106,7 @@ public class AssetService {
 					case ADDED:
 						for (final Task task : event.getChanged(Task.class)) {
 							if (task instanceof AssetTask) {
-								final AssetTask<?> assetTask = (AssetTask<?>) task;
-								assetTasks.put(assetTask.getAssetName(), assetTask);
+								onAssetTaskCreation((AssetTask<?>) task);
 							}
 						}
 						break;
@@ -111,18 +117,58 @@ public class AssetService {
 					case REMOVED:
 						for (final Task task : event.getChanged(Task.class)) {
 							if (task instanceof AssetTask) {
-								final AssetTask<?> assetTask = (AssetTask<?>) task;
-								assetTasks.remove(assetTask.getAssetName());
+								onAssetTaskDeletion((AssetTask<?>) task);
 							}
 						}
 						break;
 					}
 				}
 			}
-		});
+		};
+		data.registerPostProcessor(reference);
 		
+//		onOriginalAssetFilesChanged();
+		// TODO make sure the order of service initialization works out like this:
+		// 1. DataAccess init, ServiceFinder init
+		// 2. This method runs
+		// 3. AutoBackupLoader runs
+	}
+	
+	@PostConstruct
+	public void initialScans() {
 		onOriginalAssetFilesChanged();
-		// TODO make sure this whole method is called before SVN calls initial scanForNewAssets
+	}
+	
+	/**
+	 * Not needed for loaded tasks since their original properties dont change
+	 */
+	private <A extends AssetProperties> void onAssetTaskCreation(AssetTask<A> task) {
+		final AssetName name = task.getAssetName();
+		assetTasks.put(name, task);
+		
+		final AssetGroupType type = AssetGroupType.ORIGINAL;
+		final OriginalAssetFileInfo info = originalAssetFiles.get(name);
+		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+		
+		if (info != null) {
+			final AssetProperties props = task.getAssetProperties(type);
+			if (props != null && service.isValidAssetProperties(props, info)) {
+				return; // we assume the existing prop data and previews are still valid, no need for recreation.
+			}
+		}
+		service.recreateAssetProperties(task, info);
+	}
+	
+	private <A extends AssetProperties> void onAssetTaskDeletion(AssetTask<A> task) {
+		final AssetName name = task.getAssetName();
+		assetTasks.remove(name);
+		
+		final AssetGroupType type = AssetGroupType.ORIGINAL;
+		if (task.getAssetProperties(type) == null) return;
+		else {
+			final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+			service.removeAssetProperties(task, AssetGroupType.ORIGINAL);
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -133,24 +179,23 @@ public class AssetService {
 		scanForOriginalAssets(config.assetsOriginal(), new BiConsumer<AssetName, OriginalAssetFileInfo>() {
 			@Override
 			public void accept(AssetName fileName, OriginalAssetFileInfo info) {
+				logger.debug("Found original asset file at path '" + info.getAssetFile() + "'.");
 				
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
-				final AssetTaskService<?> service = info.getService();
 				final AssetTask<?> task = assetTasks.get(fileName);
 				
-				if (oldInfo == null) {
-					// new assets
-					if (task != null) {
+				if (task != null) {
+					final AssetTaskService<?> service =
+							serviceFinder.getAssetService(Util.classOf(task));
+					if (oldInfo == null) {
+						// new assets
 						service.recreateAssetProperties((AssetTask)task, info);
-					}
-				} else {
-					// changed assets
-					if (task != null) {
+					} else {
+						// changed assets
 						final Path oldPath = oldInfo.getAssetFile();
 						final Path newPath = info.getAssetFile();
-						
 						if (!oldPath.equals(newPath)) {
-							service.removeAssetProperties((AssetTask)task, AssetGroupType.ORIGINAL);
+//							service.removeAssetProperties((AssetTask)task, AssetGroupType.ORIGINAL);
 							service.recreateAssetProperties((AssetTask)task, info);
 						}
 					}
@@ -170,6 +215,7 @@ public class AssetService {
 	}
 	
 	private void scanForOriginalAssets(Path originalAssets, BiConsumer<AssetName, OriginalAssetFileInfo> onHit) {
+		logger.debug("Scanning for original assets at path '" + originalAssets + "'.");
 		try {
 			Files.walkFileTree(originalAssets, new SimpleFileVisitor<Path>() {
 				@Override
@@ -208,6 +254,7 @@ public class AssetService {
 		final Map<AssetName, NewAssetFolderInfo> newAssetFolders = new HashMap<>();
 		
 		final BiConsumer<AssetName, NewAssetFolderInfo> onHit = (folderName, folderInfo) -> {
+			logger.debug("Found new asset folder at path '" + folderInfo.getAssetFolder() + "'.");
 			final NewAssetFolderInfo duplicate = newAssetFolders.get(folderName);
 			if (duplicate != null) {
 				newAssetFolders.put(folderName, NewAssetFolderInfo.createInvalidNotUnique(duplicate, folderInfo));
@@ -262,7 +309,7 @@ public class AssetService {
 		if (!rootScanFolder.toFile().isDirectory()) {
 			throw new IllegalArgumentException("Directory expected!");
 		}
-		
+		logger.debug("Scanning for new assets at path '" + rootScanFolder + "'.");
 		try {
 			Files.walkFileTree(rootScanFolder, new SimpleFileVisitor<Path>() {
 				@Override

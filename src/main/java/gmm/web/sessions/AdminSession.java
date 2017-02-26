@@ -51,7 +51,7 @@ public class AdminSession extends TaskBackupLoader {
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
 			DataAccess data, UserService users) {
 		
-		super(taskService, assetPathConflictCheckerFactory, taskIdConflictCheckerFactory);
+		super(assetPathConflictCheckerFactory, taskIdConflictCheckerFactory);
 		
 		this.taskService = taskService;
 		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;

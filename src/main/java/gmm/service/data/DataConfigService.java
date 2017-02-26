@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.service.FileService;
 
 
@@ -125,6 +126,9 @@ public class DataConfigService {
 	}
 	public Path assetPreviews() {
 		return ASSET_PREVIEWS;
+	}
+	public Path assetsBase(AssetGroupType type) {
+		return type.isOriginal() ? assetsOriginal() : assetsNew();
 	}
 	
 	public Path dbUsers() {

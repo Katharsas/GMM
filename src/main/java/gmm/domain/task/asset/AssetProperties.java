@@ -7,8 +7,8 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public abstract class AssetProperties {
 	
-//	@XStreamAsAttribute
-//	private final Path subPath;
+	@XStreamAsAttribute
+	private final String filename;
 	@XStreamAsAttribute
 	private final AssetGroupType groupType;
 	@XStreamAsAttribute
@@ -17,10 +17,10 @@ public abstract class AssetProperties {
 	protected final static String assertAttributesException =
 			"This asset's attributes are not fully populated!";
 	
-	public AssetProperties(AssetGroupType groupType) {
-//		Objects.requireNonNull(subPath);
+	public AssetProperties(String filename, AssetGroupType groupType) {
+		Objects.requireNonNull(filename);
 		Objects.requireNonNull(groupType);
-//		this.subPath = subPath;
+		this.filename = filename;
 		this.groupType = groupType;
 	}
 	
@@ -44,9 +44,9 @@ public abstract class AssetProperties {
 		return d.format(((Long)sizeInBytes).doubleValue()/1000000);
 	}
 	
-//	public String getFileName() {
-//		return subPath.getFileName().toString();
-//	}
+	public String getFilename() {
+		return filename;
+	}
 
 	public AssetGroupType getGroupType() {
 		return groupType;

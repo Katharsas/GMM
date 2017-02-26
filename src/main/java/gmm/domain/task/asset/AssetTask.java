@@ -47,6 +47,15 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 		return assetName;
 	}
 	
+	public void setAssetProperties(A assetProps, AssetGroupType type) {
+		if (type.isOriginal()) setOriginalAsset(assetProps);
+		else setNewAsset(assetProps);
+	}
+	
+	public A getAssetProperties(AssetGroupType type) {
+		return type.isOriginal() ? getOriginalAsset() : getNewAsset();
+	}
+	
 	public void setOriginalAsset(A assetProps) {
 		if (assetProps != null) {
 			assetProps.assertAttributes();
@@ -66,7 +75,7 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 		this.newestAssetLastUpdate = DateTime.now();
 	}
 	
-	public A getNewestAsset() {
+	public A getNewAsset() {
 		return newestAsset;
 	}
 	

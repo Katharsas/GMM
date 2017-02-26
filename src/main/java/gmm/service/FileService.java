@@ -121,7 +121,7 @@ public class FileService {
 		 * returns, will return true from test method when given the same argument as this method.
 		 */
 		public static String getExtension(String name) {
-			final String[] parts = name.split(".");
+			final String[] parts = name.split("\\.");
 			if (parts.length <= 1) {
 				return null;
 			} else {

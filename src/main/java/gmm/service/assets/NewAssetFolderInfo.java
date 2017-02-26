@@ -8,11 +8,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import gmm.collections.HashSet;
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.AssetTaskService;
 
-public class NewAssetFolderInfo {
+public class NewAssetFolderInfo implements AssetInfo {
 	
 	public static enum AssetFolderStatus {
 		
@@ -34,8 +35,6 @@ public class NewAssetFolderInfo {
 		return new NewAssetFolderInfo(duplicate, current);
 	}
 	
-	private final AssetTaskService<?> service;
-	
 	private final Path assetFolder;
 	private final AssetName assetFolderName;
 	private final AssetName assetFileName;
@@ -47,7 +46,6 @@ public class NewAssetFolderInfo {
 	private NewAssetFolderInfo(NewAssetFolderInfo duplicate, NewAssetFolderInfo current) {
 		this.assetFolder = null;
 		this.assetFileName = null;
-		this.service = null;
 		
 		this.assetFolderName = current.assetFolderName;
 		
@@ -76,7 +74,6 @@ public class NewAssetFolderInfo {
 	 */
 	public NewAssetFolderInfo(Path relative) {
 		this.nonUniqueDuplicates = null;
-		this.service = null;
 		this.assetFolder = relative;
 		this.assetFolderName = new AssetName(relative);
 		this.assetFileName = null;
@@ -92,7 +89,6 @@ public class NewAssetFolderInfo {
 	 */
 	public NewAssetFolderInfo(AssetTaskService<?> service, Path relative, Path base) {
 		this.nonUniqueDuplicates = null;
-		this.service = service;
 		this.assetFolder = relative;
 		this.assetFolderName = new AssetName(relative);
 		
@@ -155,14 +151,27 @@ public class NewAssetFolderInfo {
 	/**
 	 * @return may be null for most invalid statuses.
 	 */
+	@Override
 	public AssetName getAssetFileName() {
 		return assetFileName;
 	}
-	
-	/**
-	 * @return may be null for status INVALID_ASSET_FOLDER_NOT_UNIQUE, INVALID_ASSET_FOLDER_EXTENSION
-	 */
-	public AssetTaskService<?> getService() {
-		return service;
+
+	@Override
+	public AssetGroupType getType() {
+		return AssetGroupType.NEW;
+	}
+
+	@Override
+	public Path getAssetFilePathAbsolute(DataConfigService config) {
+		if (status != AssetFolderStatus.VALID_WITH_ASSET) {
+			throw new UnsupportedOperationException("Cannot return path to asset since it does not exist!");
+		}
+		if (assetFolder == null || assetFileName == null) {
+			throw new NullPointerException();
+		}
+		return config.assetsNew()
+				.resolve(assetFolder)
+				.resolve(config.subAssets())
+				.resolve(assetFileName.get());
 	}
 }

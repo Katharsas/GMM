@@ -11,8 +11,8 @@ public class ModelProperties extends AssetProperties {
 	
 	private Set<String> textureNames;
 
-	public ModelProperties(AssetGroupType groupType) {
-		super(groupType);
+	public ModelProperties(String filename, AssetGroupType groupType) {
+		super(filename, groupType);
 	}
 	
 	@Override

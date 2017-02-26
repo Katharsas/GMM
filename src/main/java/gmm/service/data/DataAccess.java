@@ -44,4 +44,9 @@ public interface DataAccess {
 	 * => Caller must ensure there is a reference so that the object does not get GCed.
 	 */
 	public void registerForUpdates(DataChangeCallback onUpdate);
+	
+	/**
+	 * Similar to {@link #registerForUpdates(DataChangeCallback)}, but runs earlier.
+	 */
+	public void registerPostProcessor(DataChangeCallback onUpdate);
 }

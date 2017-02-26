@@ -45,11 +45,17 @@ public class DataBase implements DataAccess {
 	// OBSERVER PATTERN
 	// ###################
 	
-	final private java.util.Set<DataChangeCallback> weakCallbacks =
+	final private java.util.Set<DataChangeCallback> weakPostProcessorCallbacks =
 			Collections.newSetFromMap(new WeakHashMap<DataChangeCallback, Boolean>());
-
+	
+	final private java.util.Set<DataChangeCallback> weakConsumerCallbacks =
+			Collections.newSetFromMap(new WeakHashMap<DataChangeCallback, Boolean>());
+	
 	final private DataChangeCallback callbacks = event -> {
-		for(final DataChangeCallback c : weakCallbacks) {
+		for(final DataChangeCallback c : weakPostProcessorCallbacks) {
+			c.onEvent(event);
+		}
+		for(final DataChangeCallback c : weakConsumerCallbacks) {
 			c.onEvent(event);
 		}
 	};
@@ -298,10 +304,15 @@ public class DataBase implements DataAccess {
 
 	@Override
 	public void registerForUpdates(DataChangeCallback onUpdate) {
-		weakCallbacks.add(onUpdate);
+		weakConsumerCallbacks.add(onUpdate);
 		//TODO delete when tested with more than 10 sessions
-		if (weakCallbacks.size() > 20)
+		if (weakConsumerCallbacks.size() > 20)
 			logger.error("Memory leak: Callback objects not getting garbage collected!");
+	}
+
+	@Override
+	public void registerPostProcessor(DataChangeCallback onUpdate) {
+		weakPostProcessorCallbacks.add(onUpdate);
 	}
 
 }

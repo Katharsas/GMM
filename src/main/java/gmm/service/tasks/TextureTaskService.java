@@ -104,8 +104,8 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	}
 
 	@Override
-	protected TextureProperties newPropertyInstance(AssetGroupType isOriginal) {
-		return new TextureProperties(isOriginal);
+	protected TextureProperties newPropertyInstance(String filename, AssetGroupType isOriginal) {
+		return new TextureProperties(filename, isOriginal);
 	}
 
 	@Override
