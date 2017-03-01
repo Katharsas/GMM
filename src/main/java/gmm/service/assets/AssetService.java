@@ -1,18 +1,9 @@
 package gmm.service.assets;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.BiConsumer;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +19,10 @@ import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
-import gmm.service.FileService.FileExtensionFilter;
+import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
-import gmm.service.data.DataConfigService;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
@@ -58,11 +48,11 @@ import gmm.util.Util;
 @Service
 public class AssetService {
 	
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final static boolean assetTypeFoldersEnabled = true;
+	private final AssetScanner scanner;
 	
-	private final DataConfigService config;
 	private final TaskServiceFinder serviceFinder;
 	
 	public final Map<AssetName, AssetTask<?>> assetTasks;
@@ -70,7 +60,7 @@ public class AssetService {
 	public final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
 	public final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
 	
-	public DataChangeCallback reference;
+	public final DataChangeCallback reference;
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetName assetName) {
 		return newAssetFolders.get(assetName);
@@ -80,63 +70,58 @@ public class AssetService {
 		return originalAssetFiles.get(assetName);
 	}
 	
+	private AssetInfo getAssetInfo(AssetName assetName, AssetGroupType type) {
+		if (type.isOriginal()) return getOriginalAssetFileInfo(assetName);
+		else return getNewAssetFolderInfo(assetName);
+	}
+	
 	@Autowired
-	public AssetService(DataConfigService config, TaskServiceFinder serviceFinder) {
-		this.config = config;
+	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, DataAccess data) {
+		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
 		
 		assetTasks = new HashMap<>();
 		newAssetFolders = new HashMap<>();
 		originalAssetFiles = new HashMap<>();
+		
+		reference = initTasksAndGetPostProcessor(data);
+		data.registerPostProcessor(reference);
+		
+		onOriginalAssetFilesChanged();
 	}
 	
-	@Autowired
-	public void setDataProvider(DataAccess data) {
+	private DataChangeCallback initTasksAndGetPostProcessor(DataAccess data) {
 		for (final AssetTask<?> assetTask : data.getList(AssetTask.class)) {
 			assetTasks.put(assetTask.getAssetName(), assetTask);
 		}
-		
-		reference = new DataChangeCallback() {
-			@Override
-			public void onEvent(DataChangeEvent event) {
-				// TODO should DataChangeEvent only have concrete classes as generic type for easier checking?
-				final Class<? extends Linkable> clazz = event.changed.getGenericType();
-				if (Task.class.isAssignableFrom(clazz)) {
-					switch(event.type) {
-					case ADDED:
-						for (final Task task : event.getChanged(Task.class)) {
-							if (task instanceof AssetTask) {
-								onAssetTaskCreation((AssetTask<?>) task);
-							}
-						}
-						break;
-					case EDITED:
-						// TODO AssetService needs to get notified manually on AssetName change,
-						// see AssetTaskService todo, AssetService needs old AssetName to cleanup
-						break;
-					case REMOVED:
-						for (final Task task : event.getChanged(Task.class)) {
-							if (task instanceof AssetTask) {
-								onAssetTaskDeletion((AssetTask<?>) task);
-							}
-						}
-						break;
-					}
-				}
-			}
-		};
-		data.registerPostProcessor(reference);
-		
-//		onOriginalAssetFilesChanged();
-		// TODO make sure the order of service initialization works out like this:
-		// 1. DataAccess init, ServiceFinder init
-		// 2. This method runs
-		// 3. AutoBackupLoader runs
+		return this::onDataChangeEvent;
 	}
 	
-	@PostConstruct
-	public void initialScans() {
-		onOriginalAssetFilesChanged();
+	private void onDataChangeEvent(DataChangeEvent event) {
+		// TODO should DataChangeEvent only have concrete classes as generic type for easier checking?
+		final Class<? extends Linkable> clazz = event.changed.getGenericType();
+		if (Task.class.isAssignableFrom(clazz)) {
+			switch(event.type) {
+			case ADDED:
+				for (final Task task : event.getChanged(Task.class)) {
+					if (task instanceof AssetTask) {
+						onAssetTaskCreation((AssetTask<?>) task);
+					}
+				}
+				break;
+			case EDITED:
+				// TODO AssetService needs to get notified manually on AssetName change,
+				// see AssetTaskService todo, AssetService needs old AssetName to cleanup
+				break;
+			case REMOVED:
+				for (final Task task : event.getChanged(Task.class)) {
+					if (task instanceof AssetTask) {
+						onAssetTaskDeletion((AssetTask<?>) task);
+					}
+				}
+				break;
+			}
+		}
 	}
 	
 	/**
@@ -146,212 +131,153 @@ public class AssetService {
 		final AssetName name = task.getAssetName();
 		assetTasks.put(name, task);
 		
-		final AssetGroupType type = AssetGroupType.ORIGINAL;
-		final OriginalAssetFileInfo info = originalAssetFiles.get(name);
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
 		
-		if (info != null) {
+		for (final AssetGroupType type : AssetGroupType.values()) {
+			final AssetInfo info = getAssetInfo(name, type);
 			final AssetProperties props = task.getAssetProperties(type);
-			if (props != null && service.isValidAssetProperties(props, info)) {
-				return; // we assume the existing prop data and previews are still valid, no need for recreation.
+			if (info != null) {
+				System.out.println("Asset file info availabe: " + type.name());
+				boolean hasAsset = true;
+				if (info instanceof NewAssetFolderInfo) {
+					final NewAssetFolderInfo folderInfo = (NewAssetFolderInfo) info;
+					hasAsset = folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET;
+				}
+				System.out.println("hasAsset: " + hasAsset);
+				if (hasAsset && (props == null || !service.isValidAssetProperties(props, info))) {
+					service.recreateAssetProperties(task, info);
+				}
+			} else {
+				if (props != null) {
+					service.removeAssetProperties(task, type);
+				}
 			}
 		}
-		service.recreateAssetProperties(task, info);
 	}
 	
 	private <A extends AssetProperties> void onAssetTaskDeletion(AssetTask<A> task) {
 		final AssetName name = task.getAssetName();
 		assetTasks.remove(name);
 		
-		final AssetGroupType type = AssetGroupType.ORIGINAL;
-		if (task.getAssetProperties(type) == null) return;
-		else {
-			final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
-			service.removeAssetProperties(task, AssetGroupType.ORIGINAL);
+		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+		
+		for (final AssetGroupType type : AssetGroupType.values()) {
+			if (task.getAssetProperties(type) == null) return;
+			else {
+				service.removeAssetProperties(task, type);
+			}
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void onOriginalAssetFilesChanged() {
+		applyFoundOriginal(scanner.onOriginalAssetFilesChanged());
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void applyFoundOriginal(Map<AssetName, OriginalAssetFileInfo> foundOriginalAssetFiles) {
 		
+		final AssetGroupType type = AssetGroupType.ORIGINAL;
 		final Set<AssetName> oldFiles = new HashSet<>(AssetName.class, originalAssetFiles.keySet());
 		
-		scanForOriginalAssets(config.assetsOriginal(), new BiConsumer<AssetName, OriginalAssetFileInfo>() {
-			@Override
-			public void accept(AssetName fileName, OriginalAssetFileInfo info) {
-				logger.debug("Found original asset file at path '" + info.getAssetFile() + "'.");
-				
+		foundOriginalAssetFiles.forEach((fileName, currentInfo) -> {
+			
+			final AssetTask<?> task = assetTasks.get(fileName);
+			if (task != null) {
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
-				final AssetTask<?> task = assetTasks.get(fileName);
-				
-				if (task != null) {
-					final AssetTaskService<?> service =
-							serviceFinder.getAssetService(Util.classOf(task));
-					if (oldInfo == null) {
-						// new assets
-						service.recreateAssetProperties((AssetTask)task, info);
-					} else {
-						// changed assets
-						final Path oldPath = oldInfo.getAssetFile();
-						final Path newPath = info.getAssetFile();
-						if (!oldPath.equals(newPath)) {
-//							service.removeAssetProperties((AssetTask)task, AssetGroupType.ORIGINAL);
-							service.recreateAssetProperties((AssetTask)task, info);
-						}
+				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.classOf(task));
+				if (oldInfo == null) {
+					// new assets
+					service.recreateAssetProperties((AssetTask)task, currentInfo);
+				} else {
+					// changed assets
+					final AssetProperties props = task.getAssetProperties(type);
+					if (!service.isValidAssetProperties(props, currentInfo)) {
+						service.recreateAssetProperties((AssetTask)task, currentInfo);
 					}
 				}
-				oldFiles.remove(fileName);
-				originalAssetFiles.put(fileName, info);
 			}
+			// prepare for removing
+			oldFiles.remove(fileName);
+			originalAssetFiles.put(fileName, currentInfo);
 		});
+		
 		// removed assets
 		for (final AssetName notFound : oldFiles) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
 				final AssetTaskService<?> service = serviceFinder.getAssetService(notFound);
-				service.removeAssetProperties((AssetTask)task, AssetGroupType.ORIGINAL);
+				service.removeAssetProperties((AssetTask)task, type);
 			}
 		}
 	}
 	
-	private void scanForOriginalAssets(Path originalAssets, BiConsumer<AssetName, OriginalAssetFileInfo> onHit) {
-		logger.debug("Scanning for original assets at path '" + originalAssets + "'.");
-		try {
-			Files.walkFileTree(originalAssets, new SimpleFileVisitor<Path>() {
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-					final String fileNameString = file.getFileName().toString();
-					
-					final AssetTaskService<?> service = isOriginalAsset(fileNameString);
-					if (service != null) {
-						final Path relative =  config.assetsOriginal().relativize(file);
-						final OriginalAssetFileInfo info = new OriginalAssetFileInfo(service, relative);
-						onHit.accept(info.getAssetFileName(), info);
-					}
-					return FileVisitResult.CONTINUE;
-				}
-			});
-		} catch (final IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
-	
-	/**
-	 * @return The service associated with files of this type if the file is an asset, null otherwise.
-	 */
-	private AssetTaskService<?> isOriginalAsset(String fileName) {
-		final String extension = FileExtensionFilter.getExtension(fileName);
-		if (extension == null) return null;
-		else return serviceFinder.getAssetService(extension);
-	}
 	
 	// TODO make sure working copy is up to date when this is called
 	/**
 	 * @param changedPaths - This method does detect some changes, but if a file changed its content
-	 * 		without changing is filename, its path should be in the given list.
+	 * 		without changing is filename, its path should be in the given list. Paths must be relative
+	 * 		to new asset folder base (config.assetsNew()).
 	 */
 	public void onNewAssetFilesChanged(List<Path> changedPaths) {
-		final Map<AssetName, NewAssetFolderInfo> newAssetFolders = new HashMap<>();
-		
-		final BiConsumer<AssetName, NewAssetFolderInfo> onHit = (folderName, folderInfo) -> {
-			logger.debug("Found new asset folder at path '" + folderInfo.getAssetFolder() + "'.");
-			final NewAssetFolderInfo duplicate = newAssetFolders.get(folderName);
-			if (duplicate != null) {
-				newAssetFolders.put(folderName, NewAssetFolderInfo.createInvalidNotUnique(duplicate, folderInfo));
-			} else {
-				newAssetFolders.put(folderName, folderInfo);
-			}
-		};
-		
-		if (assetTypeFoldersEnabled) {
-			final Map<Path, AssetTaskService<?>> assetTypeFolders = getNewAssetTypeFolders();
-			for (final Entry<Path, AssetTaskService<?>> entry : assetTypeFolders.entrySet()) {
-				final Path assetTypeFolder = entry.getKey();
-				final AssetTaskService<?> service = entry.getValue();
-				scanForNewAssets(assetTypeFolder, onHit, service);
-			}
-		} else {
-			scanForNewAssets(config.assetsNew(), onHit, null);
-		}
-		
-		// TODO
-		// folder info that didn't exist before got added. Find task, set properties if valid & assetfile exists
-		// folder info that wasnt found this time got deleted. Find task and remove any properties if old info was valid & assetfile existed
-		// folder info with changed state: if changed from/to valid with asset, delete/create properties for asset
-		// folder info valid with asset for both old/new, but folderpath changed: recreate properties or rely on changedPaths (SVN diff)
-		// folder info valid with asset for both old/new: rely on changedPaths (SVN diff)
-		
+		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
 	}
 	
-	private Map<Path, AssetTaskService<?>> getNewAssetTypeFolders() {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void applyFoundNew(Map<AssetName, NewAssetFolderInfo> foundNewAssetFolders, List<Path> changedPaths) {
 		
-		final Map<Path, AssetTaskService<?>> result = new HashMap<>();
+		scanner.filterForNewAssets(changedPaths);
 		
-		for (final AssetTaskService<?> service : serviceFinder.getAssetTaskServices()) {
+		final AssetGroupType type = AssetGroupType.NEW;
+		final Set<AssetName> oldFolders = new HashSet<>(AssetName.class, originalAssetFiles.keySet());
+		
+		final BiConsumer<AssetName, NewAssetFolderInfo> applyEntry = (folderName, currentInfo) -> {
 			
-			final Path assetTypeFolder = config.assetsNew().resolve(service.getAssetTypeSubFolder());
-			final String taskTypeName = service.getTaskType().getSimpleName();
-			
-			if (!assetTypeFolder.toFile().isDirectory()) {
-				logger.warn("Could not find asset folder for type '" + taskTypeName + "' at '" + assetTypeFolder + "'!");
-			} else {
-				logger.info("Found asset type folder for type '" + taskTypeName + "' at '" + assetTypeFolder + "'.");
-				
-				result.put(assetTypeFolder, service);
-			}
-		}
-		return result;
-	}
-	
-	public void scanForNewAssets(Path rootScanFolder, BiConsumer<AssetName, NewAssetFolderInfo> onHit,
-			AssetTaskService<?> assetTypeEnabledService) {
-
-		if (!rootScanFolder.toFile().isDirectory()) {
-			throw new IllegalArgumentException("Directory expected!");
-		}
-		logger.debug("Scanning for new assets at path '" + rootScanFolder + "'.");
-		try {
-			Files.walkFileTree(rootScanFolder, new SimpleFileVisitor<Path>() {
-				@Override
-				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+			final AssetTask<?> task = assetTasks.get(folderName);
+			if (task != null) {
+				final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
+				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.getClass(task));
+				if (oldInfo == null) {
+					service.recreateAssetProperties((AssetTask)task, currentInfo);
+				} else {
+					final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
+					final boolean oldHasAsset = oldInfo.getStatus() == hasAsset;
+					final boolean currentHasAsset = currentInfo.getStatus() == hasAsset;
 					
-					final String dirNameString = dir.getFileName().toString();
-					final String extension = isAssetFolderByConvention(dirNameString);
-					if (extension != null) {
-						final AssetTaskService<?> service = serviceFinder.getAssetService(extension);
-						final Path base = config.assetsNew();
-						final Path relative = base.relativize(dir);
-						final NewAssetFolderInfo folderInfo;
-						if (assetTypeFoldersEnabled) {
-							if (service == null) {
-								folderInfo = new NewAssetFolderInfo(relative);
-							} else {
-								folderInfo = new NewAssetFolderInfo(assetTypeEnabledService, relative, base);
-							}
+					if (oldHasAsset && !currentHasAsset) {
+						service.removeAssetProperties((AssetTask)task, type);
+					} else if (!oldHasAsset && currentHasAsset) {
+						service.recreateAssetProperties((AssetTask)task, currentInfo);
+					} else if (oldHasAsset && currentHasAsset) {
+						
+						final AssetProperties props = task.getAssetProperties(type);
+						if (!service.isValidAssetProperties(props, currentInfo)) {
+							service.recreateAssetProperties((AssetTask)task, currentInfo);
 						} else {
-							if (service == null) {
-								return FileVisitResult.SKIP_SUBTREE;
-							} else {
-								folderInfo = new NewAssetFolderInfo(service, relative, base);
+							final String assetName = currentInfo.getAssetFileName().get();
+							final Path assetFile = currentInfo.getAssetFolder().resolve(assetName);
+							if (changedPaths.contains(assetFile)) {
+								service.recreateAssetProperties((AssetTask)task, currentInfo);
 							}
 						}
-						onHit.accept(folderInfo.getAssetFolderName(), folderInfo);
-						return FileVisitResult.SKIP_SUBTREE;
+					} else {
+						// both are not hasAsset, so properties should not exist anyway
 					}
-					return FileVisitResult.CONTINUE;
 				}
-			});
-		} catch (final IOException e) {
-			throw new UncheckedIOException(e);
+			}
+			// prepare for removing
+			oldFolders.remove(folderName);
+			newAssetFolders.put(folderName, currentInfo);
+		};
+		
+		foundNewAssetFolders.forEach(applyEntry);
+		
+		// removed assets
+		for (final AssetName notFound : oldFolders) {
+			final AssetTask<?> task = assetTasks.get(notFound);
+			if (task != null && task.getAssetProperties(type) != null) {
+				final AssetTaskService<?> service = serviceFinder.getAssetService(notFound);
+				service.removeAssetProperties((AssetTask)task, type);
+			}
 		}
-	}
-	
-	/**
-	 * @return The extension of the folder name if the folder is an asset folder, otherwise null.
-	 */
-	private String isAssetFolderByConvention(String folderName) {
-		// by convention, an asset folder is named like a file, with file name and file extension
-		// separated by a point.
-		return FileExtensionFilter.getExtension(folderName);
 	}
 }

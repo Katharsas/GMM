@@ -44,8 +44,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	@Override
 	public void recreatePreview(Path sourceFile, Path previewFolder, ModelProperties asset) {
 		fileService.createDirectory(previewFolder);
-		final String isOriginalString = asset.getGroupType().getPreviewFileName();
-		final Path target = previewFolder.resolve(isOriginalString + ".json");
+		final Path target = getPreviewFilePath(previewFolder, asset.getGroupType());
 		deletePreview(target);
 		final MeshData meshData = python.createPreview(sourceFile, target);
 		final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
@@ -59,11 +58,20 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	
 	@Override
 	public void deletePreview(Path previewFolder, AssetGroupType isOriginal) {
-		final String isOriginalString = isOriginal.getPreviewFileName();
-		final Path target = previewFolder.resolve(isOriginalString + ".json");
+		final Path target = getPreviewFilePath(previewFolder, isOriginal);
 		deletePreview(target);
 	}
 	
+	@Override
+	protected boolean hasPreview(Path previewFolder, AssetGroupType isOriginal) {
+		final Path target = getPreviewFilePath(previewFolder, isOriginal);
+		return target.toFile().isFile();
+	}
+	
+	private Path getPreviewFilePath(Path previewFolder, AssetGroupType isOriginal) {
+		final String isOriginalString = isOriginal.getPreviewFileName();
+		return previewFolder.resolve(isOriginalString + ".json");
+	}
 	
 	private void deletePreview(Path previewFile) {
 		if(previewFile.toFile().exists()) {

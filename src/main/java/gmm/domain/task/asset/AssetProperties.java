@@ -13,6 +13,8 @@ public abstract class AssetProperties {
 	private final AssetGroupType groupType;
 	@XStreamAsAttribute
 	private long sizeInBytes = -1;
+	@XStreamAsAttribute
+	private long lastModified = -1;
 	
 	protected final static String assertAttributesException =
 			"This asset's attributes are not fully populated!";
@@ -25,13 +27,17 @@ public abstract class AssetProperties {
 	}
 	
 	public void assertAttributes() {
-		if(sizeInBytes < 0) {
+		if(sizeInBytes < 0 || lastModified < 0) {
 			throw new IllegalStateException(assertAttributesException);
 		}
 	}
 
-	public void setFileSize(long sizeInBytes) {
+	public void setSizeInBytes(long sizeInBytes) {
 		this.sizeInBytes = sizeInBytes;
+	}
+	
+	public long getSizeInBytes() {
+		return sizeInBytes;
 	}
 
 	public String getSizeInKB() {
@@ -50,5 +56,13 @@ public abstract class AssetProperties {
 
 	public AssetGroupType getGroupType() {
 		return groupType;
+	}
+	
+	public void setLastModified(long lastModified) {
+		this.lastModified = lastModified;
+	}
+	
+	public long getLastModified() {
+		return lastModified;
 	}
 }

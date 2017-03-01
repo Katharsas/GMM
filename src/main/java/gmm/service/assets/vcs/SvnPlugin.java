@@ -22,6 +22,7 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import gmm.ConfigurationException;
 import gmm.service.FileService;
+import gmm.service.assets.AssetService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.DataConfigService;
 
@@ -59,10 +60,10 @@ public class SvnPlugin extends VcsPlugin {
 	final SvnOperationFactory svnOperationFactory;
 	
 	@Autowired
-	public SvnPlugin(DataConfigService config, FileService fileService,
+	public SvnPlugin(AssetService assetService, DataConfigService config, FileService fileService,
 			@Value("${vcs.plugin.svn.repository}") String repositoryUriString) {
 		
-		super(config);
+		super(assetService);
 		this.config = config;
 		this.fileService = fileService;
 		
@@ -84,13 +85,6 @@ public class SvnPlugin extends VcsPlugin {
 		
 		workingCopyRevision = workingCopyRev;
 		diffAndUpdate(repositoryRev, workingCopyRev);
-		
-		// TODO the gmm should probably save his previews NOT in the wc, because
-		// 1. SVN does not ignore empty folders like git does
-		// 2. Original Preview generation will cause the GMM to generate folders for all original assets in wc.
-		//    Now what happens when a user wants to save an new asset under a path thats not the same as for the original?
-		//    That should totally work but will create conflicts / GMM needs to move previews into new location => complicated
-		// => GMM should have a preview store whith flat list of asset_folder / previews files, which can be mapped to tasks, as well as (different) original and new paths
 	}
 	
 	private long checkRepoAvailable() {

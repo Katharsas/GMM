@@ -72,8 +72,8 @@
 			    	<#else><td></td>
 			    	</#if>
 			    	<td></td>
-			    	<#if task.newestAsset?has_content>
-			    		<#assign asset = task.newestAsset/>
+			    	<#if task.newAsset?has_content>
+			    		<#assign asset = task.newAsset/>
 				    	<td class="task-preview-button-newest task-button button">
 				    		<span class="left" style="font-weight:bold">Newest:</span>
 				    		<span class="right">
@@ -97,8 +97,8 @@
 				    <#else><td></td>
 			    	</#if>
 			    	<td></td>
-			    	<#if task.newestAsset?has_content>
-			    		<#assign asset = task.newestAsset/>
+			    	<#if task.newAsset?has_content>
+			    		<#assign asset = task.newAsset/>
 				    	<td class="task-preview-visual clickable">
 				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 				    			<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
@@ -133,10 +133,10 @@
 				    	<#else><td></td>
 				    	</#if>
 				    	<td></td>
-				    	<#if task.newestAsset?has_content>
-				    		<#assign asset = task.newestAsset/>
+				    	<#if task.newAsset?has_content>
+				    		<#assign asset = task.newAsset/>
 					    	<td class="task-preview-button-newest task-button button">
-					    		<span class="left" style="font-weight:bold">Newest:</span>
+					    		<span class="left" style="font-weight:bold">New:</span>
 					    		<span class="right">
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
@@ -159,8 +159,8 @@
 					    <#else><td></td>
 				    	</#if>
 				    	<td></td>
-				    	<#if task.newestAsset?has_content>
-				    		<#assign asset = task.newestAsset/>
+				    	<#if task.newAsset?has_content>
+				    		<#assign asset = task.newAsset/>
 					    	<td class="task-preview-visual clickable"
 					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
 					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
@@ -199,10 +199,10 @@
 						<#else><td></td>
 						</#if>
 						<td></td>
-						<#if task.newestAsset?has_content>
+						<#if task.newAsset?has_content>
 				    		<td class="task-preview-textures">
 				    			<ul>
-							    	<#list task.newestAsset.textureNames as textureName>
+							    	<#list task.newAsset.textureNames as textureName>
 							    		<li>${textureName?html}</li>
 									</#list>
 								</ul>

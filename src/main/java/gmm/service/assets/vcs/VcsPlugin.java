@@ -4,16 +4,16 @@ import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import gmm.collections.Collection;
-import gmm.service.data.DataConfigService;
+import gmm.collections.List;
+import gmm.service.assets.AssetService;
 
 public abstract class VcsPlugin {
 
-	private DataConfigService config;
+	private final AssetService assetService;
 	
 	@Autowired
-	public VcsPlugin(DataConfigService config) {
-		this.config = config;
+	public VcsPlugin(AssetService assetService) {
+		this.assetService = assetService;
 	}
 	
 	/**
@@ -23,8 +23,7 @@ public abstract class VcsPlugin {
 	 */
 	public abstract boolean allowCustomAssetPaths();
 	
-	public void notifyRepositoryChanged(Collection<Path> changedFiles) {
-		// TODO filter files to paths only under asset type folders
-		// TODO get only asset file changes (check parent folder for each file, must be asset folder and not inside another asset folder)
+	public void notifyFilesChanged(List<Path> changedPaths) {
+		assetService.onNewAssetFilesChanged(changedPaths);
 	}
 }

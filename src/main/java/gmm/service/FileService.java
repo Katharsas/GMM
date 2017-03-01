@@ -19,7 +19,7 @@ import gmm.util.StringUtil;
 
 /**
  * Service for all kind of write/read File operations.
- * @author Jan
+ * @author Jan Mothes
  */
 @Service
 public class FileService {
@@ -68,9 +68,9 @@ public class FileService {
 	 * Returns the file paths of all files inside the given directory recursively.
 	 * This includes files inside directories inside the given directory.
 	 * 
-	 * @param filter - Paths that do not fulfil this filter predicate are not returned.
+	 * @param filter - Paths that do not fulfill this filter predicate are not returned.
 	 */
-	public List<Path> getFilesRecursive(Path path, Predicate<Path> filter) {
+	public synchronized List<Path> getFilesRecursive(Path path, Predicate<Path> filter) {
 		final List<Path> filePaths = new LinkedList<>(Path.class);
 		if (path.toFile().exists()) {
 			try(Stream<Path> stream = Files.walk(path)) {
@@ -90,7 +90,7 @@ public class FileService {
 	
 	/**
 	 * A file filter that only accepts extensions specified on construction.
-	 * Does not accept hidden files (unix) or directories.
+	 * Does not accept hidden files (Unix) or directories.
 	 * @author Jan Mothes
 	 */
 	public static class FileExtensionFilter implements PathFilter {

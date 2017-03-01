@@ -140,7 +140,6 @@ public class NewAssetFolderInfo implements AssetInfo {
 		return assetFolder;
 	}
 	
-	
 	/**
 	 * @return never null.
 	 */

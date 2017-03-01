@@ -60,12 +60,11 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		BufferedImage image = readImage(sourceFile);
 		asset.setDimensions(image.getHeight(), image.getWidth());
 		Path targetFile;
-		final String isOriginalString = asset.getGroupType().getPreviewFileName();
 		//full preview 
-		targetFile = previewFolder.resolve(isOriginalString + "_full.png");
+		targetFile = getPreviewFilePath(previewFolder, asset.getGroupType(), false);
 		writeImage(image, targetFile);
 		//small preview
-		targetFile = previewFolder.resolve(isOriginalString + "_small.png");
+		targetFile = getPreviewFilePath(previewFolder, asset.getGroupType(), true);
 		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
 			image = Scalr.resize(image, SMALL_SIZE);
 		}
@@ -91,16 +90,26 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	
 	@Override
 	public void deletePreview(Path previewFolder, AssetGroupType isOriginal) {
+		if (previewFolder.toFile().exists()) {
+			if (previewFolder.toFile().isDirectory()) {
+				fileService.delete(previewFolder);
+				return;
+			}
+		}
+		throw new UncheckedIOException(
+				new IOException("Could not delete preview folder at '" + previewFolder + "'!"));
+	}
+	
+	@Override
+	protected boolean hasPreview(Path previewFolder, AssetGroupType isOriginal) {
+		final Path targetFull = getPreviewFilePath(previewFolder, isOriginal, false);
+		final Path targetSmall = getPreviewFilePath(previewFolder, isOriginal, true);
+		return targetFull.toFile().isFile() && targetSmall.toFile().isFile();
+	}
+	
+	private Path getPreviewFilePath(Path previewFolder, AssetGroupType isOriginal, boolean isSmall) {
 		final String isOriginalString = isOriginal.getPreviewFileName();
-		Path previewFile;
-		previewFile = previewFolder.resolve(isOriginalString + "_full.png");
-		if(previewFile.toFile().exists()) {
-			fileService.delete(previewFile);
-		}
-		previewFile = previewFolder.resolve(isOriginalString + "_small.png");
-		if(previewFile.toFile().exists()) {
-			fileService.delete(previewFile);
-		}
+		return previewFolder.resolve(isOriginalString + (isSmall ? "_small.png" : "_full.png"));
 	}
 
 	@Override
