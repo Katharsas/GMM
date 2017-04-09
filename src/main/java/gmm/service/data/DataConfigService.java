@@ -164,9 +164,6 @@ public class DataConfigService {
 	public Path subAssets() {
 		return subAssets;
 	}
-//	public Path subPreview() {
-//		return subPreview;
-//	}
 	public Path subOther() {
 		return subOther;
 	}

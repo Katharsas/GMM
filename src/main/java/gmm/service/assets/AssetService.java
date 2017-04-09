@@ -19,10 +19,14 @@ import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.FileType;
+import gmm.service.FileService;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
+import gmm.service.assets.vcs.VcsPlugin;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
+import gmm.service.data.DataConfigService;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
@@ -38,6 +42,8 @@ import gmm.util.Util;
  * If an AssetTask or asset file changed, this service will determine what needs to happen:
  * - Adding / removing linked asset files to / from AssetTasks.
  * - Creating / Updating / Deleting asset file previews.
+ * - Notify file changes to VcsPlugin, if the VcsPlugin is not responsible for the changes in the
+ *   first place.
  * 
  * This service assumes that original asset files with same filename do not change their content,
  * that original assets are not added/removed/moved during the lifetime of this service and that
@@ -51,8 +57,8 @@ public class AssetService {
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	private final VcsPlugin vcs;
 	private final AssetScanner scanner;
-	
 	private final TaskServiceFinder serviceFinder;
 	
 	public final Map<AssetName, AssetTask<?>> assetTasks;
@@ -76,9 +82,14 @@ public class AssetService {
 	}
 	
 	@Autowired
-	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, DataAccess data) {
+	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, VcsPlugin vcs,
+			DataConfigService config, FileService fileService, DataAccess data) {
 		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
+		this.vcs = vcs;
+		
+		this.config = config;
+		this.fileService = fileService;
 		
 		assetTasks = new HashMap<>();
 		newAssetFolders = new HashMap<>();
@@ -88,6 +99,11 @@ public class AssetService {
 		data.registerPostProcessor(reference);
 		
 		onOriginalAssetFilesChanged();
+		vcs.registerFilesChangedHandler(this);
+		
+		// TODO make sure that exactly one vcs service bean exists before this service gets constructed
+		// and throw an error that tells user to check his vcs config (set it to none)
+		// maybe even tell user list of possible plugins if possible
 	}
 	
 	private DataChangeCallback initTasksAndGetPostProcessor(DataAccess data) {
@@ -137,13 +153,11 @@ public class AssetService {
 			final AssetInfo info = getAssetInfo(name, type);
 			final AssetProperties props = task.getAssetProperties(type);
 			if (info != null) {
-				System.out.println("Asset file info availabe: " + type.name());
 				boolean hasAsset = true;
 				if (info instanceof NewAssetFolderInfo) {
 					final NewAssetFolderInfo folderInfo = (NewAssetFolderInfo) info;
 					hasAsset = folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET;
 				}
-				System.out.println("hasAsset: " + hasAsset);
 				if (hasAsset && (props == null || !service.isValidAssetProperties(props, info))) {
 					service.recreateAssetProperties(task, info);
 				}
@@ -218,7 +232,7 @@ public class AssetService {
 	 * 		without changing is filename, its path should be in the given list. Paths must be relative
 	 * 		to new asset folder base (config.assetsNew()).
 	 */
-	public void onNewAssetFilesChanged(List<Path> changedPaths) {
+	public void onVcsNewAssetFilesChanged(List<Path> changedPaths) {
 		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
 	}
 	
@@ -235,7 +249,7 @@ public class AssetService {
 			final AssetTask<?> task = assetTasks.get(folderName);
 			if (task != null) {
 				final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
-				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.getClass(task));
+				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
 				if (oldInfo == null) {
 					service.recreateAssetProperties((AssetTask)task, currentInfo);
 				} else {
@@ -279,5 +293,34 @@ public class AssetService {
 				service.removeAssetProperties((AssetTask)task, type);
 			}
 		}
+	}
+	
+	final DataConfigService config;
+	final FileService fileService;
+	
+	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+		
+		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
+		assert(folderInfo.getStatus().isValid);
+		
+		if (fileType.isAsset()) {
+			assert(folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+		}
+		
+		final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
+		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
+		final Path absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
+		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
+		
+		fileService.delete(absoluteFile);
+		
+		if (fileType.isAsset()) {
+			final AssetTask<?> task = assetTasks.get(assetFolderName);
+			if (task != null && task.getAssetProperties(AssetGroupType.NEW) != null) {
+				serviceFinder.getAssetService(Util.classOf(task)).removeAssetProperties((AssetTask)task, AssetGroupType.NEW);
+			}
+		}
+		
+		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 	}
 }

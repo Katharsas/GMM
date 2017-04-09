@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import gmm.domain.UniqueObject;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.FileType;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
@@ -32,6 +33,7 @@ import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 import gmm.web.sessions.tasklist.WorkbenchSession;
+
 
 @Controller
 @RequestMapping("tasks")
@@ -219,22 +221,22 @@ public class TaskAssetController {
 //		return new FileSystemResource(filePath.toFile());
 //	}
 //	
-//	/**
-//	 * Delete File
-//	 * -----------------------------------------------------------------
-//	 * @param idLink - identifies the corresponding task
-//	 * @param asset - true if file is an asset
-//	 * @param dir - relative path to the deleted file
-//	 */
-//	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
-//	@ResponseBody
-//	public void handleDeleteFile(
-//			@PathVariable String idLink,
-//			@RequestParam("asset") Boolean asset,
-//			@RequestParam("dir") Path dir) throws Exception {
-//		
-//		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-//		taskService.deleteFile(task, dir, asset);
-//	}
-
+	/**
+	 * Delete File
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 * @param isAsset - true if file is an asset
+	 * @param relativeFile - relative path to the deleted file
+	 */
+	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
+	@ResponseBody
+	public void handleDeleteFile(
+			@PathVariable String idLink,
+			@RequestParam("asset") Boolean isAsset,
+			@RequestParam("dir") Path relativeFile) {
+		
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final FileType fileType = isAsset ? FileType.ASSET : FileType.WIP;
+		assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
+	}
 }

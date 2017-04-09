@@ -205,20 +205,6 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		// TODO since caller must know if file was an asset, relay that info to this function or split it into add asset/wip file
 	}
 	
-	// TODO caller must remove asset properties if this was an asset
-	public void deleteFile(Path relativeFile, AssetTask<A> task, NewAssetFolderInfo folderInfo, boolean isAsset) {
-		//Restrict access
-		final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
-		final Path visible = assetFolder.resolve(isAsset ? config.subAssets() : config.subOther());
-		final Path assetPath = visible.resolve(fileService.restrictAccess(relativeFile, visible));
-//		//Delete previews
-//		if (isAsset) {
-//			removeAssetProperties(task, AssetGroupType.NEW);
-//		}
-		//Delete file
-		fileService.delete(assetPath);
-	}
-	
 	public FileExtensionFilter getExtensionFilter() {
 		return extensionFilter;
 	}

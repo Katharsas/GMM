@@ -3,6 +3,7 @@ package gmm.service.assets.vcs;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import javax.annotation.PreDestroy;
 
@@ -13,16 +14,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnDiffStatus;
+import org.tmatesoft.svn.core.wc2.SvnDiffSummarize;
 import org.tmatesoft.svn.core.wc2.SvnGetInfo;
 import org.tmatesoft.svn.core.wc2.SvnInfo;
 import org.tmatesoft.svn.core.wc2.SvnOperation;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
+import org.tmatesoft.svn.core.wc2.SvnReceivingOperation;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 import gmm.ConfigurationException;
+import gmm.collections.ArrayList;
+import gmm.collections.Collection;
+import gmm.collections.List;
 import gmm.service.FileService;
-import gmm.service.assets.AssetService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.DataConfigService;
 
@@ -55,38 +62,57 @@ public class SvnPlugin extends VcsPlugin {
 	private final SvnTarget repository;
 	private final SvnTarget workingCopy;
 	
-	private long workingCopyRevision = 0;
+//	private long workingCopyRevision = 0;
 	
 	final SvnOperationFactory svnOperationFactory;
 	
 	@Autowired
-	public SvnPlugin(AssetService assetService, DataConfigService config, FileService fileService,
+	public SvnPlugin(DataConfigService config, FileService fileService,
 			@Value("${vcs.plugin.svn.repository}") String repositoryUriString) {
 		
-		super(assetService);
 		this.config = config;
 		this.fileService = fileService;
 		
 		svnOperationFactory = new SvnOperationFactory();
 		
 		try {
-			final URI repositoryUri = new URI(repositoryUriString);
-			repository = SvnTarget.fromURL(SVNURL.parseURIEncoded(repositoryUri.toASCIIString()));
+			final URI uri = new URI(repositoryUriString);
+			final SVNURL url = SVNURL.parseURIEncoded(uri.toASCIIString());
+			repository = SvnTarget.fromURL(url, SVNRevision.HEAD);
 		} catch (URISyntaxException | SVNException e) {
 			throw new IllegalArgumentException("Invalid SVN repository uri!", e);
 		}
 		
-		final long repositoryRev = checkRepoAvailable();
+		checkRepoAvailable();
 		
-		final File workingCopyFile = config.assetsNew().toFile();
-		workingCopy = SvnTarget.fromFile(workingCopyFile);
+		final File workingCopyDir = config.assetsNew().toFile();
+		workingCopy = SvnTarget.fromFile(workingCopyDir, SVNRevision.WORKING);
 		
-		final long workingCopyRev = initializeWorkingCopy(workingCopyFile);
-		
-		workingCopyRevision = workingCopyRev;
-		diffAndUpdate(repositoryRev, workingCopyRev);
+		initializeWorkingCopy(workingCopyDir);
 	}
 	
+	@Override
+	public void init() {
+		final long repositoryRev = retrieveRevision(repository);
+		final long workingCopyRev = retrieveRevision(workingCopy);
+		
+		diffAndUpdate(repositoryRev, workingCopyRev);
+		// TODO call notifychanged files with changes from diffAndUpdate
+	}
+	
+	/**
+	 * @return Current revision of remote repository or working copy.
+	 */
+	private long retrieveRevision(SvnTarget target) {
+		final SvnGetInfo operation = svnOperationFactory.createGetInfo();
+		operation.setSingleTarget(target);
+		final SvnInfo info = tryRun(operation);
+		return info.getRevision();
+	}
+	
+	/**
+	 * @return Current revision of remote repository.
+	 */
 	private long checkRepoAvailable() {
 		final SvnGetInfo operation = svnOperationFactory.createGetInfo();
 		operation.setSingleTarget(repository);
@@ -101,7 +127,7 @@ public class SvnPlugin extends VcsPlugin {
 	}
 	
 	/**
-	 * @return Current revision of the working copy.
+	 * @return Current revision of local working copy.
 	 */
 	private long initializeWorkingCopy(File workingCopyFile) {
 		
@@ -155,17 +181,33 @@ public class SvnPlugin extends VcsPlugin {
 			throw new IllegalStateException("Repository cannot have older revision than working copy!");
 		} else if (workingCopyRev < repositoryRev) {
 			// TODO update
+			final SVNRevision oldRevision = SVNRevision.create(workingCopyRev);
+			final SVNRevision newRevision = SVNRevision.create(repositoryRev);
+			final SvnDiffSummarize operation = svnOperationFactory.createDiffSummarize();
+			operation.setSource(repository, oldRevision, newRevision);
+			
+			final List<SvnDiffStatus> result = new ArrayList<>(SvnDiffStatus.class);
+			tryRun(operation, result);
+			
+			System.out.println("made dif status");
+			
+			for (final SvnDiffStatus status : result) {
+				System.out.println("SVN DiffStatus for file '"+ status.getPath() + "' is '" + status.getModificationType() + "'.");
+			}
 		}
 	}
-	
-//	private <T extends SvnOperation<?>> T setSingleTarget(T operation) {
-//		operation.setSingleTarget(workingCopy);
-//		return operation;
-//	}
 	
 	private <V, T extends SvnOperation<V>> V tryRun(T operation) {
 		try {
 			return operation.run();
+		} catch (final SVNException e) {
+			throw new UncheckedSVNExeption(e);
+		}
+	}
+	
+	private <V, T extends SvnReceivingOperation<V>> Collection<V> tryRun(T operation, Collection<V> receiver) {
+		try {
+			return (Collection<V>) operation.run(receiver);
 		} catch (final SVNException e) {
 			throw new UncheckedSVNExeption(e);
 		}
@@ -177,11 +219,31 @@ public class SvnPlugin extends VcsPlugin {
 	}
 	
 	public synchronized void onCommitHookNotified() {
+		// TODO diff and update
+	}
+
+	@Override
+	public boolean isCustomAssetPathsAllowed() {
+		return true;
+	}
+
+	
+
+	@Override
+	public void commitAddedFile(Path file) {
+		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public boolean allowCustomAssetPaths() {
-		return true;
+	public void commitChangedFile(Path file) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void commitRemovedFile(Path file) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -35,7 +35,7 @@ public class TaskSession implements DataChangeCallback {
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
-	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
+	private final AssetNameConflictCheckerFactory assetNameConflictCheckerFactory;
 	
 	/**
 	 * Events that affect the task cache and all task lists on the page.
@@ -50,7 +50,7 @@ public class TaskSession implements DataChangeCallback {
 		this.data = data;
 		this.taskCreator = taskCreator;
 		loggedInUser = users.getLoggedInUser();
-		this.assetPathConflictCheckerFactory = conflictCheckerFactory;
+		this.assetNameConflictCheckerFactory = conflictCheckerFactory;
 		
 		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
 		data.registerForUpdates(this);
@@ -152,7 +152,7 @@ public class TaskSession implements DataChangeCallback {
 				data.add(taskCreator.create(type.toClass(), form, loggedInUser));
 			};
 			final AssetNameConflictChecker ops = 
-					assetPathConflictCheckerFactory.create(onAssetNameChecked);
+					assetNameConflictCheckerFactory.create(onAssetNameChecked);
 			 
 			importer = new BundledMessageResponses<>(
 					new LinkedList<>(AssetName.class, new AssetName(form.getAssetName())),

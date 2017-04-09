@@ -43,18 +43,18 @@ public class AdminSession extends TaskBackupLoader {
 	private final DataAccess data;
 	
 	private final User loggedInUser;
-	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
+	private final AssetNameConflictCheckerFactory assetNameConflictCheckerFactory;
 	
 	@Autowired
 	public AdminSession(TaskServiceFinder taskService,
-			AssetNameConflictCheckerFactory assetPathConflictCheckerFactory,
+			AssetNameConflictCheckerFactory assetNameConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
 			DataAccess data, UserService users) {
 		
-		super(assetPathConflictCheckerFactory, taskIdConflictCheckerFactory);
+		super(assetNameConflictCheckerFactory, taskIdConflictCheckerFactory);
 		
 		this.taskService = taskService;
-		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
+		this.assetNameConflictCheckerFactory = assetNameConflictCheckerFactory;
 		this.data = data;
 		
 		loggedInUser = users.getLoggedInUser();
@@ -100,7 +100,7 @@ public class AdminSession extends TaskBackupLoader {
 			data.add(taskService.create(type, form, loggedInUser));
 		};
 		final AssetNameConflictChecker ops =
-				assetPathConflictCheckerFactory.create(onAssetNameChecked);
+				assetNameConflictCheckerFactory.create(onAssetNameChecked);
 		
 		final List<AssetName> fileNames = new ArrayList<>(AssetName.class, importFilePaths.size());
 		for (final String path : importFilePaths) {
