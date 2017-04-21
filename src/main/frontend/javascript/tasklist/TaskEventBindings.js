@@ -40,8 +40,13 @@ export default function(onedit) {
 	};
 	
 	//download
-	var downloadFromPreview = function(taskId, version) {
-		var uri = contextUrl + "/tasks/download/" + taskId + "/preview/" + version + "/";
+	var downloadAssetFile = function(taskId, groupType) {
+		var uri = contextUrl + "/tasks/download/" + taskId + "/" + groupType + "/ASSET/";
+		window.open(uri);
+	};
+	
+	var downloadOtherFile = function(taskId, fileType, dir) {
+		var uri = contextUrl + "/tasks/download/" + taskId + "/NEW/" + fileType + "/" + dir + "/";
 		window.open(uri);
 	};
 	
@@ -49,8 +54,8 @@ export default function(onedit) {
 	var selectedFileIsAsset;
 	var $selectedFile = $();
 	
-	var subDir = function() {
-		return selectedFileIsAsset ? "asset" : "other";
+	var fileType = function() {
+		return selectedFileIsAsset ? "ASSET" : "WIP";
 	};
 	var filePath = function() {
 		return $selectedFile.attr("rel");
@@ -167,10 +172,10 @@ export default function(onedit) {
 			{
 				//download from preview
 				$preview.find(".task-preview-button-original").click(function() {
-					downloadFromPreview(id, 'original');
+					downloadAssetFile(id, 'ORIGINAL');
 				});
 				$preview.find(".task-preview-button-newest").click(function() {
-					downloadFromPreview(id, 'newest');
+					downloadAssetFile(id, 'NEW');
 				});
 				
 				//3D preview
@@ -239,14 +244,14 @@ export default function(onedit) {
 						directoryClickable: false
 					};
 				};
-				var $fileTreeAssets = $files.find(".task-files-assets-tree");
-				var $fileTreeOther = $files.find(".task-files-other-tree");
+//				var $fileTreeAssets = $files.find(".task-files-assets-tree");
+				var $fileTreeOther = $files.find(".task-files-wip-tree");
 				var createFileTrees = function() {
-					$fileTreeAssets.fileTree(fileTreeOptions(true),
-						function($file) {
-							selectFile($file, true);
-						}
-					);
+//					$fileTreeAssets.fileTree(fileTreeOptions(true),
+//						function($file) {
+//							selectFile($file, true);
+//						}
+//					);
 					$fileTreeOther.fileTree(fileTreeOptions(false),
 						function($file) {
 							selectFile($file, false);
@@ -278,8 +283,7 @@ export default function(onedit) {
 				$fileOps.find(".task-files-button-download").click(function() {
 					var dir = filePath();
 					if (dir === undefined || dir === "") return;
-					var uri = contextUrl + "/tasks/download/" + id + "/" + subDir() + "/" + dir + "/";
-					window.open(uri);
+					downloadOtherFile(id, fileType(), dir);
 				});
 				
 				//delete

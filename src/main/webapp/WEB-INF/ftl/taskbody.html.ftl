@@ -217,17 +217,17 @@
 		<#if !(task.getType().name() == 'GENERAL')>
 			<div class="task-files">
 				<#if isUserLoggedIn>
-					<div class="task-files-assets left">
+				<#--	<div class="task-files-assets left">
 						<div class="task-files-description">
 							Assets
 						</div>
 						<div class="task-files-assets-tree"></div>
-					</div>
-					<div class="task-files-other right">
+					</div> -->
+					<div class="task-files-wip right">
 						<div class="task-files-description">
-							Other
+							WIP
 						</div>
-						<div class="task-files-other-tree"></div>
+						<div class="task-files-wip-tree"></div>
 					</div>
 					<div class="clear"></div>
 <!-- File Operations -->

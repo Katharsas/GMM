@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import gmm.collections.HashSet;
 import gmm.collections.List;
@@ -61,12 +62,12 @@ public class AssetService {
 	private final AssetScanner scanner;
 	private final TaskServiceFinder serviceFinder;
 	
-	public final Map<AssetName, AssetTask<?>> assetTasks;
+	private final Map<AssetName, AssetTask<?>> assetTasks;
 	
-	public final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
-	public final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
+	private final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
+	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
 	
-	public final DataChangeCallback reference;
+	private final DataChangeCallback reference;
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetName assetName) {
 		return newAssetFolders.get(assetName);
@@ -301,10 +302,10 @@ public class AssetService {
 	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		assert(folderInfo.getStatus().isValid);
+		Assert.isTrue(folderInfo.getStatus().isValid);
 		
 		if (fileType.isAsset()) {
-			assert(folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			Assert.isTrue(folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
 		}
 		
 		final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());

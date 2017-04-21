@@ -9,8 +9,11 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.domain.UniqueObject;
 import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.FileType;
 import gmm.domain.task.asset.ModelTask;
@@ -26,6 +30,8 @@ import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.assets.AssetService;
 import gmm.service.assets.NewAssetFolderInfo;
+import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
+import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
@@ -173,54 +179,61 @@ public class TaskAssetController {
 //		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 //		taskService.addFile(task, file);
 //	}
-//	
-//	/**
-//	 * Download File
-//	 * 
-//	 * Downloads file from an asset task shown in view. Can be used to download the files
-//	 * shown in the preview or to download files shown in the task file manager.
-//	 * To download from preview, subDir argument must equal "preview".
-//	 * To download from manager, subDir argument must euqla "asset" or "other",
-//	 * depending on to which of the two file managers of this task the file belongs.
-//	 * -----------------------------------------------------------------
-//	 * @param idLink - identifies the corresponding task
-//	 * @param subDir - "preview", "asset" or "other"
-//	 * @param dir - relative path to the downloaded file (if preview: "original" or "newest")
-//	 */
-//	@RequestMapping(value = {"/download/{idLink}/{subDir}/{dir}/"},
-//			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-//	@ResponseBody
-//	public FileSystemResource handleDownload(final HttpServletResponse response,
-//			@PathVariable final String idLink,
-//			@PathVariable final String subDir,
-//			@PathVariable final String dir) {
-//		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-//		final Path relative;
-//		final Path base;
-//		if(subDir.equals("preview")) {
-//			if(dir.equals("original")) {
-//				base = config.assetsOriginal();
-//				relative = task.getOriginalAssetPath();
-//			}
-//			else if(dir.equals("newest")) {
-//				base = config.assetsNew();
-//				relative = task.getNewestAssetPath();
-//			}
-//			else throw new IllegalArgumentException("Preview file version '"+dir+"' is invalid. Valid values are 'original' and 'newest'");
-//		}
-//		else if (subDir.equals("asset") || subDir.equals("other") ){
-//			final boolean isAssets = subDir.equals("asset");
-//			base = config.assetsNew();
-//			relative = task.getAssetPath()
-//					.resolve(isAssets ? config.subAssets() : config.subOther())
-//					.resolve(dir);
-//		}
-//		else throw new IllegalArgumentException("Sub directory '"+subDir+"' is invalid. Valid values are 'preview', 'asset' and 'other'");
-//		final Path filePath = base.resolve(fileService.restrictAccess(relative, base));
-//		response.setHeader("Content-Disposition", "attachment; filename=\""+filePath.getFileName()+"\"");
-//		return new FileSystemResource(filePath.toFile());
-//	}
-//	
+	
+	@RequestMapping(value = {"/download/{idLink}/{groupType}/ASSET/"},
+			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseBody
+	public FileSystemResource handleAssetDownload(final HttpServletResponse response,
+			@PathVariable final String idLink,
+			@PathVariable final AssetGroupType groupType) {
+		
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final AssetName name = task.getAssetName();
+		final Path absolute;
+		if (groupType.isOriginal()) {
+			final OriginalAssetFileInfo info = assetService.getOriginalAssetFileInfo(name);
+			Assert.notNull(info);
+			absolute = info.getAssetFilePathAbsolute(config);
+		} else {
+			final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(name);
+			Assert.notNull(info);
+			Assert.isTrue(info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			absolute = info.getAssetFilePathAbsolute(config);
+		}
+		response.setHeader("Content-Disposition", "attachment; filename=\""+absolute.getFileName()+"\"");
+		return new FileSystemResource(absolute.toFile());
+	}
+	
+	/**
+	 * Download File
+	 * 
+	 * Downloads file from an asset task shown in view. Can be used to download the files
+	 * shown in the preview or to download files shown in the task file manager.
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 * @param fileType - on of the enum values of its type {@link FileType}
+	 * @param dir - relative path to the downloaded file (if preview: "original" or "newest")
+	 */
+	@RequestMapping(value = {"/download/{idLink}/NEW/{fileType}/{relativeFile}/"},
+			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+	@ResponseBody
+	public FileSystemResource handleOtherDownload(final HttpServletResponse response,
+			@PathVariable final String idLink,
+			@PathVariable final FileType fileType,
+			@PathVariable final Path relativeFile) {
+		
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
+		Assert.notNull(info);
+		Assert.isTrue(info.getStatus().isValid);
+		final Path assetFolder = config.assetsNew().resolve(info.getAssetFolder());
+		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
+		final Path absolute = visible.resolve(fileService.restrictAccess(relativeFile, visible));
+		
+		response.setHeader("Content-Disposition", "attachment; filename=\""+absolute.getFileName()+"\"");
+		return new FileSystemResource(absolute.toFile());
+	}
+	
 	/**
 	 * Delete File
 	 * -----------------------------------------------------------------
