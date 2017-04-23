@@ -65,6 +65,11 @@ public class AssetService {
 	private final Map<AssetName, AssetTask<?>> assetTasks;
 	
 	private final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
+	// TODO make sure GUI errors are created whenever an invalid info is set or whenever
+	// a task has his mapping changed / a task is added
+	// TODO at the same time the tasks knowledge about wether it has a new asset folder must be updated
+	// TODO edit event must be triggered for given tasks so they get updated in GUI
+	
 	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
 	
 	private final DataChangeCallback reference;
@@ -157,7 +162,10 @@ public class AssetService {
 				boolean hasAsset = true;
 				if (info instanceof NewAssetFolderInfo) {
 					final NewAssetFolderInfo folderInfo = (NewAssetFolderInfo) info;
-					hasAsset = folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET;
+					if (folderInfo.getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
+						service.removeAssetProperties(task, type);
+						hasAsset = false;
+					}
 				}
 				if (hasAsset && (props == null || !service.isValidAssetProperties(props, info))) {
 					service.recreateAssetProperties(task, info);
@@ -299,21 +307,29 @@ public class AssetService {
 	final DataConfigService config;
 	final FileService fileService;
 	
-	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+	public void deleteAssetFile(AssetName assetFolderName) {
+		deleteOtherFile(assetFolderName, FileType.ASSET, null);
+	}
+	
+	public void deleteOtherFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		Assert.isTrue(folderInfo.getStatus().isValid);
 		
+		final Path absoluteFile;
+		
 		if (fileType.isAsset()) {
 			Assert.isTrue(folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			absoluteFile = folderInfo.getAssetFilePathAbsolute(config);
+		} else {
+			final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
+			final Path visible = assetFolder.resolve(fileType.getSubPath(config));
+			absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		}
-		
-		final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
-		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
-		final Path absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
 		
 		fileService.delete(absoluteFile);
+		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 		
 		if (fileType.isAsset()) {
 			final AssetTask<?> task = assetTasks.get(assetFolderName);
@@ -321,7 +337,5 @@ public class AssetService {
 				serviceFinder.getAssetService(Util.classOf(task)).removeAssetProperties((AssetTask)task, AssetGroupType.NEW);
 			}
 		}
-		
-		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 	}
 }

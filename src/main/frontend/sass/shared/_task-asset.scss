@@ -1,23 +1,66 @@
 @import '../include';
 
+.task-details, .task-comments, .task-assets, .task-assetPath {
+	/*margin:15px 5px;*/
+}
+
+.task-assetPath {
+	color:#AAA;
+	margin-top:3px;
+	margin-left: 15px;
+	font-size: 0.8em;
+}
+
 /* //////////////////////////////////////////////////
  * Preview
  * //////////////////////////////////////////////////*/
-.task-preview {
+.task-button.task-file-button {
+	margin: 2px;
+	min-width: 5.3em;
+	max-width: 10em;
+	padding: 2px 5px;
+}
+.task-assets {
+	margin: 25px 1px 5px 10px;
+}
+.task-assets > table {
 	width: 100%;
 	table-layout:fixed;
-	border-spacing: 5px;
+	border-collapse: collapse;
+	
+	td {
+		border: 1px solid #444;
+	}
+	td:nth-child(2) {
+		border-style: none;
+	}
+	/*td.border {
+		border: 1px solid #444;
+	}*/
+	td.noborder {
+		border-style:none;
+	}
+	
+	.task-asset-info {
+		padding: 4px 4px;
+	}
+	.task-asset-buttons {
+		padding: 5px 2px;
+	}
+	.center > .task-file-button {
+		display:inline-block;
+		min-width:10em;
+	}
 }
-.task-preview-buttons {
-}
-.task-preview-visuals {
+
+.task-previews {
 	width:100%;
 }
 .task-preview-visual {
 	box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
 	padding:10px 0;
 	
-	background-color: #333;
+	background-color: #222;
 	&:hover {
 		background-color: #393939;
 	}
@@ -32,13 +75,12 @@
 		border:1px dotted #666;
 		width:90%;
 		height:250px;
-		background-color:green;
+		background-color:DarkRed;
 	}
 }
 .task-preview-renderOptions {
-	padding: 0px 10px;
-	background-color: #333;
-	height:27px;
+	padding: 6px 10px;
+	height: 37px;
 	
 	.renderOptionsText {
 		padding-top:3px;
@@ -54,10 +96,12 @@
 		padding-top: 0px;
 		margin-left: 10px;
 	}
-	.button {
+	.task-button {
+		padding: 2px;
 		min-width: 100px;
+		margin:0px;
 	}
-	.button.active {
+	.task-button.active {
 		border-bottom: 1px solid $c-orange;
 	}
 	label {
@@ -69,10 +113,9 @@
 		margin-top:2px;
 	}
 }
-.task-preview-textures {
+.task-asset-model-textures {
 	font-size: 0.8em;
 	padding: 5px;
-	background-color: #333;
 	
 	ul {
 		padding-left: 15px;
@@ -80,42 +123,19 @@
 }
 
 /* //////////////////////////////////////////////////
- * Asset file manager
+ * File manager
  * //////////////////////////////////////////////////*/
- 
-.task-details, .task-comments, .task-preview, .task-files, .task-assetPath {
-	margin:15px 5px;
-}
-.task-assetPath {
-	color:#AAA;
-	margin-top:5px;
-	font-size: 0.8em;
-}
-
-.task-files-wip {
-	width: 50%;
-}
 .task-files-description {
 	padding:4px;
 	padding-left:10px;
-	background-color: #333;
 }
 .task-files-wip-tree {
 	padding:5px;
 	padding-left:10px;
 }
 .task-files-operations {
-	background-color: #333;
 	margin-top:10px;
-	padding:4px 2px;
-}
-.task-files-button-upload, .task-files-button-download, .task-files-button-delete {
-	border: 1px solid #555;
-	min-width:5em;
-	font-size: 0.85em;
-	margin:0px 5px;
-	padding:2px 8px;
-	background-color: #666;
+	padding: 5px 2px;
 }
 .task-files-selected {
 	background-color:#A82709;

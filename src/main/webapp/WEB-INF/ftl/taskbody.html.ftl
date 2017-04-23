@@ -49,44 +49,107 @@
 			    </form>
 			</#if>
 	    </div>
-<!-- TexturePreview -->
-	    <#if task.getType().name() == 'TEXTURE'>
-	    	<table class="task-preview">
+<!-- Asset Files -->
+		<#if !(task.getType().name() == 'GENERAL')>
+	    	<div class="task-assets">
+	    	<table>
     			<colgroup>
 			       <col span="1" style="width: 49%;">
 			       <col span="1" style="width: 2%;">
 			       <col span="1" style="width: 49%;">
 			    </colgroup>
-				<tr class="task-preview-buttons">
+<!-- Asset File Info -->
+			    <tr>
 			    	<#if task.originalAsset?has_content>
 			    		<#assign asset = task.originalAsset/>
-				    	<td class="task-preview-button-original task-button button">
+			    		<td class="task-asset-info task-asset-original" data-filename="${asset.filename?html}">
 				    		<span class="left" style="font-weight:bold">Original:</span>
-				    		<span class="right">
-				    			${asset.width} x ${asset.height}
-				    		</span>
-				    		<div class="clear"></div>
-				    		<span class="left">${asset.filename?html}</span>
-				    		<span class="right">${asset.sizeInKB} KB</span>
+				    		<#if task.getType().name() == 'TEXTURE'>
+					    		<span class="right">
+					    			${asset.width} x ${asset.height}
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+				    		</#if>
+							<#if task.getType().name() == 'MESH'>
+								<span class="right">
+					    			${asset.polyCount} &#x25E3;
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+					    	</#if>
+				    	</td>
+			    	<#else>
+			    	<td class="task-asset-info center">
+			    		<span>Original asset does not exist.</span>
+			    	</td>
+			    	</#if>
+					<td></td>
+					<#if task.newAsset?has_content>
+			    		<#assign asset = task.newAsset/>
+			    		<td class="task-asset-info task-asset-newest" data-filename="${asset.filename?html}">
+				    		<span class="left" style="font-weight:bold">Newest:</span>
+				    		<#if task.getType().name() == 'TEXTURE'>
+					    		<span class="right">
+					    			${asset.width} x ${asset.height}
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+					    	</#if>
+							<#if task.getType().name() == 'MESH'>
+								<span class="right">
+					    			${asset.polyCount} &#x25E3;
+					    		</span>
+					    		<div class="clear"></div>
+					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="right">${asset.sizeInKB} KB</span>
+							</#if>
+				    	</td>
+			    	<#else>
+			    	<td class="task-asset-info center">
+			    		<span>New asset does not exist.</span>
+			    	</td>
+			    	</#if>
+			    </tr>
+<!-- Asset File Operations -->
+				<tr>
+			    	<#if task.originalAsset?has_content>
+			    		<#assign asset = task.originalAsset/>
+				    	<td class="task-asset-buttons task-asset-original center">
+				    		<div class="action-download task-file-button task-button button">
+				    			Download
+				    		</div>
 				    	</td>
 			    	<#else><td></td>
 			    	</#if>
 			    	<td></td>
 			    	<#if task.newAsset?has_content>
-			    		<#assign asset = task.newAsset/>
-				    	<td class="task-preview-button-newest task-button button">
-				    		<span class="left" style="font-weight:bold">Newest:</span>
-				    		<span class="right">
-				    			${asset.width} x ${asset.height}
-				    		</span>
-				    		<div class="clear"></div>
-				    		<span class="left">${asset.filename?html}</span>
-				    		<span class="right">${asset.sizeInKB} KB</span>
-				    	</td>
-			    	<#else><td></td>
+			    	<td class="task-asset-buttons task-asset-newest">
+			    		<div class="action-download task-file-button task-button button left">
+			    			Download
+			    		</div>
+			    		<div class="action-upload task-file-button task-button button left">
+			    			Upload
+			    		</div>
+			    		<div class="action-delete task-file-button task-button button right">
+			    			Delete
+			    		</div>
+			    		<div class="clear"></div>
+			    	</td>
+			    	<#else>
+			    	<td class="task-asset-buttons task-asset-newest center">
+			    		<div class="action-upload task-file-button task-button button">
+			    			Upload
+			    		</div>
+			    	</td>
 			    	</#if>
 		    	</tr>
-		    	<tr class="task-preview-visuals center">
+<!-- 2D Texture Preview -->
+		    	<#if task.getType().name() == 'TEXTURE'>
+		    	<tr class="task-previews center">
 		    		<#if task.originalAsset?has_content>
 		    			<#assign asset = task.originalAsset/>
 			    		<td class="task-preview-visual clickable">
@@ -107,47 +170,10 @@
 				    <#else><td></td>
 			    	</#if>
 		    	</tr>
-			</table>
-	    </#if>
-	  <!-- 3D Mesh Preview -->
-	    <#if task.getType().name() == 'MESH'>
-	    	<#if task.originalAsset?has_content || task.newestAsset?has_content>
-		    	<table class="task-preview">
-	    			<colgroup>
-				       <col span="1" style="width: 50%;">
-				       <col span="1" style="width: 0%;">
-				       <col span="1" style="width: 50%;">
-				    </colgroup>
-					<tr class="task-preview-buttons">
-				    	<#if task.originalAsset?has_content>
-				    		<#assign asset = task.originalAsset/>
-					    	<td class="task-preview-button-original task-button button">
-					    		<span class="left" style="font-weight:bold">Original:</span>
-					    		<span class="right">
-					    			${asset.polyCount} &#x25E3;
-					    		</span>
-					    		<div class="clear"></div>
-					    		<span class="left">${asset.fileName?html}</span>
-					    		<span class="right">${asset.sizeInKB} KB</span>
-					    	</td>
-				    	<#else><td></td>
-				    	</#if>
-				    	<td></td>
-				    	<#if task.newAsset?has_content>
-				    		<#assign asset = task.newAsset/>
-					    	<td class="task-preview-button-newest task-button button">
-					    		<span class="left" style="font-weight:bold">New:</span>
-					    		<span class="right">
-					    			${asset.polyCount} &#x25E3;
-					    		</span>
-					    		<div class="clear"></div>
-					    		<span class="left">${asset.fileName?html}</span>
-					    		<span class="right">${asset.sizeInKB} KB</span>
-					    	</td>
-				    	<#else><td></td>
-				    	</#if>
-			    	</tr>
-			    	<tr class="task-preview-visuals task-preview-3D center">
+		    	</#if>
+<!-- 3D Mesh Preview -->
+				<#if task.getType().name() == 'MESH'>
+					<tr class="task-previews task-preview-3D center">
 			    		<#if task.originalAsset?has_content>
 			    			<#assign asset = task.originalAsset/>
 				    		<td class="task-preview-visual clickable"
@@ -170,12 +196,13 @@
 					    <#else><td></td>
 				    	</#if>
 				    </tr>
-			    	<tr>
+<!-- 3D Mesh Preview Options -->
+				    <tr>
 			    		<td class="task-preview-renderOptions" colspan="3">
 			    			<div class="renderOptionsText left">Rendering:</div>
 			    			<div class="renderOptionGroup button-group left">
-		    					<div class="button left renderOption-solid active">Solid</div>
-			    				<div class="button left renderOption-wire">Wireframe</div>
+		    					<div class="task-button button left renderOption-solid active">Solid</div>
+			    				<div class="task-button button left renderOption-wire">Wireframe</div>
 			    				<div class="clear"></div>
 			    			</div>
 			    			<div class="renderOptionGroup right">
@@ -187,9 +214,10 @@
 			    			<div class="clear"></div>
 			    		</td>
 			    	</tr>
+<!-- 3D Mesh Preview Textures -->
 			    	<tr>
 			    		<#if task.originalAsset?has_content>
-				    		<td class="task-preview-textures">
+				    		<td class="task-asset-model-textures">
 				    			<ul>
 				    				<#list task.originalAsset.textureNames as textureName>
 						    			<li>${textureName?html}</li>
@@ -200,7 +228,7 @@
 						</#if>
 						<td></td>
 						<#if task.newAsset?has_content>
-				    		<td class="task-preview-textures">
+				    		<td class="task-asset-model-textures">
 				    			<ul>
 							    	<#list task.newAsset.textureNames as textureName>
 							    		<li>${textureName?html}</li>
@@ -210,50 +238,41 @@
 						<#else><td></td>
 						</#if>
 			    	</tr>
-				</table>
-			</#if>
-	    </#if>
-<!-- Files -->
-		<#if !(task.getType().name() == 'GENERAL')>
-			<div class="task-files">
-				<#if isUserLoggedIn>
-				<#--	<div class="task-files-assets left">
-						<div class="task-files-description">
-							Assets
-						</div>
-						<div class="task-files-assets-tree"></div>
-					</div> -->
-					<div class="task-files-wip right">
-						<div class="task-files-description">
-							WIP
-						</div>
-						<div class="task-files-wip-tree"></div>
-					</div>
-					<div class="clear"></div>
-<!-- File Operations -->
-					<div class="task-files-operations">
+				</#if>
+<!-- WIP Files -->
+				<tr>
+					<td class="noborder"></td>
+					<td></td>
+					<td class="task-files-wip">
 						<#if isUserLoggedIn>
-							<input class="task-files-uploadInput" type="file" style="display:none;"/>
-							<div class="task-files-button-upload button left">
-								Upload
+							<div>
+								<div class="task-files-description">
+									WIP Files:
+								</div>
+								<div class="task-files-wip-tree"></div>
 							</div>
+							<div class="clear"></div>
+							<div class="task-files-wip-operations">
+								<div class="action-download task-file-button task-button button left">
+									Download
+								</div>
+								<input class="task-files-uploadInput" type="file" style="display:none;"/>
+								<div class="action-upload task-file-button task-button button left">
+									Upload
+								</div>
+								<div class="action-delete task-file-button task-button button right">
+									Delete
+								</div>
+								<div class="clear"></div>
+							</div>
+						<#else>
+							You must login to see any files! Use Login button below.
 						</#if>
-						<div class="task-files-button-download button left">
-							Download
-						</div>
-						<#if isUserLoggedIn>
-						<div class="task-files-button-delete button right">
-							Delete
-						</div>
-						</#if>
-						<div class="clear"></div>
-					</div>
-				</#if>
-				<#if !isUserLoggedIn>
-					You must login to see any files! Use Login button below.
-				</#if>
+					</td>
+				</tr>
+			</table>
 			</div>
-		</#if>
+	    </#if>
 	</div>
 <!-- Footer -->
     <div class="task-body-footer">

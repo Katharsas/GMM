@@ -52,7 +52,7 @@ public abstract class Task extends NamedObject{
 	
 	@Override
 	public String toString() {
-		return label+": "+getName()+" by "+author.toString(); 
+		return "[" + getId() + ": \"" + getName() + "\" by " + author.toString() + "]"; 
 	}
 	//Setters, Getters-------------------------------------------
 	public void setDetails(String details) {

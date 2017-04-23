@@ -2,7 +2,7 @@ import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
 import PreviewRenderer from "../shared/PreviewRenderer";
-import { contextUrl, htmlDecode } from "../shared/default";
+import { allVars, contextUrl, htmlDecode } from "../shared/default";
 
 /**
  * ------------- TaskEventBindings ---------------------------------------------
@@ -45,23 +45,20 @@ export default function(onedit) {
 		window.open(uri);
 	};
 	
-	var downloadOtherFile = function(taskId, fileType, dir) {
-		var uri = contextUrl + "/tasks/download/" + taskId + "/NEW/" + fileType + "/" + dir + "/";
+	var downloadOtherFile = function(taskId, dir) {
+		var uri = contextUrl + "/tasks/download/" + taskId + "/NEW/" + selectedFileType + "/" + dir + "/";
 		window.open(uri);
 	};
 	
 	// file trees
-	var selectedFileIsAsset;
+	var selectedFileType;
 	var $selectedFile = $();
 	
-	var fileType = function() {
-		return selectedFileIsAsset ? "ASSET" : "WIP";
-	};
 	var filePath = function() {
 		return $selectedFile.attr("rel");
 	};
-	var selectFile = function($file, isAsset) {
-		selectedFileIsAsset = isAsset;
+	var selectFile = function($file, fileType) {
+		selectedFileType = fileType;
 		$selectedFile.removeClass("task-files-selected");
 		$selectedFile = $file;
 		$selectedFile.addClass("task-files-selected");
@@ -96,94 +93,96 @@ export default function(onedit) {
 			 */
 			
 			var $operations = $body.find(".task-body-footer").children(".task-operations");
-			//edit task
-			$operations.find(".task-operations-editTask").click(function() {
-				onedit(id);
-			});
-			//delete task
-			$operations.find(".task-operations-deleteTask").click(function() {
-				var $confirm = Dialogs.confirm(function() {
-					Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
+			
+			if (allVars.isUserLoggedIn) {
+				
+				//edit task
+				$operations.find(".task-operations-editTask").click(function() {
+					onedit(id);
+				});
+				//delete task
+				$operations.find(".task-operations-deleteTask").click(function() {
+					var $confirm = Dialogs.confirm(function() {
+						Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
+						.then(function() {
+							Dialogs.hideDialog($confirm);
+							updateTaskLists();
+						});
+					}, "Are you sure you want to delete this task?");
+				});
+				//pin task
+				$operations.find(".task-operations-pin").click(function() {
+					Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
 					.then(function() {
-						Dialogs.hideDialog($confirm);
-						updateTaskLists();
+						updatePinnedList();
 					});
-				}, "Are you sure you want to delete this task?");
-			});
-			//pin task
-			$operations.find(".task-operations-pin").click(function() {
-				Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
-				.then(function() {
-					updatePinnedList();
 				});
-			});
-			// unpin task
-			$operations.find(".task-operations-unpin").click(function() {
-				Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
-				.then(function() {
-					updatePinnedList();
+				// unpin task
+				$operations.find(".task-operations-unpin").click(function() {
+					Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
+					.then(function() {
+						updatePinnedList();
+					});
 				});
-			});
+			}
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK - COMMENTS
 			 * -------------------------------------------------------
 			 */
 			
-			//comments
-			var $comments = $body.find(".task-comments");
-			var $form = $comments.children("form.task-comments-form");
-			//show comment edit dialog
-			$comments.on("click", ".task-comment-editButton", function() {
-				var $comment = $(this).parent(".task-comment");
-				var comment = htmlDecode($comment.children(".task-comment-text").html());
-				var commentId = $comment.attr("id");
-				var $confirm = Dialogs.confirm(
-					function(input, textarea) {
-						var url = contextUrl + "/tasks/editComment/" + id + "/" + commentId;
-						Ajax.post(url, {"editedComment" : textarea}) 
-							.then(function() {
-								Dialogs.hideDialog($confirm);
-								updateTaskLists();
-							});
-					}, "Change your comment below:", undefined, comment, 700);
-			});
-			//show/hide new comment form
-			$operations.find(".task-operations-switchComment").click(function() {
-				if ($form.is(":visible")) hideCommentForm($form);
-				else showCommentForm($form);
-			});
-			//submit new comment
-			$form.find(".task-comment-form-submitButton").click(function() {
-				var url = contextUrl + "/tasks/submitComment/" + id;
-				Ajax.post(url, {}, $form)
-					.then(function() {
-						updateTaskLists();
-					});
-			});
+			if (allVars.isUserLoggedIn) {
+				//comments
+				var $comments = $body.find(".task-comments");
+				var $form = $comments.children("form.task-comments-form");
+				//show comment edit dialog
+				$comments.on("click", ".task-comment-editButton", function() {
+					var $comment = $(this).parent(".task-comment");
+					var comment = htmlDecode($comment.children(".task-comment-text").html());
+					var commentId = $comment.attr("id");
+					var $confirm = Dialogs.confirm(
+						function(input, textarea) {
+							var url = contextUrl + "/tasks/editComment/" + id + "/" + commentId;
+							Ajax.post(url, {"editedComment" : textarea}) 
+								.then(function() {
+									Dialogs.hideDialog($confirm);
+									updateTaskLists();
+								});
+						}, "Change your comment below:", undefined, comment, 700);
+				});
+				//show/hide new comment form
+				$operations.find(".task-operations-switchComment").click(function() {
+					if ($form.is(":visible")) hideCommentForm($form);
+					else showCommentForm($form);
+				});
+				//submit new comment
+				$form.find(".task-comment-form-submitButton").click(function() {
+					var url = contextUrl + "/tasks/submitComment/" + id;
+					Ajax.post(url, {}, $form)
+						.then(function() {
+							updateTaskLists();
+						});
+				});
+			}
 			
 			/* -------------------------------------------------------
-			 * ASSET TASK - PREVIEW
+			 * ASSET TASK
 			 * -------------------------------------------------------
 			 */
 			
-			var $preview = $body.find(".task-preview");
-			if($preview.length > 0)
+			var $assets = $body.find(".task-assets");
+			if($assets.length > 0)
 			{
-				//download from preview
-				$preview.find(".task-preview-button-original").click(function() {
-					downloadAssetFile(id, 'ORIGINAL');
-				});
-				$preview.find(".task-preview-button-newest").click(function() {
-					downloadAssetFile(id, 'NEW');
-				});
+				/* -------------------------------------------------------
+				 * ASSET TASK - 3D PREVIEW
+				 * -------------------------------------------------------
+				 */
 				
-				//3D preview
-				var $canvasContainer = $preview.find(".task-preview-visuals.task-preview-3D");
+				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
 				if($canvasContainer.length > 0) {
 					var renderer = PreviewRenderer($canvasContainer);
 					
-					var $renderOptions = $preview.find(".task-preview-renderOptions");
+					var $renderOptions = $assets.find(".task-preview-renderOptions");
 					
 					var $renderSolid = $renderOptions.find(".renderOption-solid");
 					var $renderWire = $renderOptions.find(".renderOption-wire");
@@ -218,89 +217,113 @@ export default function(onedit) {
 					var $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
 					$rotCameraSpeed.val(renderer.getOption("rotateCameraSpeed"));
 					$rotCameraSpeed.on("input", function() {
-						var speed = parseFloat($rotCameraSpeed.val());
+						var speed = parseFloat(this.value);
 						if (!isNaN(speed) && speed < 100) {
 							renderer.setOptions({rotateCameraSpeed: speed});
+						} else {
+							this.value = renderer.getOption("rotateCameraSpeed");
 						}
 					});
 				}
-			}
-			
-			/* -------------------------------------------------------
-			 * ASSET TASK - FILES
-			 * -------------------------------------------------------
-			 */
-			
-			// TODO file tree changes need to be events received by all task lists.
-			// (instead of just rebuilding the filetree for the current task)
-			
-			var $files = $body.find(".task-files");
-			if ($files.length > 0) {
 				
-				//file trees
-				var fileTreeOptions = function(isAsset) {
-					return {
-						url: contextUrl + "/tasks/files/" + isAsset.toString() + "/" + id,
-						directoryClickable: false
+				if (allVars.isUserLoggedIn) {
+					
+					/* -------------------------------------------------------
+					 * ASSET TASK - ASSET FILES
+					 * -------------------------------------------------------
+					 */
+					var $assetInfo = $assets.find(".task-asset-info");
+					var $assetButtons = $assets.find(".task-asset-buttons");
+					
+					// download
+					$assetButtons.filter(".task-asset-original").find(".action-download").click(function() {
+						downloadAssetFile(id, 'ORIGINAL');
+					});
+					$assetButtons.filter(".task-asset-newest").find(".action-download").click(function() {
+						downloadAssetFile(id, 'NEW');
+					});
+					// upload
+					// TODO
+					//delete
+					$assetButtons.filter(".task-asset-newest").find(".action-delete").click(function() {
+						var filename = $assetInfo.filter(".task-asset-newest").data("filename");
+						var $dialog = Dialogs.confirm(function() {
+							Ajax.post(contextUrl + "/tasks/deleteFile/" + id, {asset: true})
+								.then(function() {
+									Dialogs.hideDialog($dialog);
+								});
+						}, "Delete newest asset file '" + filename + "' ?");
+					});
+					
+					/* -------------------------------------------------------
+					 * ASSET TASK - WIP FILES
+					 * -------------------------------------------------------
+					 */
+					
+					// TODO file tree changes need to be events received by all task lists.
+					// (instead of just rebuilding the filetree for the current task)
+					
+					var $files = $body.find(".task-files-wip");
+						
+					//file trees
+					var fileTreeOptions = function(isAsset) {
+						return {
+							url: contextUrl + "/tasks/files/" + isAsset.toString() + "/" + id,
+							directoryClickable: false
+						};
 					};
-				};
-//				var $fileTreeAssets = $files.find(".task-files-assets-tree");
-				var $fileTreeOther = $files.find(".task-files-wip-tree");
-				var createFileTrees = function() {
-//					$fileTreeAssets.fileTree(fileTreeOptions(true),
-//						function($file) {
-//							selectFile($file, true);
-//						}
-//					);
-					$fileTreeOther.fileTree(fileTreeOptions(false),
-						function($file) {
-							selectFile($file, false);
-						}
-					);
-				};
-				createFileTrees();
-				
-				var $fileOps = $files.find(".task-files-operations");
-				
-				//upload
-				var $inputFile = $fileOps.find(".task-files-uploadInput");
-				//upload when a file is chosen (on hidden input tag)
-				$inputFile.change(function() {
-					Dialogs.showOverlay();
-					var file = $inputFile[0].files[0];
-					Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
-						.then(function() {
-							Dialogs.hideOverlay();
-							createFileTrees();
-						});
-				});
-				//bind triggering of filechooser to button
-				$fileOps.find(".task-files-button-upload").click(function() {
-					$inputFile.click();
-				});
-				
-				//download
-				$fileOps.find(".task-files-button-download").click(function() {
-					var dir = filePath();
-					if (dir === undefined || dir === "") return;
-					downloadOtherFile(id, fileType(), dir);
-				});
-				
-				//delete
-				$fileOps.find(".task-files-button-delete").click(function() {
-					var dir = filePath();
-					if (dir === undefined || dir === "") {
-						return;
-					}
-					var $dialog = Dialogs.confirm(function() {
-						Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
-								{dir: dir, asset: selectedFileIsAsset.toString()})
+					var $fileTreeOther = $files.find(".task-files-wip-tree");
+					var createFileTrees = function() {
+						$fileTreeOther.fileTree(fileTreeOptions(false),
+							function($file) {
+								selectFile($file, "WIP");
+							}
+						);
+					};
+					createFileTrees();
+					
+					var $fileOps = $files.find(".task-files-wip-operations");
+					
+					//upload
+					var $inputFile = $fileOps.find(".task-files-uploadInput");
+					//upload when a file is chosen (on hidden input tag)
+					$inputFile.change(function() {
+						Dialogs.showOverlay();
+						var file = $inputFile[0].files[0];
+						Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 							.then(function() {
-								Dialogs.hideDialog($dialog);
+								Dialogs.hideOverlay();
 								createFileTrees();
 							});
-					}, "Delete " + filePath() + " ?");
-				});
+					});
+					//bind triggering of filechooser to button
+					$fileOps.find(".task-file-button.action-upload").click(function() {
+						$inputFile.click();
+					});
+					
+					//download
+					$fileOps.find(".task-file-button.action-download").click(function() {
+						var dir = filePath();
+						if (dir === undefined || dir === "") return;
+						downloadOtherFile(id, dir);
+					});
+					
+					//delete
+					$fileOps.find(".task-file-button.action-delete").click(function() {
+						var dir = filePath();
+						if (dir === undefined || dir === "") {
+							return;
+						}
+						var $dialog = Dialogs.confirm(function() {
+							Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
+									{dir: dir, asset: false})
+								.then(function() {
+									Dialogs.hideDialog($dialog);
+									createFileTrees();
+								});
+						}, "Delete wip file at '" + filePath() + "' ?");
+					});
+				}
 			}
 		}
 	};

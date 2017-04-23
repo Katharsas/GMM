@@ -106,7 +106,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		Objects.requireNonNull(task);
 		Objects.requireNonNull(fileInfo);
 		overwriteAssetProperties(task, fileInfo);
-		logger.debug("Set properties of original asset file '" + task.getAssetName() + "' on task" + task);
+		logger.debug("Set properties of original asset file '" + task.getAssetName() + "' on task '" + task + "'.");
 	}
 	
 	/**
@@ -117,7 +117,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		Objects.requireNonNull(folderInfo);
 		if (folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
 			overwriteAssetProperties(task, folderInfo);
-			logger.debug("Set properties of new asset file '" + task.getAssetName() + "' on task" + task);
+			logger.debug("Set properties of new asset file '" + task.getAssetName() + "' on task '" + task + "'.");
 		} else {
 			throw new IllegalArgumentException("Invalid asset folder state, cannot recreate preview!");
 		}
@@ -177,7 +177,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final Path previewFolder = getPreviewFolder(task.getAssetName());
 		deletePreview(previewFolder, isOriginal);
 		final String type = isOriginal.isOriginal() ? "original asset file" : "new asset file";
-		logger.debug("Removed properties of " + type + " '" + task.getAssetName() + "' from task " + task);
+		logger.debug("Removed properties of " + type + " '" + task.getAssetName() + "' from task '" + task + "'.");
 	}
 	
 	// TODO caller must check if the linked task has a new asset folder, otherwise it must ask the user to specifify asset folder path

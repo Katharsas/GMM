@@ -27,6 +27,9 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	private A originalAsset = null;
 	private A newestAsset = null;
 	
+	private NewAssetFolderError newAssetFolderError = null;
+	private boolean hasNewAssetFolder = false;
+	
 	//used for caching of newest preview
 	private DateTime newestAssetLastUpdate = null;
 	private final static DateTimeFormatter formatter = 
@@ -82,5 +85,21 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	public String getNewestAssetNocache() {
 		if (newestAssetLastUpdate == null) return "";
 		else return newestAssetLastUpdate.toString(formatter);
+	}
+	
+	public void setHasNewAssetFolder(boolean hasNewAssetFolder) {
+		this.hasNewAssetFolder = hasNewAssetFolder;
+	}
+	
+	public boolean hasNewAssetFolder() {
+		return hasNewAssetFolder;
+	}
+	
+	public void setNewAssetFolderError(NewAssetFolderError newAssetFolderError) {
+		this.newAssetFolderError = newAssetFolderError;
+	}
+	
+	public NewAssetFolderError getNewAssetFolderError() {
+		return newAssetFolderError;
 	}
 }

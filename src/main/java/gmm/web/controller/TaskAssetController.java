@@ -239,17 +239,22 @@ public class TaskAssetController {
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
 	 * @param isAsset - true if file is an asset
-	 * @param relativeFile - relative path to the deleted file
+	 * @param relativeFile - relative path to the deleted file (only if not asset)
 	 */
 	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
 	public void handleDeleteFile(
 			@PathVariable String idLink,
 			@RequestParam("asset") Boolean isAsset,
-			@RequestParam("dir") Path relativeFile) {
+			@RequestParam(value="dir", required=false) Path relativeFile) {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final FileType fileType = isAsset ? FileType.ASSET : FileType.WIP;
-		assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
+		if (isAsset) {
+			assetService.deleteAssetFile(task.getAssetName());
+		} else {
+			Assert.notNull(relativeFile);
+			assetService.deleteOtherFile(task.getAssetName(), fileType, relativeFile);
+		}
 	}
 }

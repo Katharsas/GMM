@@ -267,7 +267,9 @@ public class TaskController {
 		final List<Task> tasks = new LinkedList<>(Task.class);
 		for(final Task task : data.getList(Task.class)) {
 			final boolean contains = idLinks.remove(task.getIdLink());
-			if (contains) tasks.add(task);
+			if (contains) {
+				tasks.add(task);
+			}
 		}
 		return ftlRenderer.renderTasks(tasks,
 				new ControllerArgs(model, request, response));
