@@ -443,8 +443,8 @@
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<nodeVersion>v4.1.1</nodeVersion>
-							<npmVersion>3.3.3</npmVersion>
+							<nodeVersion>v5.12.0</nodeVersion>
+							<npmVersion>5.0.3</npmVersion>
 							<nodeDownloadRoot>https://nodejs.org/dist/</nodeDownloadRoot>
 							<npmDownloadRoot>http://registry.npmjs.org/npm/-/</npmDownloadRoot>
 						</configuration>
@@ -457,6 +457,31 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<arguments>install</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- Caused by some node-sass problem (which is wrapped by gulp-sass).
+							This needs to be run only once after npm install
+						-->
+						<id>sass fix</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>rebuild node-sass</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>gulp precompile</id>
+						<goals>
+							<goal>gulp</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<srcdir>src/main/frontend</srcdir>
+<!-- 							<outputdir>src/main/webapp/resources</outputdir> -->
+							<arguments>three</arguments>
 						</configuration>
 					</execution>
 					<execution>

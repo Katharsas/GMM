@@ -20,6 +20,8 @@ var buffer = require('vinyl-buffer');
 var rename = require("gulp-rename");
 var eventStream = require("event-stream");
 
+var rollup = require('rollup-stream');
+
 //var path = require("path");
 
 /**
@@ -53,10 +55,13 @@ var cssSourceMaps = false;
 
 function handleErrors() {
 	var args = Array.prototype.slice.call(arguments);
-	notify.onError({
-		title: "Compile Error in line <%= error.lineNumber %>",
-		message: "<%= error.message %>"
-	}).apply(this, args);
+	console.log(args.toString());
+
+	// notify.onError({
+	// 	title: "Compile Error in line <%= error.lineNumber %>",
+	// 	message: "<%= error.message %>",
+	// 	onLast: true,
+	// }).apply(this, args);
 	this.emit("end"); // Keep gulp from hanging on this task
 }
 
@@ -86,8 +91,23 @@ function buildScript(files) {
 			}))
 			.pipe(gulp.dest(jsDest));
 	});
-	 return eventStream.merge.apply(null, tasks);
+	return eventStream.merge.apply(null, tasks);
 }
+
+gulp.task("three", function () {
+	return rollup('three-rollup.config.js')
+		.pipe(source('three.bundle.js'))
+		.pipe(buffer())
+		.pipe(uglify({
+			compress : true,
+			mangle: true,
+			output: {
+				preamble: "// threejs.org/license",
+			},
+		}))
+		.on("error", handleErrors)
+		.pipe(gulp.dest(jsDest));
+});
 
 gulp.task("build-js", function () {
 	//multiple files: http://fettblog.eu/gulp-browserify-multiple-bundles/

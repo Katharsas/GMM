@@ -155,26 +155,26 @@ public class AssetService {
 		
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
 		
-		for (final AssetGroupType type : AssetGroupType.values()) {
-			final AssetInfo info = getAssetInfo(name, type);
+		{
+			final AssetGroupType type = AssetGroupType.ORIGINAL;
+			final OriginalAssetFileInfo info = getOriginalAssetFileInfo(name);
 			final AssetProperties props = task.getAssetProperties(type);
-			if (info != null) {
-				boolean hasAsset = true;
-				if (info instanceof NewAssetFolderInfo) {
-					final NewAssetFolderInfo folderInfo = (NewAssetFolderInfo) info;
-					if (folderInfo.getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
-						service.removeAssetProperties(task, type);
-						hasAsset = false;
-					}
-				}
-				if (hasAsset && (props == null || !service.isValidAssetProperties(props, info))) {
-					service.recreateAssetProperties(task, info);
-				}
-			} else {
-				if (props != null) {
-					service.removeAssetProperties(task, type);
-				}
+			
+			if (info != null && props == null) service.recreateAssetProperties(task, info);
+			if (info == null && props != null) service.removeAssetProperties(task, type);
+		}{
+			final AssetGroupType type = AssetGroupType.NEW;
+			final NewAssetFolderInfo info = getNewAssetFolderInfo(name);
+			final AssetProperties props = task.getAssetProperties(type);
+			
+			final boolean existsAndValid =
+					(info != null) && (info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			
+			if (existsAndValid && props == null) service.recreateAssetProperties(task, info);
+			if (existsAndValid && props != null && !service.isValidAssetProperties(props, info)) {
+				service.recreateAssetProperties(task, info);
 			}
+			if (!existsAndValid && props != null) service.removeAssetProperties(task, type);
 		}
 	}
 	

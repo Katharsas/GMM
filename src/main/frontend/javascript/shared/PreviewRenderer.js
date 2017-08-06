@@ -1,5 +1,7 @@
+/// <reference path="../lib/three.d.ts" />
+
 import $ from "../lib/jquery";
-import THREE from "../lib/three";
+import THREE from '../lib/three';
 
 /*
  * Dependencies: JQuery, Three.js, OrbitControls.js
@@ -27,7 +29,7 @@ import THREE from "../lib/three";
  * 		for rendering option changes
  */
 var PreviewRenderer = (function() {
-	
+
 	/**
 	 * Can render a single 3D model into a single canvas.
 	 * @listens PreviewRenderer#renderOptionsChange

@@ -222,6 +222,12 @@ pip-log.txt
 .mr.developer.cfg
 
 #############
+## VSCode
+#############
+
+.vscode/
+
+#############
 ## Custom
 #############
 
@@ -235,3 +241,4 @@ pip-log.txt
 /src/main/webapp/resources/javascript/compiled
 
 blender/
+

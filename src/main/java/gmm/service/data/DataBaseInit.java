@@ -115,7 +115,11 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		if (createDefaultUser && data.getList(User.class).size() == 0) {
 			data.add(createDefaultUser());
 		} else {
-			logger.info("Configuration caused no default user to be created.");
+			logger.info("\n"
+					+	"##########################################################" + "\n\n"
+					+	"  Did not create a default user. " + "\n"
+					+	"  (Enable default.user & disable autoload to change) " + "\n"
+					+	"##########################################################");
 		}
 	}
 	

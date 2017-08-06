@@ -137,6 +137,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		if (assetFile.length() != props.getSizeInBytes()) {
 			return false;
 		}
+		// TODO hashcode
 		return hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType());
 	}
 	
