@@ -55,7 +55,6 @@ import gmm.util.Util;
 @Service
 public class AssetService {
 	
-	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final VcsPlugin vcs;
@@ -235,11 +234,12 @@ public class AssetService {
 	}
 	
 	
-	// TODO make sure working copy is up to date when this is called
 	/**
-	 * @param changedPaths - This method does detect some changes, but if a file changed its content
-	 * 		without changing is filename, its path should be in the given list. Paths must be relative
-	 * 		to new asset folder base (config.assetsNew()).
+	 * Notify AssetService of changes to new asset files. Triggers a rescan of new asset files.
+	 * 
+	 * @param changedPaths - Calling this method with an empty list will detect some changes, but if
+	 * 		a file changed its content without changing is filename, its path needs to be in the
+	 * 		given list. Paths must be relative to new asset folder base (config.assetsNew()).
 	 */
 	public void onVcsNewAssetFilesChanged(List<Path> changedPaths) {
 		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
@@ -280,6 +280,7 @@ public class AssetService {
 							final Path assetFile = currentInfo.getAssetFolder().resolve(assetName);
 							if (changedPaths.contains(assetFile)) {
 								service.recreateAssetProperties((AssetTask)task, currentInfo);
+								changedPaths.remove(assetFile);
 							}
 						}
 					} else {

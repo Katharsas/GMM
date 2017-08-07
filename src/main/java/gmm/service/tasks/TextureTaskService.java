@@ -91,13 +91,11 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	@Override
 	public void deletePreview(Path previewFolder, AssetGroupType isOriginal) {
 		if (previewFolder.toFile().exists()) {
-			if (previewFolder.toFile().isDirectory()) {
-				fileService.delete(previewFolder);
-				return;
-			}
+			final Path targetFull = getPreviewFilePath(previewFolder, isOriginal, false);
+			final Path targetSmall = getPreviewFilePath(previewFolder, isOriginal, true);
+			if (targetFull.toFile().exists()) fileService.delete(targetSmall);
+			if (targetSmall.toFile().exists()) fileService.delete(targetSmall);
 		}
-		throw new UncheckedIOException(
-				new IOException("Could not delete preview folder at '" + previewFolder + "'!"));
 	}
 	
 	@Override

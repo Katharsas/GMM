@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.annotation.PreDestroy;
 
@@ -15,15 +16,19 @@ import org.springframework.stereotype.Service;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.wc.SVNRevision;
+import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
 import org.tmatesoft.svn.core.wc2.SvnDiffStatus;
 import org.tmatesoft.svn.core.wc2.SvnDiffSummarize;
 import org.tmatesoft.svn.core.wc2.SvnGetInfo;
+import org.tmatesoft.svn.core.wc2.SvnGetStatus;
 import org.tmatesoft.svn.core.wc2.SvnInfo;
 import org.tmatesoft.svn.core.wc2.SvnOperation;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnReceivingOperation;
+import org.tmatesoft.svn.core.wc2.SvnStatus;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
+import org.tmatesoft.svn.core.wc2.SvnUpdate;
 
 import gmm.ConfigurationException;
 import gmm.collections.ArrayList;
@@ -62,9 +67,7 @@ public class SvnPlugin extends VcsPlugin {
 	private final SvnTarget repository;
 	private final SvnTarget workingCopy;
 	
-//	private long workingCopyRevision = 0;
-	
-	final SvnOperationFactory svnOperationFactory;
+	private final SvnOperationFactory svnOperationFactory;
 	
 	@Autowired
 	public SvnPlugin(DataConfigService config, FileService fileService,
@@ -93,11 +96,8 @@ public class SvnPlugin extends VcsPlugin {
 	
 	@Override
 	public void init() {
-		final long repositoryRev = retrieveRevision(repository);
-		final long workingCopyRev = retrieveRevision(workingCopy);
-		
-		diffAndUpdate(repositoryRev, workingCopyRev);
-		// TODO call notifychanged files with changes from diffAndUpdate
+		final List<Path> changedPaths = diffAndUpdate();
+		notifyFilesChanged(changedPaths);
 	}
 	
 	/**
@@ -129,10 +129,9 @@ public class SvnPlugin extends VcsPlugin {
 	/**
 	 * @return Current revision of local working copy.
 	 */
-	private long initializeWorkingCopy(File workingCopyFile) {
+	private void initializeWorkingCopy(File workingCopyFile) {
 		
 		final String workingCopyString = workingCopyFile.toString();
-		final long result;
 		
 		if (workingCopyFile.exists()) {
 			if (workingCopyFile.isDirectory()) {
@@ -144,26 +143,49 @@ public class SvnPlugin extends VcsPlugin {
 				} catch (final SVNException e) {}
 				if (info != null) {
 					logger.info("Located existing working copy at path '" + workingCopyString + "'.");
-					
-					// TODO check doStatus to see if the given working copy is in usable state (no pending changes)
-					
-					result = info.getRevision();
+					verifyExistingWorkingCopy();
 				} else {
-					logger.warn("Could not locate working copy at path '" + workingCopyString + "'!");
+					logger.warn("Could not locate working copy at path '" + workingCopyString + "'! Creating new one.");
 					if(workingCopyFile.list().length > 0) {
 						throw new ConfigurationException("Cannot create new working copy because directory is not empty! Path: '" + workingCopyString + "'");
 					}
-					result = createNewWorkingCopy();
+					createNewWorkingCopy();
 				}
 			} else {
 				throw new ConfigurationException("Path to working copy is not a directory! Path:'" + workingCopyString + "'");
 			}
 		} else {
-			logger.warn("Could not locate SVN working copy at path '" + workingCopyString + "'!");
+			logger.warn("Could not locate SVN working copy at path '" + workingCopyString + "'! Creating new one.");
 			fileService.createDirectory(workingCopyFile.toPath());
-			result = createNewWorkingCopy();
+			createNewWorkingCopy();
 		}
-		return result;
+	}
+	
+	private void verifyExistingWorkingCopy() {
+		final SvnGetStatus ops = svnOperationFactory.createGetStatus();
+		ops.setSingleTarget(workingCopy);
+		ops.setReportAll(logger.isDebugEnabled());
+		final Collection<SvnStatus> statuses = tryRun(ops, new ArrayList<>(SvnStatus.class));
+		
+		for (final SvnStatus entry : statuses) {
+			// if logger is not in debug mode, SvnStatus will not list files of status 'normal',
+			// so the list of statuses will be empty if all files have status 'normal'
+			
+			final SVNStatusType type = entry.getNodeStatus();
+			final String filePath = entry.getPath().getPath();
+			
+			if (type == SVNStatusType.STATUS_NORMAL) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Found versioned working copy entry (status normal): '" + filePath +"'");
+				}
+			} else {
+				logger.error("Existing working copy is in an invalid state (maybe modified)! "
+						+ "Pls fix manually or delete working copy at '" + workingCopy + "'.");
+				throw new ConfigurationException(
+						"Found entry with invalid status in working copy! "
+						+ "Relative path: '" + filePath +"'. Status: '" + type + "'.");
+			}
+		}
 	}
 	
 	private long createNewWorkingCopy() {
@@ -176,24 +198,41 @@ public class SvnPlugin extends VcsPlugin {
 	    return tryRun(operation);
 	}
 	
-	private void diffAndUpdate(long repositoryRev, long workingCopyRev) {
+	private List<Path> diffAndUpdate() {
+		final long repositoryRev = retrieveRevision(repository);
+		final long workingCopyRev = retrieveRevision(workingCopy);
+		
 		if (workingCopyRev > repositoryRev) {
 			throw new IllegalStateException("Repository cannot have older revision than working copy!");
 		} else if (workingCopyRev < repositoryRev) {
-			// TODO update
+			logger.info("Executing working copy update.");
+			
 			final SVNRevision oldRevision = SVNRevision.create(workingCopyRev);
 			final SVNRevision newRevision = SVNRevision.create(repositoryRev);
+			
 			final SvnDiffSummarize operation = svnOperationFactory.createDiffSummarize();
 			operation.setSource(repository, oldRevision, newRevision);
 			
 			final List<SvnDiffStatus> result = new ArrayList<>(SvnDiffStatus.class);
 			tryRun(operation, result);
 			
-			System.out.println("made dif status");
+			final List<Path> changedPaths = new ArrayList<>(Path.class, result.size());
 			
 			for (final SvnDiffStatus status : result) {
-				System.out.println("SVN DiffStatus for file '"+ status.getPath() + "' is '" + status.getModificationType() + "'.");
+				if (status.getFile().isFile()) {
+					logger.debug("Found modified file. Path: '" + status.getPath() + "' Status: '" + status.getModificationType() + "'");
+					changedPaths.add(Paths.get(status.getPath()));
+				}
 			}
+			
+			final SvnUpdate update = svnOperationFactory.createUpdate();
+			update.setSingleTarget(workingCopy);
+			tryRun(update);
+			
+			return changedPaths;
+		} else {
+			logger.info("Skipping working copy update since it is already at remote HEAD revision.");
+			return new ArrayList<>(Path.class, 0);
 		}
 	}
 	
@@ -219,7 +258,10 @@ public class SvnPlugin extends VcsPlugin {
 	}
 	
 	public synchronized void onCommitHookNotified() {
-		// TODO diff and update
+		final List<Path> changedPaths = diffAndUpdate();
+		if (changedPaths.size() > 0) {
+			notifyFilesChanged(changedPaths);
+		}
 	}
 
 	@Override

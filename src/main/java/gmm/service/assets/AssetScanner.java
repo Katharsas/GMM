@@ -39,6 +39,9 @@ public class AssetScanner {
 		this.serviceFinder = serviceFinder;
 	}
 	
+	/**
+	 * Traverses original asset base folder and finds all original assets.
+	 */
 	public Map<AssetName, OriginalAssetFileInfo> onOriginalAssetFilesChanged() {
 		final Map<AssetName, OriginalAssetFileInfo> foundOriginalAssetFiles = new HashMap<>();
 		
@@ -82,13 +85,13 @@ public class AssetScanner {
 	}
 	
 	/**
-	 * @param changedPaths - This method does detect some changes, but if a file changed its content
-	 * 		without changing is filename, its path should be in the given list.
+	 * Traverses all asset type folders if enabled (otherwise new asset base folder) and finds all
+	 * new asset folders.
 	 */
 	public Map<AssetName, NewAssetFolderInfo> onNewAssetFilesChanged() {
 		final Map<AssetName, NewAssetFolderInfo> foundNewAssetFolders = new HashMap<>();
 		
-		final BiConsumer<AssetName, NewAssetFolderInfo> onHit = (folderName, folderInfo) -> {
+		final BiConsumer<AssetName, NewAssetFolderInfo> duplicateCheck = (folderName, folderInfo) -> {
 			final NewAssetFolderInfo duplicate = foundNewAssetFolders.get(folderName);
 			final NewAssetFolderInfo result;
 			if (duplicate != null) {
@@ -106,10 +109,10 @@ public class AssetScanner {
 			for (final Entry<Path, AssetTaskService<?>> entry : assetTypeFolders.entrySet()) {
 				final Path assetTypeFolder = entry.getKey();
 				final AssetTaskService<?> service = entry.getValue();
-				scanForNewAssets(assetTypeFolder, onHit, service);
+				scanForNewAssets(assetTypeFolder, duplicateCheck, service);
 			}
 		} else {
-			scanForNewAssets(config.assetsNew(), onHit, null);
+			scanForNewAssets(config.assetsNew(), duplicateCheck, null);
 		}
 		
 		return foundNewAssetFolders;
