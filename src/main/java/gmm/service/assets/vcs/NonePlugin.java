@@ -18,17 +18,18 @@ public class NonePlugin extends VcsPlugin {
 
 	@Override
 	public void init() {
-		notifyFilesChanged(new ArrayList<>(Path.class, 0));
+		onFilesChanged(new ArrayList<>(Path.class, 0));
 	}
-
+	
+	@Override
+	public void notifyRepoChange() {
+	}
 	@Override
 	public void commitAddedFile(Path file) {
 	}
-
 	@Override
 	public void commitChangedFile(Path file) {
 	}
-
 	@Override
 	public void commitRemovedFile(Path file) {
 	}

@@ -22,7 +22,7 @@ public abstract class VcsPlugin {
 	/**
 	 * Cannot be called from constructor. Call this from {@link #init()} or later.
 	 */
-	protected void notifyFilesChanged(List<Path> changedPaths) {
+	protected void onFilesChanged(List<Path> changedPaths) {
 		if (filesChangedHandler == null) {
 			throw new IllegalStateException("This method becomes available during init() method, not earlier!");
 		}
@@ -31,7 +31,7 @@ public abstract class VcsPlugin {
 	
 	/**
 	 * Will be called once during startup as soon as other services are setup to work with this
-	 * service properly. This method is guaranteed to be able to call {@link #notifyFilesChanged(List)}.
+	 * service properly. This method is guaranteed to be able to call {@link #onFilesChanged(List)}.
 	 */
 	public abstract void init();
 	
@@ -42,6 +42,10 @@ public abstract class VcsPlugin {
 	 */
 	public abstract boolean isCustomAssetPathsAllowed();
 	
+	/**
+	 * Allows plugin to not rely on polling but instead get notified directly if the VCS server / repo changes.
+	 */
+	public abstract void notifyRepoChange();
 	
 	public abstract void commitAddedFile(Path file);
 	

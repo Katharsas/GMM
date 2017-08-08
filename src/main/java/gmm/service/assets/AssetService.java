@@ -81,11 +81,6 @@ public class AssetService {
 		return originalAssetFiles.get(assetName);
 	}
 	
-	private AssetInfo getAssetInfo(AssetName assetName, AssetGroupType type) {
-		if (type.isOriginal()) return getOriginalAssetFileInfo(assetName);
-		else return getNewAssetFolderInfo(assetName);
-	}
-	
 	@Autowired
 	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, VcsPlugin vcs,
 			DataConfigService config, FileService fileService, DataAccess data) {

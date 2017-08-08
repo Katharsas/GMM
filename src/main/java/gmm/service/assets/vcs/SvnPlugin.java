@@ -13,11 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnCommit;
 import org.tmatesoft.svn.core.wc2.SvnDiffStatus;
 import org.tmatesoft.svn.core.wc2.SvnDiffSummarize;
 import org.tmatesoft.svn.core.wc2.SvnGetInfo;
@@ -26,6 +29,7 @@ import org.tmatesoft.svn.core.wc2.SvnInfo;
 import org.tmatesoft.svn.core.wc2.SvnOperation;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnReceivingOperation;
+import org.tmatesoft.svn.core.wc2.SvnScheduleForAddition;
 import org.tmatesoft.svn.core.wc2.SvnStatus;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 import org.tmatesoft.svn.core.wc2.SvnUpdate;
@@ -64,6 +68,8 @@ public class SvnPlugin extends VcsPlugin {
 	private final DataConfigService config;
 	private final FileService fileService;
 	
+	private final Path workingCopyDir;
+	
 	private final SvnTarget repository;
 	private final SvnTarget workingCopy;
 	
@@ -71,33 +77,50 @@ public class SvnPlugin extends VcsPlugin {
 	
 	@Autowired
 	public SvnPlugin(DataConfigService config, FileService fileService,
-			@Value("${vcs.plugin.svn.repository}") String repositoryUriString) {
+			@Value("${vcs.plugin.svn.repository}") String repositoryUriString,
+			@Value("${vcs.plugin.svn.username}") String repositoryUsername,
+			@Value("${vcs.plugin.svn.password}") String repositoryPassword
+			) {
 		
 		this.config = config;
 		this.fileService = fileService;
 		
 		svnOperationFactory = new SvnOperationFactory();
+		if (repositoryUsername != null && repositoryUsername != "") {
+			svnOperationFactory.setAuthenticationManager(
+					BasicAuthenticationManager.newInstance(repositoryUsername, repositoryPassword.toCharArray()));
+		}
 		
 		try {
-			final URI uri = new URI(repositoryUriString);
+			final String uriString = repositoryUriString.replaceAll(" ", "%20");
+			final URI uri = new URI(uriString);
 			final SVNURL url = SVNURL.parseURIEncoded(uri.toASCIIString());
 			repository = SvnTarget.fromURL(url, SVNRevision.HEAD);
+			
+//			if (repositoryUriString.startsWith("file:///")) {
+//			repository = SvnTarget.fromFile(new File(repositoryUriString));
+//		} else {
+//			final URI uri = new URI(repositoryUriString);
+//			final SVNURL url = SVNURL.parseURIEncoded(uri.toASCIIString());
+//			repository = SvnTarget.fromURL(url, SVNRevision.HEAD);
+//		}
+			
 		} catch (URISyntaxException | SVNException e) {
 			throw new IllegalArgumentException("Invalid SVN repository uri!", e);
 		}
 		
 		checkRepoAvailable();
 		
-		final File workingCopyDir = config.assetsNew().toFile();
-		workingCopy = SvnTarget.fromFile(workingCopyDir, SVNRevision.WORKING);
+		workingCopyDir = config.assetsNew();
+		workingCopy = SvnTarget.fromFile(workingCopyDir.toFile(), SVNRevision.WORKING);
 		
-		initializeWorkingCopy(workingCopyDir);
+		initializeWorkingCopy(workingCopyDir.toFile());
 	}
-	
+
 	@Override
 	public void init() {
 		final List<Path> changedPaths = diffAndUpdate();
-		notifyFilesChanged(changedPaths);
+		onFilesChanged(changedPaths);
 	}
 	
 	/**
@@ -256,11 +279,12 @@ public class SvnPlugin extends VcsPlugin {
 	protected void close() {
 		svnOperationFactory.dispose();
 	}
-	
-	public synchronized void onCommitHookNotified() {
+
+	@Override
+	public synchronized void notifyRepoChange() {
 		final List<Path> changedPaths = diffAndUpdate();
 		if (changedPaths.size() > 0) {
-			notifyFilesChanged(changedPaths);
+			onFilesChanged(changedPaths);
 		}
 	}
 
@@ -273,19 +297,30 @@ public class SvnPlugin extends VcsPlugin {
 
 	@Override
 	public void commitAddedFile(Path file) {
-		// TODO Auto-generated method stub
-		
+		final SvnScheduleForAddition ops = svnOperationFactory.createScheduleForAddition();
+		final Path abs = workingCopyDir.resolve(file);
+		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
+		ops.setAddParents(true);
+		tryRun(ops);
+
+		commit("GMM: Added file.");
 	}
 
 	@Override
 	public void commitChangedFile(Path file) {
-		// TODO Auto-generated method stub
-		
+		commit("GMM: Replaced file.");
 	}
 
 	@Override
 	public void commitRemovedFile(Path file) {
-		// TODO Auto-generated method stub
-		
+		commit("GMM: Deleted file.");
+	}
+
+	private void commit(String message) {
+		final SvnCommit ops = svnOperationFactory.createCommit();
+	    ops.setSingleTarget(workingCopy);// only changes below this path will be commited
+	    ops.setDepth(SVNDepth.INFINITY);// TODO needed or default?
+	    ops.setCommitMessage(message);
+	    tryRun(ops);
 	}
 }

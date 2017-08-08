@@ -105,11 +105,13 @@ public class DataBase implements DataAccess {
 		combined = new CombinedData();
 	}
 	
-	private void initConcreteLists(Class<?>[] types) {
+	@SuppressWarnings("unchecked")
+	private <T> void initConcreteLists(Class<? extends T>[] types) {
 		for (final Class<?> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
-			concretes.put(type, new ArrayList<>(type));
+			ArrayList<?> list = new ArrayList<>(type);
+			concretes.putSafe((Class<Object>)list.getGenericType(), (Collection<Object>)list);// fuck u generics
 		}
 		listTypes.addAll(Arrays.asList(types));
 	}
@@ -121,9 +123,9 @@ public class DataBase implements DataAccess {
 	private <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
 		final Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
 		for (int i = 0; i < included.length; i++) {
-			Collection<T> list = concretes.get(includedTypes[i]);
+			Collection<T> list = concretes.getSafe(includedTypes[i]);
 			if (list == null) {
-				list = compounds.get(includedTypes[i]);
+				list = compounds.getSafe(includedTypes[i]);
 				if (list == null) {
 					throw new IllegalArgumentException("Cannot build compound list:"
 							+ " Included type '" + includedTypes[i] + "' unknown!");
@@ -131,7 +133,7 @@ public class DataBase implements DataAccess {
 			}
 			included[i] = Util.cast(list, includedTypes[i]);
 		}
-		compounds.put(type, new JoinedCollectionView<>(new ArrayList<>(type), included));
+		compounds.putSafe(type, new JoinedCollectionView<>(new ArrayList<>(type), included));
 		listTypes.add(type);
 	}
 	
@@ -149,12 +151,12 @@ public class DataBase implements DataAccess {
 	 */
 	private <T> Collection<T> concreteOrCompound(Class<T> clazz) {
 		// concrete list type
-		final Collection<T> result = concretes.get(clazz);
+		final Collection<T> result = concretes.getSafe(clazz);
 		if (result != null) {
 			return result;
 		} else {
 			// compound type
-			final Collection<T> multi = compounds.get(clazz);
+			final Collection<T> multi = compounds.getSafe(clazz);
 			if (multi != null) {
 				return multi;
 			} else {
@@ -172,7 +174,7 @@ public class DataBase implements DataAccess {
 	 * @return Live collection.
 	 */
 	private <T> Collection<T> concreteOnly(Class<T> clazz) {
-		final Collection<?> result = concretes.get(clazz);
+		final Collection<?> result = concretes.getSafe(clazz);
 		if (result != null) {
 			return Util.cast(result, clazz);
 		} else {

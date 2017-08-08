@@ -1,4 +1,4 @@
-package gmm.service.assets;
+package gmm.service.assets.vcs;
 
 import java.io.File;
 import java.io.IOException;

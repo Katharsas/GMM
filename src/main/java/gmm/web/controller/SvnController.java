@@ -12,26 +12,26 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import gmm.service.assets.vcs.SvnPlugin;
+import gmm.service.assets.vcs.VcsPlugin;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 
 @Controller
 @ConditionalOnConfigSelector("svn")
 public class SvnController {
-
+	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final SvnPlugin svn;
+	private final VcsPlugin svn;
 	
 	@Autowired
-	public SvnController(SvnPlugin svn) {
-		this.svn = svn;
+	public SvnController(VcsPlugin vcs) {
+		this.svn = vcs;
 	}
 	
-	@Value("${vcs.plugin.svn.token}")
+	@Value("${vcs.notify.token}")
 	private String configToken;
 	
-	@RequestMapping(value="/plugins/svn/notifyCommit", method = RequestMethod.POST)
+	@RequestMapping(value="${vcs.notify.url}", method = RequestMethod.POST)
 	public @ResponseBody ResponseEntity<?> notifyCommit(
 			@RequestParam(value="token", required=false) String token) {
 		
@@ -41,7 +41,7 @@ public class SvnController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
 			logger.debug("Valid commit notification received.");
-			svn.onCommitHookNotified();
+			svn.notifyRepoChange();
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
 	}
