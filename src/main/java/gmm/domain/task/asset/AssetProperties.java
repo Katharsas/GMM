@@ -26,6 +26,19 @@ public abstract class AssetProperties {
 		this.groupType = groupType;
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(filename, groupType);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		final AssetProperties other = (AssetProperties) obj;
+		return filename.equals(other.filename) && groupType == other.groupType;
+	}
+	
 	public void assertAttributes() {
 		if(sizeInBytes < 0 || lastModified < 0) {
 			throw new IllegalStateException(assertAttributesException);

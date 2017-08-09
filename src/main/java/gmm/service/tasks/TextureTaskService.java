@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -56,19 +57,32 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
-	public void recreatePreview(Path sourceFile, Path previewFolder, TextureProperties asset) {
-		BufferedImage image = readImage(sourceFile);
-		asset.setDimensions(image.getHeight(), image.getWidth());
-		Path targetFile;
-		//full preview 
-		targetFile = getPreviewFilePath(previewFolder, asset.getGroupType(), false);
-		writeImage(image, targetFile);
-		//small preview
-		targetFile = getPreviewFilePath(previewFolder, asset.getGroupType(), true);
-		if(image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE){
-			image = Scalr.resize(image, SMALL_SIZE);
-		}
-		writeImage(image, targetFile);
+	public CompletableFuture<TextureProperties> recreatePreview(
+			Path sourceFile, Path previewFolder, TextureProperties assetProps) {
+		
+		fileService.testReadFile(sourceFile);
+		
+		final Path fullPreview = getPreviewFilePath(previewFolder, assetProps.getGroupType(), false);
+		final Path smallPreview = getPreviewFilePath(previewFolder, assetProps.getGroupType(), true);
+		
+		fileService.testCreateDeleteFile(fullPreview);
+		fileService.testCreateDeleteFile(smallPreview);
+		
+		return CompletableFuture.supplyAsync(() -> {
+			
+			BufferedImage image = readImage(sourceFile);
+			assetProps.setDimensions(image.getHeight(), image.getWidth());
+			
+			// full preview
+			writeImage(image, fullPreview);
+			//small preview
+			if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
+				image = Scalr.resize(image, SMALL_SIZE);
+			}
+			writeImage(image, smallPreview);
+			
+			return assetProps;
+		});
 	}
 	
 	private BufferedImage readImage(Path file) {
@@ -142,7 +156,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 			IOUtils.copy(fis, target);
 		} catch (final IOException e) {
 			throw new UncheckedIOException(
-					"Could not deliver preview file from '" + path.toString() + "'!", e);
+					"Could not write preview file from '" + path.toString() + "' to stream!", e);
 		}
 	}
 }

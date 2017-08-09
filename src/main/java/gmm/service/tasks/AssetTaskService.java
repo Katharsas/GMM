@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.assets.AssetInfo;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
-import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataConfigService;
 import gmm.web.forms.TaskForm;
 
@@ -38,7 +38,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	protected abstract A newPropertyInstance(String filename, AssetGroupType isOriginal);
 	
-	protected abstract void recreatePreview(Path sourceFile, Path previewFolder, A props);
+	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, A props);
 	protected abstract void deletePreview(Path previewFolder, AssetGroupType isOriginal);
 	protected abstract boolean hasPreview(Path previewFolder, AssetGroupType isOriginal);
 	
@@ -91,36 +91,18 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		return form;
 	}
 	
-	public void recreateAssetProperties(AssetTask<A> task, AssetInfo fileInfo) {
-		if (fileInfo.getType().isOriginal()) {
-			recreateAssetProperties(task, (OriginalAssetFileInfo) fileInfo);
-		} else {
-			recreateAssetProperties(task, (NewAssetFolderInfo) fileInfo);
-		}
-	}
-	
 	/**
-	 * Create new preview, create properties from preview, set them on task.
+	 * Asynchronously create new preview, create properties from preview, set them on task.
 	 */
-	public void recreateAssetProperties(AssetTask<A> task, OriginalAssetFileInfo fileInfo) {
+	public CompletableFuture<Void> recreateAssetProperties(AssetTask<A> task, AssetInfo info) {
 		Objects.requireNonNull(task);
-		Objects.requireNonNull(fileInfo);
-		overwriteAssetProperties(task, fileInfo);
-		logger.debug("Set properties of original asset file '" + task.getAssetName() + "' on task '" + task + "'.");
-	}
-	
-	/**
-	 * Create new preview, create properties, set them on task.
-	 */
-	public void recreateAssetProperties(AssetTask<A> task, NewAssetFolderInfo folderInfo) {
-		Objects.requireNonNull(task);
-		Objects.requireNonNull(folderInfo);
-		if (folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
-			overwriteAssetProperties(task, folderInfo);
-			logger.debug("Set properties of new asset file '" + task.getAssetName() + "' on task '" + task + "'.");
-		} else {
-			throw new IllegalArgumentException("Invalid asset folder state, cannot recreate preview!");
+		Objects.requireNonNull(info);
+		if (!info.getType().isOriginal()) {
+			if (((NewAssetFolderInfo)info).getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
+				throw new IllegalArgumentException("Invalid asset folder state, cannot recreate preview!");
+			}
 		}
+		return overwriteAssetProperties(task, info);
 	}
 	
 	public boolean isValidAssetProperties(AssetProperties props, AssetInfo info) {
@@ -141,7 +123,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		return hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType());
 	}
 	
-	private void overwriteAssetProperties(AssetTask<A> task, AssetInfo info) {
+	private CompletableFuture<Void> overwriteAssetProperties(AssetTask<A> task, AssetInfo info) {
 		
 		final AssetGroupType type = info.getType();
 		final Path assetPathAbs = getRestrictedAssetPathAbsolute(type, info);
@@ -151,9 +133,12 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		assetProps.setLastModified(assetPathAbs.toFile().lastModified());
 		
 		final Path previewFolder = getPreviewFolder(info.getAssetFileName());
-		recreatePreview(assetPathAbs, previewFolder, assetProps);
+		final CompletableFuture<A> future = recreatePreview(assetPathAbs, previewFolder, assetProps);
 		
-		task.setAssetProperties(assetProps, type);
+		return future.thenAccept(completedAssetProps -> {
+			logger.debug("Set properties of asset file '" + task.getAssetName() + "' on task '" + task + "'. Type: '" + type.name() + "'");
+			task.setAssetProperties(completedAssetProps, type);
+		});
 	}
 	
 	private Path getRestrictedAssetPathAbsolute(AssetGroupType type, AssetInfo info) {

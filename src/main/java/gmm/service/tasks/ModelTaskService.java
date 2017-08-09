@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,9 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	}
 
 	@Override
-	public void recreatePreview(Path sourceFile, Path previewFolder, ModelProperties asset) {
+	public CompletableFuture<ModelProperties> recreatePreview(
+			Path sourceFile, Path previewFolder, ModelProperties asset) {
+		
 		fileService.createDirectory(previewFolder);
 		final Path target = getPreviewFilePath(previewFolder, asset.getGroupType());
 		deletePreview(target);
@@ -54,6 +57,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 		}
 		asset.setTextureNames(textureNames);
 		asset.setPolyCount(meshData.getPolygonCount());
+		return CompletableFuture.completedFuture(asset);
 	}
 	
 	@Override
@@ -103,7 +107,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 			IOUtils.copy(fis, target);
 		} catch (final IOException e) {
 			throw new UncheckedIOException(
-					"Could not deliver preview file from '" + path.toString() + "'!", e);
+					"Could not write preview file from '" + path.toString() + "' to stream!", e);
 		}
 	}
 }

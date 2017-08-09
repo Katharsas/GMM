@@ -14,20 +14,22 @@ public class TextureProperties extends AssetProperties {
 	@Override
 	public void assertAttributes() {
 		super.assertAttributes();
-		if (height < 0 || width < 0) {
-			throw new IllegalStateException(assertAttributesException);
+		synchronized(this) {
+			if (height < 0 || width < 0) {
+				throw new IllegalStateException(assertAttributesException);
+			}
 		}
 	}
 	
-	public void setDimensions(int height, int width) {
+	public synchronized void setDimensions(int height, int width) {
 		this.height = height;
 		this.width = width;
 	}
 	
-	public int getHeight() {
+	public synchronized int getHeight() {
 		return height;
 	}
-	public int getWidth() {
+	public synchronized int getWidth() {
 		return width;
 	}
 }

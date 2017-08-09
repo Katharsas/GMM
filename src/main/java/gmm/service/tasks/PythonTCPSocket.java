@@ -85,7 +85,7 @@ public class PythonTCPSocket {
 	
 	private volatile AssetConversionPaths next = null;
 	private volatile ConversionResult result = null;
-	private AtomicBoolean threadIsAlive = new AtomicBoolean(false);
+	private final AtomicBoolean threadIsAlive = new AtomicBoolean(false);
 	
 	private final Runnable convertion = new PythonRunnable();
 	
@@ -128,13 +128,13 @@ public class PythonTCPSocket {
 	}
 	
 	/**
-	 * Runnable that will communicate with the calling thread using the roducer-consumer pattern
+	 * Runnable that will communicate with the calling thread using the producer-consumer pattern
 	 * to achieve synchronization.<br>
 	 * <br>
-	 * It will execute a python script that starts up a TCP server. It will connect to that
-	 * TCP server and send the paths for each convertion (which it receives from the caller)
+	 * It will execute a Python script that starts up a TCP server. It will connect to that
+	 * TCP server and send the paths for each conversion (which it receives from the caller)
 	 * to the server.<br>
-	 * When there are no calls from a calling thread for a certain period of tmme as specified in
+	 * When there are no calls from a calling thread for a certain period of time as specified in
 	 * threadTimeout attribute, the runnable will return. On returning it will inform the TCP server
 	 * about connection end and close the connection.
 	 * 
@@ -144,7 +144,7 @@ public class PythonTCPSocket {
 	 */
 	private class PythonRunnable implements Runnable {
 		
-		private ObjectMapper jackson = new ObjectMapper();
+		private final ObjectMapper jackson = new ObjectMapper();
 		
 		private static final int port = 8090;
 		private static final int tryReconnectCount = 10;

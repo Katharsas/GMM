@@ -1,5 +1,6 @@
 package gmm.service;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -162,6 +163,24 @@ public class FileService {
 			Files.write(path, data);
 		} catch (final IOException e) {
 			throw new UncheckedIOException("Could not write data to file at " + path.toString(), e);
+		}
+	}
+	
+	public synchronized void testCreateDeleteFile(Path path) {
+		createDirectory(path.getParent());
+		try {
+			path.toFile().createNewFile();
+			path.toFile().delete();
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not test-create/delete file at '" + path.toString() + "'", e);
+		}
+	}
+	
+	public synchronized void testReadFile(Path path) {
+		try(FileInputStream fis = new FileInputStream(path.toFile())) {
+			fis.read();
+		} catch (final IOException e) {
+			throw new UncheckedIOException("Could not test-read file at '" + path.toString() + "'!", e);
 		}
 	}
 	
