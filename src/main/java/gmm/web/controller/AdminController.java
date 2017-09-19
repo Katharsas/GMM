@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -16,16 +17,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.List;
 import gmm.domain.Label;
 import gmm.domain.User;
 import gmm.domain.task.Task;
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.service.FileService;
 import gmm.service.FileService.PathFilter;
+import gmm.service.VirtualNewAssetFileSystem;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
+import gmm.service.assets.AssetService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.data.backup.BackupExecutorService;
@@ -56,6 +62,9 @@ public class AdminController {
 	@Autowired private ManualBackupService manualBackups;
 	@Autowired private FtlTemplateService templates;
 	@Autowired private TaskServiceFinder serviceFinder;
+	@Autowired private AssetService assets;
+	
+	private VirtualNewAssetFileSystem newAssetsWithoutTasksVfs;
 	
 	public AdminController() {
 	}
@@ -69,6 +78,8 @@ public class AdminController {
 		templates.registerForm("taskForm", this::createNewTaskForm);
 		
 		templates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
+		
+		newAssetsWithoutTasksVfs = new VirtualNewAssetFileSystem(assets.getNewAssetFoldersWithoutTasks());
 	}
 	
 	private TaskForm createNewTaskForm() {
@@ -227,7 +238,7 @@ public class AdminController {
 	}
 	
 	/**
-	 * Asset Import <br>
+	 * Original Asset Import <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
 	
@@ -243,20 +254,51 @@ public class AdminController {
 	}
 	
 	/**
+	 * Show new asset folder file tree.
+	 */
+	@RequestMapping(value = {"/newAssets"} , method = RequestMethod.POST)
+	public @ResponseBody String[] showNewAssets(@RequestParam("dir") Path dir) {
+		
+		dir = newAssetsWithoutTasksVfs.convertRelativePathToVfsPath(dir);
+		final Path visible = newAssetsWithoutTasksVfs.getVirtualRootAssetsNew();
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirRelative, visible);
+	}
+	
+	/**
 	 * Add to selection <br/>
 	 * When user adds assets to import selection, those asset paths are saved. <br/>
 	 * If user switches type of assets, selection must be cleared.
 	 */
 	@RequestMapping(value = {"/getAssetPaths"} , method = RequestMethod.GET)
-	public @ResponseBody List<String> getAssetPaths(
+	public @ResponseBody List<Path> getAssetPaths(
 			@RequestParam("dir") Path dir,
-			@RequestParam("textures") boolean textures) {
+			@RequestParam("textures") boolean textures,
+			@RequestParam("isOriginal") boolean isOriginal) {
 		
-		final Path visible = config.assetsOriginal();
+		final AssetGroupType type = AssetGroupType.get(isOriginal);
+		Path visible;
+		if (type.isOriginal()) {
+			visible = config.assetsOriginal();
+		} else {
+			visible = newAssetsWithoutTasksVfs.getVirtualRootAssetsNew();
+			dir = newAssetsWithoutTasksVfs.convertRelativePathToVfsPath(dir);
+		}
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		final PathFilter filter = serviceFinder.getCombinedExtensionFilter();
 		final List<Path> paths = fileService.getFilesRecursive(visible.resolve(dirRelative), filter);
-		session.addImportPaths(fileService.getRelativeNames(paths, visible), textures);
+		final List<Path> actualPaths;
+		if (type.isOriginal()) {
+			actualPaths = paths;
+		} else {
+			actualPaths = new ArrayList<>(Path.class, paths.size());
+			visible = config.assetsNew();
+			for (final Path path : paths) {
+				// remove root slash and treat as relative
+				actualPaths.add(visible.resolve(path.toString().substring(1)));
+			}
+		}
+		session.addImportPaths(fileService.getRelativeNames(actualPaths, visible), textures, type);
 		return session.getImportPaths();
 	}
 	

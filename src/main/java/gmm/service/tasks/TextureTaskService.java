@@ -58,12 +58,12 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	 */
 	@Override
 	public CompletableFuture<TextureProperties> recreatePreview(
-			Path sourceFile, Path previewFolder, TextureProperties assetProps) {
+			Path sourceFile, Path previewFolder, AssetGroupType type, TextureProperties assetProps) {
 		
 		fileService.testReadFile(sourceFile);
 		
-		final Path fullPreview = getPreviewFilePath(previewFolder, assetProps.getGroupType(), false);
-		final Path smallPreview = getPreviewFilePath(previewFolder, assetProps.getGroupType(), true);
+		final Path fullPreview = getPreviewFilePath(previewFolder, type, false);
+		final Path smallPreview = getPreviewFilePath(previewFolder, type, true);
 		
 		fileService.testCreateDeleteFile(fullPreview);
 		fileService.testCreateDeleteFile(smallPreview);
@@ -107,7 +107,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		if (previewFolder.toFile().exists()) {
 			final Path targetFull = getPreviewFilePath(previewFolder, isOriginal, false);
 			final Path targetSmall = getPreviewFilePath(previewFolder, isOriginal, true);
-			if (targetFull.toFile().exists()) fileService.delete(targetSmall);
+			if (targetFull.toFile().exists()) fileService.delete(targetFull);
 			if (targetSmall.toFile().exists()) fileService.delete(targetSmall);
 		}
 	}
@@ -125,8 +125,8 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	}
 
 	@Override
-	protected TextureProperties newPropertyInstance(String filename, AssetGroupType isOriginal) {
-		return new TextureProperties(filename, isOriginal);
+	protected TextureProperties newPropertyInstance() {
+		return new TextureProperties();
 	}
 
 	@Override
@@ -150,7 +150,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	public void writePreview(TextureTask task, boolean small, String version, OutputStream target) {
 		final String imageName = version + (small ? "_small" : "_full") + ".png";		
 		final Path path = config.assetPreviews()
-				.resolve(task.getAssetName().getFolded())
+				.resolve(task.getAssetName().getKey())
 				.resolve(imageName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);

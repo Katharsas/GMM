@@ -10,6 +10,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
@@ -116,6 +117,22 @@ public class AssetScanner {
 		}
 		
 		return foundNewAssetFolders;
+	}
+	
+	public Optional<NewAssetFolderInfo> onSingleNewAssetRemoved(Path assetFolderPath) {
+		final NewAssetFolderInfo[] foundNewAssetFolder = new NewAssetFolderInfo[1];
+		AssetTaskService<?> service = null;
+		final Path absoluteFolderPath = config.assetsNew().resolve(assetFolderPath);
+		if (assetTypeFoldersEnabled) {
+			for (final Entry<Path, AssetTaskService<?>> entry : getNewAssetTypeFolders().entrySet()) {
+				if (absoluteFolderPath.startsWith(entry.getKey())) service = entry.getValue();
+			}
+			if (service == null) throw new IllegalArgumentException("Removed asset can not have been outside an assetTypeFolder!");
+		}
+		scanForNewAssets(absoluteFolderPath, (folderName, folderInfo) -> {
+			foundNewAssetFolder[0] = folderInfo;
+		}, service);
+		return Optional.ofNullable(foundNewAssetFolder[0]);
 	}
 	
 	private Map<Path, AssetTaskService<?>> getNewAssetTypeFolders() {

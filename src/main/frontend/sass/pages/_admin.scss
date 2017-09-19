@@ -43,11 +43,18 @@
 	font-weight: bold;
 
 }
-#database-fileTreeContainer, #assets-fileTreeContainer {
+#originalAssets, #newAssets {
+	@include colorTheme-subpage-bright;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+#database-fileTreeContainer, #originalAssets-fileTreeContainer, #newAssets-fileTreeContainer {
 	max-width:500px;
 }
 #loadTasks {
-	background-color:#164054;
+	@include colorTheme-subpage-bright;
 	width:75%;
 }
 #selectedPaths {
@@ -61,7 +68,7 @@
 	list-style: none;
 }
 #selectedPaths ul li {
-	background-color: #164054;
+	@include colorTheme-subpage-bright;
 	padding: 0px 6px;
 }
 #importTaskForm {

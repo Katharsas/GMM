@@ -20,7 +20,7 @@ var Ajax = (function() {
 		if (url === undefined || url === null) return undefined;
 		var result = {
 			url: url,
-			headers: {accept:"application/json,*/*;q=0.8"},
+			headers: {accept:"application/json;q=1.0,*/*;q=0.8"},
 		};
 		if (url.startsWith(contextUrl)) {
 			result.headers[header] = token;

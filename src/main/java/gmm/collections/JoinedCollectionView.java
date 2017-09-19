@@ -5,7 +5,8 @@ import java.util.Iterator;
 
 import com.google.common.collect.Iterables;
 
-public class JoinedCollectionView<E> implements Collection<E> {
+public class JoinedCollectionView<E> implements Collection<E>, java.io.Serializable {
+	private static final long serialVersionUID = -5898627844171252241L;
 	
 	private final Collection<? extends E>[] items;
 	private final Collection<E> copyTarget;

@@ -54,7 +54,15 @@
         
         <div class="admin-groupDesc"><fmt:message key="admin.importAssets"/></div>
         <div class="admin-group" id="assets">
-			<div class="admin-inner" id="assets-fileTreeContainer"></div>
+        	<div id="originalAssets">
+        	<div class="admin-inner hint">Original assets:</div>
+			<div class="admin-inner fileTreeContainer" id="originalAssets-fileTreeContainer"></div>
+			</div>
+			<div id="newAssets">
+			<div class="admin-inner hint">New assets:</div>
+			<div class="admin-inner fileTreeContainer" id="newAssets-fileTreeContainer"></div>
+			</div>
+			
 			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>
 			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)"><fmt:message key="admin.database.addmeshes"/></div>
 			<div class="clear"></div>

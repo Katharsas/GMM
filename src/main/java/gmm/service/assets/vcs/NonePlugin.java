@@ -8,7 +8,7 @@ import gmm.collections.ArrayList;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 
 @Service
-@ConditionalOnConfigSelector("none")
+@ConditionalOnConfigSelector({"","none"})
 public class NonePlugin extends VcsPlugin {
 
 	@Override

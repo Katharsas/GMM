@@ -86,7 +86,7 @@ public class DataConfigService {
 		BLENDER = base.resolve(blender).normalize();
 		logger.info("\n"
 				+	"##########################################################" + "\n\n"
-				+	"  Expecting blender installation folder to be: " + "\n"
+				+	"  Expecting blender installation folder to be at: " + "\n"
 				+	"  " + blender + "\n\n"
 				+	"##########################################################");
 	}

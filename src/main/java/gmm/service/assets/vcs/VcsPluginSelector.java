@@ -16,16 +16,20 @@ public class VcsPluginSelector implements Condition {
 	@Target({ ElementType.TYPE, ElementType.METHOD })
 	@Conditional(VcsPluginSelector.class)
 	public static @interface ConditionalOnConfigSelector {
-		String value();
+		String[] value();
 	}
 	
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		
-		final String identifier = (String) metadata.getAnnotationAttributes(
+		final String[] identifiers = (String[]) metadata.getAnnotationAttributes(
 				ConditionalOnConfigSelector.class.getName()).get("value");
 		
-		final String selector = context.getEnvironment().getProperty("vcs.selector");
-		return selector != null && identifier.equals(selector);
+		String selector = context.getEnvironment().getProperty("vcs.selector");
+		if (selector == null) selector = "";
+		for (final String identifier : identifiers) {
+			if (identifier.equals(selector)) return true;
+		}
+		return false;
 	}
 }

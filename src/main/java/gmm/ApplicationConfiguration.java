@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -18,6 +19,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -33,6 +36,13 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.template.TemplateException;
@@ -145,6 +155,49 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 	public MultipartResolver multipartResolver() {
 		return new CommonsMultipartResolver();
 	}
+	
+	/**
+	 * Configure Jackson (enable Path to Json/String conversion)
+	 */
+	@Bean
+	public MappingJackson2HttpMessageConverter customJackson2HttpMessageConverter(MappingJackson2HttpMessageConverter converter) {
+		
+	    final ObjectMapper objectMapper = new ObjectMapper();
+	    
+	    final SimpleModule sm = new SimpleModule();
+    	sm.addSerializer(Path.class, new StdSerializer<Path>(Path.class) {
+			private static final long serialVersionUID = 8963132152002562810L;
+			@Override
+			public void serialize(Path value, JsonGenerator gen, SerializerProvider serializers)
+					throws IOException, JsonProcessingException {
+				gen.writeString(value.toString());
+			}
+		});
+    	objectMapper.registerModule(sm);
+	    
+	    converter.setObjectMapper(objectMapper);
+	    return converter;
+	}
+	
+	/**
+	 * We cannot add a new jackson converter (because it will be ignoredif one exists already), so we need to either use
+	 * other method {@link #configureMessageConverters(List)} which will mean that we loose all default converters OR we
+	 * need to find the existing jackson converter and change it (which is done below).
+	 */
+	@Override
+    public void extendMessageConverters(List<HttpMessageConverter<?>> messageConverters) {
+		
+		MappingJackson2HttpMessageConverter originalJacksonConverter = null;
+		for (final HttpMessageConverter<?> converter : messageConverters) {
+			if (converter instanceof MappingJackson2HttpMessageConverter) {
+				originalJacksonConverter = (MappingJackson2HttpMessageConverter) converter;
+			}
+		}
+		Objects.requireNonNull(originalJacksonConverter);
+		customJackson2HttpMessageConverter(originalJacksonConverter);
+ 
+        super.configureMessageConverters(messageConverters);
+    }
 	
 	/**
 	 * ----------------------------- Custom Beans -----------------------------

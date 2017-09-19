@@ -3,12 +3,25 @@ package gmm.service.assets.vcs;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gmm.collections.List;
 import gmm.service.assets.AssetService;
 
 public abstract class VcsPlugin {
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	private AssetService filesChangedHandler;
+	
+	public VcsPlugin() {
+		logger.debug("\n"
+				+ "##########################################################" + "\n\n"
+				+ "  Version Control Plugin:" + "\n"
+				+ "  " + this.getClass().getSimpleName() + "\n\n"
+				+ "##########################################################");
+	}
 	
 	public void registerFilesChangedHandler(AssetService assetService) {
 		Objects.requireNonNull(assetService);

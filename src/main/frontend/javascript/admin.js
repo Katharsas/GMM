@@ -87,13 +87,21 @@ var AssetImport = function() {
 	
 	$assets.find("#taskForm").find("#taskForm-group-type").hide();
 	
-	$assets.find('#assets-fileTreeContainer').fileTree(
+	$assets.find('#originalAssets-fileTreeContainer').fileTree(
 		{url: contextUrl + "/admin/originalAssets"},
 		function($file) {
 			allFuncs.selectTreeElement($file, "selectedAssetFile");
 		}
 	);
-	
+
+	$assets.find('#newAssets-fileTreeContainer').fileTree(
+		{url: contextUrl + "/admin/newAssets"},
+		function($file) {
+			allFuncs.selectTreeElement($file, "selectedAssetFile");
+		}
+	);
+
+	allVars.activeFileTree = null;
 };
 
 $(document).ready( function() {
@@ -111,38 +119,51 @@ $(document).ready( function() {
 });
 
 function addAssetPaths(textures) {
-	var pathSep = "&#160;&#160;►&#160;";
-	var dir = allVars.selectedAssetFile.attr('rel');
-	var $selectedPathsListContainer = $("#selectedPaths");
-	var $selectedPathsList = $("#selectedPaths ul");
-	$selectedPathsList.empty();
-	var data = { dir: dir, textures: textures };
-	Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
-		.then(function(paths) {
-			if(paths.length===0) {
-				cancelImport();
-				return;
-			}
-			for(var i in paths) {
-				paths[i] = paths[i].replace(new RegExp("/", 'g'), pathSep);
-				paths[i] = paths[i].replace(new RegExp("\\\\", 'g'), pathSep);
-				$selectedPathsList.append("<li>"+paths[i]+"</li>");
-			}
-			$selectedPathsListContainer.scrollTop($selectedPathsList.height());
-		});
-	
-	if(textures) {
-		$('#importTexturesButton').show();
-		$('#importMeshesButton').hide();
-		$('#addMeshesButton').hide();
+
+	var $fileTreeContainer = allVars.selectedAssetFile.closest(".fileTreeContainer");
+	var fileTreeId = $fileTreeContainer.attr('id');
+	if (allVars.activeFileTree !== null && allVars.activeFileTree !== fileTreeId) {
+		cancelImport().then(addSelectedAssetPaths);
+	} else {
+		addSelectedAssetPaths();
 	}
-	else {
-		$('#importMeshesButton').show();
-		$('#importTexturesButton').hide();
-		$('#addTexturesButton').hide();
+	allVars.activeFileTree = fileTreeId;
+
+	function addSelectedAssetPaths() {
+		var pathSep = "&#160;&#160;►&#160;";
+		var dir = allVars.selectedAssetFile.attr('rel');
+		var $selectedPathsListContainer = $("#selectedPaths");
+		var $selectedPathsList = $("#selectedPaths ul");
+		$selectedPathsList.empty();
+
+		var data = { dir: dir, textures: textures, isOriginal: fileTreeId.startsWith("original") };
+		Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
+			.then(function(paths) {
+				if(paths.length===0) {
+					cancelImport();
+					return;
+				}
+				for(var path of paths) {
+					path = path.replace(new RegExp("/", 'g'), pathSep);
+					path = path.replace(new RegExp("\\\\", 'g'), pathSep);
+					$selectedPathsList.append("<li>"+path+"</li>");
+				}
+				$selectedPathsListContainer.scrollTop($selectedPathsList.height());
+			});
+		
+		if(textures) {
+			$('#importTexturesButton').show();
+			$('#importMeshesButton').hide();
+			$('#addMeshesButton').hide();
+		}
+		else {
+			$('#importMeshesButton').show();
+			$('#importTexturesButton').hide();
+			$('#addTexturesButton').hide();
+		}
+		$('#cancelImportButton').show();
+		$('#taskForm').show();
 	}
-	$('#cancelImportButton').show();
-	$('#taskForm').show();
 }
 global.addAssetPaths = addAssetPaths;
 
@@ -155,8 +176,11 @@ function hideImport() {
 }
 
 function cancelImport() {
-	Ajax.post(contextUrl + "/admin/import/cancel")
-		.then(function() {hideImport();});
+	return Ajax.post(contextUrl + "/admin/import/cancel")
+		.then(function() {
+			hideImport();
+			allVars.activeFileTree = null;
+		});
 }
 global.cancelImport = cancelImport;
 

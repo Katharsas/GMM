@@ -6,8 +6,9 @@ import java.util.Objects;
 import gmm.util.StringUtil;
 
 /**
- * Simple immutable Case-Insensitive-String class wrapping a normal String.
- * Uses simply toLowerCase() which may not work as desired for some non-Latin chars.
+ * Simple immutable asset filename wrapper which also knows about the corresponding case-insensitive (lower case) but
+ * otherwise equivalent String that serves as unique key for asset names (used to hide case-insensitivity from classes
+ * that need to handle asset name as key, allows them to use usual case-sensitive compare operations).
  * 
  * Ensures that the asset name string is not a "hidden" path (no slashes allowed etc.).
  */
@@ -77,11 +78,17 @@ public class AssetName implements Comparable<AssetName> {
 		}
 	}
 	
+	/**
+	 * @return - The actual name of the asset file (in original case).
+	 */
 	public String get() {
 		return assetNameOriginal;
 	}
 	
-	public String getFolded() {
+	/**
+	 * @return - The unique asset name key (same letters as actual name but normalized case).
+	 */
+	public String getKey() {
 		return assetNameLowered;
 	}
 }

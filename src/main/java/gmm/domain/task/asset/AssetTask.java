@@ -1,6 +1,7 @@
 package gmm.domain.task.asset;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -8,13 +9,15 @@ import org.joda.time.format.DateTimeFormatter;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
+import gmm.service.assets.AssetInfo;
+import gmm.service.assets.NewAssetFolderInfo;
+import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
+import gmm.service.assets.OriginalAssetFileInfo;
 
 /**
- * An asset task may contain a path to an original asset. In this case, both the path and the 
- * {@link AssetProperties} for the original asset are both not-null, otherwise not null.
- * 
- * An asset task may contain a path to an assetFolder for a new asset. If it has, it may also
- * contain {@link AssetProperties} for a new asset inside the assetFolder. If it hasn't, it cannot.
+ * Each asset task backs a specific asset, in two versions (original and new).
+ * Contains additional information about those asset files and their (usually type specific) content / properties
+ * (see {@link AssetProperties}).
  * 
  * @author Jan Mothes
  *
@@ -24,11 +27,11 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	
 	private final AssetName assetName;
 	
-	private A originalAsset = null;
-	private A newestAsset = null;
+	private A originalAssetProps = null;
+	private A newestAssetProps = null;
 	
-	private NewAssetFolderError newAssetFolderError = null;
-	private boolean hasNewAssetFolder = false;
+	private OriginalAssetFileInfo originalAssetFileInfo = null;
+	private NewAssetFolderInfo newAssetFolderInfo = null;
 	
 	//used for caching of newest preview
 	private DateTime newestAssetLastUpdate = null;
@@ -50,56 +53,83 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 		return assetName;
 	}
 	
-	public void setAssetProperties(A assetProps, AssetGroupType type) {
-		if (type.isOriginal()) setOriginalAsset(assetProps);
-		else setNewAsset(assetProps);
-	}
-	
 	public A getAssetProperties(AssetGroupType type) {
-		return type.isOriginal() ? getOriginalAsset() : getNewAsset();
+		return type.isOriginal() ? getOriginalAssetProperties() : getNewAssetProperties();
 	}
 	
-	public void setOriginalAsset(A assetProps) {
-		if (assetProps != null) {
+	public AssetInfo getAssetStorageInfo(AssetGroupType type) {
+		return type.isOriginal() ? getOriginalAssetFileInfo() : getNewAssetFolderInfo();
+	}
+	
+	public void setOriginalAsset(A assetProps, OriginalAssetFileInfo originalFileInfo) {
+		if (assetProps != null || originalFileInfo != null) {
+			Objects.requireNonNull(assetProps);
+			Objects.requireNonNull(originalFileInfo);
+			if (!assetName.equals(originalFileInfo.getAssetFileName()))
+				throw new IllegalArgumentException("AssetName mismatch!");
 			assetProps.assertAttributes();
 		}
-		this.originalAsset = assetProps;
+		this.originalAssetProps = assetProps;
+		this.originalAssetFileInfo = originalFileInfo;
 	}
 	
-	public A getOriginalAsset() {
-		return originalAsset;
+	public void setOriginalAssetFileInfo(OriginalAssetFileInfo originalFileInfo) {
+		Objects.requireNonNull(originalAssetProps);
+		Objects.requireNonNull(originalFileInfo);
+		if (!assetName.equals(originalFileInfo.getAssetFileName()))
+			throw new IllegalArgumentException("AssetName mismatch!");
+		this.originalAssetFileInfo = originalFileInfo;
 	}
 	
-	public void setNewAsset(A asset) {
-		if(asset != null) {
-			asset.assertAttributes();
+	public A getOriginalAssetProperties() {
+		return originalAssetProps;
+	}
+	
+	public OriginalAssetFileInfo getOriginalAssetFileInfo() {
+		return originalAssetFileInfo;
+	}
+
+	public void setNewAsset(A assetProperties, NewAssetFolderInfo newFolderInfo) {
+		if(assetProperties != null) {
+			assetProperties.assertAttributes();
 		}
-		this.newestAsset = asset;
+		setNewAssetFolderInfo(assetProperties, newFolderInfo);
 		this.newestAssetLastUpdate = DateTime.now();
 	}
 	
-	public A getNewAsset() {
-		return newestAsset;
+	public void setNewAssetFolderInfo(NewAssetFolderInfo newFolderInfo) {
+		setNewAsset(newestAssetProps, newFolderInfo);
 	}
 	
-	public String getNewestAssetNocache() {
+	private void setNewAssetFolderInfo(A assetProps, NewAssetFolderInfo newFolderInfo) {
+		if (newFolderInfo != null) {
+			if (!assetName.equals(newFolderInfo.getAssetFolderName()))
+				throw new IllegalArgumentException("AssetName mismatch!");
+		}
+		if(assetProps != null) {
+			Objects.requireNonNull(newFolderInfo);
+			if (newFolderInfo.getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
+				throw new IllegalArgumentException("Asset folder status must be VALID_WITH_ASSET because properties are non-null!");
+			}
+		} else {
+			if (newFolderInfo != null && newFolderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
+				throw new IllegalArgumentException("Asset folder status cannot be VALID_WITH_ASSET because properties are null!");
+			}
+		}
+		this.newestAssetProps = assetProps;
+		this.newAssetFolderInfo = newFolderInfo;
+	}
+	
+	public A getNewAssetProperties() {
+		return newestAssetProps;
+	}
+	
+	public NewAssetFolderInfo getNewAssetFolderInfo() {
+		return newAssetFolderInfo;
+	}
+	
+	public String getNewestAssetCacheKey() {
 		if (newestAssetLastUpdate == null) return "";
 		else return newestAssetLastUpdate.toString(formatter);
-	}
-	
-	public void setHasNewAssetFolder(boolean hasNewAssetFolder) {
-		this.hasNewAssetFolder = hasNewAssetFolder;
-	}
-	
-	public boolean hasNewAssetFolder() {
-		return hasNewAssetFolder;
-	}
-	
-	public void setNewAssetFolderError(NewAssetFolderError newAssetFolderError) {
-		this.newAssetFolderError = newAssetFolderError;
-	}
-	
-	public NewAssetFolderError getNewAssetFolderError() {
-		return newAssetFolderError;
 	}
 }

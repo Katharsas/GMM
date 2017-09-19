@@ -1,16 +1,17 @@
 package gmm.domain.task.asset;
 
 import java.text.DecimalFormat;
-import java.util.Objects;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+/**
+ * Properties of the asset that may change when an asset content is actually edited (as opposed to simply moved to
+ * another folder).
+ * 
+ * @author Jan Mothes
+ */
 public abstract class AssetProperties {
 	
-	@XStreamAsAttribute
-	private final String filename;
-	@XStreamAsAttribute
-	private final AssetGroupType groupType;
 	@XStreamAsAttribute
 	private long sizeInBytes = -1;
 	@XStreamAsAttribute
@@ -18,26 +19,6 @@ public abstract class AssetProperties {
 	
 	protected final static String assertAttributesException =
 			"This asset's attributes are not fully populated!";
-	
-	public AssetProperties(String filename, AssetGroupType groupType) {
-		Objects.requireNonNull(filename);
-		Objects.requireNonNull(groupType);
-		this.filename = filename;
-		this.groupType = groupType;
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(filename, groupType);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null || getClass() != obj.getClass()) return false;
-		final AssetProperties other = (AssetProperties) obj;
-		return filename.equals(other.filename) && groupType == other.groupType;
-	}
 	
 	public void assertAttributes() {
 		if(sizeInBytes < 0 || lastModified < 0) {
@@ -61,14 +42,6 @@ public abstract class AssetProperties {
 	public String getSizeInMB() {
 		final DecimalFormat d = new DecimalFormat("########0,00");
 		return d.format(((Long)sizeInBytes).doubleValue()/1000000);
-	}
-	
-	public String getFilename() {
-		return filename;
-	}
-
-	public AssetGroupType getGroupType() {
-		return groupType;
 	}
 	
 	public void setLastModified(long lastModified) {

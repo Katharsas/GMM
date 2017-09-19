@@ -15,7 +15,7 @@
  * Preview
  * //////////////////////////////////////////////////*/
 .task-button.task-file-button {
-	margin: 2px;
+	margin: 1.3px;
 	min-width: 5.3em;
 	max-width: 10em;
 	padding: 2px 5px;
@@ -29,19 +29,28 @@
 	border-collapse: collapse;
 	
 	td {
-		border: 1px solid #444;
+		border: 0.7px solid #555;
+		border-top-style: none;
+		background-color: #171717;
 	}
-	td:nth-child(2) {
+	tr:nth-child(1) > td {
+		border-top-style: solid;
+	}
+	tr > td:nth-child(2) {
 		border-style: none;
+		border-top-style: none;
+		background-color: inherit;
 	}
 	/*td.border {
 		border: 1px solid #444;
 	}*/
 	td.noborder {
 		border-style:none;
+		background-color: inherit;
 	}
-	
+
 	.task-asset-info {
+		//text-align: center;
 		padding: 4px 4px;
 	}
 	.task-asset-buttons {
@@ -56,11 +65,11 @@
 .task-previews {
 	width:100%;
 }
-.task-preview-visual {
-	box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
+.task-assets .task-preview-visual {
+	//box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
 	padding:10px 0;
 	
-	background-color: #222;
+	//background-color: #222;
 	&:hover {
 		background-color: #393939;
 	}
@@ -72,7 +81,7 @@
 		max-width:90%;
 	}
 	canvas {
-		border:1px dotted #666;
+		//border:1px dotted #666;
 		width:90%;
 		height:250px;
 		background-color:DarkRed;

@@ -7,10 +7,6 @@ public class TextureProperties extends AssetProperties {
 	@XStreamAsAttribute
 	private int height = -1, width = -1;
 	
-	public TextureProperties(String filename, AssetGroupType groupType) {
-		super(filename, groupType);
-	}
-	
 	@Override
 	public void assertAttributes() {
 		super.assertAttributes();

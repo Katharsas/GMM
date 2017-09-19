@@ -10,10 +10,6 @@ public class ModelProperties extends AssetProperties {
 	private int polyCount = -1;
 	
 	private Set<String> textureNames;
-
-	public ModelProperties(String filename, AssetGroupType groupType) {
-		super(filename, groupType);
-	}
 	
 	@Override
 	public void assertAttributes() {

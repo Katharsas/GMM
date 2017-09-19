@@ -60,16 +60,18 @@
 			    </colgroup>
 <!-- Asset File Info -->
 			    <tr>
-			    	<#if task.originalAsset?has_content>
-			    		<#assign asset = task.originalAsset/>
-			    		<td class="task-asset-info task-asset-original" data-filename="${asset.filename?html}">
+			    	<#if task.originalAssetProperties?has_content>
+			    		<#assign asset = task.originalAssetProperties/>
+			    		<#assign info = task.originalAssetFileInfo/>
+			    		<td class="task-asset-info task-asset-original" 
+			    				data-filename="${info.assetFileName?html}" title="${info.displayPath}">
 				    		<span class="left" style="font-weight:bold">Original:</span>
 				    		<#if task.getType().name() == 'TEXTURE'>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="left">${info.assetFileName?html}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 				    		</#if>
 							<#if task.getType().name() == 'MESH'>
@@ -77,7 +79,7 @@
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="left">${filename?html}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 					    	</#if>
 				    	</td>
@@ -87,16 +89,18 @@
 			    	</td>
 			    	</#if>
 					<td></td>
-					<#if task.newAsset?has_content>
-			    		<#assign asset = task.newAsset/>
-			    		<td class="task-asset-info task-asset-newest" data-filename="${asset.filename?html}">
+					<#if task.newAssetProperties?has_content>
+			    		<#assign asset = task.newAssetProperties/>
+			    		<#assign info = task.newAssetFolderInfo/>
+			    		<td class="task-asset-info task-asset-newest" 
+			    				data-filename="${info.assetFileName?html}" title="${info.displayPath}">
 				    		<span class="left" style="font-weight:bold">Newest:</span>
 				    		<#if task.getType().name() == 'TEXTURE'>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="left">${info.assetFileName?html}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 					    	</#if>
 							<#if task.getType().name() == 'MESH'>
@@ -104,7 +108,7 @@
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${asset.filename?html}</span>
+					    		<span class="left">${info.assetFileName?html}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 							</#if>
 				    	</td>
@@ -116,8 +120,7 @@
 			    </tr>
 <!-- Asset File Operations -->
 				<tr>
-			    	<#if task.originalAsset?has_content>
-			    		<#assign asset = task.originalAsset/>
+			    	<#if task.originalAssetProperties?has_content>
 				    	<td class="task-asset-buttons task-asset-original center">
 				    		<div class="action-download task-file-button task-button button">
 				    			Download
@@ -126,7 +129,7 @@
 			    	<#else><td></td>
 			    	</#if>
 			    	<td></td>
-			    	<#if task.newAsset?has_content>
+			    	<#if task.newAssetProperties?has_content>
 			    	<td class="task-asset-buttons task-asset-newest">
 			    		<div class="action-download task-file-button task-button button left">
 			    			Download
@@ -150,21 +153,21 @@
 <!-- 2D Texture Preview -->
 		    	<#if task.getType().name() == 'TEXTURE'>
 		    	<tr class="task-previews center">
-		    		<#if task.originalAsset?has_content>
-		    			<#assign asset = task.originalAsset/>
+		    		<#if task.originalAssetProperties?has_content>
+		    			<#assign asset = task.originalAssetProperties/>
 			    		<td class="task-preview-visual clickable">
-			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}">
-			    				<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}">
+			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+			    				<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
 			    	</#if>
 			    	<td></td>
-			    	<#if task.newAsset?has_content>
-			    		<#assign asset = task.newAsset/>
+			    	<#if task.newAssetProperties?has_content>
+			    		<#assign asset = task.newAssetProperties/>
 				    	<td class="task-preview-visual clickable">
-				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-				    			<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+				    			<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
@@ -174,22 +177,22 @@
 <!-- 3D Mesh Preview -->
 				<#if task.getType().name() == 'MESH'>
 					<tr class="task-previews task-preview-3D center">
-			    		<#if task.originalAsset?has_content>
-			    			<#assign asset = task.originalAsset/>
+			    		<#if task.originalAssetProperties?has_content>
+			    			<#assign asset = task.originalAssetProperties/>
 				    		<td class="task-preview-visual clickable"
-				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}">
-				    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}">
+				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+				    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    				<canvas></canvas>
 					    		</a>
 					    	</td>
 					    <#else><td></td>
 				    	</#if>
 				    	<td></td>
-				    	<#if task.newAsset?has_content>
-				    		<#assign asset = task.newAsset/>
+				    	<#if task.newAssetProperties?has_content>
+				    		<#assign asset = task.newAssetProperties/>
 					    	<td class="task-preview-visual clickable"
-					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
-					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.getNewestAssetNocache()}">
+					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 					    			<canvas></canvas>
 					    		</a>
 					    	</td>
@@ -216,10 +219,10 @@
 			    	</tr>
 <!-- 3D Mesh Preview Textures -->
 			    	<tr>
-			    		<#if task.originalAsset?has_content>
+			    		<#if task.originalAssetProperties?has_content>
 				    		<td class="task-asset-model-textures">
 				    			<ul>
-				    				<#list task.originalAsset.textureNames as textureName>
+				    				<#list task.originalAssetProperties.textureNames as textureName>
 						    			<li>${textureName?html}</li>
 									</#list>
 				    			</ul>
@@ -227,10 +230,10 @@
 						<#else><td></td>
 						</#if>
 						<td></td>
-						<#if task.newAsset?has_content>
+						<#if task.newAssetProperties?has_content>
 				    		<td class="task-asset-model-textures">
 				    			<ul>
-							    	<#list task.newAsset.textureNames as textureName>
+							    	<#list task.newAssetProperties.textureNames as textureName>
 							    		<li>${textureName?html}</li>
 									</#list>
 								</ul>

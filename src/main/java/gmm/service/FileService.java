@@ -54,13 +54,13 @@ public class FileService {
 	 * Converts a list of absolute paths to paths which are relative to another absolute other path.
 	 * Does not check if the absolute paths are child paths of the other path.
 	 */
-	public Collection<String> getRelativeNames(Collection<Path> paths, Path visible) {
+	public Collection<Path> getRelativeNames(Collection<Path> paths, Path visible) {
 		if (!visible.isAbsolute()) {
 			throw new IllegalArgumentException("Given base path must be absolute!");
 		}
-		final Collection<String> relPaths = paths.newInstance(String.class);
+		final Collection<Path> relPaths = paths.newInstance(Path.class);
 		for (final Path path : paths) {
-			relPaths.add(visible.relativize(path).toString());
+			relPaths.add(visible.relativize(path));
 		}
 		return relPaths;
 	}
@@ -73,7 +73,7 @@ public class FileService {
 	 */
 	public synchronized List<Path> getFilesRecursive(Path path, Predicate<Path> filter) {
 		final List<Path> filePaths = new LinkedList<>(Path.class);
-		if (path.toFile().exists()) {
+		if (Files.exists(path)) {
 			try(Stream<Path> stream = Files.walk(path)) {
 				stream
 					.filter(Files::isRegularFile)

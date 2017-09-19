@@ -63,7 +63,7 @@ public class TaskAssetController {
 	 * Sets caching settings for AssetTask preview images.
 	 * The image links will change whenever the images change, but they are only unique for 1 year
 	 * because they append the date without year.
-	 * @see {@link AssetTask#getNewestAssetNocache()}
+	 * @see {@link AssetTask#getNewestAssetCacheKey()}
 	 */
 	private void setPreviewCaching(HttpServletResponse response) {
 		response.setHeader("Cache-Control", "Public");
@@ -254,7 +254,7 @@ public class TaskAssetController {
 			assetService.deleteAssetFile(task.getAssetName());
 		} else {
 			Assert.notNull(relativeFile);
-			assetService.deleteOtherFile(task.getAssetName(), fileType, relativeFile);
+			assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
 		}
 	}
 }

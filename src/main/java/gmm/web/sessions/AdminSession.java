@@ -1,7 +1,7 @@
 package gmm.web.sessions;
 
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.User;
+import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
@@ -65,17 +66,22 @@ public class AdminSession extends TaskBackupLoader {
 	 * ---------------------------------------------------*/
 	
 	private BundledMessageResponses<AssetName> assetImporter;
-	private final List<String> importFilePaths = new LinkedList<>(String.class);
+	private final List<Path> importFilePaths = new LinkedList<>(Path.class);
 	private boolean areTexturePaths = true;
+	private AssetGroupType type = AssetGroupType.ORIGINAL;
 	
 	// Add asset paths
 	
-	public void addImportPaths(Collection<String> paths, boolean areTexturePaths) {
+	public void addImportPaths(Collection<Path> paths, boolean areTexturePaths, AssetGroupType type) {
+		if(this.type != type) {
+			importFilePaths.clear();
+			this.type = type;
+		}
 		if(this.areTexturePaths != areTexturePaths) {
 			importFilePaths.clear();
 			this.areTexturePaths = areTexturePaths;
 		}
-		for (final String path : paths) {
+		for (final Path path : paths) {
 			if (!importFilePaths.contains(path)) {
 				importFilePaths.add(path);
 			}
@@ -85,7 +91,7 @@ public class AdminSession extends TaskBackupLoader {
 		importFilePaths.clear();
 	}
 	
-	public List<String> getImportPaths() {
+	public List<Path> getImportPaths() {
 		return importFilePaths.copy();
 	}
 	
@@ -103,8 +109,8 @@ public class AdminSession extends TaskBackupLoader {
 				assetNameConflictCheckerFactory.create(onAssetNameChecked);
 		
 		final List<AssetName> fileNames = new ArrayList<>(AssetName.class, importFilePaths.size());
-		for (final String path : importFilePaths) {
-			fileNames.add(new AssetName(Paths.get(path)));
+		for (final Path path : importFilePaths) {
+			fileNames.add(new AssetName(path));
 		}
 		
 		assetImporter = new BundledMessageResponses<>(

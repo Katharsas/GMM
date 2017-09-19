@@ -3,9 +3,8 @@ package gmm.service.assets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
@@ -14,9 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import gmm.collections.Collection;
 import gmm.collections.HashSet;
 import gmm.collections.List;
 import gmm.collections.Set;
+import gmm.collections.UnmodifiableCollection;
 import gmm.domain.Linkable;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetGroupType;
@@ -25,6 +26,8 @@ import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.FileType;
 import gmm.service.FileService;
+import gmm.service.assets.AssetTaskUpdater.OnNewAssetUpdate;
+import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.vcs.VcsPlugin;
 import gmm.service.data.DataAccess;
@@ -63,18 +66,20 @@ public class AssetService {
 	private final VcsPlugin vcs;
 	private final AssetScanner scanner;
 	private final TaskServiceFinder serviceFinder;
+	private final AssetTaskUpdater taskUpdater;
+	private final DataAccess data;
 	
-	private final Map<AssetName, AssetTask<?>> assetTasks;
-	
-	private final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
 	// TODO make sure GUI errors are created whenever an invalid info is set or whenever
 	// a task has his mapping changed / a task is added
 	// TODO at the same time the tasks knowledge about wether it has a new asset folder must be updated
 	// TODO edit event must be triggered for given tasks so they get updated in GUI
 	
-	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
+	private final Map<AssetName, AssetTask<?>> assetTasks;
 	
-	private final Map<AssetProperties, Future<Void>> processingAssetProperties;
+	private final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
+	private final Map<AssetName, NewAssetFolderInfo> newAssetFoldersWithoutTasks;
+	
+	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
 	
 	private final DataChangeCallback reference;
 	
@@ -82,15 +87,21 @@ public class AssetService {
 		return newAssetFolders.get(assetName);
 	}
 	
+	public Collection<NewAssetFolderInfo> getNewAssetFoldersWithoutTasks() {
+		return new UnmodifiableCollection<>(NewAssetFolderInfo.class, newAssetFoldersWithoutTasks.values());
+	}
+	
 	public OriginalAssetFileInfo getOriginalAssetFileInfo(AssetName assetName) {
 		return originalAssetFiles.get(assetName);
 	}
 	
 	@Autowired
-	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, VcsPlugin vcs,
-			DataConfigService config, FileService fileService, DataAccess data) {
+	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, AssetTaskUpdater taskUpdater,
+			VcsPlugin vcs, DataConfigService config, FileService fileService, DataAccess data) {
 		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
+		this.taskUpdater = taskUpdater;
+		this.data = data;
 		this.vcs = vcs;
 		
 		this.config = config;
@@ -98,19 +109,14 @@ public class AssetService {
 		
 		assetTasks = new HashMap<>();
 		newAssetFolders = new HashMap<>();
+		newAssetFoldersWithoutTasks = new HashMap<>();
 		originalAssetFiles = new HashMap<>();
-		
-		processingAssetProperties = new HashMap<>();
 		
 		reference = initTasksAndGetPostProcessor(data);
 		data.registerPostProcessor(reference);
 		
 		onOriginalAssetFilesChanged();
 		vcs.registerFilesChangedHandler(this);
-		
-		// TODO make sure that exactly one vcs service bean exists before this service gets constructed
-		// and throw an error that tells user to check his vcs config (set it to none)
-		// maybe even tell user list of possible plugins if possible
 	}
 	
 	private DataChangeCallback initTasksAndGetPostProcessor(DataAccess data) {
@@ -154,6 +160,8 @@ public class AssetService {
 		final AssetName name = task.getAssetName();
 		assetTasks.put(name, task);
 		
+		taskUpdater.waitForAsyncTaskProcessing(task);
+		
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
 		
 		{
@@ -161,77 +169,55 @@ public class AssetService {
 			final OriginalAssetFileInfo info = getOriginalAssetFileInfo(name);
 			final AssetProperties props = task.getAssetProperties(type);
 			
-			waitForPropertyProcessing(props);
+			final OnOriginalAssetUpdate updater = taskUpdater.new OnOriginalAssetUpdate();
 			
 			if (info != null && props == null) {
-				recreateAssetProperties(service, task, type, info);
+				updater.recreatePropsAndSetInfo(task, info);
 			}
 			if (info != null && props != null && !service.isValidAssetProperties(props, info)) {
-				recreateAssetProperties(service, task, type, info);
+				updater.recreatePropsAndSetInfo(task, info);
 			}
 			if (info == null && props != null) {
-				service.removeAssetProperties(task, type);
+				updater.removePropsAndInfo(task);
 			}
 		}{
 			final AssetGroupType type = AssetGroupType.NEW;
 			final NewAssetFolderInfo info = getNewAssetFolderInfo(name);
-			final AssetProperties props = task.getAssetProperties(type);
 			
-			waitForPropertyProcessing(props);
+			if (info != null) newAssetFoldersWithoutTasks.remove(name);
+			
+			final AssetProperties props = task.getAssetProperties(type);
 			
 			final boolean existsAndValid =
 					(info != null) && (info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
 			
-			if (existsAndValid && props == null) {
-				recreateAssetProperties(service, task, type, info);
-			}
-			if (existsAndValid && props != null && !service.isValidAssetProperties(props, info)) {
-				recreateAssetProperties(service, task, type, info);
-			}
-			if (!existsAndValid && props != null) {
-				service.removeAssetProperties(task, type);
-			}
-		}
-	}
-	
-	/**
-	 * Create asset properties asynchronously and save the future to a map so we can later check if we need to
-	 * wait for that future to finish. A finished future will delete itself from the list.
-	 */
-	private <A extends AssetProperties> void recreateAssetProperties(
-			AssetTaskService<A> service, AssetTask<A> task, AssetGroupType type, AssetInfo info) {
-		
-		final AssetProperties props = task.getAssetProperties(type);
-		final CompletableFuture<Void> future = service.recreateAssetProperties(task, info);
-		if (!future.isDone()) {
-			processingAssetProperties.put(props, future.thenRun(
-					() -> processingAssetProperties.remove(props)));
-		}
-	}
-	
-	/**
-	 * Since asset properties can be created asynchronously, check that for the given property nothing
-	 * is still running (or block until it is finished).
-	 */
-	private void waitForPropertyProcessing(AssetProperties props) {
-		final Future<Void> old = processingAssetProperties.get(props);
-		if (old != null) blockUntilDone(old);
-	}
-	
-	public class AsyncPreviewCreationException extends RuntimeException {
-		private static final long serialVersionUID = 6877212615078244866L;
-		public AsyncPreviewCreationException(String message, ExecutionException e) {
-			super(message, e.getCause());
-		}
-	}
-	
-	private void blockUntilDone(Future<Void> future) {
-		while (!future.isDone()) {
-			try {
-				future.get();
-			} catch (final InterruptedException e) {
-			} catch (final ExecutionException e) {
-				throw new AsyncPreviewCreationException("Async preview creation failed!", e);
+			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate();
+			
+			if (props == null) {
+				// old props don't exist, valid asset exists => recreate properties
+				if (existsAndValid) {
+					updater.recreatePropsAndSetInfo(task, info);
+				} else {
+					// old props don't exist, invalid asset exist => set invalid info
+					// old props don't exist, invalid asset does not exist => set invalid info null
+					
+					final boolean bothNull = task.getNewAssetFolderInfo() == null && info == null;
+					final boolean sameInvalid = task.getNewAssetFolderInfo() != null && info != null
+							&& task.getNewAssetFolderInfo().equals(info.getStatus()); 
+					if (!bothNull && !sameInvalid) {
+						updater.setInfo(task, Optional.ofNullable(info));
+					}
+				}
+			} else {
+				// old props exist, valid asset exist but is different => recreate properties
+				if (existsAndValid && !service.isValidAssetProperties(props, info)) {
+					updater.recreatePropsAndSetInfo(task, info);
+				} else {
+					// old props exist, invalid asset does not exist => remove properties & remove info
+					// old props exist, invalid asset exist => remove properties & set invalid info
+					
+					updater.removePropsAndSetInfo(task, Optional.ofNullable(info));
+				}
 			}
 		}
 	}
@@ -240,21 +226,21 @@ public class AssetService {
 		final AssetName name = task.getAssetName();
 		assetTasks.remove(name);
 		
-		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
+		final NewAssetFolderInfo newFolderInfo = newAssetFolders.get(name);
+		if (newFolderInfo != null) newAssetFoldersWithoutTasks.put(name, newFolderInfo);
 		
-		for (final AssetGroupType type : AssetGroupType.values()) {
-			if (task.getAssetProperties(type) == null) return;
-			else {
-				service.removeAssetProperties(task, type);
-			}
+		if (task.getOriginalAssetProperties() != null) {
+			taskUpdater.new OnOriginalAssetUpdate().removePropsAndInfo(task);
+		}
+		if (task.getNewAssetProperties() != null) {
+			taskUpdater.new OnNewAssetUpdate().removePropsAndSetInfo(task, Optional.empty());
 		}
 	}
 	
-	public void onOriginalAssetFilesChanged() {
+	private void onOriginalAssetFilesChanged() {
 		applyFoundOriginal(scanner.onOriginalAssetFilesChanged());
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void applyFoundOriginal(Map<AssetName, OriginalAssetFileInfo> foundOriginalAssetFiles) {
 		
 		final AssetGroupType type = AssetGroupType.ORIGINAL;
@@ -266,14 +252,15 @@ public class AssetService {
 			if (task != null) {
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
 				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.classOf(task));
+				taskUpdater.waitForAsyncTaskProcessing(task);
 				if (oldInfo == null) {
 					// new assets
-					recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
+					taskUpdater.new OnOriginalAssetUpdate().recreatePropsAndSetInfo(task, currentInfo);
 				} else {
 					// changed assets
 					final AssetProperties props = task.getAssetProperties(type);
 					if (!service.isValidAssetProperties(props, currentInfo)) {
-						recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
+						taskUpdater.new OnOriginalAssetUpdate().recreatePropsAndSetInfo(task, currentInfo);
 					}
 				}
 			}
@@ -286,9 +273,12 @@ public class AssetService {
 		for (final AssetName notFound : oldFiles) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
-				final AssetTaskService<?> service = serviceFinder.getAssetService(notFound);
-				service.removeAssetProperties((AssetTask)task, type);
+				taskUpdater.waitForAsyncTaskProcessing(task);
+				if (task.getAssetProperties(type) != null) {
+					taskUpdater.new OnOriginalAssetUpdate().removePropsAndInfo(task);
+				}
 			}
+			originalAssetFiles.remove(notFound);
 		}
 	}
 	
@@ -302,6 +292,7 @@ public class AssetService {
 	 */
 	public void onVcsNewAssetFilesChanged(List<Path> changedPaths) {
 		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
+		// TODO create asset tasks for not yet existing assets or allow import for admin
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -310,44 +301,54 @@ public class AssetService {
 		scanner.filterForNewAssets(changedPaths);
 		
 		final AssetGroupType type = AssetGroupType.NEW;
-		final Set<AssetName> oldFolders = new HashSet<>(AssetName.class, originalAssetFiles.keySet());
+		final Set<AssetName> oldFolders = new HashSet<>(AssetName.class, newAssetFolders.keySet());
 		
 		final BiConsumer<AssetName, NewAssetFolderInfo> applyEntry = (folderName, currentInfo) -> {
 			
+			// update tasks
 			final AssetTask<?> task = assetTasks.get(folderName);
-			if (task != null) {
-				final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
+			if (task == null) {
+				newAssetFoldersWithoutTasks.put(folderName, currentInfo);
+			} else {
+				taskUpdater.waitForAsyncTaskProcessing(task);
+				
 				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
-				if (oldInfo == null) {
-					recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
-				} else {
-					final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
-					final boolean oldHasAsset = oldInfo.getStatus() == hasAsset;
-					final boolean currentHasAsset = currentInfo.getStatus() == hasAsset;
+				
+				final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
+				
+				final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
+				final boolean oldHasAsset = oldInfo != null && oldInfo.getStatus() == hasAsset;
+				final boolean currentHasAsset = currentInfo.getStatus() == hasAsset;
+				
+				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
+					data.edit(task);
+					// TODO calling edit causes the onDataChangeEvent above to be called, so we could just do everything in there
+					// (the old info would be available through tasks), same goes for original tasks
+				});
+				
+				if (oldHasAsset && !currentHasAsset) {
+					updater.removePropsAndSetInfo(task, Optional.of(currentInfo));
 					
-					if (oldHasAsset && !currentHasAsset) {
-						service.removeAssetProperties((AssetTask)task, type);
-					} else if (!oldHasAsset && currentHasAsset) {
-						recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
-					} else if (oldHasAsset && currentHasAsset) {
-						
-						final AssetProperties props = task.getAssetProperties(type);
-						if (!service.isValidAssetProperties(props, currentInfo)) {
-							recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
-						} else {
-							final String assetName = currentInfo.getAssetFileName().get();
-							final Path assetFile = currentInfo.getAssetFolder().resolve(assetName);
-							if (changedPaths.contains(assetFile)) {
-								recreateAssetProperties(service, (AssetTask)task, type, currentInfo);
-								changedPaths.remove(assetFile);
-							}
-						}
+				} else if (!oldHasAsset && currentHasAsset) {
+					updater.recreatePropsAndSetInfo(task, currentInfo);
+					
+				} else if (oldHasAsset && currentHasAsset) {
+					
+					final AssetProperties props = task.getAssetProperties(type);
+					if (!service.isValidAssetProperties(props, currentInfo)) {
+						updater.recreatePropsAndSetInfo(task, currentInfo);
 					} else {
-						// both are not hasAsset, so properties should not exist anyway
+						if (!Objects.equals(oldInfo, currentInfo)) {
+							updater.setInfo(task, Optional.of(currentInfo));
+						}
+					}
+				} else {
+					if (!Objects.equals(oldInfo, currentInfo)) {
+						updater.setInfo(task, Optional.of(currentInfo));
 					}
 				}
 			}
-			// prepare for removing
+			// update info
 			oldFolders.remove(folderName);
 			newAssetFolders.put(folderName, currentInfo);
 		};
@@ -358,9 +359,12 @@ public class AssetService {
 		for (final AssetName notFound : oldFolders) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null && task.getAssetProperties(type) != null) {
-				final AssetTaskService<?> service = serviceFinder.getAssetService(notFound);
-				service.removeAssetProperties((AssetTask)task, type);
+				taskUpdater.new OnNewAssetUpdate(() -> {
+					data.edit(task);
+				}).removePropsAndSetInfo(task, Optional.empty());
 			}
+			newAssetFolders.remove(notFound);
+			newAssetFoldersWithoutTasks.remove(notFound);
 		}
 	}
 	
@@ -368,11 +372,10 @@ public class AssetService {
 	final FileService fileService;
 	
 	public void deleteAssetFile(AssetName assetFolderName) {
-		deleteOtherFile(assetFolderName, FileType.ASSET, null);
+		deleteFile(assetFolderName, FileType.ASSET, null);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void deleteOtherFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		Assert.isTrue(folderInfo.getStatus().isValid);
@@ -393,10 +396,37 @@ public class AssetService {
 		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 		
 		if (fileType.isAsset()) {
-			final AssetTask<?> task = assetTasks.get(assetFolderName);
-			if (task != null && task.getAssetProperties(AssetGroupType.NEW) != null) {
-				serviceFinder.getAssetService(Util.classOf(task)).removeAssetProperties((AssetTask)task, AssetGroupType.NEW);
+			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleNewAssetRemoved(folderInfo.getAssetFolder());
+			
+			if (newInfo.isPresent()) {
+				newAssetFolders.put(assetFolderName, newInfo.get());
+			} else {
+				newAssetFolders.remove(assetFolderName);
 			}
+			final AssetTask<?> task = assetTasks.get(assetFolderName);
+			Objects.requireNonNull(task);
+			taskUpdater.new OnNewAssetUpdate(() -> data.edit(task)).removePropsAndSetInfo(task, newInfo);
 		}
+	}
+	
+	private void addFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+		
+		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
+		Assert.isTrue(folderInfo.getStatus().isValid);
+		
+		final Path absoluteFile;
+		
+		if (fileType.isAsset()) {
+			if (folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
+				// TODO delete old asset (otherwise 2 assets with same name case-insensitive could exist)
+				absoluteFile = folderInfo.getAssetFilePathAbsolute(config);
+			}
+		} else {
+			final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
+			final Path visible = assetFolder.resolve(fileType.getSubPath(config));
+			absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
+		}
+		
+		// TODO decide where to implement this, since its already half-implemented in AssetTaskService, same goes for deleteFile
 	}
 }

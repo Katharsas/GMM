@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import gmm.collections.HashSet;
@@ -17,17 +18,23 @@ public class NewAssetFolderInfo implements AssetInfo {
 	
 	public static enum AssetFolderStatus {
 		
-		INVALID_ASSET_FOLDER_NOT_UNIQUE(false),
-		INVALID_ASSET_FOLDER_EXTENSION(false),
-		INVALID_ASSET_FOLDER_CONTENT(false),
-		INVALID_ASSET_FILE_NAME(false),
+		INVALID_ASSET_FOLDER_NOT_UNIQUE(false, "folder.duplicates"),
+		INVALID_ASSET_FOLDER_EXTENSION(false, "folder.extension"),
+		INVALID_ASSET_FOLDER_CONTENT(false, "folder.content"),
+		INVALID_ASSET_FILE_NAME(false, "folder.filename"),
 		
-		VALID_WITH_ASSET(true),
-		VALID_NO_ASSET(true);
+		VALID_WITH_ASSET(true, null),
+		VALID_NO_ASSET(true, "noasset");
 		
 		public final boolean isValid;
-		AssetFolderStatus(boolean isValid) {
+		public final String messageKey;
+		
+		AssetFolderStatus(boolean isValid, String messageKey) {
 			this.isValid = isValid;
+			if (messageKey == null) this.messageKey = null;
+			else {
+				this.messageKey = "assets.new." + (isValid ? "valid." : "invalid.") + messageKey;
+			}
 		}
 	}
 	
@@ -140,6 +147,11 @@ public class NewAssetFolderInfo implements AssetInfo {
 		return assetFolder;
 	}
 	
+	@Override
+	public Path getDisplayPath() {
+		return getAssetFolder();
+	}
+	
 	/**
 	 * @return never null.
 	 */
@@ -172,5 +184,30 @@ public class NewAssetFolderInfo implements AssetInfo {
 				.resolve(assetFolder)
 				.resolve(config.subAssets())
 				.resolve(assetFileName.get());
+	}
+
+	// TODO check if equals & hashcode are actually called?
+	// TODO
+	// TODO
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(assetFileName, assetFolder, assetFolderName, nonUniqueDuplicates, status);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		final NewAssetFolderInfo other = (NewAssetFolderInfo) obj;
+		
+		if (!Objects.equals(assetFileName, other.assetFileName)) return false;
+		if (!Objects.equals(assetFolder, other.assetFolder)) return false;
+		if (!Objects.equals(assetFolderName, other.assetFolderName)) return false;
+		if (!Objects.equals(nonUniqueDuplicates, other.nonUniqueDuplicates)) return false;
+		if (!Objects.equals(status, other.status)) return false;
+		
+		return true;
 	}
 }

@@ -1,5 +1,10 @@
 package gmm.domain.task.asset;
 
+/**
+ * Whether an asset is from the original game (included for comparison) or a new version created to replace the old one.
+ * 
+ * @author Jan Mothes
+ */
 public enum AssetGroupType {
 	ORIGINAL("original"),
 	NEW("newest");

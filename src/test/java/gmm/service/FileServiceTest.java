@@ -121,7 +121,7 @@ public class FileServiceTest {
 	@Test
 	public void testGetRelativeNames() {
 		final Path visible = testPath.resolve("/folder/relative");
-		ArrayList<String> relatives;
+		ArrayList<Path> relatives;
 		ArrayList<Path> paths;
 		
 		// allowed inputs
@@ -133,12 +133,12 @@ public class FileServiceTest {
 		paths.add(testPath.resolve("/folder/relative/sub"));
 		paths.add(testPath.resolve("/folder/relative/sub/sub"));
 		
-		relatives = (ArrayList<String>) fileService.getRelativeNames(paths, visible);
-		assertEquals(Paths.get(".."), Paths.get(relatives.get(0)).normalize());
-		assertEquals(Paths.get(""), Paths.get(relatives.get(1)).normalize());
-		assertEquals(Paths.get(""), Paths.get(relatives.get(2)).normalize());
-		assertEquals(Paths.get("sub"), Paths.get(relatives.get(3)).normalize());
-		assertEquals(Paths.get("sub/sub"), Paths.get(relatives.get(4)).normalize());
+		relatives = (ArrayList<Path>) fileService.getRelativeNames(paths, visible);
+		assertEquals(Paths.get(".."), relatives.get(0).normalize());
+		assertEquals(Paths.get(""), relatives.get(1).normalize());
+		assertEquals(Paths.get(""), relatives.get(2).normalize());
+		assertEquals(Paths.get("sub"), relatives.get(3).normalize());
+		assertEquals(Paths.get("sub/sub"), relatives.get(4).normalize());
 		
 		// wrong inputs (non-absolute paths)
 		

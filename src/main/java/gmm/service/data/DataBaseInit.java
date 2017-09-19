@@ -118,7 +118,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 			logger.info("\n"
 					+	"##########################################################" + "\n\n"
 					+	"  Did not create a default user. " + "\n"
-					+	"  (Enable default.user & disable autoload to change) " + "\n"
+					+	"  (Enable default.user & disable autoload to change) " + "\n\n"
 					+	"##########################################################");
 		}
 	}

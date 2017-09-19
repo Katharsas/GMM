@@ -27,6 +27,11 @@ public class OriginalAssetFileInfo implements AssetInfo {
 	}
 	
 	@Override
+	public Path getDisplayPath() {
+		return getAssetFile();
+	}
+	
+	@Override
 	public AssetGroupType getType() {
 		return AssetGroupType.ORIGINAL;
 	}

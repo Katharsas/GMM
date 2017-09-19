@@ -38,16 +38,16 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	}
 	
 	@Override
-	protected ModelProperties newPropertyInstance(String filename, AssetGroupType isOriginal) {
-		return new ModelProperties(filename, isOriginal);
+	protected ModelProperties newPropertyInstance() {
+		return new ModelProperties();
 	}
 
 	@Override
 	public CompletableFuture<ModelProperties> recreatePreview(
-			Path sourceFile, Path previewFolder, ModelProperties asset) {
+			Path sourceFile, Path previewFolder, AssetGroupType type, ModelProperties asset) {
 		
 		fileService.createDirectory(previewFolder);
-		final Path target = getPreviewFilePath(previewFolder, asset.getGroupType());
+		final Path target = getPreviewFilePath(previewFolder, type);
 		deletePreview(target);
 		final MeshData meshData = python.createPreview(sourceFile, target);
 		final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
@@ -101,7 +101,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	public void writePreview(ModelTask task, String version, OutputStream target) {
 		final String modelName = version + ".json";		
 		final Path path = config.assetPreviews()
-				.resolve(task.getAssetName().getFolded())
+				.resolve(task.getAssetName().getKey())
 				.resolve(modelName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);
