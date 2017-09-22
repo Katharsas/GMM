@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import gmm.collections.HashSet;
+import gmm.collections.Set;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.service.data.DataConfigService;
@@ -26,8 +27,8 @@ public class NewAssetFolderInfo implements AssetInfo {
 		VALID_WITH_ASSET(true, null),
 		VALID_NO_ASSET(true, "noasset");
 		
-		public final boolean isValid;
-		public final String messageKey;
+		private final boolean isValid;
+		private final String messageKey;
 		
 		AssetFolderStatus(boolean isValid, String messageKey) {
 			this.isValid = isValid;
@@ -35,6 +36,12 @@ public class NewAssetFolderInfo implements AssetInfo {
 			else {
 				this.messageKey = "assets.new." + (isValid ? "valid." : "invalid.") + messageKey;
 			}
+		}
+		public String getMessageKey() {
+			return messageKey;
+		}
+		public boolean isValid() {
+			return isValid;
 		}
 	}
 	
@@ -187,6 +194,16 @@ public class NewAssetFolderInfo implements AssetInfo {
 	@Override
 	public Path getAssetFilePathAbsolute(DataConfigService config) {
 		return config.assetsNew().resolve(getAssetFilePath(config));
+	}
+	
+	public Set<Path> getErrorPaths() {
+		if (status == AssetFolderStatus.INVALID_ASSET_FOLDER_NOT_UNIQUE) {
+			return nonUniqueDuplicates;
+		} else {
+			final Set<Path> result = new HashSet<>(Path.class, 1);
+			result.add(getAssetFolder());
+			return result;
+		}
 	}
 
 	// TODO check if equals & hashcode are actually called?

@@ -17,6 +17,10 @@ $(document).ready( function() {
 	UserManager();
 });
 
+/**
+ * -------------------- DataBase -----------------------------------------------------------------
+ * Create filetree, registers event listeners for saving/loading/deleting backups/tasks.
+ */
 var Database = function() {
 	var $database = $("#database");
 	
@@ -95,7 +99,10 @@ var Database = function() {
 	refreshDatabaseFileTree();
 };
 
-
+/**
+ * -------------------- AssetImport --------------------------------------------------------------
+ * Create filetrees, registers event listeners for adding files & import.
+ */
 var AssetImport = function() {
 	var $assets = $("#assets");
 	
@@ -211,7 +218,7 @@ var AssetImport = function() {
 };
 
 /**
- * -------------------- UserManaer --------------------------------------------------------------
+ * -------------------- UserManager --------------------------------------------------------------
  * Registers event listeners for user list and buttons.
  */
 var UserManager = function() {

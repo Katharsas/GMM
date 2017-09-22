@@ -384,7 +384,7 @@ public class AssetService {
 	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		Assert.isTrue(folderInfo.getStatus().isValid);
+		Assert.isTrue(folderInfo.getStatus().isValid());
 		
 		final Path absoluteFile;
 		
@@ -418,7 +418,7 @@ public class AssetService {
 	private void addFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		Assert.isTrue(folderInfo.getStatus().isValid);
+		Assert.isTrue(folderInfo.getStatus().isValid());
 		
 		final Path absoluteFile;
 		

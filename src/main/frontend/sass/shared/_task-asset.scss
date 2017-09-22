@@ -49,9 +49,11 @@
 		background-color: inherit;
 	}
 
-	.task-asset-info {
-		//text-align: center;
+	td.task-asset-info {
 		padding: 4px 4px;
+	}
+	.task-asset-invalid {
+		
 	}
 	.task-asset-buttons {
 		padding: 5px 2px;
@@ -64,6 +66,17 @@
 
 .task-previews {
 	width:100%;
+	
+	td.task-asset-info.task-asset-invalid {
+		padding: 10px;
+		vertical-align: top;
+		color: $c-red;
+		
+		> .path {
+			padding-top: 10px;
+			text-align: left;
+		}
+	}
 }
 .task-assets .task-preview-visual {
 	//box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;

@@ -28,6 +28,11 @@ public class HashSet<E> extends java.util.HashSet<E> implements Set<E> {
 		this.genericType = clazz;
 	}
 	
+	public HashSet(Class<E> clazz, int initialCapacity) {
+		super(initialCapacity);
+		this.genericType = clazz;
+	}
+	
 	@Override
 	public HashSet<E> copy() {
 		return new HashSet<E>(genericType, this);

@@ -84,9 +84,9 @@
 					    	</#if>
 				    	</td>
 			    	<#else>
-			    	<td class="task-asset-info center">
-			    		<span>Original asset does not exist.</span>
-			    	</td>
+				    	<td class="task-asset-info center">
+				    		<span><@s.message "asset.original.null"/></span>
+				    	</td>
 			    	</#if>
 					<td></td>
 					<#if task.newAssetProperties?has_content>
@@ -113,9 +113,19 @@
 							</#if>
 				    	</td>
 			    	<#else>
-			    	<td class="task-asset-info center">
-			    		<span>New asset does not exist.</span>
-			    	</td>
+			    		<#if task.newAssetFolderInfo?has_content>
+			    			<#assign info = task.newAssetFolderInfo/>
+			    			<#if info.status.isValid()>
+			    				<td class="task-asset-info center">
+					    			<span><@s.message "${info.status.messageKey}"/></span>
+					    		</td>
+					    		<#else><td></td>
+			    			</#if>
+			    		<#else>
+			    			<td class="task-asset-info center">
+					    		<span><@s.message "asset.new.null"/></span>
+					    	</td>
+			    		</#if>
 			    	</#if>
 			    </tr>
 <!-- Asset File Operations -->
@@ -143,11 +153,24 @@
 			    		<div class="clear"></div>
 			    	</td>
 			    	<#else>
-			    	<td class="task-asset-buttons task-asset-newest center">
-			    		<div class="action-upload task-file-button task-button button">
-			    			Upload
-			    		</div>
-			    	</td>
+			    		<#if task.newAssetFolderInfo?has_content>
+			    			<#assign info = task.newAssetFolderInfo/>
+			    			<#if info.status.isValid()>
+			    				<td class="task-asset-buttons task-asset-newest center">
+						    		<div class="action-upload task-file-button task-button button">
+						    			Upload
+						    		</div>
+						    	</td>
+			    			<#else>
+			    				<td></td>
+			    			</#if>
+			    		<#else>
+			    			<td class="task-asset-buttons task-asset-newest center">
+					    		<div class="action-folder task-file-button task-button button">
+					    			Create folder
+					    		</div>
+					    	</td>
+			    		</#if>
 			    	</#if>
 		    	</tr>
 <!-- 2D Texture Preview -->
@@ -170,7 +193,20 @@
 				    			<img src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    		</a>
 				    	</td>
-				    <#else><td></td>
+				    <#else>
+				    	<#if task.newAssetFolderInfo?has_content>
+				    		<#assign info = task.newAssetFolderInfo/>
+				    		<#if !info.status.isValid()>
+				    			<td class="task-asset-info center task-asset-invalid">
+			    				<span class="error"><@s.message "${info.status.messageKey}"/></span><br>
+			    				<#list info.errorPaths as error>
+			    					<div class="path">>&nbsp;&nbsp;${error?html}</div>
+			    				</#list>
+					    	</td>
+					    	<#else><td></td>
+				    		</#if>
+						<#else><td></td>
+			    		</#if>
 			    	</#if>
 		    	</tr>
 		    	</#if>
@@ -246,32 +282,42 @@
 				<tr>
 					<td class="noborder"></td>
 					<td></td>
-					<td class="task-files-wip">
-						<#if isUserLoggedIn>
-							<div>
-								<div class="task-files-description">
-									WIP Files:
-								</div>
-								<div class="task-files-wip-tree"></div>
-							</div>
-							<div class="clear"></div>
-							<div class="task-files-wip-operations">
-								<div class="action-download task-file-button task-button button left">
-									Download
-								</div>
-								<input class="task-files-uploadInput" type="file" style="display:none;"/>
-								<div class="action-upload task-file-button task-button button left">
-									Upload
-								</div>
-								<div class="action-delete task-file-button task-button button right">
-									Delete
-								</div>
-								<div class="clear"></div>
-							</div>
-						<#else>
-							You must login to see any files! Use Login button below.
-						</#if>
-					</td>
+					<#if task.newAssetFolderInfo?has_content>
+				    	<#assign info = task.newAssetFolderInfo/>
+				    	<#if info.status.isValid()>
+				    		<td class="task-files-wip">
+								<#if isUserLoggedIn>
+									<div>
+										<div class="task-files-description">
+											WIP Files:
+										</div>
+										<div class="task-files-wip-tree"></div>
+									</div>
+									<div class="clear"></div>
+									<div class="task-files-wip-operations">
+										<div class="action-download task-file-button task-button button left">
+											Download
+										</div>
+										<input class="task-files-uploadInput" type="file" style="display:none;"/>
+										<div class="action-upload task-file-button task-button button left">
+											Upload
+										</div>
+										<div class="action-delete task-file-button task-button button right">
+											Delete
+										</div>
+										<div class="clear"></div>
+									</div>
+								<#else>
+									You must login to see any files! Use Login button below.
+								</#if>
+							</td>
+				    	 <#else>
+				    	 	<td class="noborder"></td>
+				    	</#if>
+				    <#else>
+				    	<td class="noborder"></td>
+				    </#if>
+					
 				</tr>
 			</table>
 			</div>

@@ -149,7 +149,7 @@ public class TaskAssetController {
 		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
 		if (info == null) return new String[] {};
 		else {
-			if (!info.getStatus().isValid) return new String[] {};
+			if (!info.getStatus().isValid()) return new String[] {};
 			else {
 				final Path visible = config.assetsNew()
 						.resolve(info.getAssetFolder())
@@ -225,7 +225,7 @@ public class TaskAssetController {
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
 		Assert.notNull(info);
-		Assert.isTrue(info.getStatus().isValid);
+		Assert.isTrue(info.getStatus().isValid());
 		final Path assetFolder = config.assetsNew().resolve(info.getAssetFolder());
 		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
 		final Path absolute = visible.resolve(fileService.restrictAccess(relativeFile, visible));
