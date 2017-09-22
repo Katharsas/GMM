@@ -138,7 +138,7 @@ public class TaskSession implements DataChangeCallback {
 		final TaskType type = form.getType();
 		if(type.equals(TaskType.GENERAL)) {
 			// if is general task, just create and add, there can be no conflicts
-			final Task task = taskCreator.create(type.toClass(), form, loggedInUser);
+			final Task task = taskCreator.create(form, loggedInUser);
 			data.add(task);
 			final String message = "Successfully added new task! ID: " + task.getId();
 			final MessageResponse finished =
@@ -149,7 +149,7 @@ public class TaskSession implements DataChangeCallback {
 			// else check for asset filename conflicts
 			final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
 				form.setAssetName(assetName.get());
-				data.add(taskCreator.create(type.toClass(), form, loggedInUser));
+				data.add(taskCreator.create(form, loggedInUser));
 			};
 			final AssetNameConflictChecker ops = 
 					assetNameConflictCheckerFactory.create(onAssetNameChecked);

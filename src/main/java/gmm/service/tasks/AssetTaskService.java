@@ -57,6 +57,10 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	@Override
 	public final AssetTask<A> create(TaskForm form, User user) {
 		final AssetName assetName = new AssetName(getAssetName(form));
+		if (!extensionFilter.test(assetName)) {
+			final String extension = FileExtensionFilter.getExtension(assetName.get());
+			throw new IllegalArgumentException("Assetname extension '" + extension + "' does not match given task type '" + form.getType() + "'!");
+		}
 		final AssetTask<A> task = newInstance(assetName, user);
 		edit(task, form);
 		return task;

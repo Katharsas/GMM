@@ -4,14 +4,15 @@ import org.springframework.stereotype.Service;
 
 import gmm.domain.User;
 import gmm.domain.task.GeneralTask;
+import gmm.domain.task.TaskType;
 import gmm.web.forms.TaskForm;
 
 @Service
 public class GeneralTaskService extends TaskFormService<GeneralTask> {
 	
 	@Override
-	public Class<GeneralTask> getTaskType() {
-		return GeneralTask.class;
+	public TaskType getTaskType() {
+		return TaskType.GENERAL;
 	}
 
 	@Override

@@ -171,19 +171,22 @@ public class NewAssetFolderInfo implements AssetInfo {
 	public AssetGroupType getType() {
 		return AssetGroupType.NEW;
 	}
-
-	@Override
-	public Path getAssetFilePathAbsolute(DataConfigService config) {
+	
+	public Path getAssetFilePath(DataConfigService config) {
 		if (status != AssetFolderStatus.VALID_WITH_ASSET) {
 			throw new UnsupportedOperationException("Cannot return path to asset since it does not exist!");
 		}
 		if (assetFolder == null || assetFileName == null) {
 			throw new NullPointerException();
 		}
-		return config.assetsNew()
-				.resolve(assetFolder)
+		return assetFolder
 				.resolve(config.subAssets())
 				.resolve(assetFileName.get());
+	}
+
+	@Override
+	public Path getAssetFilePathAbsolute(DataConfigService config) {
+		return config.assetsNew().resolve(getAssetFilePath(config));
 	}
 
 	// TODO check if equals & hashcode are actually called?

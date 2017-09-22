@@ -47,7 +47,7 @@ public class TaskServiceFinder {
 	
 	private void initMaps() {
 		for(final TaskFormService<?> service : taskServices) {
-			classesToServices.put(service.getTaskType(), service);
+			classesToServices.put(service.getTaskType().toClass(), service);
 			if (service instanceof AssetTaskService<?>) {
 				final AssetTaskService<?> assetTaskService = (AssetTaskService<?>) service;
 				for (final String extension : assetTaskService.getExtensions()) {
@@ -66,8 +66,8 @@ public class TaskServiceFinder {
 		return result;
 	}
 	
-	public <T extends Task> T create(Class<T> type, TaskForm form, User user) {
-		final T task = getService(type).create(form, user);
+	public Task create(TaskForm form, User user) {
+		final Task task = getService(form.getType().toClass()).create(form, user);
 		return task;
 	}
 	

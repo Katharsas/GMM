@@ -79,7 +79,7 @@
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${filename?html}</span>
+					    		<span class="left">${info.assetFileName?html}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 					    	</#if>
 				    	</td>

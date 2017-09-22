@@ -22,13 +22,14 @@ public class VcsPluginSelector implements Condition {
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		
-		final String[] identifiers = (String[]) metadata.getAnnotationAttributes(
+		final String selector = context.getEnvironment().getProperty("vcs.selector");
+		if (selector == null) return false;
+		
+		final String[] annotationValues = (String[]) metadata.getAnnotationAttributes(
 				ConditionalOnConfigSelector.class.getName()).get("value");
 		
-		String selector = context.getEnvironment().getProperty("vcs.selector");
-		if (selector == null) selector = "";
-		for (final String identifier : identifiers) {
-			if (identifier.equals(selector)) return true;
+		for (final String annotation : annotationValues) {
+			if (annotation.equals(selector)) return true;
 		}
 		return false;
 	}

@@ -142,7 +142,7 @@ public class AssetScanner {
 		for (final AssetTaskService<?> service : serviceFinder.getAssetTaskServices()) {
 			
 			final Path assetTypeFolder = config.assetsNew().resolve(service.getAssetTypeSubFolder());
-			final String taskTypeName = service.getTaskType().getSimpleName();
+			final String taskTypeName = service.getTaskType().name();
 			
 			if (!assetTypeFolder.toFile().isDirectory()) {
 				logger.warn("Could not find asset folder for type '" + taskTypeName + "' at '" + assetTypeFolder + "'!");

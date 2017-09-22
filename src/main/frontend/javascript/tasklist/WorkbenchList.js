@@ -17,13 +17,13 @@ var WorkbenchList = function(settings, cache, taskSwitcher) {
 				return funcs.addTasks(addedIds)
 				// resort
 				.then(function() {
-					funcs.resortTaskList(newVisibleIds);
+					funcs.resortTasks(newVisibleIds);
 				});
 			});
 		},
 		
 		SortAll : function(event, funcs) {
-			funcs.resortTaskList(event.visibleIdsOrdered);
+			funcs.resortTasks(event.visibleIdsOrdered);
 			return Promise.resolve();
 		},
 		

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
+import gmm.domain.task.TaskType;
 import gmm.service.data.DataAccess;
 import gmm.service.users.UserProvider;
 import gmm.web.forms.TaskForm;
@@ -16,7 +17,7 @@ abstract class TaskFormService<T extends Task> {
 	
 	@Autowired DataAccess data;
 	
-	public abstract Class<? extends T> getTaskType();
+	public abstract TaskType getTaskType();
 	public abstract T create(TaskForm form, User user);
 	
 	public void edit(T task, TaskForm form) {

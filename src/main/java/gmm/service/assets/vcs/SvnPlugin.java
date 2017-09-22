@@ -30,6 +30,7 @@ import org.tmatesoft.svn.core.wc2.SvnOperation;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnReceivingOperation;
 import org.tmatesoft.svn.core.wc2.SvnScheduleForAddition;
+import org.tmatesoft.svn.core.wc2.SvnScheduleForRemoval;
 import org.tmatesoft.svn.core.wc2.SvnStatus;
 import org.tmatesoft.svn.core.wc2.SvnTarget;
 import org.tmatesoft.svn.core.wc2.SvnUpdate;
@@ -134,15 +135,15 @@ public class SvnPlugin extends VcsPlugin {
 	}
 	
 	/**
-	 * @return Current revision of remote repository.
+	 * @return Root URL of the SVN repo as opposed to the checked out URL.
 	 */
-	private long checkRepoAvailable() {
+	private SVNURL checkRepoAvailable() {
 		final SvnGetInfo operation = svnOperationFactory.createGetInfo();
 		operation.setSingleTarget(repository);
 		try {
 			final SvnInfo info = operation.run();
 			logger.info("Successfully reached SVN repository at uri '" + repository.getPathOrUrlDecodedString() + "'.");
-			return info.getRevision();
+			return info.getRepositoryRootUrl();
 		} catch (final SVNException e) {
 			logger.error("Could not reach SVN repository at uri '" + repository.getPathOrUrlDecodedString() + "'!", e);
 			throw new UncheckedSVNExeption(e);
@@ -233,30 +234,45 @@ public class SvnPlugin extends VcsPlugin {
 			final SVNRevision oldRevision = SVNRevision.create(workingCopyRev);
 			final SVNRevision newRevision = SVNRevision.create(repositoryRev);
 			
-			final SvnDiffSummarize operation = svnOperationFactory.createDiffSummarize();
-			operation.setSource(repository, oldRevision, newRevision);
-			
-			final List<SvnDiffStatus> result = new ArrayList<>(SvnDiffStatus.class);
-			tryRun(operation, result);
-			
-			final List<Path> changedPaths = new ArrayList<>(Path.class, result.size());
-			
-			for (final SvnDiffStatus status : result) {
-				if (status.getFile().isFile()) {
-					logger.debug("Found modified file. Path: '" + status.getPath() + "' Status: '" + status.getModificationType() + "'");
-					changedPaths.add(Paths.get(status.getPath()));
-				}
-			}
-			
 			final SvnUpdate update = svnOperationFactory.createUpdate();
 			update.setSingleTarget(workingCopy);
 			tryRun(update);
 			
-			return changedPaths;
+			return diff(oldRevision, newRevision);
+			
 		} else {
 			logger.info("Skipping working copy update since it is already at remote HEAD revision.");
 			return new ArrayList<>(Path.class, 0);
 		}
+	}
+	
+	private List<Path> diff(SVNRevision oldRevision, SVNRevision newRevision) {
+		
+		final SvnDiffSummarize operation = svnOperationFactory.createDiffSummarize();
+		operation.setSource(workingCopy, oldRevision, newRevision);
+		
+		final List<SvnDiffStatus> result = new ArrayList<>(SvnDiffStatus.class);
+		tryRun(operation, result);
+		
+		final List<Path> changedPaths = new ArrayList<>(Path.class, result.size());
+		
+		for (final SvnDiffStatus status : result) {
+			/* Do not use status.getPath() or status.getFile(), they are bugged as hell! */
+			
+			final String url = status.getUrl().getPath();
+			final String repo = repository.getURL().getPath();
+			if (!url.startsWith(repo)) {
+				throw new IllegalStateException();
+			}
+			String relative = url.substring(repo.length());
+			if (relative.startsWith("/")) relative = relative.substring(1);
+			
+			final Path relPath = Paths.get(relative);
+			
+			logger.debug("Found modified file. Path: '" + relPath + "' Status: '" + status.getModificationType() + "'");
+			changedPaths.add(relPath.normalize());
+		}
+		return changedPaths;
 	}
 	
 	private <V, T extends SvnOperation<V>> V tryRun(T operation) {
@@ -308,11 +324,18 @@ public class SvnPlugin extends VcsPlugin {
 
 	@Override
 	public void commitChangedFile(Path file) {
+		// TODO check if change is commited
+		
 		commit("GMM: Replaced file.");
 	}
 
 	@Override
 	public void commitRemovedFile(Path file) {
+		final SvnScheduleForRemoval ops = svnOperationFactory.createScheduleForRemoval();
+		final Path abs = workingCopyDir.resolve(file);
+		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
+		tryRun(ops);
+		
 		commit("GMM: Deleted file.");
 	}
 

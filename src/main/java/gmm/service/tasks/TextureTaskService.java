@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.User;
+import gmm.domain.task.TaskType;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.TextureProperties;
@@ -130,8 +131,8 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	}
 
 	@Override
-	public Class<TextureTask> getTaskType() {
-		return TextureTask.class;
+	public TaskType getTaskType() {
+		return TaskType.TEXTURE;
 	}
 
 	@Override

@@ -24,7 +24,6 @@ public class VirtualNewAssetFileSystem {
 	
 	public VirtualNewAssetFileSystem(Collection<NewAssetFolderInfo> folderInfoLiveView)  {
 		this.assetFoldersWithoutTasks = folderInfoLiveView;
-		update();
 	}
 	
 	public void update() {
@@ -37,7 +36,7 @@ public class VirtualNewAssetFileSystem {
 			final List<Path> assetFoldersConverted = new ArrayList<>(Path.class, assetFoldersWithoutTasks.size());
 			for (final NewAssetFolderInfo info : assetFoldersWithoutTasks) {
 				final Path localPath = info.getAssetFolder();
-				final Path unixPath = convertRelativePathToVfsPath(localPath);
+				final Path unixPath = convertRelativePathToVfs(localPath);
 				assetFoldersConverted.add(unixPath);
 			}
 			
@@ -55,7 +54,7 @@ public class VirtualNewAssetFileSystem {
 		return root;
 	}
 	
-	public Path convertRelativePathToVfsPath(Path relative) {
+	public Path convertRelativePathToVfs(Path relative) {
 		return root.resolve(FilenameUtils.separatorsToUnix(relative.toString()));
 	}
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import gmm.collections.HashSet;
 import gmm.collections.Set;
 import gmm.domain.User;
+import gmm.domain.task.TaskType;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.ModelProperties;
@@ -84,8 +85,8 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	}
 
 	@Override
-	public Class<ModelTask> getTaskType() {
-		return ModelTask.class;
+	public TaskType getTaskType() {
+		return TaskType.MESH;
 	}
 
 	@Override

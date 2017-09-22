@@ -4,6 +4,19 @@ import Dialogs from "./shared/dialogs";
 import ResponseBundleHandler from "./shared/responseBundleHandler";
 import { contextUrl, allVars, allFuncs } from "./shared/default";
 
+$(document).ready( function() {
+	
+	var $adminBanner = $("#adminBannerTextArea");
+	$adminBanner.html(allVars.adminBanner);
+	$adminBanner.blur(function() {
+		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
+	});
+	
+	Database();
+	AssetImport();
+	UserManager();
+});
+
 var Database = function() {
 	var $database = $("#database");
 	
@@ -82,107 +95,120 @@ var Database = function() {
 	refreshDatabaseFileTree();
 };
 
+
 var AssetImport = function() {
 	var $assets = $("#assets");
 	
 	$assets.find("#taskForm").find("#taskForm-group-type").hide();
 	
-	$assets.find('#originalAssets-fileTreeContainer').fileTree(
-		{url: contextUrl + "/admin/originalAssets"},
-		function($file) {
-			allFuncs.selectTreeElement($file, "selectedAssetFile");
-		}
-	);
-
-	$assets.find('#newAssets-fileTreeContainer').fileTree(
-		{url: contextUrl + "/admin/newAssets"},
-		function($file) {
-			allFuncs.selectTreeElement($file, "selectedAssetFile");
-		}
-	);
-
-	allVars.activeFileTree = null;
-};
-
-$(document).ready( function() {
+	var hideImport = function() {
+		$assets.find("#selectedPaths ul").empty();
+		$assets.find('#importButtons .button').hide();
+		$assets.find('#taskForm').hide();
+	};
 	hideImport();
 	
-	var $adminBanner = $("#adminBannerTextArea");
-	$adminBanner.html(allVars.adminBanner);
-	$adminBanner.blur(function() {
-		Ajax.post(contextUrl + "/admin/changeBannerMessage", {message: $adminBanner.val()});
+	// FileTrees
+	
+	var $originalFileTree = $assets.find('#originalAssets-fileTreeContainer');
+	var $newFileTree = $assets.find('#newAssets-fileTreeContainer');
+	
+	var updateFileTreeOriginal = function() {
+		$originalFileTree.fileTree(
+			{url: contextUrl + "/admin/originalAssets"},
+			function($file) {
+				allFuncs.selectTreeElement($file, "selectedAssetFile");
+			}
+		);
+	};
+	var updateFileTreeNew = function() {
+		$newFileTree.fileTree(
+			{url: contextUrl + "/admin/newAssets"},
+			function($file) {
+				allFuncs.selectTreeElement($file, "selectedAssetFile");
+			}
+		);
+	};
+
+	updateFileTreeOriginal();
+	updateFileTreeNew();
+	allVars.activeFileTree = null;
+	
+	// add asset paths
+	
+	var addAssetPaths = function() {
+		
+		var $fileTreeContainer = allVars.selectedAssetFile.closest(".fileTreeContainer");
+		var fileTreeId = $fileTreeContainer.attr('id');
+		if (allVars.activeFileTree !== null && allVars.activeFileTree !== fileTreeId) {
+			cancelImport().then(addSelectedAssetPaths);
+		} else {
+			addSelectedAssetPaths();
+		}
+		allVars.activeFileTree = fileTreeId;
+
+		function addSelectedAssetPaths() {
+			var pathSep = "&#160;&#160;►&#160;";
+			var dir = allVars.selectedAssetFile.attr('rel');
+			var $selectedPathsListContainer = $("#selectedPaths");
+			var $selectedPathsList = $("#selectedPaths ul");
+			$selectedPathsList.empty();
+			
+			var data = { dir: dir, isOriginal: fileTreeId.startsWith("original") };
+			Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
+				.then(function(paths) {
+					if(paths.length === 0) {
+						cancelImport();
+						return;
+					}
+					for(var path of paths) {
+						path = path.replace(new RegExp("/", 'g'), pathSep);
+						path = path.replace(new RegExp("\\\\", 'g'), pathSep);
+						$selectedPathsList.append("<li>"+path+"</li>");
+					}
+					$selectedPathsListContainer.scrollTop($selectedPathsList.height());
+				});
+			
+			$assets.find('#importButtons .button').show();
+			$assets.find('#taskForm').show();
+		}
+	};
+	
+	$assets.find("#addAssetsButton").click(function() {
+		addAssetPaths();
 	});
 	
-	Database();
-	AssetImport();
-	UserManager();
-});
-
-function addAssetPaths(textures) {
-
-	var $fileTreeContainer = allVars.selectedAssetFile.closest(".fileTreeContainer");
-	var fileTreeId = $fileTreeContainer.attr('id');
-	if (allVars.activeFileTree !== null && allVars.activeFileTree !== fileTreeId) {
-		cancelImport().then(addSelectedAssetPaths);
-	} else {
-		addSelectedAssetPaths();
-	}
-	allVars.activeFileTree = fileTreeId;
-
-	function addSelectedAssetPaths() {
-		var pathSep = "&#160;&#160;►&#160;";
-		var dir = allVars.selectedAssetFile.attr('rel');
-		var $selectedPathsListContainer = $("#selectedPaths");
-		var $selectedPathsList = $("#selectedPaths ul");
-		$selectedPathsList.empty();
-
-		var data = { dir: dir, textures: textures, isOriginal: fileTreeId.startsWith("original") };
-		Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
-			.then(function(paths) {
-				if(paths.length===0) {
-					cancelImport();
-					return;
-				}
-				for(var path of paths) {
-					path = path.replace(new RegExp("/", 'g'), pathSep);
-					path = path.replace(new RegExp("\\\\", 'g'), pathSep);
-					$selectedPathsList.append("<li>"+path+"</li>");
-				}
-				$selectedPathsListContainer.scrollTop($selectedPathsList.height());
-			});
-		
-		if(textures) {
-			$('#importTexturesButton').show();
-			$('#importMeshesButton').hide();
-			$('#addMeshesButton').hide();
-		}
-		else {
-			$('#importMeshesButton').show();
-			$('#importTexturesButton').hide();
-			$('#addTexturesButton').hide();
-		}
-		$('#cancelImportButton').show();
-		$('#taskForm').show();
-	}
-}
-global.addAssetPaths = addAssetPaths;
-
-function hideImport() {
-	$("#selectedPaths ul").empty();
-	$('#importButtons .button').hide();
-	$('#taskForm').hide();
-	$('#addMeshesButton').show();
-	$('#addTexturesButton').show();
-}
-
-function cancelImport() {
-	return Ajax.post(contextUrl + "/admin/import/cancel")
-		.then(function() {
-			hideImport();
-			allVars.activeFileTree = null;
+	// Import Buttons
+	
+	var importAssets = function(callback) {
+		var url = contextUrl + "/admin/importAssets";
+		var ajaxChannel = new ResponseBundleHandler(url, "assets");
+		ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
+			if (allVars.activeFileTree === $originalFileTree.attr('id')) {
+				updateFileTreeOriginal();
+			} else if (allVars.activeFileTree === $newFileTree.attr('id')) {
+				updateFileTreeNew();
+			}
+			// TODO hideImport? (like cancelimport)?
 		});
-}
-global.cancelImport = cancelImport;
+	};
+	
+	var cancelImport = function() {
+		return Ajax.post(contextUrl + "/admin/import/cancel")
+			.then(function() {
+				hideImport();
+				allVars.activeFileTree = null;
+			});
+	};
+	
+	var $buttons = $assets.find("#importButtons");
+	$buttons.find("#importAssetsButton").click(function() {
+		importAssets();
+	});
+	$buttons.find("#cancelImportButton").click(function() {
+		cancelImport();
+	});
+};
 
 /**
  * -------------------- UserManaer --------------------------------------------------------------
@@ -283,12 +309,3 @@ var UserManager = function() {
 		}, "Delete all unsaved user data?");
 	});
 };
-
-
-
-function importAssets() {
-	var url = contextUrl + "/admin/importAssets";
-	var ajaxChannel = new ResponseBundleHandler(url, "assets");
-	ajaxChannel.start({$taskForm: $("#taskForm")});
-}
-global.importAssets = importAssets;

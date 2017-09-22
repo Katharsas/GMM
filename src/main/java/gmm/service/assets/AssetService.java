@@ -292,7 +292,6 @@ public class AssetService {
 	 */
 	public void onVcsNewAssetFilesChanged(List<Path> changedPaths) {
 		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
-		// TODO create asset tasks for not yet existing assets or allow import for admin
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -326,22 +325,29 @@ public class AssetService {
 					// (the old info would be available through tasks), same goes for original tasks
 				});
 				
+				// asset was removed
 				if (oldHasAsset && !currentHasAsset) {
 					updater.removePropsAndSetInfo(task, Optional.of(currentInfo));
-					
+				// asset was added
 				} else if (!oldHasAsset && currentHasAsset) {
 					updater.recreatePropsAndSetInfo(task, currentInfo);
-					
+				// asset still exists
 				} else if (oldHasAsset && currentHasAsset) {
-					
 					final AssetProperties props = task.getAssetProperties(type);
-					if (!service.isValidAssetProperties(props, currentInfo)) {
+					// file path hasn't changed, content has changed
+					if (changedPaths.contains(currentInfo.getAssetFilePath(config).normalize())) {
 						updater.recreatePropsAndSetInfo(task, currentInfo);
+					}
+					// file path may have changed, content may have changed
+					else if (!service.isValidAssetProperties(props, currentInfo)) {
+						updater.recreatePropsAndSetInfo(task, currentInfo);
+					// file path may have changed, content hasn't changed
 					} else {
 						if (!Objects.equals(oldInfo, currentInfo)) {
 							updater.setInfo(task, Optional.of(currentInfo));
 						}
 					}
+				// asset still does not exist, but folder status may have changed
 				} else {
 					if (!Objects.equals(oldInfo, currentInfo)) {
 						updater.setInfo(task, Optional.of(currentInfo));

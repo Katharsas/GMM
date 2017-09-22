@@ -63,8 +63,7 @@
 			<div class="admin-inner fileTreeContainer" id="newAssets-fileTreeContainer"></div>
 			</div>
 			
-			<div id="addTexturesButton" class="left button pageButton" onclick="addAssetPaths(true)"><fmt:message key="admin.database.addtextures"/></div>
-			<div id="addMeshesButton" class="left button pageButton" onclick="addAssetPaths(false)"><fmt:message key="admin.database.addmeshes"/></div>
+			<div id="addAssetsButton" class="left button pageButton"><fmt:message key="admin.database.addassets"/></div>
 			<div class="clear"></div>
 			<div id="selectedPaths" class="admin-inner"><ul></ul></div>
 
@@ -75,9 +74,8 @@
 				
 				<div class="clear"></div>
 				<div id="importButtons">
-					<div id="importTexturesButton" class="left button pageButton" onclick="importAssets('textures')"><fmt:message key="admin.database.texturesimport"/></div>
-					<div id="importMeshesButton" class="left button pageButton" onclick="importAssets('models')"><fmt:message key="admin.database.meshesimport"/></div>
-					<div id="cancelImportButton" class="left button pageButton" onclick="cancelImport()"><fmt:message key="admin.database.cancelimport"/></div>
+					<div id="importAssetsButton" class="left button pageButton"><fmt:message key="admin.database.importassets"/></div>
+					<div id="cancelImportButton" class="left button pageButton"><fmt:message key="admin.database.cancelimport"/></div>
 					<div class="clear"></div>
 				</div>
 			</div>
