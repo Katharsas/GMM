@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -65,14 +64,6 @@ public class SvnPlugin extends VcsPlugin {
 	
 	public static class UncheckedSVNExeption extends RuntimeException {
 		private static final long serialVersionUID = 1154711366260343957L;
-
-		public UncheckedSVNExeption(SVNClientException cause) {
-			super(cause);
-		}
-		
-		public UncheckedSVNExeption(String message, SVNClientException cause) {
-			super(message, cause);
-		}
 		
 		public UncheckedSVNExeption(SVNException cause) {
 			super(cause);
@@ -83,8 +74,8 @@ public class SvnPlugin extends VcsPlugin {
 		}
 		
 		@Override
-		public synchronized Exception getCause() {
-			return (Exception) super.getCause();
+		public synchronized SVNException getCause() {
+			return (SVNException) super.getCause();
 		}
 	}
 	

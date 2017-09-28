@@ -10,12 +10,6 @@
 	<url>https://github.com/Katharsas/GMM</url>
 
 	<repositories>
-		<!-- Needed by org.tigris.svnclientadapter -->
-		<repository>
-			<id>bintray-subclipse-maven</id>
-			<name>bintray</name>
-			<url>https://dl.bintray.com/subclipse/maven</url>
-		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -30,15 +24,6 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-		</pluginRepository>
-		<!-- Needed by org.tigris.svnclientadapter -->
-		<pluginRepository>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<id>bintray-subclipse-maven</id>
-			<name>bintray-plugins</name>
-			<url>https://dl.bintray.com/subclipse/maven</url>
 		</pluginRepository>
 	</pluginRepositories>
 	
@@ -78,27 +63,6 @@
 			<groupId>com.google.jimfs</groupId>
 			<artifactId>jimfs</artifactId>
 			<version>1.1</version>
-		</dependency>
-		<!-- SVNClientAdapter -->
-		<dependency>
-			<groupId>org.tigris.svnclientadapter</groupId>
-			<artifactId>adapter-base</artifactId>
-			<version>1.9.4-2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tigris.svnclientadapter</groupId>
-			<artifactId>adapter-javahl</artifactId>
-			<version>1.9.4-2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tigris.svnclientadapter</groupId>
-			<artifactId>adapter-svnkit</artifactId>
-			<version>1.9.4-2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.tigris.svnclientadapter</groupId>
-			<artifactId>adapter-cli</artifactId>
-			<version>1.9.4-2</version>
 		</dependency>
 		<!-- SVNKit -->
 		<dependency>
