@@ -79,7 +79,7 @@ public class AssetName implements Comparable<AssetName> {
 	}
 	
 	/**
-	 * @return - The actual name of the asset file (in original case).
+	 * @return - The actual name of the asset file/folder (in original case).
 	 */
 	public String get() {
 		return assetNameOriginal;

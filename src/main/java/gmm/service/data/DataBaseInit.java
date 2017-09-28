@@ -142,6 +142,9 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		if (combined != null) {
 			target.setCustomAdminBanner(combined.getCustomAdminBanner());
 			target.setCustomAdminBannerActive(combined.isCustomAdminBannerActive());
+			logger.info("Autoloaded latest combined data.");
+		} else {
+			logger.info("Mising backup files caused combined data not to be autoloaded.");
 		}
 	}
 }

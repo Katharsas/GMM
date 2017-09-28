@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNURL;
@@ -43,6 +44,21 @@ import gmm.service.FileService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.DataConfigService;
 
+/**
+ * SVN client implementation using SVNKit new high-level interface (org.tmatesoft.svn.core.wc2.*).
+ * Documentation for this SVNKit interface is only available as JavaDoc and StackOverflow answers.
+ * 
+ * Under the hood, SVNKit uses a Java re-implementation of the native SVN client. It seems like this
+ * re-implementation provides a low level client interface which matches the native interfaces, so
+ * in theory it should be possible to run the high level SVN API on top of the native API (JavaHL)
+ * by witching out the low level implementation.
+ * It's unclear though, which dependency would need to be exchanged for SVNKit to use JavaHL instead
+ * of its own implementation, or if its even possible to do so.
+ * 
+ * Bug: https://issues.tmatesoft.com/issue/SVNKIT-708 (workaround implemented)
+ * 
+ * @author Jan Mothes
+ */
 @Service
 @ConditionalOnConfigSelector("svn")
 public class SvnPlugin extends VcsPlugin {
@@ -50,6 +66,14 @@ public class SvnPlugin extends VcsPlugin {
 	public static class UncheckedSVNExeption extends RuntimeException {
 		private static final long serialVersionUID = 1154711366260343957L;
 
+		public UncheckedSVNExeption(SVNClientException cause) {
+			super(cause);
+		}
+		
+		public UncheckedSVNExeption(String message, SVNClientException cause) {
+			super(message, cause);
+		}
+		
 		public UncheckedSVNExeption(SVNException cause) {
 			super(cause);
 		}
@@ -59,14 +83,13 @@ public class SvnPlugin extends VcsPlugin {
 		}
 		
 		@Override
-		public synchronized SVNException getCause() {
-			return (SVNException) super.getCause();
+		public synchronized Exception getCause() {
+			return (Exception) super.getCause();
 		}
 	}
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final DataConfigService config;
 	private final FileService fileService;
 	
 	private final Path workingCopyDir;
@@ -83,7 +106,6 @@ public class SvnPlugin extends VcsPlugin {
 			@Value("${vcs.plugin.svn.password}") String repositoryPassword
 			) {
 		
-		this.config = config;
 		this.fileService = fileService;
 		
 		svnOperationFactory = new SvnOperationFactory();
@@ -98,18 +120,9 @@ public class SvnPlugin extends VcsPlugin {
 			final SVNURL url = SVNURL.parseURIEncoded(uri.toASCIIString());
 			repository = SvnTarget.fromURL(url, SVNRevision.HEAD);
 			
-//			if (repositoryUriString.startsWith("file:///")) {
-//			repository = SvnTarget.fromFile(new File(repositoryUriString));
-//		} else {
-//			final URI uri = new URI(repositoryUriString);
-//			final SVNURL url = SVNURL.parseURIEncoded(uri.toASCIIString());
-//			repository = SvnTarget.fromURL(url, SVNRevision.HEAD);
-//		}
-			
 		} catch (URISyntaxException | SVNException e) {
 			throw new IllegalArgumentException("Invalid SVN repository uri!", e);
 		}
-		
 		checkRepoAvailable();
 		
 		workingCopyDir = config.assetsNew();
@@ -192,17 +205,11 @@ public class SvnPlugin extends VcsPlugin {
 		final Collection<SvnStatus> statuses = tryRun(ops, new ArrayList<>(SvnStatus.class));
 		
 		for (final SvnStatus entry : statuses) {
-			// if logger is not in debug mode, SvnStatus will not list files of status 'normal',
-			// so the list of statuses will be empty if all files have status 'normal'
 			
 			final SVNStatusType type = entry.getNodeStatus();
 			final String filePath = entry.getPath().getPath();
 			
-			if (type == SVNStatusType.STATUS_NORMAL) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Found versioned working copy entry (status normal): '" + filePath +"'");
-				}
-			} else {
+			if (type != SVNStatusType.STATUS_NORMAL) {
 				logger.error("Existing working copy is in an invalid state (maybe modified)! "
 						+ "Pls fix manually or delete working copy at '" + workingCopy + "'.");
 				throw new ConfigurationException(
@@ -222,6 +229,9 @@ public class SvnPlugin extends VcsPlugin {
 	    return tryRun(operation);
 	}
 	
+	/**
+	 * @return see {@link #diff(SVNRevision, SVNRevision)}
+	 */
 	private List<Path> diffAndUpdate() {
 		final long repositoryRev = retrieveRevision(repository);
 		final long workingCopyRev = retrieveRevision(workingCopy);
@@ -246,6 +256,10 @@ public class SvnPlugin extends VcsPlugin {
 		}
 	}
 	
+	/**
+	 * @return For some reason, added empty directories (like AssetFolders) are not detected, but
+	 * 		deleted ones are ! (TODO fix?)
+	 */
 	private List<Path> diff(SVNRevision oldRevision, SVNRevision newRevision) {
 		
 		final SvnDiffSummarize operation = svnOperationFactory.createDiffSummarize();
@@ -257,7 +271,7 @@ public class SvnPlugin extends VcsPlugin {
 		final List<Path> changedPaths = new ArrayList<>(Path.class, result.size());
 		
 		for (final SvnDiffStatus status : result) {
-			/* Do not use status.getPath() or status.getFile(), they are bugged as hell! */
+			/* Do not use status.getPath() or status.getFile(), they are unreliable! */
 			
 			final String url = status.getUrl().getPath();
 			final String repo = repository.getURL().getPath();
@@ -277,6 +291,7 @@ public class SvnPlugin extends VcsPlugin {
 	
 	private <V, T extends SvnOperation<V>> V tryRun(T operation) {
 		try {
+			logger.debug("Running: " + operation .getClass().getSimpleName());
 			return operation.run();
 		} catch (final SVNException e) {
 			throw new UncheckedSVNExeption(e);
@@ -285,6 +300,7 @@ public class SvnPlugin extends VcsPlugin {
 	
 	private <V, T extends SvnReceivingOperation<V>> Collection<V> tryRun(T operation, Collection<V> receiver) {
 		try {
+			logger.debug("Running: " + operation .getClass().getSimpleName());
 			return (Collection<V>) operation.run(receiver);
 		} catch (final SVNException e) {
 			throw new UncheckedSVNExeption(e);
@@ -299,9 +315,7 @@ public class SvnPlugin extends VcsPlugin {
 	@Override
 	public synchronized void notifyRepoChange() {
 		final List<Path> changedPaths = diffAndUpdate();
-		if (changedPaths.size() > 0) {
-			onFilesChanged(changedPaths);
-		}
+		onFilesChanged(changedPaths);
 	}
 
 	@Override
@@ -324,7 +338,7 @@ public class SvnPlugin extends VcsPlugin {
 
 	@Override
 	public void commitChangedFile(Path file) {
-		// TODO check if change is commited
+		// TODO check if change is committed
 		
 		commit("GMM: Replaced file.");
 	}
@@ -341,7 +355,7 @@ public class SvnPlugin extends VcsPlugin {
 
 	private void commit(String message) {
 		final SvnCommit ops = svnOperationFactory.createCommit();
-	    ops.setSingleTarget(workingCopy);// only changes below this path will be commited
+	    ops.setSingleTarget(workingCopy);// only changes below this path will be committed
 	    ops.setDepth(SVNDepth.INFINITY);// TODO needed or default?
 	    ops.setCommitMessage(message);
 	    tryRun(ops);

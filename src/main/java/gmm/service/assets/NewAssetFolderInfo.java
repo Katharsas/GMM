@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
@@ -116,11 +117,10 @@ public class NewAssetFolderInfo implements AssetInfo {
 			status = AssetFolderStatus.INVALID_ASSET_FOLDER_EXTENSION;
 		} else {
 			final List<Path> files;
-			try {
-				files = Files.list(assetFolderAbs)
+			try(Stream<Path> stream = Files.list(assetFolderAbs)) {
+				files = stream
 					.filter(path -> path.toFile().isFile())
 					.collect(Collectors.toList());
-				
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}

@@ -36,8 +36,10 @@ public class VirtualNewAssetFileSystem {
 			final List<Path> assetFoldersConverted = new ArrayList<>(Path.class, assetFoldersWithoutTasks.size());
 			for (final NewAssetFolderInfo info : assetFoldersWithoutTasks) {
 				final Path localPath = info.getAssetFolder();
-				final Path unixPath = convertRelativePathToVfs(localPath);
-				assetFoldersConverted.add(unixPath);
+				if (localPath != null) {
+					final Path unixPath = convertRelativePathToVfs(localPath);
+					assetFoldersConverted.add(unixPath);
+				}
 			}
 			
 			for (final Path assetFolder : assetFoldersConverted) {

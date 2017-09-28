@@ -10,22 +10,17 @@
 	<url>https://github.com/Katharsas/GMM</url>
 
 	<repositories>
+		<!-- Needed by org.tigris.svnclientadapter -->
 		<repository>
-			<!-- Needed by svnkit > 1.8.12 -->
-			<id>upstream</id>
-			<url>http://repo.jenkins-ci.org/releases/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
+			<id>bintray-subclipse-maven</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/subclipse/maven</url>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
+		<!-- Needed by tomcat7-maven-plugin 2.3 -->
 		<pluginRepository>
-			<!-- Needed by tomcat7-maven-plugin 2.3 -->
 			<id>apache.snapshots</id>
 			<name>Apache Snapshots</name>
 			<url>http://repository.apache.org/snapshots</url>
@@ -35,6 +30,15 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
+		</pluginRepository>
+		<!-- Needed by org.tigris.svnclientadapter -->
+		<pluginRepository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>bintray-subclipse-maven</id>
+			<name>bintray-plugins</name>
+			<url>https://dl.bintray.com/subclipse/maven</url>
 		</pluginRepository>
 	</pluginRepositories>
 	
@@ -75,11 +79,32 @@
 			<artifactId>jimfs</artifactId>
 			<version>1.1</version>
 		</dependency>
-		<!-- SVN -->
+		<!-- SVNClientAdapter -->
+		<dependency>
+			<groupId>org.tigris.svnclientadapter</groupId>
+			<artifactId>adapter-base</artifactId>
+			<version>1.9.4-2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.tigris.svnclientadapter</groupId>
+			<artifactId>adapter-javahl</artifactId>
+			<version>1.9.4-2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.tigris.svnclientadapter</groupId>
+			<artifactId>adapter-svnkit</artifactId>
+			<version>1.9.4-2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.tigris.svnclientadapter</groupId>
+			<artifactId>adapter-cli</artifactId>
+			<version>1.9.4-2</version>
+		</dependency>
+		<!-- SVNKit -->
 		<dependency>
 			<groupId>org.tmatesoft.svnkit</groupId>
 			<artifactId>svnkit</artifactId>
-			<version>1.8.14</version>
+			<version>1.9.0</version>
 		</dependency>
 		<!-- Mail, excluded JAF because newer JAF version included in Java SE 1.6 -->
 		<dependency>
@@ -428,7 +453,7 @@
 		</resources>
 
 		<plugins>
-			
+
 			<!-- Frontend build -->
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -441,7 +466,7 @@
 				<executions>
 					<!-- Config from: https://github.com/eirslett/frontend-maven-plugin -->
 					<!-- phase optional for all executions: default phase is "generate-resources" -->
-					<!--  disable some of the following executions to improve build speed -->
+					<!-- disable some of the following executions to improve build speed -->
 					<execution>
 						<id>install node and npm</id>
 						<goals>
@@ -473,7 +498,6 @@
 						<phase>generate-resources</phase>
 						<configuration>
 							<srcdir>src/main/frontend</srcdir>
-<!-- 							<outputdir>src/main/webapp/resources</outputdir> -->
 							<arguments>three</arguments>
 						</configuration>
 					</execution>
@@ -491,7 +515,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<!-- exclude assets and test data -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -503,16 +527,12 @@
 						<phase>package</phase>
 						<configuration>
 							<packagingExcludes>
-								<!--
-									If a build should contain some sample data,
-									put anything unwanted into excluded folder like below,
-									but never commit a pom that includes sample data!
-									Always check if the build contains only the expected files!
-								-->
-<!-- 								WEB-INF/data/assets/new/**, -->
-<!-- 								WEB-INF/data/assets/original/excluded/**, -->
-								WEB-INF/data/assets/**,
-								WEB-INF/data/db/**,
+								<!-- If a build should contain some sample data, put anything unwanted 
+									into excluded folder like below, but never commit a pom that includes sample 
+									data! Always check if the build contains only the expected files! -->
+								<!-- WEB-INF/data/assets/new/**, -->
+								<!-- WEB-INF/data/assets/original/excluded/**, -->
+								WEB-INF/data/**,
 								WEB-INF/dataTesting/**,
 								WEB-INF/blender/**
 							</packagingExcludes>
@@ -520,7 +540,7 @@
 					</execution>
 				</executions>
 			</plugin>
-		
+
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
 				<artifactId>tomcat7-maven-plugin</artifactId>
@@ -537,9 +557,8 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-								<path>/GMM</path>                              
-                                <attachartifactclassifier>exec-war</attachartifactclassifier>
-                                <attachartifactclassifiertype>jar</attachartifactclassifiertype>
+							<attachartifactclassifier>exec-war</attachartifactclassifier>
+							<attachartifactclassifiertype>jar</attachartifactclassifiertype>
 						</configuration>
 					</execution>
 				</executions>
@@ -572,7 +591,7 @@
 					<encoding>ISO-8859-1</encoding>
 				</configuration>
 			</plugin>
-			    
+
 		</plugins>
 	</build>
 </project>

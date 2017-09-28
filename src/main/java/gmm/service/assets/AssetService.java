@@ -112,6 +112,9 @@ public class AssetService {
 		newAssetFoldersWithoutTasks = new HashMap<>();
 		originalAssetFiles = new HashMap<>();
 		
+		fileService.createDirectory(config.assetsNew());
+		fileService.createDirectory(config.assetsOriginal());
+		
 		reference = initTasksAndGetPostProcessor(data);
 		data.registerPostProcessor(reference);
 		

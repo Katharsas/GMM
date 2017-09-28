@@ -32,7 +32,7 @@ public class SVNTest {
 	final Path workingCopyPath = null;
 	final SvnTarget workingCopy = SvnTarget.fromFile(new File("workspace/newAssets"));
 	
-	final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();//TODO call dispose always (finally) even on exception of any method
+	final static SvnOperationFactory svnOperationFactory = new SvnOperationFactory();//TODO call dispose always (finally) even on exception of any method
 	
 	long currentRevision;// TODO should be most recent one, when repo gets new revision, use method getChangedFilesSinceRevision to get file changes.
 	
@@ -46,6 +46,21 @@ public class SVNTest {
 		
 		final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
 		svnOperationFactory.setAuthenticationManager(authManager);
+	}
+	
+	public static void main(String[] args) throws SVNException {
+		
+		final SvnTarget repository = SvnTarget.fromFile(new File("C:/Users/Jan/Repositories/GMM/src/main/webapp/WEB-INF/data/assets/SVnKit/Repo/trunk"));
+		final SvnTarget workingCopy = SvnTarget.fromFile(new File("C:/Users/Jan/Repositories/GMM/src/main/webapp/WEB-INF/data/assets/SVnKit/WC"));
+		
+		final SvnUpdate update = svnOperationFactory.createUpdate();
+		update.setSingleTarget(workingCopy);
+		update.run();
+		
+		int i = 0;
+		while(true) {
+			i++;
+		}
 	}
 	
 	/**
@@ -106,8 +121,8 @@ public class SVNTest {
 	 */
 	public void testCommitFile() throws IOException, SVNException {
 		// add file
-		String newFileName = "TestFile_" + DateTime.now().toString().replace(':', '-');
-		Path newFile = workingCopyPath.resolve(newFileName);
+		final String newFileName = "TestFile_" + DateTime.now().toString().replace(':', '-');
+		final Path newFile = workingCopyPath.resolve(newFileName);
 		Files.createFile(newFile);
 		
 		final SvnScheduleForAddition add = svnOperationFactory.createScheduleForAddition();

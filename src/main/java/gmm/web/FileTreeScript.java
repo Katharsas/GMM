@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class FileTreeScript {
@@ -29,8 +30,8 @@ public class FileTreeScript {
 	    if (Files.exists(dirPath)) {
 	    	
 	    	List<Path> paths;
-			try {
-				paths = Files.list(dirPath)
+			try (Stream<Path> stream = Files.list(dirPath)) {
+				paths = stream
 					.filter(path -> path.getFileName().toString().charAt(0) != '.')// filter hidden files
 					.sorted((o1, o2) -> String.CASE_INSENSITIVE_ORDER.compare(o1.toString(), o2.toString()))
 					.collect(Collectors.toList());
