@@ -131,7 +131,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = {"/deleteTasks"} , method = RequestMethod.POST)
 	public @ResponseBody void deleteTasks() {
-		backups.triggerTaskBackup();
+		backups.triggerTaskBackup(true);
 		data.removeAll(Task.class);
 	}
 	
@@ -185,7 +185,7 @@ public class AdminController {
 	public @ResponseBody List<MessageResponse> loadAssetTasks(
 			@RequestParam("dir") Path dir) {
 		
-		backups.triggerTaskBackup();
+		backups.triggerTaskBackup(true);
 		final Path visible = config.dbTasks();
 		final Path dirRelative = fileService.restrictAccess(dir, visible);
 		final Collection<Task> tasks =
@@ -314,7 +314,7 @@ public class AdminController {
 	public @ResponseBody List<MessageResponse> importAssets (
 			@ModelAttribute("taskForm") TaskForm form) {
 		
-		backups.triggerTaskBackup();
+		backups.triggerTaskBackup(true);
 		return session.firstImportCheckBundle(form);
 	}
 	

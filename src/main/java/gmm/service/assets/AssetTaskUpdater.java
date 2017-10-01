@@ -1,11 +1,11 @@
 package gmm.service.assets;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.springframework.stereotype.Service;
 
@@ -73,7 +73,7 @@ public class AssetTaskUpdater {
 	
 	private final TaskServiceFinder serviceFinder;
 	
-	private final Map<AssetTask<?>, Future<Void>> processingAssetTasks;
+	private final Map<AssetTask<?>, CompletableFuture<Void>> processingAssetTasks;
 	
 	public AssetTaskUpdater(TaskServiceFinder serviceFinder) {
 		this.serviceFinder = serviceFinder;
@@ -131,13 +131,18 @@ public class AssetTaskUpdater {
 		}
 	}
 	
+	public synchronized CompletableFuture<Void> allAyncTaskProcessing() {
+		final Collection<CompletableFuture<Void>> futures = processingAssetTasks.values();
+		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+	}
+	
 	/**
 	 * Since asset task properties & info can be changed asynchronously, check that for the given task nothing is still
 	 * running (or block until it is finished).
 	 */
 	public synchronized void waitForAsyncTaskProcessing(AssetTask<?> task) {
-		final Future<Void> old = processingAssetTasks.get(task);
-		if (old != null) blockUntilDone(old);
+		final CompletableFuture<Void> old = processingAssetTasks.get(task);
+		if (old != null) old.join();
 	}
 	
 	public class AsyncPreviewCreationException extends RuntimeException {
@@ -147,20 +152,9 @@ public class AssetTaskUpdater {
 		}
 	}
 	
-	private void blockUntilDone(Future<Void> future) {
-		while (!future.isDone()) {
-			try {
-				future.get();
-			} catch (final InterruptedException e) {
-			} catch (final ExecutionException e) {
-				throw new AsyncPreviewCreationException("Async preview creation failed!", e);
-			}
-		}
-	}
-	
 	public abstract class OnUpdate {
 		
-		private boolean lock = false;
+		private boolean usedUp = false;
 		protected final Optional<Runnable> onCompletion;
 		
 		public OnUpdate() {
@@ -171,9 +165,9 @@ public class AssetTaskUpdater {
 		}
 		
 		protected synchronized void doUpdate(Runnable updateMethod) {
-			if (lock) throw new IllegalStateException("Updater can only used for one update operation!");
+			if (usedUp) throw new IllegalStateException("Updater can only used for one update operation!");
 			updateMethod.run();
-			lock = true;
+			usedUp = true;
 		}
 		
 		protected void onCompletion() {

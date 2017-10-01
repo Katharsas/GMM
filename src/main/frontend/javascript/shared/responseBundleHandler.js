@@ -39,10 +39,10 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 			assets : {
 				conflicts : [{
 					name: "taskConflict",
-					actions: ["skip", "overwriteTaskAquireData", "overwriteTaskDeleteData"]
+					actions: ["skip", "overwrite"]
 				},{
-					name: "folderConflict",
-					actions: ["skip", "aquireData", "deleteData"]
+					name: "autoSkipConflict",
+					actions: ["skip"]
 				}],
 				/**
 				 * @param {string} file - path to xml task backup file
@@ -155,7 +155,14 @@ export default function ResponseBundleHandler(url, responseBundleOption, minimal
 						$conflictMessage.html(multiConflicts);
 					}
 					foundConflict = true;
-					showActionButtons(conflict.actions);
+					if (conflict.actions.length !== 1) {
+						showActionButtons(conflict.actions);
+					} else {
+						// since there is only 1 action, we auto-select it
+						setTimeout(function() {
+							that.answer(conflict.actions[0]);
+						}, 0);
+					}
 				}
 			});
 			if (!foundConflict) {

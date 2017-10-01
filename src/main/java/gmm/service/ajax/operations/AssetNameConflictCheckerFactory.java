@@ -24,9 +24,18 @@ public class AssetNameConflictCheckerFactory {
 		this.data = data;
 	}
 	
-	public AssetNameConflictChecker create(Consumer<AssetName> onAssetNameChecked) {
-		return new AssetNameConflictChecker(onAssetNameChecked);
+	public AssetNameConflictChecker create(Consumer<AssetName> onAssetNameChecked, boolean skipIfNameConflict) {
+		return new AssetNameConflictChecker(onAssetNameChecked, skipIfNameConflict);
 	}
+	
+	private final Conflict<AssetName> autoSkipConflict = new Conflict<AssetName>() {
+		@Override public String getName() {
+			return "autoSkipConflict";
+		}
+		@Override public String getDetails(AssetName assetPath) {
+			return "Info: Task with asset filename \""+assetPath+"\" exists already, skipping import!";
+		}
+	};
 	
 	private final Conflict<AssetName> fileNameConflict = new Conflict<AssetName>() {
 		@Override public String getName() {
@@ -42,7 +51,7 @@ public class AssetNameConflictCheckerFactory {
 		final Map<String, Operation<AssetName>> map = new HashMap<>();
 		// both
 		map.put("skip", (conflict, assetName) -> {
-			checker.assertConflict(conflict.equals(fileNameConflict));
+			checker.assertConflict(conflict.equals(fileNameConflict) || conflict.equals(autoSkipConflict));
 			
 			return "Skipping this task for conflicting filename \""+assetName+"\"";
 		});
@@ -60,12 +69,15 @@ public class AssetNameConflictCheckerFactory {
 	
 	public class AssetNameConflictChecker extends ConflictChecker<AssetName> {
 
+		private final boolean skipIfNameConflict;
+		
 		private final Consumer<AssetName> onAssetNameChecked;
 		private final Map<String, Operation<AssetName>> ops;
 		
 		private AssetTask<?> conflictingTask;
 	
-		private AssetNameConflictChecker(Consumer<AssetName> onAssetNameChecked) {
+		private AssetNameConflictChecker(Consumer<AssetName> onAssetNameChecked, boolean skipIfNameConflict) {
+			this.skipIfNameConflict = skipIfNameConflict;
 			this.onAssetNameChecked = onAssetNameChecked;
 			this.ops = createOperations(this, data);
 		}
@@ -81,11 +93,11 @@ public class AssetNameConflictCheckerFactory {
 		
 		@Override
 		public Conflict<AssetName> onLoad(AssetName assetName) {
-
+			
 			for (final AssetTask<?> t : data.getList(AssetTask.class)) {
 				if (t.getAssetName().equals(assetName)) {
 					conflictingTask = t;
-					return fileNameConflict;
+					return skipIfNameConflict ? autoSkipConflict : fileNameConflict;
 				}
 			}
 			return NO_CONFLICT;

@@ -113,7 +113,7 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 			}
 		} else {
 			if (newFolderInfo != null && newFolderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
-				throw new IllegalArgumentException("Asset folder status cannot be VALID_WITH_ASSET because properties are null!");
+				throw new IllegalArgumentException("Asset folder status cannot be VALID_WITH_ASSET because properties are null! AssetFolder: '" + newFolderInfo.getAssetFolder() + "'");
 			}
 		}
 		this.newestAssetProps = assetProps;

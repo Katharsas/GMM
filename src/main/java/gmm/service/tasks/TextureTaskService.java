@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +16,7 @@ import javax.imageio.spi.IIORegistry;
 
 import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Method;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +42,8 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	
 	private static final String[] extensions = new String[] {"tga"};
 	
-	private static final int SMALL_SIZE = 300;
+	// changing the scaling size requires manual deletion of all generated previews
+	private static final int SMALL_SIZE = 256;
 	
 	@Override
 	protected String[] getExtensions() {
@@ -54,12 +58,12 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	}
 	
 	/**
-	 * Create Preview files from texture file.
+	 * Create Preview files from texture file (for originals: only if they don't exist yet).
 	 * For more texture operations see {@link gmm.service.tasks.TextureAssetService}
 	 */
 	@Override
 	public CompletableFuture<TextureProperties> recreatePreview(
-			Path sourceFile, Path previewFolder, AssetGroupType type, TextureProperties assetProps) {
+			Path sourceFile, Path previewFolder, AssetGroupType type, Optional<TextureProperties> assetPropsOrNull) {
 		
 		fileService.testReadFile(sourceFile);
 		
@@ -70,18 +74,29 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		fileService.testCreateDeleteFile(smallPreview);
 		
 		return CompletableFuture.supplyAsync(() -> {
+			final boolean hasAsset = assetPropsOrNull.isPresent();
+			final boolean existsFull = Files.exists(fullPreview);
+			final boolean existsSmall = Files.exists(smallPreview);
+			final TextureProperties assetProps = assetPropsOrNull.orElse(newPropertyInstance());
 			
-			BufferedImage image = readImage(sourceFile);
-			assetProps.setDimensions(image.getHeight(), image.getWidth());
-			
-			// full preview
-			writeImage(image, fullPreview);
-			//small preview
-			if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
-				image = Scalr.resize(image, SMALL_SIZE);
+			if (!type.isOriginal() || !existsFull || !existsSmall || !hasAsset) {
+				BufferedImage image = readImage(sourceFile);
+				assetProps.setDimensions(image.getHeight(), image.getWidth());
+				
+				// always redo image if type = new, only redo originals if they don't exist
+				
+				if (!type.isOriginal() || !existsFull) {
+					// full preview
+					writeImage(image, fullPreview);
+				}
+				if (!type.isOriginal() || !existsSmall) {
+					//small preview
+					if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
+						image = Scalr.resize(image, Method.SPEED, SMALL_SIZE);
+					}
+					writeImage(image, smallPreview);
+				}
 			}
-			writeImage(image, smallPreview);
-			
 			return assetProps;
 		});
 	}

@@ -87,40 +87,47 @@ public class PythonTCPSocket {
 	private volatile ConversionResult result = null;
 	private final AtomicBoolean threadIsAlive = new AtomicBoolean(false);
 	
-	private final Runnable convertion = new PythonRunnable();
+	private final Runnable conversion = new PythonRunnable();
+	private final Object blockOtherCallersMutex = new Object();
 	
 	/**
 	 * Convert original (3DS file) to JSON and save converted file at target.
 	 * This is not an async method, it blocks until the file has been converted, event though
-	 * the convertion is executed by another thread internally.
+	 * the conversion is executed by another thread internally.
 	 * 
 	 * @param original - original 3DS file
 	 * @param target - target path for converted file containing JSON
 	 */
-	public synchronized MeshData createPreview(Path original, Path target) {
-		final long startTime = System.currentTimeMillis();
-		result = null; // delete last result
-		next = new AssetConversionPaths(original, target);
-		while (result == null) {
-			initThreadIfNotRunning(); // start thread if needed
-			notify(); // wake up thread if sleeping
-			try {
-				wait(10000); // block: worker will create result and wake us up
-			} catch (final InterruptedException e) {}
+	public MeshData createPreview(Path original, Path target) {
+		// block other callers (we can't use 'this' as mutex because its needed for sync with PythonRunnable)
+		synchronized (blockOtherCallersMutex) {
+			// synchronize with conversion, lock will be lost during wait so that conversion can run
+			synchronized (this) {
+				final long startTime = System.currentTimeMillis();
+				result = null; // delete last result
+				next = new AssetConversionPaths(original, target);
+				while (result == null) {
+					initThreadIfNotRunning(); // start thread if needed
+					notify(); // wake up thread if sleeping
+					try {
+						wait(10000); // block: worker will create result and wake us up
+					} catch (final InterruptedException e) {}
+				}
+				if(logger.isInfoEnabled()) {
+					final long duration = System.currentTimeMillis() - startTime;
+					logger.info("==> Conversion duration: "+duration+" ms");
+				}
+				if (!result.success) throw result.exception;
+				else return result.meshData;
+			}
 		}
-		if(logger.isInfoEnabled()) {
-			final long duration = System.currentTimeMillis() - startTime;
-			logger.info("==> Conversion duration: "+duration+" ms");
-		}
-		if (!result.success) throw result.exception;
-		else return result.meshData;
 	}
 	
 	private void initThreadIfNotRunning() {
 		synchronized(threadIsAlive) {
 			if(!threadIsAlive.get()) {
 				logger.info("Thread not alive: Starting new thread for python socket connection.");
-				final Thread thread = new Thread(convertion);
+				final Thread thread = new Thread(conversion);
 				threadIsAlive.set(true); // dont accidentally restart twice
 				thread.start();
 			}
@@ -216,6 +223,7 @@ public class PythonTCPSocket {
 				try(Socket socket = new Socket("localhost", port)) {
 					connectStreamsAndSend(socket);
 					success = true;
+					logger.info("Connected to Blender Python Script Server.");
 				}
 				catch (final ConnectException e) {
 					final String message = "Connect failed, trying to reconnect.";

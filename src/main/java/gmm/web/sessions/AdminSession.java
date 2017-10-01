@@ -27,6 +27,7 @@ import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConf
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.assets.AssetService;
 import gmm.service.data.DataAccess;
+import gmm.service.data.backup.BackupExecutorService;
 import gmm.service.data.backup.TaskBackupLoader;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
@@ -42,9 +43,10 @@ import gmm.web.forms.TaskForm;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class AdminSession extends TaskBackupLoader {
 	
+	private final AssetService assets;
 	private final TaskServiceFinder taskService;
+	private final BackupExecutorService backups;
 	private final DataAccess data;
-	private AssetService assets;
 	
 	private final User loggedInUser;
 	private final AssetNameConflictCheckerFactory assetNameConflictCheckerFactory;
@@ -53,16 +55,20 @@ public class AdminSession extends TaskBackupLoader {
 	
 	@Autowired
 	public AdminSession(TaskServiceFinder taskService,
+			AssetService assets,
+			BackupExecutorService backups,
 			AssetNameConflictCheckerFactory assetNameConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
-			DataAccess data, UserService users, AssetService assets) {
+			DataAccess data, UserService users) {
 		
 		super(assetNameConflictCheckerFactory, taskIdConflictCheckerFactory);
 		
+		this.assets = assets;
 		this.taskService = taskService;
+		this.backups = backups;
+		
 		this.assetNameConflictCheckerFactory = assetNameConflictCheckerFactory;
 		this.data = data;
-		this.assets = assets;
 		
 		loggedInUser = users.getLoggedInUser();
 	}
@@ -116,7 +122,7 @@ public class AdminSession extends TaskBackupLoader {
 			data.add(service.create(form, loggedInUser));
 		};
 		final AssetNameConflictChecker ops =
-				assetNameConflictCheckerFactory.create(onAssetNameChecked);
+				assetNameConflictCheckerFactory.create(onAssetNameChecked, true);
 		
 		final List<AssetName> fileNames = new ArrayList<>(AssetName.class, importFilePaths.size());
 		for (final Path path : importFilePaths) {
@@ -127,6 +133,7 @@ public class AdminSession extends TaskBackupLoader {
 				fileNames, ops, ()->{
 					assetImporter = null;
 					newAssetsWithoutTasksVfs.update();
+					backups.triggerTaskBackup(false);
 		});
 		
 		return assetImporter.firstBundle();

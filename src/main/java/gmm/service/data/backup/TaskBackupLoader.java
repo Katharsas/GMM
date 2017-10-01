@@ -108,7 +108,7 @@ public class TaskBackupLoader {
 			assetImportChecked.add(task);
 		};
 		final AssetNameConflictChecker ops =
-				assetPathConflictCheckerFactory.create(onAssetNameChecked);
+				assetPathConflictCheckerFactory.create(onAssetNameChecked, false);
 		
 		final Runnable onFinished = () -> {
 			assetTaskLoader = null;

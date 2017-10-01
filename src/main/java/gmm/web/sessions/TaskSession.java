@@ -152,7 +152,7 @@ public class TaskSession implements DataChangeCallback {
 				data.add(taskCreator.create(form, loggedInUser));
 			};
 			final AssetNameConflictChecker ops = 
-					assetNameConflictCheckerFactory.create(onAssetNameChecked);
+					assetNameConflictCheckerFactory.create(onAssetNameChecked, false);
 			 
 			importer = new BundledMessageResponses<>(
 					new LinkedList<>(AssetName.class, new AssetName(form.getAssetName())),

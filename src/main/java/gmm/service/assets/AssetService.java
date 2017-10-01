@@ -212,9 +212,11 @@ public class AssetService {
 					}
 				}
 			} else {
-				// old props exist, valid asset exist but is different => recreate properties
-				if (existsAndValid && !service.isValidAssetProperties(props, info)) {
-					updater.recreatePropsAndSetInfo(task, info);
+				if (existsAndValid) {
+					// old props exist, valid asset exist but is different => recreate properties
+					if (!service.isValidAssetProperties(props, info)) {
+						updater.recreatePropsAndSetInfo(task, info);
+					}
 				} else {
 					// old props exist, invalid asset does not exist => remove properties & remove info
 					// old props exist, invalid asset exist => remove properties & set invalid info

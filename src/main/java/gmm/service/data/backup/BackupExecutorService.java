@@ -1,5 +1,7 @@
 package gmm.service.data.backup;
 
+import java.util.concurrent.CompletableFuture;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -11,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import gmm.service.assets.AssetTaskUpdater;
 import gmm.service.data.DataAccess;
 
 @Service
@@ -19,6 +22,7 @@ public class BackupExecutorService implements ServletContextListener {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	@Autowired private AssetTaskUpdater assetTaskUpdater;
 	@Autowired private BackupAccessService backups;
 	@Autowired private DataAccess data;
 	
@@ -52,8 +56,16 @@ public class BackupExecutorService implements ServletContextListener {
 		}
 	}
 	
-	public void triggerTaskBackup() {
-		backups.triggeredBackup.execute(true, false, data);
+	public void triggerTaskBackup(boolean blockUntilDone) {
+		final CompletableFuture<Void> done = assetTaskUpdater.allAyncTaskProcessing().thenRun(()->{
+			backups.triggeredBackup.execute(true, false, data);
+		});
+		if (!done.isDone()) {
+			logger.debug("Waiting for AssetTaskUpdater to finish before creating backup...");
+		}
+		if (blockUntilDone) {
+			done.join();
+		}
 	}
 	
 	public void triggerUserBackup() {
