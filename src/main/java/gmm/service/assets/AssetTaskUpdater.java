@@ -245,7 +245,8 @@ public class AssetTaskUpdater {
 		public void recreatePropsAndSetInfo(AssetTask<?> task, OriginalAssetFileInfo info) {
 			doUpdate(() -> {
 				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.NULL, Asset.NULL)
+					new TaskStateCondition(task, Properties.NULL, Asset.NULL),
+					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				recreateAssetPropertiesAndInfo(task, info, onCompletion);
 			});

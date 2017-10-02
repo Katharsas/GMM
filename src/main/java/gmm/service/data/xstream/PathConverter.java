@@ -4,7 +4,7 @@ import java.nio.file.Paths;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 
-public class PathConverter extends AbstractSingleValueConverter{
+public class PathConverter extends AbstractSingleValueConverter {
 	
 	@SuppressWarnings("rawtypes")
 	@Override

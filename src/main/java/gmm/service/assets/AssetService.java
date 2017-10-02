@@ -69,10 +69,11 @@ public class AssetService {
 	private final AssetTaskUpdater taskUpdater;
 	private final DataAccess data;
 	
-	// TODO make sure GUI errors are created whenever an invalid info is set or whenever
-	// a task has his mapping changed / a task is added
-	// TODO at the same time the tasks knowledge about wether it has a new asset folder must be updated
-	// TODO edit event must be triggered for given tasks so they get updated in GUI
+	// TODO currently, there is a small preview leak, because new assets are scanned for the first
+	// time AFTER VcsPlugin updated the WC. This means that any new assets that were deleted during
+	// offline GMM will still have previews left and cannot be found because AssetInfo is missing in
+	// new scan. This could be fixed by scanning once more before initialising VcsPlugin. AssetInfo
+	// would then be removed together with previews when scanning updated WC.
 	
 	private final Map<AssetName, AssetTask<?>> assetTasks;
 	
@@ -309,6 +310,11 @@ public class AssetService {
 		
 		final BiConsumer<AssetName, NewAssetFolderInfo> applyEntry = (folderName, currentInfo) -> {
 			
+			final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
+			final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
+			final boolean oldHasAsset = oldInfo != null && oldInfo.getStatus() == hasAsset;
+			final boolean currentHasAsset = currentInfo.getStatus() == hasAsset;
+			
 			// update tasks
 			final AssetTask<?> task = assetTasks.get(folderName);
 			if (task == null) {
@@ -317,12 +323,6 @@ public class AssetService {
 				taskUpdater.waitForAsyncTaskProcessing(task);
 				
 				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
-				
-				final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
-				
-				final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
-				final boolean oldHasAsset = oldInfo != null && oldInfo.getStatus() == hasAsset;
-				final boolean currentHasAsset = currentInfo.getStatus() == hasAsset;
 				
 				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
 					data.edit(task);
@@ -359,6 +359,11 @@ public class AssetService {
 					}
 				}
 			}
+			// delete previews
+			if (oldHasAsset && !currentHasAsset) {
+				deleteNewAssetPreview(folderName);
+			}
+			
 			// update info
 			oldFolders.remove(folderName);
 			newAssetFolders.put(folderName, currentInfo);
@@ -376,7 +381,12 @@ public class AssetService {
 			}
 			newAssetFolders.remove(notFound);
 			newAssetFoldersWithoutTasks.remove(notFound);
+			deleteNewAssetPreview(notFound);
 		}
+	}
+	
+	private void deleteNewAssetPreview(AssetName name) {
+		serviceFinder.getAssetService(name).deleteNewAssetPreview(name);
 	}
 	
 	final DataConfigService config;
@@ -386,8 +396,8 @@ public class AssetService {
 		deleteFile(assetFolderName, FileType.ASSET, null);
 	}
 	
-	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
+	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		Assert.isTrue(folderInfo.getStatus().isValid());
 		
@@ -409,13 +419,16 @@ public class AssetService {
 		if (fileType.isAsset()) {
 			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleNewAssetRemoved(folderInfo.getAssetFolder());
 			
+			final AssetTask<?> task = assetTasks.get(assetFolderName);
+			Objects.requireNonNull(task);
+			taskUpdater.waitForAsyncTaskProcessing(task);
+			
 			if (newInfo.isPresent()) {
 				newAssetFolders.put(assetFolderName, newInfo.get());
 			} else {
 				newAssetFolders.remove(assetFolderName);
+				deleteNewAssetPreview(assetFolderName);
 			}
-			final AssetTask<?> task = assetTasks.get(assetFolderName);
-			Objects.requireNonNull(task);
 			taskUpdater.new OnNewAssetUpdate(() -> data.edit(task)).removePropsAndSetInfo(task, newInfo);
 		}
 	}

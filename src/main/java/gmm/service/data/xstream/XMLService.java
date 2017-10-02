@@ -53,6 +53,7 @@ public class XMLService implements PersistenceService {
 			xstream.alias(clazz.getSimpleName(), clazz);
 		}
 		xstream.registerConverter(new PathConverter());
+		xstream.registerConverter(new AssetNameConverter());
 		final UserReferenceConverter userConverter = new UserReferenceConverter(getUsers);
 		// the following fields will reference user by id:
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "author", userConverter);

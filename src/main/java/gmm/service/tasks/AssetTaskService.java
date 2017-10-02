@@ -99,13 +99,20 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final File assetFile = getRestrictedAssetPathAbsolute(info.getType(), info).toFile();
 		
 		if (assetFile.lastModified() != props.getLastModified()) {
+			System.out.println(" - modified!");
 			return false;
 		}
 		if (assetFile.length() != props.getSizeInBytes()) {
+			System.out.println(" - length!");
 			return false;
 		}
 		// TODO hashcode
-		return hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType());
+		
+		if (!hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType())) {
+			System.out.println(" - preview!");
+			return false;
+		}
+		return true;
 	}
 	
 	/**
@@ -141,7 +148,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	}
 	
 	/**
-	 * Remove existing properties from task, set null/invalid info, delete preview.
+	 * Remove existing properties from task, set null/invalid info, delete preview if specified.
 	 */
 	public void removeNewAssetProperties(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
 		final AssetGroupType type = AssetGroupType.NEW;
@@ -149,13 +156,15 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 			throw new IllegalArgumentException("Cannot remove properties that don't exist!");
 		}
 		task.setNewAsset(null, info.orElse(null));
-		final Path previewFolder = getPreviewFolder(task.getAssetName());
-		deletePreview(previewFolder, type);
 		logger.debug("Removed properties & changed storage info of new asset file '" + task.getAssetName() + "' from task '" + task + "'.");
 	}
 	
+	public void deleteNewAssetPreview(AssetName assetName) {
+		deletePreview(getPreviewFolder(assetName), AssetGroupType.NEW);
+	}
+	
 	/**
-	 * Remove existing properties & info from task, delete preview.
+	 * Remove existing properties & info from task.
 	 */
 	public void removeOriginalAssetProperties(AssetTask<A> task) {
 		final AssetGroupType type = AssetGroupType.ORIGINAL;
@@ -163,8 +172,6 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 			throw new IllegalArgumentException("Cannot remove properties that don't exist!");
 		}
 		task.setOriginalAsset(null, null);
-		final Path previewFolder = getPreviewFolder(task.getAssetName());
-		deletePreview(previewFolder, type);
 		logger.debug("Removed properties & storage info of original asset file '" + task.getAssetName() + "' from task '" + task + "'.");
 	}
 	

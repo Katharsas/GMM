@@ -1,10 +1,12 @@
 package gmm.web.sessions.tasklist;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
@@ -28,10 +30,22 @@ public class PinnedSession extends TaskListState {
 	//user logged into this session
 	private final User user;
 	
+	List<Task> pinnedTasks;
+	
 	@Autowired
 	public PinnedSession(DataAccess data, UserService users) {
 		user = users.getLoggedInUser();
 		data.registerForUpdates(this);
+		
+		final List<Long> pinnedIds = user.getPinnedTaskIds();
+		pinnedTasks = new ArrayList<>(Task.class, pinnedIds.size() + 5);
+		if (pinnedIds.size() > 0) {
+			for (final Task task : data.getList(Task.class)) {
+				if (pinnedIds.contains(task.getId())) {
+					pinnedTasks.add(task);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -41,7 +55,7 @@ public class PinnedSession extends TaskListState {
 
 	@Override
 	protected List<Task> getVisible() {
-		return user.getPinnedTasks();
+		return pinnedTasks;
 	}
 
 	@Override
@@ -51,7 +65,7 @@ public class PinnedSession extends TaskListState {
 	protected <T extends Task> Collection<T> filter(Collection<T> tasks) {
 		final Collection<T> filtered = new LinkedList<>(tasks.getGenericType());
 		for (final T task : tasks) {
-			if(user.getPinnedTasks().contains(task)) {
+			if(pinnedTasks.contains(task)) {
 				filtered.add(task);
 			}
 		}
@@ -63,20 +77,22 @@ public class PinnedSession extends TaskListState {
 	 * ---------------------------------------------------*/
 	
 	public void pin(Task task) {
-		if (user.getPinnedTasks().contains(task)) {
+		if (pinnedTasks.contains(task)) {
 			throw new IllegalArgumentException("Cannot pin a task that is already pinned!");
 		} else {
-			user.getPinnedTasks().add(task);
-			final int index = user.getPinnedTasks().indexOf(task);
+			pinnedTasks.add(task);
+			user.getPinnedTaskIds().add(task.getId());
+			final int index = pinnedTasks.indexOf(task);
 			taskListEvents.add(new TaskListEvent.AddSingle(user, task.getIdLink(), index));
 		}
 	}
 	
 	public void unpin(Task task) {
-		if (!user.getPinnedTasks().contains(task)) {
+		if (!pinnedTasks.contains(task)) {
 			throw new IllegalArgumentException("Cannot unpin a task that has not been pinned!");
 		} else {
-			user.getPinnedTasks().remove(task);
+			pinnedTasks.remove(task);
+			user.getPinnedTaskIds().remove(task.getId());
 			taskListEvents.add(new TaskListEvent.RemoveSingle(user, task.getIdLink()));
 		}
 	}
@@ -86,7 +102,7 @@ public class PinnedSession extends TaskListState {
 	 * ---------------------------------------------------*/
 	
 	public List<Task> getTasks() {
-		return user.getPinnedTasks().copy();
+		return pinnedTasks.copy();
 	}
 	
 	/**

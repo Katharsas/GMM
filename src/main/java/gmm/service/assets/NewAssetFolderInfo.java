@@ -9,6 +9,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
 import gmm.collections.HashSet;
 import gmm.collections.Set;
 import gmm.domain.task.asset.AssetGroupType;
@@ -50,10 +52,14 @@ public class NewAssetFolderInfo implements AssetInfo {
 		return new NewAssetFolderInfo(duplicate, current);
 	}
 	
+	@XStreamAsAttribute
 	private final Path assetFolder;
+	@XStreamAsAttribute
 	private final AssetName assetFolderName;
+	@XStreamAsAttribute
 	private final AssetName assetFileName;
 	
+	@XStreamAsAttribute
 	private final AssetFolderStatus status;
 	
 	private final HashSet<Path> nonUniqueDuplicates;

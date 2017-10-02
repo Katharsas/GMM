@@ -7,9 +7,15 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 import gmm.collections.LinkedList;
 import gmm.collections.List;
-import gmm.domain.task.Task;
 import gmm.web.forms.LoadForm;
 
+/**
+ * Since instead of a proper DB, serialization is used to create backups of user files and task
+ * files separately, users cannot have persistent Task references directly. Save ids instead and
+ * search for tasks in DataBase when actual Task data is needed.
+ * 
+ * @author Jan Mothes
+ */
 public class User extends NamedObject {
 	
 	public static class UserNameOccupiedException extends IllegalArgumentException {
@@ -77,7 +83,7 @@ public class User extends NamedObject {
 	@XStreamAsAttribute
 	private String email="";
 	
-	private final List<Task> pinnedTasks = new LinkedList<>(Task.class);
+	private final List<Long> pinnedTaskIds = new LinkedList<>(Long.class);
 	
 	private final List<Notification> oldNotifications = new LinkedList<>(Notification.class);
 	private final List<Notification> newNotifications = new LinkedList<>(Notification.class);
@@ -183,8 +189,8 @@ public class User extends NamedObject {
 		this.loadForm = loadForm;
 	}
 	
-	public List<Task> getPinnedTasks() {
-		return pinnedTasks;
+	public List<Long> getPinnedTaskIds() {
+		return pinnedTaskIds;
 	}
 	
 	public UserId getUserId() {
