@@ -26,7 +26,7 @@ import $ from "../lib/jquery";
  * @param {TaskCacheSettings} settings
  */
 var TaskCache = function(settings) {
-		
+	
 	var idToTaskData = {};
 	
 	var subscriberToEventHandler = {};

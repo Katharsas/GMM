@@ -2,6 +2,7 @@
 
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
+import lozad from 'lozad';
 import { contextUrl, resortElementsById, runSerial } from "../shared/default";
 
 /**
@@ -31,7 +32,9 @@ import { contextUrl, resortElementsById, runSerial } from "../shared/default";
  * 		after the baseEventHandlers.
  */
 var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
-	
+
+	var lozadObserver = lozad();
+
 	var taskListId = settings.taskListId;
 	var taskSelector = ".task:not(.removed)";
 	
@@ -272,7 +275,7 @@ var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
 	};
 	
 	var init = function() {
-		
+
 		taskSwitcher.registerTaskList(taskListId, {
 			
 			createBody : function($task) {
@@ -289,6 +292,7 @@ var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
 		
 		var onswitch = function($task) {
 			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
+			lozadObserver.observe();
 		};
 		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
 		
