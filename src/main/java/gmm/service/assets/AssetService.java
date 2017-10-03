@@ -19,6 +19,7 @@ import gmm.collections.List;
 import gmm.collections.Set;
 import gmm.collections.UnmodifiableCollection;
 import gmm.domain.Linkable;
+import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
@@ -173,7 +174,9 @@ public class AssetService {
 			final OriginalAssetFileInfo info = getOriginalAssetFileInfo(name);
 			final AssetProperties props = task.getAssetProperties(type);
 			
-			final OnOriginalAssetUpdate updater = taskUpdater.new OnOriginalAssetUpdate();
+			final OnOriginalAssetUpdate updater = taskUpdater.new OnOriginalAssetUpdate(()->{
+				data.editBy(task, User.SYSTEM);
+			});
 			
 			if (info != null && props == null) {
 				updater.recreatePropsAndSetInfo(task, info);
@@ -195,7 +198,9 @@ public class AssetService {
 			final boolean existsAndValid =
 					(info != null) && (info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
 			
-			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate();
+			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
+				data.editBy(task, User.SYSTEM);
+			});
 			
 			if (props == null) {
 				// old props don't exist, valid asset exists => recreate properties
@@ -236,6 +241,7 @@ public class AssetService {
 		if (newFolderInfo != null) newAssetFoldersWithoutTasks.put(name, newFolderInfo);
 		
 		if (task.getOriginalAssetProperties() != null) {
+			Objects.requireNonNull(task.getOriginalAssetFileInfo());
 			taskUpdater.new OnOriginalAssetUpdate().removePropsAndInfo(task);
 		}
 		if (task.getNewAssetProperties() != null) {
@@ -259,14 +265,17 @@ public class AssetService {
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
 				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.classOf(task));
 				taskUpdater.waitForAsyncTaskProcessing(task);
+				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
+					data.edit(task);
+				});
 				if (oldInfo == null) {
 					// new assets
-					taskUpdater.new OnOriginalAssetUpdate().recreatePropsAndSetInfo(task, currentInfo);
+					update.recreatePropsAndSetInfo(task, currentInfo);
 				} else {
 					// changed assets
 					final AssetProperties props = task.getAssetProperties(type);
 					if (!service.isValidAssetProperties(props, currentInfo)) {
-						taskUpdater.new OnOriginalAssetUpdate().recreatePropsAndSetInfo(task, currentInfo);
+						update.recreatePropsAndSetInfo(task, currentInfo);
 					}
 				}
 			}
@@ -280,8 +289,11 @@ public class AssetService {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
 				taskUpdater.waitForAsyncTaskProcessing(task);
+				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
+					data.edit(task);
+				});
 				if (task.getAssetProperties(type) != null) {
-					taskUpdater.new OnOriginalAssetUpdate().removePropsAndInfo(task);
+					update.removePropsAndInfo(task);
 				}
 			}
 			originalAssetFiles.remove(notFound);
@@ -325,7 +337,7 @@ public class AssetService {
 				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
 				
 				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
-					data.edit(task);
+					data.editBy(task, User.UNKNOWN);
 					// TODO calling edit causes the onDataChangeEvent above to be called, so we could just do everything in there
 					// (the old info would be available through tasks), same goes for original tasks
 				});
@@ -376,7 +388,7 @@ public class AssetService {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null && task.getAssetProperties(type) != null) {
 				taskUpdater.new OnNewAssetUpdate(() -> {
-					data.edit(task);
+					data.editBy(task, User.UNKNOWN);
 				}).removePropsAndSetInfo(task, Optional.empty());
 			}
 			newAssetFolders.remove(notFound);
@@ -429,7 +441,9 @@ public class AssetService {
 				newAssetFolders.remove(assetFolderName);
 				deleteNewAssetPreview(assetFolderName);
 			}
-			taskUpdater.new OnNewAssetUpdate(() -> data.edit(task)).removePropsAndSetInfo(task, newInfo);
+			taskUpdater.new OnNewAssetUpdate(() -> {
+				data.edit(task);
+			}).removePropsAndSetInfo(task, newInfo);
 		}
 	}
 	

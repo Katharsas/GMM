@@ -42,6 +42,9 @@
   	
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
 	<logger name="org.springframework" level="WARN"/>
+	
+	<logger name="gmm.service.assets.AssetScanner" level="INFO"/>
+	<logger name="gmm.service.NotificationService" level="INFO"/>
 
 	<root>
 		<level value="DEBUG" />

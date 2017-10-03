@@ -56,7 +56,7 @@ var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
 	};
 	
 	/**
-	 * Append given tasks to list. Task data for must exit in cache.
+	 * Append given tasks to list. Task data for them must exist in cache.
 	 * Does not check if task header has already been added to the list.
 	 */
 	var appendTaskHeaders = function(idLinks) {

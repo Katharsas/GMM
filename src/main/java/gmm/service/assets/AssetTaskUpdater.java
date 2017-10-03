@@ -18,9 +18,11 @@ import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
 
 /**
- * This service implements the state machines that model how AssetTask properties & info need to change when a task or
- * its assets info changes. Allows to define "preconditions", which express one of the states an AssetTask must be in
- * to be allowed to transform to the new state.
+ * This service implements the state machines that model how AssetTask properties & info need to
+ * change when a task or its assets info changes. Allows to define "preconditions", which express
+ * one of the states an AssetTask must be in to be allowed to transform to the new state.
+ * 
+ * To the caller, two inner classes are provided for original and new asset updates respectively.
  * 
  * @author Jan Mothes
  */
@@ -37,20 +39,18 @@ public class AssetTaskUpdater {
 	
 	public static class TaskStateCondition {
 		
-		public final AssetTask<?> actual;
 		public final Properties expectedProperties;
-		public final Asset expectedAssetFolder;
+		public final Asset expectedInfo;
 		
-		public TaskStateCondition(AssetTask<?> actual, Properties expectedProperties, Asset expectedAssetFolder) {
-			this.actual = actual;
+		public TaskStateCondition(Properties expectedProperties, Asset expectedInfo) {
 			this.expectedProperties = expectedProperties;
-			this.expectedAssetFolder = expectedAssetFolder;
+			this.expectedInfo = expectedInfo;
 		}
-		public boolean check(AssetGroupType type) {
-			final Properties actualProps = actual.getNewAssetProperties() == null ?
+		public boolean check(AssetGroupType type, AssetTask<?> actual) {
+			final Properties actualProps = actual.getAssetProperties(type) == null ?
 					Properties.NULL : Properties.EXISTS;
-			final Asset actualFolder = getState(type, Optional.ofNullable(actual.getNewAssetFolderInfo()));
-			return actualProps == expectedProperties && actualFolder == expectedAssetFolder;
+			final Asset actualInfo = getState(type, Optional.ofNullable(actual.getAssetStorageInfo(type)));
+			return actualProps == expectedProperties && actualInfo == expectedInfo;
 		}
 		public static Asset getState(AssetGroupType type, Optional<AssetInfo> info) {
 			if (!info.isPresent()) return Asset.NULL;
@@ -63,11 +63,11 @@ public class AssetTaskUpdater {
 				}
 			}
 		}
-		public static void checkAny(AssetGroupType type, TaskStateCondition... allowed) {
+		public static void checkAny(AssetGroupType type, AssetTask<?> actual, TaskStateCondition... allowed) {
 			for (final TaskStateCondition condition : allowed) {
-				if (condition.check(type)) return;
+				if (condition.check(type, actual)) return;
 			}
-			throw new IllegalStateException("Actual task state does not match any given states!");
+			throw new IllegalStateException("Actual task state does not match any given states! Task: '" + actual +"'");
 		}
 	}
 	
@@ -97,13 +97,11 @@ public class AssetTaskUpdater {
 			future = future.thenRun(onCompletion.get());
 		}
 		if (!future.isDone()) {
-			processingAssetTasks.put(task, future.thenRun(
-					() -> processingAssetTaskFinished(task)));
+			future = future.thenRun(() -> {
+				processingAssetTasks.remove(task);
+			});
+			processingAssetTasks.put(task, future);
 		}
-	}
-	
-	private synchronized void processingAssetTaskFinished(AssetTask<?> task) {
-		processingAssetTasks.remove(task);
 	}
 	
 	private <A extends AssetProperties> void removeNewAssetPropertiesAndSetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
@@ -179,9 +177,18 @@ public class AssetTaskUpdater {
 		
 		AssetGroupType type = AssetGroupType.NEW;
 		
+		/**
+		 * Create an update to execute one of the available operations asynchronously.
+		 */
 		public OnNewAssetUpdate() {
 			super();
 		}
+		
+		/**
+		 * Create an update to execute one of the available operations asynchronously.
+		 * After the async operation has been completed, the given Runnable will be executed (can be
+		 * used to call data.edit(task) to broadcast task change for example).
+		 */
 		public OnNewAssetUpdate(Runnable onCompletion) {
 			super(onCompletion);
 		}
@@ -191,10 +198,10 @@ public class AssetTaskUpdater {
 		 */
 		public <A extends AssetProperties> void recreatePropsAndSetInfo(AssetTask<A> task, NewAssetFolderInfo validAssetInfo) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.NULL, Asset.NO_ASSET),
-					new TaskStateCondition(task, Properties.NULL, Asset.NULL),
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.NULL, Asset.NO_ASSET),
+					new TaskStateCondition(Properties.NULL, Asset.NULL),
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				recreateAssetPropertiesAndInfo(task, validAssetInfo, onCompletion);
 			});
@@ -205,8 +212,8 @@ public class AssetTaskUpdater {
 		 */
 		public void removePropsAndSetInfo(AssetTask<?> task, Optional<NewAssetFolderInfo> noAssetOrNullInfo) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				removeNewAssetPropertiesAndSetInfo(task, noAssetOrNullInfo);
 				onCompletion();
@@ -219,10 +226,10 @@ public class AssetTaskUpdater {
 		 */
 		public void setInfo(AssetTask<?> task, Optional<NewAssetFolderInfo> anyInfo) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.NULL, Asset.NO_ASSET),
-					new TaskStateCondition(task, Properties.NULL, Asset.NULL),
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.NULL, Asset.NO_ASSET),
+					new TaskStateCondition(Properties.NULL, Asset.NULL),
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				changeNewAssetInfo(task, anyInfo);
 				onCompletion();
@@ -235,18 +242,27 @@ public class AssetTaskUpdater {
 		
 		AssetGroupType type = AssetGroupType.ORIGINAL;
 		
+		/**
+		 * Create an update to execute one of the available operations asynchronously.
+		 */
 		public OnOriginalAssetUpdate() {
 			super();
 		}
+
+		/**
+		 * Create an update to execute one of the available operations asynchronously.
+		 * After the async operation has been completed, the given Runnable will be executed (can be
+		 * used to call data.edit(task) to broadcast task change for example).
+		 */
 		public OnOriginalAssetUpdate(Runnable onCompletion) {
 			super(onCompletion);
 		}
 		
 		public void recreatePropsAndSetInfo(AssetTask<?> task, OriginalAssetFileInfo info) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.NULL, Asset.NULL),
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.NULL, Asset.NULL),
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				recreateAssetPropertiesAndInfo(task, info, onCompletion);
 			});
@@ -254,8 +270,8 @@ public class AssetTaskUpdater {
 		
 		public void removePropsAndInfo(AssetTask<?> task) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				removeOriginalAssetProperties(task);
 				onCompletion();
@@ -264,8 +280,8 @@ public class AssetTaskUpdater {
 		
 		public void setInfo(AssetTask<?> task, OriginalAssetFileInfo info) {
 			doUpdate(() -> {
-				TaskStateCondition.checkAny(type,
-					new TaskStateCondition(task, Properties.EXISTS, Asset.VALID_ASSET)
+				TaskStateCondition.checkAny(type, task,
+					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
 				changeOriginalAssetInfo(task, info);
 				onCompletion();

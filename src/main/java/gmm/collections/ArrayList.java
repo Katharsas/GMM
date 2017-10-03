@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public class ArrayList<E> extends java.util.ArrayList<E> implements List<E> {
 	private static final long serialVersionUID = -857844793375508167L;
@@ -14,6 +15,7 @@ public class ArrayList<E> extends java.util.ArrayList<E> implements List<E> {
 				new HashMap<K, java.util.Collection<V>>(), () -> new ArrayList<V>(clazz));
 	}
 	
+	@XStreamAsAttribute
 	private final Class<E> genericType;
 	
 	public ArrayList(Class<E> clazz) {

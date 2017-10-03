@@ -42,6 +42,7 @@ public abstract class TaskListState implements DataChangeCallback {
 					onAdd(event.source, event.getChangedSingle(target));
 					break;
 				case REMOVED:
+					onRemove(event.source, event.getChangedSingle(target));
 					break;
 				case EDITED:
 					onEdit(event.source, event.getChangedSingle(target));
@@ -53,6 +54,7 @@ public abstract class TaskListState implements DataChangeCallback {
 					onAddAll(event.source, event.getChanged(target));
 					break;
 				case REMOVED:
+					onRemoveAll(event.source, event.getChanged(target));
 					break;
 				case EDITED:
 					for(final Task task : event.getChanged(target)) {

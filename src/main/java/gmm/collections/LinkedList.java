@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	private static final long serialVersionUID = -857844793375508167L;
@@ -14,6 +15,7 @@ public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 				new HashMap<K, java.util.Collection<V>>(), () -> new LinkedList<V>(clazz));
 	}
 	
+	@XStreamAsAttribute
 	private final Class<E> genericType;
 	
 	public LinkedList(Class<E> clazz) {

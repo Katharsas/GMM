@@ -2,11 +2,15 @@ package gmm.collections;
 
 import java.util.Iterator;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
 public class UnmodifiableCollection<E> implements Collection<E>, java.io.Serializable {
 	private static final long serialVersionUID = -1502692809877910031L;
 	
 	private final java.util.Collection<E> inner;
+	@XStreamAsAttribute
 	private final Class<E> genericType;
+	@XStreamAsAttribute
 	private final boolean hasNewInstanceMethod;
 	
 	@SuppressWarnings("unchecked")

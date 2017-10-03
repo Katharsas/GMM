@@ -93,16 +93,32 @@ var TaskCache = function(settings) {
 		}
 	};
 	
+	/**
+	 * @param {string[]} idLinks 
+	 */
 	var loadTasks = function(idLinks) {
+		var idLinksMissing = idLinks.slice();
 		var data = { "idLinks[]" : idLinks };
 		return Ajax.post(contextUrl + settings.renderUrl, data)
 		.then(function (taskRenders) {
 			taskRenders.forEach(function(task) {
 				preprocess(task);
 				idToTaskData[task.idLink] = task;
+				delete idLinksMissing[idLinksMissing.indexOf(task.idLink)];
 			});
+			for (var idLink of idLinksMissing) {
+				idToTaskData[idLink] = getDummyTask(idLink);
+			}
 		});
 	};
+
+	var getDummyTask = function(idLink) {
+		return {
+			idLink : idLink,
+			$header : $("<div id='" + idLink + "' class='list-element task collapsed' style='padding:5px'>"
+				+ "Error: Task with id '" + idLink + "' was not returned from server!</div>")
+		};
+	}
 	
 	return {
 		
@@ -159,6 +175,9 @@ var TaskCache = function(settings) {
 		 * @see function makeAvailable
 		 */
 		getTaskHeader : function(idLink) {
+			if (!(idLink in idToTaskData)) {
+				throw new Error("Could not find data for task '" + idLink + "' in cache!");
+			}
 			return idToTaskData[idLink].$header.clone();
 		},
 		
@@ -167,6 +186,9 @@ var TaskCache = function(settings) {
 		 * @see function makeAvailable
 		 */
 		getTaskBody : function(idLink) {
+			if (!(idLink in idToTaskData)) {
+				throw new Error("Could not find data for task '" + idLink + "' in cache!");
+			}
 			return idToTaskData[idLink].$body.clone();
 		}
 	};

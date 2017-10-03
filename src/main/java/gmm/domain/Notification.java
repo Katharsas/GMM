@@ -1,12 +1,17 @@
 package gmm.domain;
 
+import java.util.Objects;
 
-public class Notification extends UniqueObject{
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
+public class Notification extends UniqueObject {
+
+	@XStreamAsAttribute
 	private String text;
 	
 	public Notification(String text) {
 		super();
+		Objects.requireNonNull(text);
 		this.text = text;
 	}
 	

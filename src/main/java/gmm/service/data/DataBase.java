@@ -110,7 +110,7 @@ public class DataBase implements DataAccess {
 		for (final Class<?> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
-			ArrayList<?> list = new ArrayList<>(type);
+			final ArrayList<?> list = new ArrayList<>(type);
 			concretes.putSafe((Class<Object>)list.getGenericType(), (Collection<Object>)list);// fuck u generics
 		}
 		listTypes.addAll(Arrays.asList(types));
@@ -274,6 +274,22 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public <T extends Linkable> void edit(T data) {
+		edit(data, executingUser.get());
+	}
+	
+	@Override
+	public <T extends Linkable> void editBy(T data, User cause) {
+		if (cause == User.UNKNOWN) {
+			if (executingUser.get().isNormalUser()) {
+				throw new IllegalStateException("Source user can be identified!");
+			}
+		} else if (cause != User.SYSTEM && cause != User.NULL) {
+			throw new IllegalArgumentException("Cannot change source to arbitrary normal user!");
+		}
+		edit(data, cause);
+	}
+	
+	private <T extends Linkable> void edit(T data, User cause) {
 		logger.debug("Replacing element of type " + data.getClass().getSimpleName());
 		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
@@ -281,7 +297,7 @@ public class DataBase implements DataAccess {
 		}
 		collection.remove(data);
 		collection.add(data);
-		callbacks.onEvent(new DataChangeEvent(EDITED, executingUser.get(), data));
+		callbacks.onEvent(new DataChangeEvent(EDITED, cause, data));
 	}
 
 	@Override

@@ -55,7 +55,7 @@ public class AssetScanner {
 	}
 	
 	private void scanForOriginalAssets(Path originalAssets, BiConsumer<AssetName, OriginalAssetFileInfo> onHit) {
-		logger.debug("Scanning for original assets at path '" + originalAssets + "'.");
+		logger.info("Scanning for original assets at path '" + originalAssets + "'.");
 		try {
 			Files.walkFileTree(originalAssets, new SimpleFileVisitor<Path>() {
 				@Override
@@ -161,7 +161,7 @@ public class AssetScanner {
 		if (!rootScanFolder.toFile().isDirectory()) {
 			throw new IllegalArgumentException("Directory expected!");
 		}
-		logger.debug("Scanning for new assets at path '" + rootScanFolder + "'.");
+		logger.info("Scanning for new assets at path '" + rootScanFolder + "'.");
 		try {
 			Files.walkFileTree(rootScanFolder, new SimpleFileVisitor<Path>() {
 				@Override

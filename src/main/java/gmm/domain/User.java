@@ -56,7 +56,7 @@ public class User extends NamedObject {
 		protected void validateUserName(String name) {}
 	}
 	
-	/**Represents the absence of a user. */
+	/** Represents the absence of a user. */
 	public final static User NULL = new PredefinedUser("EMPTY");
 	/** Represents a normal user thats is simply unknown at the moment. */
 	public final static User UNKNOWN = new PredefinedUser("UNKNOWN");
@@ -134,6 +134,13 @@ public class User extends NamedObject {
 				|| name.equalsIgnoreCase(SYSTEM.getName())) {
 			throw new UserNameOccupiedException(name, "User name '" + name + "' is not available!");
 		}
+	}
+	
+	/**
+	 * @return True if this is not NULL, SYSTEM or UNKNOWN user.
+	 */
+	public boolean isNormalUser() {
+		return this != NULL && this != SYSTEM && this != UNKNOWN;
 	}
 	
 	//Setters, Getters---------------------------------------

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
+import gmm.domain.User;
 
 /**
  * DB interface, provides methods to change data, provides Observer pattern to notify on changes.
@@ -20,6 +21,7 @@ public interface DataAccess {
 	public <T extends Linkable> void removeAll(Collection<T> data);
 	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public <T extends Linkable> void edit(T data);
+	public <T extends Linkable> void editBy(T data, User source);
 	@Deprecated public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	
@@ -46,7 +48,8 @@ public interface DataAccess {
 	public void registerForUpdates(DataChangeCallback onUpdate);
 	
 	/**
-	 * Similar to {@link #registerForUpdates(DataChangeCallback)}, but runs earlier.
+	 * Similar to {@link #registerForUpdates(DataChangeCallback)}, but allows to post process data
+	 * after a change before update listeners are notified.
 	 */
 	public void registerPostProcessor(DataChangeCallback onUpdate);
 }
