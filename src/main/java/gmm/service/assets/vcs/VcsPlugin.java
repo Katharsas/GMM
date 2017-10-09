@@ -3,8 +3,11 @@ package gmm.service.assets.vcs;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import gmm.collections.List;
 import gmm.service.assets.AssetService;
@@ -15,12 +18,22 @@ public abstract class VcsPlugin {
 	
 	private AssetService filesChangedHandler;
 	
+	@Value("${vcs.notify.token}")
+	private String configToken;
+	
 	public VcsPlugin() {
 		logger.debug("\n"
 				+ "##########################################################" + "\n\n"
 				+ "  Version Control Plugin:" + "\n"
 				+ "  " + this.getClass().getSimpleName() + "\n\n"
 				+ "##########################################################");
+	}
+	
+	@PostConstruct
+	private void assertToken() {
+		if (configToken == null || configToken.equals("")) {
+			logger.warn("Configuration problem: vcs.notify.token is missing or empty! Any attempts to use this token will fail.");
+		}
 	}
 	
 	public void registerFilesChangedHandler(AssetService assetService) {

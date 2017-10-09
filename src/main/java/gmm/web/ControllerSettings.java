@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import gmm.service.data.DataAccess;
 import gmm.service.users.CurrentUser;
@@ -31,6 +32,11 @@ import gmm.web.binding.PathEditor;
 public class ControllerSettings {
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public static class NotFoundException extends RuntimeException {
+		private static final long serialVersionUID = 8672281667419693687L;
+	}
 
 	@Value("${admin.email:}")
 	private String emailAddress;
@@ -61,7 +67,7 @@ public class ControllerSettings {
 	
 	@ModelAttribute
 	public void populateModel(Model model) {
-		boolean isUserLoggedIn = user.isLoggedIn();
+		final boolean isUserLoggedIn = user.isLoggedIn();
 		model.addAttribute("isUserLoggedIn", isUserLoggedIn);
 		if (isUserLoggedIn) {
 			model.addAttribute("principal", user.get());
@@ -89,6 +95,8 @@ public class ControllerSettings {
 			// Spring itself will catch, log and redirect, we don't need to handle this.
 			// Spring logging this exception is blocked with logger-filter to hold log clean.
 			throw ex;
+		} else if (ex instanceof NotFoundException) {
+			throw ex; // Spring will return 404
 		}
 		logger.error("Controller threw exception:", ex);
 //		if(!emailAddress.isEmpty()) {

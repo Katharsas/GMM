@@ -21,6 +21,9 @@ public class User extends NamedObject {
 	public static class UserNameOccupiedException extends IllegalArgumentException {
 		private static final long serialVersionUID = -8126984959992853457L;
 		private final String userName;
+		public UserNameOccupiedException(String userName) {
+			this(userName, "Username '" + userName + "' occupied!");
+		}
 		public UserNameOccupiedException(String userName, String message) {
 			super(message);
 			Objects.requireNonNull(userName);
@@ -50,18 +53,13 @@ public class User extends NamedObject {
 	}
 	
 	//Constants-------------------------------------------
-	private static class PredefinedUser extends User {
-		public PredefinedUser(String name) {super(name);}
-		@Override
-		protected void validateUserName(String name) {}
-	}
 	
 	/** Represents the absence of a user. */
-	public final static User NULL = new PredefinedUser("EMPTY");
+	public final static User NULL = new User("EMPTY");
 	/** Represents a normal user thats is simply unknown at the moment. */
-	public final static User UNKNOWN = new PredefinedUser("UNKNOWN");
+	public final static User UNKNOWN = new User("UNKNOWN");
 	/** Represents the system/application itself as user. */
-	public final static User SYSTEM = new PredefinedUser("SYSTEM");
+	public final static User SYSTEM = new User("SYSTEM");
 	
 	public final static String ROLE_ADMIN = "ROLE_ADMIN";
 	public final static String ROLE_USER = "ROLE_USER";
@@ -125,15 +123,6 @@ public class User extends NamedObject {
 	@Override
 	public void setName(String name) {
 		super.setName(name);
-		validateUserName(name);
-	}
-	
-	protected void validateUserName(String name) {
-		if(name.equalsIgnoreCase(NULL.getName())
-				|| name.equalsIgnoreCase(UNKNOWN.getName())
-				|| name.equalsIgnoreCase(SYSTEM.getName())) {
-			throw new UserNameOccupiedException(name, "User name '" + name + "' is not available!");
-		}
 	}
 	
 	/**

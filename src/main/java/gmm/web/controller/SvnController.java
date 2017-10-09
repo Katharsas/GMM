@@ -35,8 +35,7 @@ public class SvnController {
 	public @ResponseBody ResponseEntity<?> notifyCommit(
 			@RequestParam(value="token", required=false) String token) {
 		
-		if (token == null || !token.equals(configToken)) {
-			logger.debug(token);
+		if (token == null || token.equals("") || !token.equals(configToken)) {
 			logger.debug("Invalid commit notification received (no or wrong token).");
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {

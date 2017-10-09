@@ -11,18 +11,20 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
+import gmm.service.data.DataAccess;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
 	@Autowired
-	UserProvider users;
+	DataAccess data;
 	
 	@Override
 	public UserDetails loadUserByUsername(String name)
 			throws UsernameNotFoundException {
 		
-		final gmm.domain.User user = gmm.domain.User.getFromName(users.get(), name);
+		
+		final gmm.domain.User user = gmm.domain.User.getFromName(data.getList(gmm.domain.User.class), name);
 		if(user == null || user.getPasswordHash() == null || !user.isEnabled()) {
 			throw new UsernameNotFoundException("Could not find User with name "+name);
 		}

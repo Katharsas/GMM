@@ -2,7 +2,6 @@ package gmm.web.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,16 +22,12 @@ public class AdminUserController {
 	
 	private final DataAccess data;
 	private final UserService users;
-	private final PasswordEncoder encoder;
 	private final BackupExecutorService backups;
 	
 	@Autowired
-	public AdminUserController(DataAccess data, UserService users, PasswordEncoder encoder,
-			BackupExecutorService backups) {
-		
+	public AdminUserController(DataAccess data, UserService users, BackupExecutorService backups) {
 		this.data = data;
 		this.users = users;
-		this.encoder = encoder;
 		this.backups = backups;
 	}
 	
@@ -46,11 +41,11 @@ public class AdminUserController {
 			@RequestParam(value="name", required=false) String name,
 			@RequestParam(value="role", required=false) String role) {
 		
-		final User exists = User.getFromName(users.get(), name);
+		final boolean isFreeName = users.isFreeUserName(name);
 		final String existsMessage = "Another user with name '" + name + "' already exists!";
-		boolean isNew = idLink.equals("new");
-		if (exists != null) {
-			String message = (isNew ? "Can't add user. " : "Can't change name. ") + existsMessage;
+		final boolean isNew = idLink.equals("new");
+		if (!isFreeName) {
+			final String message = (isNew ? "Can't add user. " : "Can't change name. ") + existsMessage;
 			throw new UserNameOccupiedException(name, message);
 		}
 		if(isNew) {
@@ -88,7 +83,7 @@ public class AdminUserController {
 		
 		final User user = users.getByIdLink(idLink);
 		final String password = users.generatePassword();
-		user.setPasswordHash(encoder.encode(password));
+		user.setPasswordHash(users.encodePassword(password));
 		return new String[] {password};
 	}
 	

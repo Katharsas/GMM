@@ -1,11 +1,17 @@
 @import '../include';
 
+
 #login {
 	max-width:540px;
 	margin:0 auto;
 	background-color: $bgc-subpage-dark;
 	padding:20px;
 	padding-bottom:50px;
+	
+	a:not(.button) {
+		font-style: italic;
+		color:#999;
+	}
 }
 
 #login-logoutMessage {
@@ -14,17 +20,19 @@
 }
 
 #login-welcomeMessage {
-	margin-bottom:15px;
+	margin-bottom:30px;
 }
 
 #login-gmmName {
 	font-weight:bold;
-	color:#999;
+	padding-left: 5px;
+	font-size: 1.15em;
 }
 
-#login-form-inputs {
+fieldset#login-form-inputs {
 	border-color: $bgc-subpage-bright;
 	padding:7px 10px;
+	margin: 0px;
 	margin-bottom:10px;
 	
 	& > * {
@@ -38,4 +46,8 @@
 
 #login-error {
 	background-color: $c-red;
+}
+
+#account-created {
+	background-color: $c-green;
 }

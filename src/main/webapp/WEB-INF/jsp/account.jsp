@@ -20,30 +20,40 @@
 			<div id="login-welcomeMessage" class="h2">
 				Welcome to the <span id="login-gmmName">Gothic Mod Manager</span> !<br>
 			</div>
-			<span class="h3 left">Login</span><a class="right button" href="<c:url value="/newaccount"/>" style="padding:3px 7px;margin-bottom:10px;">Create Account</a>
-			<div class="clear"></div>
-			<form id="loginForm" action="<c:url value="/login"/>" method="POST">
+			<span class="h3">Create Account</span>
+			<form id="loginForm" action="<c:url value="newaccount/create"/>" method="POST">
 				<fieldset id="login-form-inputs">
 				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-					<div class="input">
+					<div class="left">Username:</div>
+					<div class="right input">
 						<input id="username" type="text" name="username" autofocus="autofocus"/><br>
 					</div>
-					<div class="input">
+					<div class="clear"></div>
+					<div class="left">Password:</div>
+					<div class="right input">
 						<input id="login-form-password" type="password" name="password"><br>
 					</div>
-					<div id="login-form-submit" class="button">Login</div>
+					<div class="clear"></div>
+					<div class="left">Token:</div>
+					<div class="right input">
+						<input id="login-form-token" type="text" name="token"><br>
+					</div>
+					<div class="clear"></div>
+					<div id="login-form-submit" class="button" style="margin-top: 15px">Create</div>
 				</fieldset>
-				<c:if test="${error}">
-					<div id="login-error" class="center">Wrong username or password!<br></div>
-				</c:if><c:if test="${not error}"><br></c:if>
-				<c:if test="${param.newaccount != null}">
-					<div id="account-created" class="center">Account successfully created!<br></div>
-				</c:if><c:if test="${param.newaccount == null}"><br></c:if>
-			</form><br/><br/><br/>
-			<span class="h3">Links</span><br/>
-			Visit the development of this software: <a href="http://github.com/Katharsas/GMM">http://github.com/Katharsas/GMM</a>
-			<br/>
-			Visit the Gothic Reloaded Mod homepage: <a href="http://www.gothic-reloaded-mod.de/">http://www.gothic-reloaded-mod.de/</a>
+				<c:choose>
+					<c:when test="${param.wrongToken != null}">
+						<div id="login-error" class="center">Invalid token!<br></div>
+					</c:when>
+					<c:when test="${param.nameTaken != null}">
+						<div id="login-error" class="center">Name already taken!<br></div>
+					</c:when>
+					<c:when test="${param.passwordTooShort != null}">
+						<div id="login-error" class="center">Password too short!<br></div>
+					</c:when>
+					 <c:otherwise><br></c:otherwise>
+				</c:choose>
+			</form>
 		</div>
     </jsp:body>
 </t:all_template>

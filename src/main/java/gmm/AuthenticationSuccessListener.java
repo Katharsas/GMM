@@ -8,6 +8,7 @@ import org.springframework.security.authentication.event.InteractiveAuthenticati
 import org.springframework.stereotype.Component;
 
 import gmm.domain.User;
+import gmm.service.data.DataAccess;
 import gmm.service.users.UserProvider;
 
 @Component
@@ -16,12 +17,18 @@ public class AuthenticationSuccessListener implements
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired private UserProvider users;
+	private final UserProvider users;
+	
+	@Autowired
+	public AuthenticationSuccessListener(DataAccess data) {
+		users = new UserProvider(() -> data.getList(User.class));
+	}
 	
     @Override
     public void onApplicationEvent(InteractiveAuthenticationSuccessEvent event) {
-    	User user = users.get(event.getAuthentication().getName());
-    	boolean isAdmin = user.getRole().equals(User.ROLE_ADMIN);
+    	
+    	final User user = users.get(event.getAuthentication().getName());
+    	final boolean isAdmin = user.getRole().equals(User.ROLE_ADMIN);
     	logger.info((isAdmin ? "Admin" : "User") + " with id " + user.getIdLink()
     			+ " has successfully logged in!");
     }

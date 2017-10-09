@@ -6,17 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
+import gmm.domain.User.UserNameOccupiedException;
 import gmm.domain.task.Task;
 import gmm.service.ajax.AutoResponseBundleHandler;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.data.backup.BackupAccessService;
 import gmm.service.data.backup.TaskBackupLoader;
+import gmm.service.users.UserService;
 
 @Service
 public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> {
@@ -25,18 +26,18 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	
 	private final BackupAccessService backups;
 	private final TaskBackupLoader backupLoader;
-	private final PasswordEncoder encoder;
 	private final DataAccess data;
+	private final UserService userService;
 	
 	private boolean initialized = false;
 	
 	@Autowired
 	public DataBaseInit(BackupAccessService backups, TaskBackupLoader backupLoader,
-			PasswordEncoder encoder, DataAccess data) {
+			DataAccess data, UserService userService) {
 		this.backups = backups;
 		this.backupLoader = backupLoader;
-		this.encoder = encoder;
 		this.data = data;
+		this.userService = userService;
 	}
 	
 	@Override
@@ -101,10 +102,15 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		if(autoloadUsers) {
 			final Collection<User> users = backups.getLatestUserBackup();
 			if (users != null) {
+				final Collection<User> validated = users.copy();
 				for (final User user : users) {
 					UniqueObject.updateCounter(user);
+					if (!userService.isFreeUserName(user.getName())) {
+						logger.error("Could not load user '" + user + "'!", new UserNameOccupiedException(user.getName()));
+						validated.remove(user);
+					}
 				}
-				data.addAll(users);
+				data.addAll(validated);
 				logger.info("Autoloaded latest user backup file.");
 			} else {
 				logger.info("Mising backup files caused users not to be autoloaded.");
@@ -124,8 +130,11 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	}
 	
 	private User createDefaultUser() {
+		if (!userService.isFreeUserName(defaultUserName)) {
+			throw new UserNameOccupiedException(defaultUserName);
+		}
 		final User defaultUser = new User(defaultUserName);
-		defaultUser.setPasswordHash(encoder.encode(defaultUserPW));
+		defaultUser.setPasswordHash(userService.encodePassword(defaultUserPW));
 		defaultUser.setRole(User.ROLE_ADMIN);
 		defaultUser.enable(true);
 		logger.info("\n"

@@ -1,7 +1,5 @@
 package gmm.web.controller;
 
-
-
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import javax.servlet.http.HttpServletRequest;

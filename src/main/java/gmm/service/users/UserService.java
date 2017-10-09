@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Multimap;
@@ -16,19 +17,40 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
+import gmm.util.StringUtil;
 
 @Service
 public class UserService extends UserProvider implements DataChangeCallback {
 
 	private final DataAccess data;
 	private final SecureRandom random;
+	private final PasswordEncoder encoder;
 	
 	@Autowired
-	public UserService(DataAccess data) {
+	public UserService(DataAccess data, PasswordEncoder encoder) {
 		super(() -> data.<User>getList(User.class));
 		this.data = data;
 		data.registerForUpdates(this);
+		this.encoder = encoder;
 		random = new SecureRandom();
+	}
+	
+	/**
+	 * @return true if a user with this name does not yet exist.
+	 */
+	public boolean isFreeUserName(String name) {
+		final StringUtil util = StringUtil.ignoreCase();
+		if (util.equals(name, User.NULL.getName())
+				|| util.equals(name, User.SYSTEM.getName())
+				|| util.equals(name, User.UNKNOWN.getName())) {
+			return false;
+		}
+		for (final User user : get()) {
+			if (util.equals(name, user.getName())) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
@@ -53,9 +75,26 @@ public class UserService extends UserProvider implements DataChangeCallback {
 		}
 	}
 	
+	/**
+	 * @return Clear text (not encoded) password.
+	 */
 	public String generatePassword() {
 		//toString(32) encodes 5 bits/char, so BigInteger range bits should be a multiple of 5
 		return new BigInteger(50, random).toString(32);
+	}
+	
+	/**
+	 * @return Encoded password (hash).
+	 */
+	public String encodePassword(String clearTextPassword) {
+		return encoder.encode(clearTextPassword);
+	}
+	
+	/**
+	 * @return True, if the given password matches the given User's password.
+	 */
+	public boolean matchesPassword(String clearTextPassword, User user) {
+		return encoder.matches(clearTextPassword, user.getPasswordHash());
 	}
 	
 	public void add(User user) {
