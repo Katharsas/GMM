@@ -43,9 +43,15 @@
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
 	<logger name="org.springframework" level="WARN"/>
 	
+	<!-- Suppress scan details -->
 	<logger name="gmm.service.assets.AssetScanner" level="INFO"/>
+	<!-- Suppress notification logging -->
 	<logger name="gmm.service.NotificationService" level="INFO"/>
+	<!-- Suppress blender conversion script output -->
 	<logger name="gmm.service.tasks.PythonTCPSocket" level="INFO"/>
+	<!-- Suppress pinned and workbench event info -->
+	<logger name="gmm.web.controller.TaskController" level="INFO"/>
+	<logger name="gmm.web.controller.WorkbenchController" level="INFO"/>
 
 	<root>
 		<level value="DEBUG" />

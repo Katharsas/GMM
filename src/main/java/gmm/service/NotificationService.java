@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.List;
 import gmm.domain.Notification;
 import gmm.domain.TaskNotification;
 import gmm.domain.User;
@@ -19,6 +20,8 @@ import gmm.service.users.UserService;
 public class NotificationService implements DataChangeCallback {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	private final static int MAX_NOTIFICATIONS = 1000;
 	
 	private UserService userService;
 	
@@ -40,7 +43,11 @@ public class NotificationService implements DataChangeCallback {
 					for (final User user : userService.get()) {
 						if (!user.equals(event.source)) {
 							final TaskNotification notification = new TaskNotification(message, idLink);
-							user.getNewNotifications().add(notification);
+							final List<Notification> notifications = user.getNewNotifications();
+							notifications.add(notification);
+							if (notifications.size() > MAX_NOTIFICATIONS) {
+								notifications.remove(0);
+							}
 						}
 					}
 				}
