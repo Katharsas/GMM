@@ -45,6 +45,7 @@
 	
 	<logger name="gmm.service.assets.AssetScanner" level="INFO"/>
 	<logger name="gmm.service.NotificationService" level="INFO"/>
+	<logger name="gmm.service.tasks.PythonTCPSocket" level="INFO"/>
 
 	<root>
 		<level value="DEBUG" />

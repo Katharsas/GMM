@@ -301,6 +301,7 @@ var PreviewRenderer = (function() {
 	return function($canvasContainer) {
 		
 		var $canvasAreas = $canvasContainer.find(".task-preview-visual");
+		var isStopped = false;
 		
 		if($canvasAreas.length > 0) {
 			var animationCallbacks = [];
@@ -344,12 +345,14 @@ var PreviewRenderer = (function() {
 		};
 		
 		var render = function() {
-			requestAnimationFrame(render);
-			for(var i = 0; i < animationCallbacks.length; i++) {
-				animationCallbacks[i]();
-			}
-			for(var renderer of renderers) {
-				renderer.render();
+			if (!isStopped) {
+				requestAnimationFrame(render);
+				for(var i = 0; i < animationCallbacks.length; i++) {
+					animationCallbacks[i]();
+				}
+				for(var renderer of renderers) {
+					renderer.render();
+				}
 			}
 		};
 		
@@ -367,6 +370,7 @@ var PreviewRenderer = (function() {
 				return options[option];
 			},
 			destroy: function() {
+				isStopped = true;
 				for(var renderer of renderers) {
 					renderer.destroy();
 				}

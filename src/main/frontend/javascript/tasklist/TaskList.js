@@ -286,6 +286,7 @@ var TaskList = function(settings, cache, taskSwitcher, eventHandlers) {
 			},
 			
 			destroyBody : function($body) {
+				settings.eventBinders.unbindBody($body);
 				$body.remove();
 			}
 		});

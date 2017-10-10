@@ -181,7 +181,8 @@ export default function(onedit) {
 				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
 				if($canvasContainer.length > 0) {
 					var renderer = PreviewRenderer($canvasContainer);
-					
+					$canvasContainer.data("renderer", renderer);// store for unbinding
+
 					var $renderOptions = $assets.find(".task-preview-renderOptions");
 					
 					var $renderSolid = $renderOptions.find(".renderOption-solid");
@@ -323,6 +324,29 @@ export default function(onedit) {
 								});
 						}, "Delete wip file at '" + filePath() + "' ?");
 					});
+				}
+			}
+		},
+
+		unbindBody : function($body) {
+
+			/* -------------------------------------------------------
+			 * ASSET TASK
+			 * -------------------------------------------------------
+			 */
+			
+			var $assets = $body.find(".task-assets");
+			if($assets.length > 0)
+			{
+				/* -------------------------------------------------------
+				 * ASSET TASK - 3D PREVIEW
+				 * -------------------------------------------------------
+				 */
+
+				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
+				if($canvasContainer.length > 0) {
+					var renderer = $canvasContainer.data("renderer");
+					renderer.destroy();
 				}
 			}
 		}
