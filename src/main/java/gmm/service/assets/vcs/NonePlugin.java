@@ -12,6 +12,9 @@ import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 public class NonePlugin extends VcsPlugin {
 
 	@Override
+	protected void assertToken() {}
+	
+	@Override
 	public boolean isCustomAssetPathsAllowed() {
 		return false;
 	}

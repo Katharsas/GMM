@@ -30,7 +30,7 @@ public abstract class VcsPlugin {
 	}
 	
 	@PostConstruct
-	private void assertToken() {
+	protected void assertToken() {
 		if (configToken == null || configToken.equals("")) {
 			logger.warn("Configuration problem: vcs.notify.token is missing or empty! Any attempts to use this token will fail.");
 		}

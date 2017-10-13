@@ -68,7 +68,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 				asset.setPolyCount(meshData.getPolygonCount());
 			}
 			return asset;
-		});
+		}, asyncWorkerThreadPool);
 	}
 	
 	@Override

@@ -98,7 +98,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 				}
 			}
 			return assetProps;
-		});
+		}, asyncWorkerThreadPool);
 	}
 	
 	private BufferedImage readImage(Path file) {

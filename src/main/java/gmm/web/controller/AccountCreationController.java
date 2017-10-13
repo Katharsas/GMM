@@ -29,7 +29,7 @@ public class AccountCreationController {
 		
 		this.userService = userService;
 		if (accountToken == null || accountToken.equals("")) {
-			logger.warn("Configuration problem: vcs.notify.token is missing or empty! Any attempts to use this token will fail.");
+			logger.warn("Configuration problem: accountcreation.token is missing or empty! Any attempts to use this token will fail.");
 		}
 		this.accountToken = accountToken;
 	}

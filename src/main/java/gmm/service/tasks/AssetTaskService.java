@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,8 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
+	
+	protected ForkJoinPool asyncWorkerThreadPool = new ForkJoinPool(8);
 	
 	protected abstract A newPropertyInstance();
 	
