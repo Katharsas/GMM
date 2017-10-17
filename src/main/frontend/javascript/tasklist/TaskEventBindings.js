@@ -179,7 +179,7 @@ export default function(onedit) {
 				 */
 				
 				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
-				if($canvasContainer.length > 0) {
+				if($canvasContainer.find(".task-preview-visual").length > 0) {
 					var renderer = PreviewRenderer($canvasContainer);
 					$canvasContainer.data("renderer", renderer);// store for unbinding
 
@@ -344,7 +344,7 @@ export default function(onedit) {
 				 */
 
 				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
-				if($canvasContainer.length > 0) {
+				if($canvasContainer.find(".task-preview-visual").length > 0) {
 					var renderer = $canvasContainer.data("renderer");
 					renderer.destroy();
 				}

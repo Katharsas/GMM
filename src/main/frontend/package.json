@@ -30,7 +30,7 @@
 		"rollup-plugin-babel": "^2.7.1",
 		"rollup-plugin-node-resolve": "3.0.0",
 		"rollup-stream": "1.19.0",
-		"three": "0.85.2",
+		"three": "0.87.1",
 		"vinyl-buffer": "1.0.0",
 		"vinyl-source-stream": "1.1.0",
 		"lozad": "1.0.6"

@@ -177,7 +177,6 @@
 		    	<#if task.getType().name() == 'TEXTURE'>
 		    	<tr class="task-previews center">
 		    		<#if task.originalAssetProperties?has_content>
-		    			<#assign asset = task.originalAssetProperties/>
 			    		<td class="task-preview-visual clickable">
 			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 			    				<img class="lozad" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
@@ -187,7 +186,6 @@
 			    	</#if>
 			    	<td></td>
 			    	<#if task.newAssetProperties?has_content>
-			    		<#assign asset = task.newAssetProperties/>
 				    	<td class="task-preview-visual clickable">
 				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    			<img class="lozad" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
@@ -214,7 +212,6 @@
 				<#if task.getType().name() == 'MESH'>
 					<tr class="task-previews task-preview-3D center">
 			    		<#if task.originalAssetProperties?has_content>
-			    			<#assign asset = task.originalAssetProperties/>
 				    		<td class="task-preview-visual clickable"
 				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
@@ -225,58 +222,72 @@
 				    	</#if>
 				    	<td></td>
 				    	<#if task.newAssetProperties?has_content>
-				    		<#assign asset = task.newAssetProperties/>
 					    	<td class="task-preview-visual clickable"
 					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 					    			<canvas></canvas>
 					    		</a>
 					    	</td>
-					    <#else><td></td>
+					    <#else>
+					    	<#if task.newAssetFolderInfo?has_content>
+					    		<#assign info = task.newAssetFolderInfo/>
+					    		<#if !info.status.isValid()>
+					    			<td class="task-asset-info center task-asset-invalid">
+				    				<span class="error"><@s.message "${info.status.messageKey}"/></span><br>
+				    				<#list info.errorPaths as error>
+				    					<div class="path">>&nbsp;&nbsp;${error?html}</div>
+				    				</#list>
+						    	</td>
+						    	<#else><td></td>
+					    		</#if>
+							<#else><td></td>
+				    		</#if>
 				    	</#if>
 				    </tr>
 <!-- 3D Mesh Preview Options -->
-				    <tr>
-			    		<td class="task-preview-renderOptions" colspan="3">
-			    			<div class="renderOptionsText left">Rendering:</div>
-			    			<div class="renderOptionGroup button-group left">
-		    					<div class="task-button button left renderOption-solid active">Solid</div>
-			    				<div class="task-button button left renderOption-wire">Wireframe</div>
-			    				<div class="clear"></div>
-			    			</div>
-			    			<div class="renderOptionGroup right">
-			    				<label class="renderOptionsText renderOption-shadows"><input type="checkbox">Shadows</label>
-			    				<label class="renderOptionsText renderOption-rotLight"><input type="checkbox">Rotate Light</label>
-			    				<label class="renderOptionsText renderOption-rotCamera"><input type="checkbox">Rotate Camera at speed:</label>
-			    				<input class="renderOptionsSpeed renderOption-rotCameraSpeed" type="text" style="width:50px">
-			    			</div>
-			    			<div class="clear"></div>
-			    		</td>
-			    	</tr>
+					<#if task.originalAssetProperties?has_content || task.newAssetProperties?has_content>
+					    <tr>
+				    		<td class="task-preview-renderOptions" colspan="3">
+				    			<div class="renderOptionsText left">Rendering:</div>
+				    			<div class="renderOptionGroup button-group left">
+			    					<div class="task-button button left renderOption-solid active">Solid</div>
+				    				<div class="task-button button left renderOption-wire">Wireframe</div>
+				    				<div class="clear"></div>
+				    			</div>
+				    			<div class="renderOptionGroup right">
+				    				<label class="renderOptionsText renderOption-shadows"><input type="checkbox">Shadows</label>
+				    				<label class="renderOptionsText renderOption-rotLight"><input type="checkbox">Rotate Light</label>
+				    				<label class="renderOptionsText renderOption-rotCamera"><input type="checkbox">Rotate Camera at speed:</label>
+				    				<input class="renderOptionsSpeed renderOption-rotCameraSpeed" type="text" style="width:50px">
+				    			</div>
+				    			<div class="clear"></div>
+				    		</td>
+				    	</tr>
 <!-- 3D Mesh Preview Textures -->
-			    	<tr>
-			    		<#if task.originalAssetProperties?has_content>
-				    		<td class="task-asset-model-textures">
-				    			<ul>
-				    				<#list task.originalAssetProperties.textureNames as textureName>
-						    			<li>${textureName?html}</li>
-									</#list>
-				    			</ul>
-						    </td>
-						<#else><td></td>
-						</#if>
-						<td></td>
-						<#if task.newAssetProperties?has_content>
-				    		<td class="task-asset-model-textures">
-				    			<ul>
-							    	<#list task.newAssetProperties.textureNames as textureName>
-							    		<li>${textureName?html}</li>
-									</#list>
-								</ul>
-						    </td>
-						<#else><td></td>
-						</#if>
-			    	</tr>
+				    	<tr>
+				    		<#if task.originalAssetProperties?has_content>
+					    		<td class="task-asset-model-textures">
+					    			<ul>
+					    				<#list task.originalAssetProperties.textureNames as textureName>
+							    			<li>${textureName?html}</li>
+										</#list>
+					    			</ul>
+							    </td>
+							<#else><td></td>
+							</#if>
+							<td></td>
+							<#if task.newAssetProperties?has_content>
+					    		<td class="task-asset-model-textures">
+					    			<ul>
+								    	<#list task.newAssetProperties.textureNames as textureName>
+								    		<li>${textureName?html}</li>
+										</#list>
+									</ul>
+							    </td>
+							<#else><td></td>
+							</#if>
+				    	</tr>
+				    </#if>
 				</#if>
 <!-- WIP Files -->
 				<tr>

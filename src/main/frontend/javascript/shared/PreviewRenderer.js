@@ -139,26 +139,40 @@ var PreviewRenderer = (function() {
 			$canvas.on("renderOptionsChange", cacheRenderOptions);
 			
 			loader.load(jsonPath, function(geometry, materials) {
-				var material = new THREE.MeshLambertMaterial();
+				var material = new THREE.MeshLambertMaterial({
+					color: 0xdddddd,
+					polygonOffset: true,
+					polygonOffsetFactor: 1, // positive value pushes polygon further away
+					polygonOffsetUnits: 0.5
+				});
 				var mesh = new THREE.Mesh(geometry, material);
 				scene.add(mesh);
+				// wireframe
+				var wireGeometry = new THREE.EdgesGeometry(geometry);
+				var wireMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 1 });
+				// TODO Bugreport LineSegments not having a proper prototype chain (LineSegments -> Line -> Object3D missing)
+				var wireframe = new THREE.Line(wireGeometry, wireMaterial);
+				wireframe.isLineSegments = true;
+				scene.add(wireframe);
 				// proper handler
 				$canvas.on("renderOptionsChange", function(event) {
-					setOptions(event.detail, material, mesh);
+					setOptions(event.detail, material, mesh, wireframe);
 				});
 				// remove cache-handler and apply options from cache if event already occured
 				$canvas.off("renderOptionsChange", cacheRenderOptions);
 				if(chached) {
-					setOptions(chached, material, mesh);
+					setOptions(chached, material, mesh, wireframe);
 				}
 			});
-			var setOptions = function(options, material, mesh) {
+			var setOptions = function(options, material, mesh, wire) {
 				// shadows
 				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
 				mesh.castShadow = shadowsEnabled;
 				mesh.receiveShadow = shadowsEnabled;
 				// wireframe
-				material.wireframe = options.showWireframe;
+				// TODO make option hide mesh while showing wireframe
+				//mesh.visible = !options.showWireframe;
+				wire.visible = options.showWireframe;
 			};
 		};
 		
@@ -303,30 +317,28 @@ var PreviewRenderer = (function() {
 		var $canvasAreas = $canvasContainer.find(".task-preview-visual");
 		var isStopped = false;
 		
-		if($canvasAreas.length > 0) {
-			var animationCallbacks = [];
-			
-			var camera = createCamera();
-			createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
-			
-			var renderers = [];
-			
-			$canvasAreas.each(function() {
-				var $area = $(this);
-				var data = {
-					geometryPath : $area.attr("data-url"),
-					$canvas : $area.find("canvas"),
-					camera : camera
-				};
-				// stop any parent event handlers when inside canvas
-				data.$canvas.on("click", function(event) {
-					event.stopPropagation();
-					event.preventDefault();
-				});
-				var renderer = new CanvasRenderer(data, animationCallbacks);
-				renderers.push(renderer);
+		var animationCallbacks = [];
+		
+		var camera = createCamera();
+		createControls($canvasAreas.find("canvas"), camera, animationCallbacks);
+		
+		var renderers = [];
+		
+		$canvasAreas.each(function() {
+			var $area = $(this);
+			var data = {
+				geometryPath : $area.attr("data-url"),
+				$canvas : $area.find("canvas"),
+				camera : camera
+			};
+			// stop any parent event handlers when inside canvas
+			data.$canvas.on("click", function(event) {
+				event.stopPropagation();
+				event.preventDefault();
 			});
-		}
+			var renderer = new CanvasRenderer(data, animationCallbacks);
+			renderers.push(renderer);
+		});
 		
 		var options = {
 			shadowsEnabled : false,

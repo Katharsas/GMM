@@ -17,9 +17,13 @@ import { DirectionalLight } from 'three/src/lights/DirectionalLight.js';
 import { DirectionalLightHelper } from 'three/src/helpers/DirectionalLightHelper.js';
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js';
 import { JSONLoader } from 'three/src/loaders/JSONLoader.js';
-import { MeshLambertMaterial } from 'three/src/materials/Materials.js';
+import { MeshLambertMaterial, LineBasicMaterial } from 'three/src/materials/Materials.js';
 import { Mesh } from 'three/src/objects/Mesh.js';
 import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js';
+import { EdgesGeometry } from 'three/src/geometries/EdgesGeometry.js';
+import { LineSegments } from 'three/src/objects/LineSegments.js';
+import { Line } from 'three/src/objects/Line.js'
+import { Object3D } from 'three/src/core/Object3D.js';
 // OrbitControls dependencies:
 import { EventDispatcher } from 'three/src/core/EventDispatcher.js';
 import { Vector2 } from 'three/src/math/Vector2';
@@ -34,9 +38,14 @@ window.THREE = {
     DirectionalLightHelper,
     WebGLRenderer,
     JSONLoader,
-    MeshLambertMaterial, 
+    MeshLambertMaterial,
+    LineBasicMaterial,
     Mesh,
     PerspectiveCamera,
+    EdgesGeometry,
+    LineSegments,
+    Line,
+    Object3D,
     EventDispatcher,
     Vector2,
     Vector3,
