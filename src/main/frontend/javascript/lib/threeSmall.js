@@ -10,14 +10,16 @@
 
 import 'three/src/polyfills.js';
 
+import * as materials from 'three/src/materials/Materials.js';
+import * as constants from 'three/src/constants';
 // PreviewRenderer dependencies:
 import { Scene } from 'three/src/scenes/Scene.js';
 import { AmbientLight } from 'three/src/lights/AmbientLight.js';
 import { DirectionalLight } from 'three/src/lights/DirectionalLight.js';
+import { PointLight } from 'three/src/lights/PointLight.js';
 import { DirectionalLightHelper } from 'three/src/helpers/DirectionalLightHelper.js';
 import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js';
 import { JSONLoader } from 'three/src/loaders/JSONLoader.js';
-import { MeshLambertMaterial, LineBasicMaterial } from 'three/src/materials/Materials.js';
 import { Mesh } from 'three/src/objects/Mesh.js';
 import { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js';
 import { EdgesGeometry } from 'three/src/geometries/EdgesGeometry.js';
@@ -29,17 +31,17 @@ import { EventDispatcher } from 'three/src/core/EventDispatcher.js';
 import { Vector2 } from 'three/src/math/Vector2';
 import { Vector3 } from 'three/src/math/Vector3';
 import { Quaternion } from 'three/src/math/Quaternion';
-import { MOUSE } from 'three/src/constants';
+// MatcapMaterial dependencies:
+import { TextureLoader } from 'three/src/loaders/TextureLoader';
 
 window.THREE = {
     Scene,
     AmbientLight,
     DirectionalLight,
+    PointLight,
     DirectionalLightHelper,
     WebGLRenderer,
     JSONLoader,
-    MeshLambertMaterial,
-    LineBasicMaterial,
     Mesh,
     PerspectiveCamera,
     EdgesGeometry,
@@ -50,5 +52,11 @@ window.THREE = {
     Vector2,
     Vector3,
     Quaternion,
-    MOUSE,
+    TextureLoader
+}
+for (let material in materials) {
+    window.THREE[material] = materials[material];
+}
+for (let constant in constants) {
+    window.THREE[constant] = constants[constant];
 }

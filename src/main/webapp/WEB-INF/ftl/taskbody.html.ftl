@@ -248,14 +248,16 @@
 					<#if task.originalAssetProperties?has_content || task.newAssetProperties?has_content>
 					    <tr>
 				    		<td class="task-preview-renderOptions" colspan="3">
-				    			<div class="renderOptionsText left">Rendering:</div>
+				    			<div class="renderOptionsText left">Shading:</div>
 				    			<div class="renderOptionGroup button-group left">
-			    					<div class="task-button button left renderOption-solid active">Solid</div>
-				    				<div class="task-button button left renderOption-wire">Wireframe</div>
+				    				<div class="task-button button left renderOption renderOption-matcap active">Matcap</div>
+			    					<div class="task-button button left renderOption renderOption-solid">Solid</div>
+				    				<div class="task-button button left renderOption renderOption-none">None</div>
 				    				<div class="clear"></div>
 				    			</div>
 				    			<div class="renderOptionGroup right">
-				    				<label class="renderOptionsText renderOption-shadows"><input type="checkbox">Shadows</label>
+				    				<label class="renderOptionsText renderOption-wire"><input type="checkbox">Wireframe</label>
+				    				<!--<label class="renderOptionsText renderOption-shadows"><input type="checkbox">Shadows</label>-->
 				    				<label class="renderOptionsText renderOption-rotLight"><input type="checkbox">Rotate Light</label>
 				    				<label class="renderOptionsText renderOption-rotCamera"><input type="checkbox">Rotate Camera at speed:</label>
 				    				<input class="renderOptionsSpeed renderOption-rotCameraSpeed" type="text" style="width:50px">

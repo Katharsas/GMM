@@ -129,6 +129,9 @@
 	label {
 		margin-left:10px;
 	}
+	label.disabled {
+		color: #777;
+	}
 	input.renderOptionsSpeed {
 		height: 90%;
 		margin-left:5px;

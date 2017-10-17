@@ -72,11 +72,7 @@ function buildScript(files) {
 				debug: jsSourceMaps
 			};
 		var configBabelify = {
-				plugins: ["transform-es2015-modules-commonjs",
-				          "transform-es2015-parameters",
-				          "transform-es2015-spread",
-				          "transform-es2015-for-of",
-				          "transform-es2015-block-scoping"],
+				plugins: ["transform-es2015-modules-commonjs"],
 			};
 		return browserify(configBrowserify)
 			.transform(babelify, configBabelify)
@@ -95,13 +91,15 @@ function buildScript(files) {
 }
 
 gulp.task("three", function () {
+	var minify = true;
 	return rollup('three-rollup.config.js')
 		.pipe(source('three.bundle.js'))
 		.pipe(buffer())
 		.pipe(uglify({
-			compress : true,
-			mangle: true,
+			compress : minify,
+			mangle: minify,
 			output: {
+				beautify: !minify,
 				preamble: "// threejs.org/license",
 			},
 		}))

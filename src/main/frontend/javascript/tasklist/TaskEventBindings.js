@@ -2,6 +2,7 @@ import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
 import PreviewRenderer from "../shared/PreviewRenderer";
+import { ShadingType } from "../shared/CanvasRenderer";
 import { allVars, contextUrl, htmlDecode } from "../shared/default";
 
 /**
@@ -182,28 +183,19 @@ export default function(onedit) {
 				if($canvasContainer.find(".task-preview-visual").length > 0) {
 					var renderer = PreviewRenderer($canvasContainer);
 					$canvasContainer.data("renderer", renderer);// store for unbinding
-
-					var $renderOptions = $assets.find(".task-preview-renderOptions");
 					
-					var $renderSolid = $renderOptions.find(".renderOption-solid");
-					var $renderWire = $renderOptions.find(".renderOption-wire");
-					// render mode
-					$renderOptions.find(".renderOption-solid").on("click", function() {
-						$renderWire.removeClass("active");
-						$renderSolid.addClass("active");
-						renderer.setOptions({showWireframe: false});
-					});
-					$renderOptions.find(".renderOption-wire").on("click", function() {
-						$renderSolid.removeClass("active");
-						$renderWire.addClass("active");
-						renderer.setOptions({showWireframe: true});
-					});
+					var $renderOptions = $assets.find(".task-preview-renderOptions");
 					// checkboxes
-					var $shadows = $renderOptions.find(".renderOption-shadows input");
-					$shadows.prop('checked', renderer.getOption("shadowsEnabled"));
-					$shadows.on("change", function() {
-						renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
+					var $wire = $renderOptions.find(".renderOption-wire input");
+					$wire.prop('checked', renderer.getOption("wireframe"));
+					$wire.on("change", function() {
+						renderer.setOptions({wireframe: $(this).is(":checked")});
 					});
+					// var $shadows = $renderOptions.find(".renderOption-shadows input");
+					// $shadows.prop('checked', renderer.getOption("shadowsEnabled"));
+					// $shadows.on("change", function() {
+					// 	renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
+					// });
 					var $rotLight = $renderOptions.find(".renderOption-rotLight input");
 					$rotLight.prop('checked', renderer.getOption("rotateLight"));
 					$rotLight.on("change", function() {
@@ -225,6 +217,26 @@ export default function(onedit) {
 							this.value = renderer.getOption("rotateCameraSpeed");
 						}
 					});
+					// render mode
+					var modes = [
+						{ type: ShadingType.Matcap, selector : ".renderOption-matcap" },
+						{ type: ShadingType.Solid, selector : ".renderOption-solid" },
+						{ type: ShadingType.None, selector : ".renderOption-none" }
+					];
+					var setSolidOptionsDisabled = function(shading) {
+						var isSolid = shading === ShadingType.Solid;
+						$rotLight.prop('disabled', !isSolid);
+						$rotLight.closest('.renderOption-rotLight').toggleClass('disabled', !isSolid);
+					}
+					for (let mode of modes) {
+						$renderOptions.find(mode.selector).on("click", function() {
+							$renderOptions.find(".renderOption").removeClass("active");
+							$(this).addClass("active");
+							setSolidOptionsDisabled(mode.type);
+							renderer.setOptions({shading: mode.type});
+						});
+					}
+					setSolidOptionsDisabled(ShadingType.Matcap);
 				}
 				
 				if (allVars.isUserLoggedIn) {

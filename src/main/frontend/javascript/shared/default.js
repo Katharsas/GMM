@@ -189,5 +189,28 @@ function runSerial(tasks) {
 	return promiseChain;
 }
 
-export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, resortElementsById, runSerial };
+/**
+ * Allows to call a function only after a certain amount of time passed without the same
+ * function being called again. This is useful to delay expensive event handlers, that get
+ * fired rapidly, until events "calm down".
+ * 
+ * @param {callback} callback
+ * @param {int} ms - the time that must pass until callback will be called
+ * @param {uniqueId} - identifies the function to delay. If the same id gets passed twice
+ * 		before time ran out on the first, timer will be reset
+ */
+var waitForFinalEvent = (function() {
+    var timers = {};
+    return function(callback, ms, uniqueId) {
+        if (!uniqueId) {
+            uniqueId = "Don't call this twice without a uniqueId";
+        }
+        if (timers[uniqueId]) {
+            clearTimeout(timers[uniqueId]);
+        }
+        timers[uniqueId] = setTimeout(callback, ms);
+    };
+})();
+
+export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, resortElementsById, runSerial, waitForFinalEvent };
 export default {};

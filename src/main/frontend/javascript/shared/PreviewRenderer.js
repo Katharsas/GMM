@@ -2,265 +2,27 @@
 
 import $ from "../lib/jquery";
 import THREE from '../lib/three';
+import { CanvasRenderer, ShadingType } from './CanvasRenderer';
+// Be aware that OrbitControls.js adds properties to THREE too.
 
-/*
- * Dependencies: JQuery, Three.js, OrbitControls.js
- *
- * TODO: proper cleanup on task collapse: https://github.com/mrdoob/three.js/issues/7391 (event handlers!)
+/**
+ * @event RenderOptionsChange
+ * @type {CustomEvent}
+ * @property {RenderOptions} detail
  */
 
 /**
  * Renders a pair of 3D models, which share render options, camera & controls. Each 3D model
  * is rendered into a canvas using PreviewRenderer#CanvasRenderer.
  * 
- * @event PreviewRenderer # renderOptionsChange
- * @type {CustomEvent}
- * @property {object} detail - contains all render options:
- * 		{boolean} shadowsEnabled - initial:true
- * 		{boolean} showWireframe - initial:false
- * 		{boolean} rotateLight - initial:true
- * 		{boolean} rotateCamera - initial:true
- * 		{double} rotateCameraSpeed - initial:0.7
- * 
- * @fires PreviewRenderer # renderOptionsChange
- * @listens PreviewRenderer # renderOptionsChange
+ * @fires RenderOptionsChange
+ * @listens RenderOptionsChange
  * 
  * @param {jquery} $canvasContainer - TODO change to preview container and TODO attach listeners
  * 		for rendering option changes
  */
 var PreviewRenderer = (function() {
 
-	/**
-	 * Can render a single 3D model into a single canvas.
-	 * @listens PreviewRenderer#renderOptionsChange
-	 * 
-	 * @param {object} data:
-	 * 		{jquery} $canvas - HTML canvas node into which this renderer will draw.
-	 * 		{string} geometryPath - file path to the json file containing 3D model.
-	 * 		{object} camera - the three.js camera used for rendering the 3D model.
-	 * @param {function[]} animationCallbacks - All functions that need to be called
-	 * 		per frame will be pushed into this array.
-	 */
-	var CanvasRenderer = (function() {
-		
-		var createScene = function ($canvas, animationCallbacks) {
-			var scene = new THREE.Scene();
-			// ambient light
-			var ambientLight = new THREE.AmbientLight(0x444444);
-			scene.add(ambientLight);
-			// directional light
-			var lightDistance = 120;
-			var directionalLight = new THREE.DirectionalLight(0xbbbbbb);
-			directionalLight.position.set(lightDistance, lightDistance, lightDistance);
-			scene.add(directionalLight);
-			// directional light visual
-			var shadowPadding = 30;
-			var shadowVisualizer =
-				createShadowVisualizer(directionalLight, shadowPadding, animationCallbacks);
-			scene.add(shadowVisualizer);
-			
-			var rotateLight;
-			$canvas.on("renderOptionsChange", function(event) {
-				var options = event.detail;
-				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
-				directionalLight.castShadow = shadowsEnabled;
-				setupShadows(directionalLight, shadowPadding);
-				shadowVisualizer.visible = shadowsEnabled;
-				rotateLight = options.rotateLight;
-			});
-
-			var lightRadians = 0;
-			animationCallbacks.push(function() {
-				if(rotateLight) {
-					lightRadians += 0.003;
-					var sin = Math.sin(lightRadians) * lightDistance;
-					var cos = Math.cos(lightRadians) * lightDistance;
-					directionalLight.position.set(sin, lightDistance, cos);
-				}
-			});
-			return scene;
-		};
-		
-		var createShadowVisualizer = function(light, shadowPadding, animationCallbacks) {
-			var shadowVisualizer = new THREE.DirectionalLightHelper(light, shadowPadding);
-			animationCallbacks.push(function() {
-				if(shadowVisualizer)
-				shadowVisualizer.update();
-			});
-			return shadowVisualizer;
-		};
-		
-		var setupShadows = function(light, shadowPadding) {
-			if(light.castShadow) {
-				var shadowCamera = light.shadow.camera;
-				// shadow casting boundaries
-				shadowCamera.near = 100;
-				shadowCamera.far = 250;
-				shadowCamera.left = -shadowPadding;
-				shadowCamera.right = shadowPadding;
-				shadowCamera.top = shadowPadding;
-				shadowCamera.bottom = -shadowPadding;
-				// quality
-				light.shadow.bias = 0.0001;
-				var resolution = 2048;
-				light.shadow.mapSize.width = resolution;
-				light.shadow.mapSize.height = resolution;
-			}
-		};
-		
-		var createRenderer = function($canvas) {
-			var renderer = new THREE.WebGLRenderer({canvas:$canvas[0], antialias: true});
-			$canvas.on("renderOptionsChange", function(event) {
-				var options = event.detail;
-				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
-				if(shadowsEnabled) {
-					renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-					renderer.shadowMap.enabled = true;
-					renderer.shadowMapSoft = true;
-				}
-			});
-			return renderer;
-		};
-		
-		/**
-		 * Load geometry from json and create a new material.
-		 * Make mesh from geometry and material and add to scene.
-		 */
-		var loadMeshIntoScene = function($canvas, jsonPath, scene) {
-			var loader = new THREE.JSONLoader();
-
-			// to not miss out on the first renderOptionsChange event,
-			// we should register event handler immediatly, but cant because load is async
-			//  => cache events for loader, until loader can register proper listener
-			var chached;
-			var cacheRenderOptions = function(event) {
-				chached = event.detail;
-			};
-			$canvas.on("renderOptionsChange", cacheRenderOptions);
-			
-			loader.load(jsonPath, function(geometry, materials) {
-				var material = new THREE.MeshLambertMaterial({
-					color: 0xdddddd,
-					polygonOffset: true,
-					polygonOffsetFactor: 1, // positive value pushes polygon further away
-					polygonOffsetUnits: 0.5
-				});
-				var mesh = new THREE.Mesh(geometry, material);
-				scene.add(mesh);
-				// wireframe
-				var wireGeometry = new THREE.EdgesGeometry(geometry);
-				var wireMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 1 });
-				// TODO Bugreport LineSegments not having a proper prototype chain (LineSegments -> Line -> Object3D missing)
-				var wireframe = new THREE.Line(wireGeometry, wireMaterial);
-				wireframe.isLineSegments = true;
-				scene.add(wireframe);
-				// proper handler
-				$canvas.on("renderOptionsChange", function(event) {
-					setOptions(event.detail, material, mesh, wireframe);
-				});
-				// remove cache-handler and apply options from cache if event already occured
-				$canvas.off("renderOptionsChange", cacheRenderOptions);
-				if(chached) {
-					setOptions(chached, material, mesh, wireframe);
-				}
-			});
-			var setOptions = function(options, material, mesh, wire) {
-				// shadows
-				var shadowsEnabled = options.shadowsEnabled && !options.showWireframe;
-				mesh.castShadow = shadowsEnabled;
-				mesh.receiveShadow = shadowsEnabled;
-				// wireframe
-				// TODO make option hide mesh while showing wireframe
-				//mesh.visible = !options.showWireframe;
-				wire.visible = options.showWireframe;
-			};
-		};
-		
-		function Size2D(width, height) {
-			this.width = width;
-			this.height = height;
-			this.equals = function(size) {
-				return size.width === width && size.height === height;
-			};
-		}
-		
-		/**
-		 * @param {Size2D} canvasSize - width & height used to update camera & renderer
-		 */
-		var updateCanvasSize = function(canvasSize, camera, renderer) {
-			var width = canvasSize.width;
-			var height = canvasSize.height;
-
-			camera.aspect = width / height;
-			camera.updateProjectionMatrix();
-			renderer.setSize(width, height, false);
-		};
-		
-		/**
-		 * Allows to call a function only after a certain amount of time passed without the same
-		 * function being called again. This is useful to delay expensive event handlers, that get
-		 * fired rapidly, until events "calm down".
-		 * 
-		 * @param {callback} callback
-		 * @param {int} ms - the time that must pass until callback will be called
-		 * @param {uniqueId} - identifies the function to delay. If the same id gets passed twice
-		 * 		before time ran out on the first, timer will be reset
-		 */
-		var waitForFinalEvent = (function() {
-			var timers = {};
-			return function(callback, ms, uniqueId) {
-				if (!uniqueId) {
-					uniqueId = "Don't call this twice without a uniqueId";
-				}
-				if (timers[uniqueId]) {
-					clearTimeout(timers[uniqueId]);
-				}
-				timers[uniqueId] = setTimeout(callback, ms);
-			};
-		})();
-		
-
-		/**
-		 * CanvasRenderer
-		 */
-		return function (data, animationCallbacks) {
-			
-			var $canvas = data.$canvas;
-			var geometryPath = data.geometryPath;
-			var camera = data.camera;
-			var scene = createScene($canvas, animationCallbacks);
-			loadMeshIntoScene($canvas, geometryPath, scene);
-			var renderer = createRenderer($canvas);
-			
-			var canvasSize = new Size2D(0, 0);
-			// checks if canvas size changed and updates stuff accordingly
-			var checkResize = function() {
-				var newCanvasSize = new Size2D($canvas.width(), $canvas.height());
-				if(!canvasSize.equals(newCanvasSize)) {
-					canvasSize = newCanvasSize;
-					waitForFinalEvent(function() {
-						updateCanvasSize(canvasSize, camera, renderer);
-					}, 50, geometryPath);
-				}
-			};
-			
-			return {
-				render : function() {
-					checkResize();
-					renderer.render(scene, camera);
-				},
-				destroy : function() {
-					renderer.forceContextLoss();
-					renderer.context = null;
-					renderer.domElement = null;
-					renderer = null;
-				}
-			};
-		};
-		// CanvasRenderer End
-		// ####################################################################################
-	})();
-	
 	/**
 	 * Proxy for adding and removing event listeners (emulates native dom element from jquery object).
 	 */
@@ -340,12 +102,14 @@ var PreviewRenderer = (function() {
 			renderers.push(renderer);
 		});
 		
+		// see typedef RenderOptions in CanvasRenderer.js
 		var options = {
+			shading : "matcap",
+			wireframe : false,
+			rotateCamera : true,
+			rotateCameraSpeed : 0.7,
 			shadowsEnabled : false,
 			rotateLight : true,
-			showWireframe : false,
-			rotateCamera : true,
-			rotateCameraSpeed : 0.7
 		};
 
 		var dispatch = function() {
@@ -372,6 +136,9 @@ var PreviewRenderer = (function() {
 		render();
 		
 		return {
+			/**
+			 * @param {CanvasRenderer.RenderOptions} changedOptions
+			 */
 			setOptions: function(changedOptions) {
 				for(var option in changedOptions) {
 					options[option] = changedOptions[option];
