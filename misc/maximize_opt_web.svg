@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" version="1.1" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <g>
+  <path d="m0 0v10l3 2v-5l9 9-9 9v-5l-3 2v10h10l2-3h-5l9-9 9 9h-5l2 3h10v-10l-3-2v5l-9-9 9-9v5l3-2v-10h-10l-2 3h5l-9 9-9-9h5l-2-3z" stroke-width="2"/>
+ </g>
+</svg>

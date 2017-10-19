@@ -27,33 +27,28 @@
 	width: 100%;
 	table-layout:fixed;
 	border-collapse: collapse;
-	
+
+	// seperator column
+	col.task-assets-column-seperator {
+		width: 2%;
+	}
+	td:nth-child(2) {
+		border-style: none;
+	}
+	// original/new asset column
+	col.task-assets-column {
+		width: 49%;
+	}
 	td {
 		border: 0.7px solid #555;
-		border-top-style: none;
 		background-color: #171717;
 	}
-	tr:nth-child(1) > td {
-		border-top-style: solid;
-	}
-	tr > td:nth-child(2) {
-		border-style: none;
-		border-top-style: none;
-		background-color: inherit;
-	}
-	/*td.border {
-		border: 1px solid #444;
-	}*/
 	td.noborder {
 		border-style:none;
-		background-color: inherit;
 	}
-
+	
 	td.task-asset-info {
 		padding: 4px 4px;
-	}
-	.task-asset-invalid {
-		
 	}
 	.task-asset-buttons {
 		padding: 5px 2px;
@@ -63,8 +58,27 @@
 		min-width:10em;
 	}
 }
+.task-assets > table:not(.maximized) {
+	td:nth-child(2), td.noborder {
+		background-color: inherit;
+	}
+}
+.task-assets > table.maximized {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 150;
+	tr {
+		display: none;
+	}
+	tr.task-previews, tr.task-preview-options {
+		display: table-row;
+	}
+}
 
-.task-previews {
+tr.task-previews {
 	width:100%;
 	
 	td.task-asset-info.task-asset-invalid {
@@ -78,11 +92,9 @@
 		}
 	}
 }
-.task-assets .task-preview-visual {
-	//box-shadow: inset -1px -1px 1px #555, -1px -1px 1px #222;
-	padding:10px 0;
+td.task-preview-visual {
+	padding:2px 2px;
 	
-	//background-color: #222;
 	&:hover {
 		background-color: #393939;
 	}
@@ -90,17 +102,45 @@
 		display:block;
 	}
 	img {
+		margin: 10px 0;
 		border:1px dotted #666;
 		max-width:90%;
 	}
 	canvas {
-		//border:1px dotted #666;
-		width:90%;
-		height:250px;
+		display:block;
+		//width:100%;
 		background-color:DarkRed;
 	}
+
+	&:not(.maximized) {
+		height: 250px;
+	}
 }
-.task-preview-renderOptions {
+
+// TODO put class on td or something so we can omit .task-assets
+td.task-preview-maximize {
+	position: relative;
+
+	& > .task-preview-maximize-centerer {
+		position: absolute;
+		left: 50%;
+		top: 10px;
+	
+		.button {
+			display:block;
+			height: 28px;
+			width: 28px;
+			left: -14px;
+			padding: 4px;
+		}
+		svg.buttonIcon {
+			width:20px;
+			height:20px;
+		}
+	}
+}
+
+td.task-preview-renderOptions {
 	padding: 6px 10px;
 	height: 37px;
 	

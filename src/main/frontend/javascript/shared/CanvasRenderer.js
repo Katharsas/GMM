@@ -249,8 +249,10 @@ var CanvasRenderer = function (data, animationCallbacks) {
     var canvasSize = new Size2D(0, 0);
     // checks if canvas size changed and updates stuff accordingly
     var checkResize = function() {
-        var newCanvasSize = new Size2D($canvas.width(), $canvas.height());
+        var $parent = $canvas.parent();
+        var newCanvasSize = new Size2D($parent.width(), $parent.height());
         if(!canvasSize.equals(newCanvasSize)) {
+            console.log(newCanvasSize);
             canvasSize = newCanvasSize;
             waitForFinalEvent(function() {
                 updateCanvasSize(canvasSize, camera, renderer);

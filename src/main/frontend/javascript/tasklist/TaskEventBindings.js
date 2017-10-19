@@ -180,11 +180,12 @@ export default function(onedit) {
 				 */
 				
 				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
+				var $optionsContainer = $assets.find(".task-preview-options");
 				if($canvasContainer.find(".task-preview-visual").length > 0) {
 					var renderer = PreviewRenderer($canvasContainer);
 					$canvasContainer.data("renderer", renderer);// store for unbinding
 					
-					var $renderOptions = $assets.find(".task-preview-renderOptions");
+					var $renderOptions = $optionsContainer.find(".task-preview-renderOptions");
 					// checkboxes
 					var $wire = $renderOptions.find(".renderOption-wire input");
 					$wire.prop('checked', renderer.getOption("wireframe"));
@@ -237,6 +238,16 @@ export default function(onedit) {
 						});
 					}
 					setSolidOptionsDisabled(ShadingType.Matcap);
+					// maximized view
+					var isMaximized = false;
+					var $maximize = $canvasContainer.find(".task-preview-maximize .button");
+					$maximize.on("click", function() {
+						isMaximized = !isMaximized;
+						$assets.find("table").toggleClass("maximized", isMaximized);
+						$canvasContainer.find(".task-preview-visual").toggleClass("maximized", isMaximized);
+						//$canvasContainer.find("canvas").removeAttr("width");
+						$canvasContainer.find("canvas").removeAttr("height");
+					});
 				}
 				
 				if (allVars.isUserLoggedIn) {

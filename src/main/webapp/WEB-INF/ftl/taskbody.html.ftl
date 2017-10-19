@@ -54,9 +54,9 @@
 	    	<div class="task-assets">
 	    	<table>
     			<colgroup>
-			       <col span="1" style="width: 49%;">
-			       <col span="1" style="width: 2%;">
-			       <col span="1" style="width: 49%;">
+			       <col span="1" class="task-assets-column">
+			       <col span="1" class="task-assets-column-seperator">
+			       <col span="1" class="task-assets-column">
 			    </colgroup>
 <!-- Asset File Info -->
 			    <tr>
@@ -214,19 +214,24 @@
 			    		<#if task.originalAssetProperties?has_content>
 				    		<td class="task-preview-visual clickable"
 				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
-				    			<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
-				    				<canvas></canvas>
-					    		</a>
+				    			<canvas></canvas>
 					    	</td>
 					    <#else><td></td>
 				    	</#if>
-				    	<td></td>
+				    	<#if task.originalAssetProperties?has_content || task.newAssetFolderInfo?has_content>
+					    	<td class="task-preview-maximize">
+					    		<div class="task-preview-maximize-centerer">
+					    			<div class="button">
+					    				<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/maximize.svg">
+					    			</div>
+					    		</div>
+					    	</td>
+					    <#else><td></td>
+				    	</#if>
 				    	<#if task.newAssetProperties?has_content>
 					    	<td class="task-preview-visual clickable"
 					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
-					    		<a href="${request.contextPath}/tasks/preview/3Dmodel/full?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
-					    			<canvas></canvas>
-					    		</a>
+					    		<canvas></canvas>
 					    	</td>
 					    <#else>
 					    	<#if task.newAssetFolderInfo?has_content>
@@ -246,7 +251,7 @@
 				    </tr>
 <!-- 3D Mesh Preview Options -->
 					<#if task.originalAssetProperties?has_content || task.newAssetProperties?has_content>
-					    <tr>
+					    <tr class="task-preview-options">
 				    		<td class="task-preview-renderOptions" colspan="3">
 				    			<div class="renderOptionsText left">Shading:</div>
 				    			<div class="renderOptionGroup button-group left">
