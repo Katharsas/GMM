@@ -1,8 +1,8 @@
 import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
-import PreviewRenderer from "../shared/PreviewRenderer";
-import { ShadingType } from "../shared/CanvasRenderer";
+import PreviewRenderer from "../shared/preview/PreviewRenderer";
+import { ShadingType } from "../shared/preview/CanvasRenderer";
 import { allVars, contextUrl, htmlDecode } from "../shared/default";
 
 /**

@@ -1,8 +1,8 @@
-/// <reference path="../lib/three.d.ts" />
+/// <reference path="../../lib/three.d.ts" />
 // from https://www.npmjs.com/package/three-matcap-material
 // License: ISC (see https://spdx.org/licenses/ISC.html)
 
-import THREE from '../lib/three';
+import THREE from '../../lib/three';
 
 const vs = `
 varying vec2 vN;

@@ -1,9 +1,7 @@
 /* jshint node:true */
 "use strict";
 
-/**
- * Commented out watch code, could prove useful at some point.
- */
+var fs = require('fs');
 
 var notify = require("gulp-notify");
 
@@ -20,7 +18,10 @@ var buffer = require('vinyl-buffer');
 var rename = require("gulp-rename");
 var eventStream = require("event-stream");
 
-var rollup = require('rollup-stream');
+var rollup = require('rollup');
+var uglifyjs = require("uglify-js");
+
+var threeConfig = require("./three-rollup.config");
 
 //var path = require("path");
 
@@ -92,19 +93,22 @@ function buildScript(files) {
 
 gulp.task("three", function () {
 	var minify = true;
-	return rollup('three-rollup.config.js')
-		.pipe(source('three.bundle.js'))
-		.pipe(buffer())
-		.pipe(uglify({
-			compress : minify,
-			mangle: minify,
-			output: {
-				beautify: !minify,
-				preamble: "// threejs.org/license",
-			},
-		}))
-		.on("error", handleErrors)
-		.pipe(gulp.dest(jsDest));
+	var outputFile = jsDest + "three.bundle.js";
+
+	return rollup.rollup(threeConfig.input("javascript/lib/threeSmall.js"))
+		.then(function(bundle) {
+			return bundle.generate(threeConfig.output());
+		}).then(function(rollupResult) {
+			var result = uglifyjs.minify(rollupResult.code, {
+				compress : minify,
+				mangle: minify,
+				output: {
+					beautify: !minify,
+					preamble: "// threejs.org/license"
+				}
+			});
+			fs.writeFileSync(outputFile, result.code);
+		});
 });
 
 gulp.task("build-js", function () {

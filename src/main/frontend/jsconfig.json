@@ -6,5 +6,10 @@
     },
     "include": [
       "javascript"
-    ]
+    ],
+    "typeAcquisition": {
+        "include": [
+            "jquery"
+        ]
+    }
 }

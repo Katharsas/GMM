@@ -1,5 +1,5 @@
-import rollupResolve from 'rollup-plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
+// import rollupResolve from 'rollup-plugin-node-resolve';
+var rollupResolve = require('rollup-plugin-node-resolve');
 
 function glsl() {
 
@@ -26,19 +26,20 @@ function glsl() {
 
 }
 
-export default {
-	entry: 'javascript/lib/threeSmall.js',
-	indent: '\t',
-	plugins: [
-		rollupResolve(),
-		glsl(),
-		babel({
-			babelrc: false,
-			exclude: 'node_modules/**',
-			presets: [ 
-				["es2015", { "modules" : false } ]
-			],
-		}),
-	],
-	format: 'umd',
+// export default { input... }
+exports.input = function(target) {
+	return {
+		input: target,
+		plugins: [
+			rollupResolve(),
+			glsl()
+		],
+	};
+};
+exports.output = function() {
+	return {
+		indent: '\t',
+		format: 'iife',
+		name: 'THREE'
+	};
 };
