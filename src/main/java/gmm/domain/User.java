@@ -91,7 +91,7 @@ public class User extends NamedObject {
 	
 	//Methods--------------------------------------------
 	/**
-	 * @param idName - Identificator (name) of the user.
+	 * @param idName - Identifier (name) of the user.
 	 * @param passwordHash - The users password hash.
 	 */
 	public User(String name) {

@@ -26,7 +26,7 @@ var ChangePassword = function() {
 				.then(function(data) {
 					if(data.error === undefined || data.error === null) {
 						Dialogs.hideDialog($dialog);
-						Dialogs.alert(Dialogs.hideDialog, "Password change was successful!");
+						Dialogs.alert(null, "Password change was successful!");
 					} else {
 						$error.text(data.error);
 					}

@@ -4,8 +4,6 @@ import "./jquery/jqueryFindSelf";
 import "./dialogs";
 
 import $ from "../lib/jquery";
-import Ajax from "./ajax";
-import HtmlPreProcessor from "./preprocessor";
 import Errors from "./Errors";
 
 //adds :blank selector to jQuery
@@ -22,7 +20,6 @@ $.fn.onEnter = function(eventHandler) {
 	});
 };
 
-var fileName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
 var paramString = window.location.search.substring(1);
 
 var allVars = {
@@ -70,6 +67,12 @@ Array.prototype.diff = function(a) {
     return this.filter(function(i) {return a.indexOf(i) < 0;});
 };
 
+/*
+ * ////////////////////////////////////////////////////////////////////////////////
+ * FUNCTIONS
+ * ////////////////////////////////////////////////////////////////////////////////
+ */
+
 /**
  * Unescapes & trims html text to javascript text (including convertion of <br> tags to newLine).
  */
@@ -91,38 +94,6 @@ function htmlDecode(input){
 	result = result.replace(/\s\s+/g, ' ');
 	return result.trim();
 }
-
-/*
- * ////////////////////////////////////////////////////////////////////////////////
- * FUNCTIONS
- * ////////////////////////////////////////////////////////////////////////////////
- */
-
-/**
- * This function is executed when document is ready for interactivity!
- */
-$(document).ready(function() {
-	//find page tab by URL and set as active tab
-	var activeTab = $("#page-tabmenu .tab a[href=\""+ contextUrl +"/"+fileName+"\"]").parent();
-	activeTab.addClass("activeTab activePage");
-	
-	$("#page-tabmenu #logout").click(function()  {
-		Ajax.post( contextUrl + "/logout")
-			.then(function() {
-				window.location.reload();
-			});
-	});
-	
-	allVars.adminBanner = htmlDecode(allVars.adminBanner);
-	var $adminBanner = $("#customAdminBanner");
-	if ($adminBanner.length > 0) {
-		var doubleDecoded = htmlDecode(allVars.adminBanner);
-		$adminBanner.html(doubleDecoded);
-	}
-	
-	HtmlPreProcessor.apply($("body"));
-});
-
 
 /*
  * Get value of URL parameter "sParam"
@@ -172,14 +143,9 @@ function resortElementsById(orderedIds, $unorderedList, selector, getIdOfElement
 }
 
 /**
- * Async task returning a promise.
- * @callback PromiseProducer
- * @return {Promise} - Will be resolved when task has finished.
- */
-/**
  * Executes multiple async functions so that every function only gets executed
  * when the previous functions has resolved. Returns the last functions promise.
- * @param {PromiseProducer}
+ * @param {Promise}
  */
 function runSerial(tasks) {
 	var promiseChain = Promise.resolve();
@@ -200,7 +166,8 @@ function runSerial(tasks) {
  * 		before time ran out on the first, timer will be reset
  */
 var waitForFinalEvent = (function() {
-    var timers = {};
+	var timers = {};
+	
     return function(callback, ms, uniqueId) {
         if (!uniqueId) {
             uniqueId = "Don't call this twice without a uniqueId";

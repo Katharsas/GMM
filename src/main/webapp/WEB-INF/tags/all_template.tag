@@ -30,6 +30,7 @@
 			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
 <!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/compiled/template.bundle.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
 			<link href="<c:url value="/res/css/compiled/all_template.css"/>" media="screen" rel="stylesheet" type="text/css" />
@@ -67,6 +68,9 @@
 		-->
 		<div id="page-tabmenu" class="tabmenu h3">
 			<sec:authorize access="hasRole('ROLE_USER')">
+				<div id="notifications-toggle" class="tab left">
+					N
+				</div>
 				<div class="tab left">
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
 				</div>
@@ -116,6 +120,19 @@
 		<div id="page">
 			<jsp:doBody/>
 		</div>
+		
+		<!-- 
+			###############################################################
+			Notifications
+			###############################################################
+		-->
+		<div id="notifications" style="display:none;">
+   			<div class="notifications-list-label">New notifications:</div>
+   			<div id="notifications-new" class="notifications-list"></div>
+   			<div class="notifications-list-label">Old notifications:</div>
+   			<div id="notifications-old" class="notifications-list"></div>
+   			<div id="notifications-clear" class="button" style="">Clear</div>
+   		</div>
 		
 	</body>
 </html>

@@ -1,5 +1,3 @@
-import "./shared/default";
-
 import $ from "./lib/jquery";
 
 $(document).ready(function() {

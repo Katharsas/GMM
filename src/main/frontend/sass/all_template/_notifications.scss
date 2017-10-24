@@ -1,0 +1,33 @@
+@import '../include';
+
+// make variable for menu height=top distance, variable for space left of main=width
+
+#notifications {
+    position: fixed;
+    left: 0;
+    top: 40px;
+    height: calc(100% - 40px);
+    width:300px;
+    background-color: darkgreen;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding-top: 5px;
+
+    .button, .notifications-list-label {
+        flex: 0 0 auto;
+    }
+    .notifications-list {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .notifications-list-label {
+        margin: 3px;
+    }
+    .notific {
+        padding: 3px;
+        margin: 3px;
+        background-color: rgb(0, 58, 0);
+    }
+}

@@ -322,7 +322,7 @@ $(document).ready(
 		
 		var workbench = new Workbench(taskCache, taskForm, taskSwitcher, taskBinders);
 		global.workbench = workbench;
-		
+
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {
 //				return $('<div>').html("Marker");

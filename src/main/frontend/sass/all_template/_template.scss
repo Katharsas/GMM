@@ -38,6 +38,12 @@ body {
 		height:40px;
 		padding-top:9px;
 		border-bottom-color:#333;
+		cursor: pointer;
+	}
+	.tab#notifications-toggle {
+		min-width: 3em;
+		max-width: 3em;
+		margin-right: 2px;
 	}
 	
 	.tab:hover, .activeTab {
