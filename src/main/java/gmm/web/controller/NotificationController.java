@@ -41,7 +41,7 @@ public class NotificationController {
 		return notifics.getNewAndMoveToOld(users.getLoggedInUser());
 	}
 	
-	@RequestMapping(value="/old", method = GET)
+	@RequestMapping(value="/old", method = POST)
 	@ResponseBody
 	public List<Notification> getOldNotifications() {
 		return notifics.getOld(users.getLoggedInUser());

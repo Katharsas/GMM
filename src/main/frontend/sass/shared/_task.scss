@@ -154,20 +154,25 @@ svg.buttonIcon * {
 	width:0.3em;
 	background-color:#DDDDDD;
 }
+.task-comments, .task-details {
+	margin-left: 10px;
+	margin-right: 1px;
+}
 .task-comments {
-	margin-top:15px;
-	margin-left:10px;
-	margin-right:1px;
+	margin-top: 7px;
 }
 .task-details {
-	color:#DDDDDD;
-	padding:0px 5px;
+	color: #DDDDDD;
+	background-color: $bgc-task-inner;
+	border: 1px dotted #666;
+	padding: 3px 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 .task-comment {
-	color:#DDDDDD;
-	border-top: 1px dotted #666;
-	margin-top:3px;
-	padding-top:3px;
+	color: #DDDDDD;
+	border-bottom: 1px dotted #666;
+	padding: 3px 1px;
 }
 .task-comment-author, .task-comment-form-submitButton {
 	margin-top: 2px;

@@ -1,14 +1,10 @@
 {
-	"comments": {
-		"fs": "file utils",
-		"path": "path utils",
-		"gulp": "build script framework",
-		"gulp-babel": "ES6 -> ES5 compiler",
-		"gulp-sass": "SASS -> CSS compiler",
-		"gulp-sourcemaps": "source maps for sass & js",
-		"gulp-watch": "file change trigger"
+	"dependencies": {
+		"lozad": "1.0.6",
+		"uuid": "3.1.0",
+		"three": "0.87.1",
+		"three-matcap-material": "1.0.0"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"babel-plugin-transform-es2015-block-scoping": "6.24.1",
 		"babel-plugin-transform-es2015-for-of": "6.23.0",
@@ -32,12 +28,8 @@
 		"rollup-plugin-node-resolve": "3.0.0",
 		"rollup": "0.50.0",
 		"uglify-js": "3.1.5",
-		"three": "0.87.1",
-		"three-matcap-material": "1.0.0",
 		"vinyl-buffer": "1.0.0",
-		"vinyl-source-stream": "1.1.0",
-		"lozad": "1.0.6",
-		"uuid": "3.1.0"
+		"vinyl-source-stream": "1.1.0"
 	},
 	"unused": {
 		"gulp-babel": "6.1.2",

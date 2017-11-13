@@ -69,7 +69,7 @@
 		<div id="page-tabmenu" class="tabmenu h3">
 			<sec:authorize access="hasRole('ROLE_USER')">
 				<div id="notifications-toggle" class="tab left">
-					N
+					<img class="svg" src="<c:url value="/res/gfx/notification.svg"/>">
 				</div>
 				<div class="tab left">
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>

@@ -19,6 +19,7 @@ import gmm.service.users.UserService;
 @Service
 public class NotificationService implements DataChangeCallback {
 
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final static int MAX_NOTIFICATIONS = 1000;
@@ -36,11 +37,8 @@ public class NotificationService implements DataChangeCallback {
 		if (event.source.isNormalUser() || event.source == User.UNKNOWN) {
 			if (Task.class.isAssignableFrom(event.changed.getGenericType())) {
 				for (final Task task : event.getChanged(Task.class)) {
-					final String message = "Task '" + task.getName() + "' was '" + event.type.name()+ "' by '" + event.source.getName() + "'.";
-					final String idLink = event.type == DataChangeType.REMOVED ? null : task.getIdLink();
-					logger.debug(message);
 					for (final User user : userService.get()) {
-						final TaskNotification notification = new TaskNotification(message, idLink);
+						final TaskNotification notification = new TaskNotification(task, event.type, event.source);
 						final List<Notification> target;
 						if (!user.equals(event.source)) {
 							target = user.getNewNotifications();

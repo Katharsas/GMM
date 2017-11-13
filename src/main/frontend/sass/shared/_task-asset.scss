@@ -41,7 +41,7 @@
 	}
 	td {
 		border: 0.7px solid #555;
-		background-color: #171717;
+		background-color: $bgc-task-inner;
 	}
 	td.noborder {
 		border-style:none;
@@ -108,7 +108,6 @@ td.task-preview-visual {
 	}
 	canvas {
 		display:block;
-		//width:100%;
 		background-color:DarkRed;
 	}
 

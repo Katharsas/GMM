@@ -10,12 +10,12 @@
     		</div>
 	    </#if>
 		<!-- Details -->
-		<div class="task-details">
-			${task.getDetails()?html?replace(newLine,'<br>')}
-				    	
-<#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
-				    
-		</div>
+		<#if task.getDetails()?has_content>
+			<div class="task-details">
+				${task.getDetails()?html?replace(newLine,'<br>')}
+				<#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
+			</div>
+		</#if>
 <!-- Comments & Comment Form-->
 		<div class="task-comments">
 			<#list task.getComments() as comment>

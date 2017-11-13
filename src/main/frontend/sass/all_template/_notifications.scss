@@ -8,12 +8,14 @@
     top: 40px;
     height: calc(100% - 40px);
     width:300px;
-    background-color: darkgreen;
+    background-color: $bgc-subpage-bright;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     padding-top: 5px;
+
+    box-shadow: 2px 0px 5px #0B0B0B;
 
     .button, .notifications-list-label {
         flex: 0 0 auto;
@@ -26,8 +28,15 @@
         margin: 3px;
     }
     .notific {
-        padding: 3px;
+        padding: 3px 5px;
         margin: 3px;
-        background-color: rgb(0, 58, 0);
+        background-color: $bgc-task;
+    }
+
+    #notifications-new .notific {
+        border: 2px solid $c-orange;
+    }
+    #notifications-old .notific {
+        border: 2px solid $bgc-task-inner;
     }
 }

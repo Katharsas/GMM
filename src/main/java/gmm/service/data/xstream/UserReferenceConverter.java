@@ -1,6 +1,8 @@
 package gmm.service.data.xstream;
 import java.util.function.Supplier;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 
 import gmm.collections.Collection;
@@ -26,6 +28,12 @@ public class UserReferenceConverter extends IdReferenceConverter {
 		super.addAttributes(writer, source);
 		final User user = (User) source;
 		writer.addAttribute("name", user.getName());
+	}
+	
+	@Override
+	public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+		final Object user = super.unmarshal(reader, context);
+		return user == null ? User.NULL : user;
 	}
 
 	@Override

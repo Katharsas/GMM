@@ -7,6 +7,13 @@ var template = `
 <div/>
 `
 
+var getTaskNotificText = function(taskIdLink, taskName, changeType, userName) {
+    return `
+    Task <span class="notific-task-name" ${taskIdLink === null ? "" : `data-id="${taskIdLink}"`}>${taskName}</span> 
+    was <span class="notific-task-change">${changeType}</span> 
+    by <span class="notific-task-user">${userName}</span>.`
+}
+
 var init = function() {
 
     /** @type {JQuery} */ var $toggle = $("#notifications-toggle");
@@ -18,27 +25,36 @@ var init = function() {
 
     var $new = $notifications.find("#notifications-new");
     var $old = $notifications.find("#notifications-old");
-    
+
     var updateOldNotifics = function() {
-        return Ajax.get(contextUrl + "/notifics/old")
+        return updateNotifics(contextUrl + "/notifics/old")
         .then(function(items) {
             for (let item of items) {
                 /** @type {JQuery} */ let $item = $(template);
-                $item.find("span").text(item.text);
+                let notificHtml = (item.taskName === undefined) ?
+                        item.text : getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
+                $item.find("span").html(notificHtml);
                 $old.prepend($item);
             }
         });
     }
     var updateNewNotifics = function() {
-        return Ajax.post(contextUrl + "/notifics/new")
+        return updateNotifics(contextUrl + "/notifics/new", $new);
+    };
+
+    var updateNotifics = function(url, $list) {
+        return Ajax.post(url)
         .then(function(items) {
             for (let item of items) {
-                /** @type {JQuery} */ let $item = $(template);
-                $item.find("span").text(item.text);
-                $new.prepend($item);
+                 /** @type {JQuery} */ let $item = $(template);
+                 let notificHtml = (item.taskName === undefined) ? item.text :
+                        getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
+                 $item.find("span").html(notificHtml);
+                 $list.prepend($item);
             }
         });
-    };
+    }
+
     var clearNotifications = function() {
         return Ajax.post(contextUrl + "/notifics/clear")
         .then(function() {
