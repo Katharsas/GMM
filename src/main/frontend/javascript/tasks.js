@@ -7,6 +7,7 @@ import TaskSwitcher from "./tasklist/TaskSwitcher";
 import PinnedList from "./tasklist/PinnedList";
 import WorkbenchList from "./tasklist/WorkbenchList";
 import TaskEventBindings from "./tasklist/TaskEventBindings";
+import WebSocketListener from "./shared/WebSocketListener";
 import { contextUrl, getURLParameter, allVars } from "./shared/default";
 
 var tasksVars = {
@@ -28,7 +29,7 @@ global.tasksVars = tasksVars;
  * 
  * @author Jan Mothes
  */
-var Workbench = function(taskCache, taskForm, taskSwitcher, taskBinders) {
+var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 	
 	var $workbench = $("#workbench");
 	var $workbenchList = $workbench.find(".list-body");
@@ -50,9 +51,6 @@ var Workbench = function(taskCache, taskForm, taskSwitcher, taskBinders) {
 	};
 	var taskList = WorkbenchList(taskListSettings, taskCache, taskSwitcher);
 
-	taskForm.registerOnEdit(taskList.update);
-	taskForm.registerOnCreate(taskList.update);
-	
 	var updateTasks = function() {
 		Ajax.get(contextUrl + "/workbench/selected")
 			.then(function(selected) {
@@ -278,9 +276,11 @@ var Workbench = function(taskCache, taskForm, taskSwitcher, taskBinders) {
 	initWorkbenchTabMenu();
 	initWorkbenchTabs();
 	updateTasks();
+
+	return taskList.update;
 };
 
-var PinnedTasks = function(taskCache, taskForm, taskSwitcher, taskBinders) {
+var PinnedTasks = function(taskCache, taskSwitcher, taskBinders) {
 	
 	var $pinned = $("#pinned");
 	var $pinnedList = $pinned.find(".list-body");
@@ -296,11 +296,9 @@ var PinnedTasks = function(taskCache, taskForm, taskSwitcher, taskBinders) {
 		currentUser : allVars.currentUser
 	};
 	var taskList = PinnedList(taskListSettings, taskCache, taskSwitcher);
-	
-	taskForm.registerOnEdit(taskList.update);
-	taskForm.registerOnCreate(taskList.update);
-	
 	taskList.update();
+
+	return taskList.update;
 };
 
 /**
@@ -318,10 +316,14 @@ $(document).ready(
 		var taskBinders = TaskEventBindings(taskForm.prepareEdit);
 		var taskSwitcher = TaskSwitcher();
 		
-		new PinnedTasks(taskCache, taskForm, taskSwitcher, taskBinders);
-		
-		var workbench = new Workbench(taskCache, taskForm, taskSwitcher, taskBinders);
-		global.workbench = workbench;
+		var updatePinnedTasks = new PinnedTasks(taskCache, taskSwitcher, taskBinders);
+		var updateWorkbenchTasks = new Workbench(taskCache, taskSwitcher, taskBinders);
+
+		var wsListener = new WebSocketListener();
+		wsListener.subscribe("DataChangeEvent", function(answer) {
+			updatePinnedTasks();
+			updateWorkbenchTasks();
+		});
 
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {

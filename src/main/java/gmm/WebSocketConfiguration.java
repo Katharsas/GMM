@@ -1,38 +1,52 @@
 package gmm;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.security.config.annotation.web.messaging.MessageSecurityMetadataSourceRegistry;
-import org.springframework.security.config.annotation.web.socket.AbstractSecurityWebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
+import gmm.collections.ArrayList;
+import gmm.collections.List;
+
+/**
+ * http://www.devglan.com/spring-boot/spring-websocket-integration-example-without-stomp
+ * 
+ * @author Jan Mothes
+ */
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfiguration extends AbstractSecurityWebSocketMessageBrokerConfigurer {
-
-	@Override
-	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/topic", "/queue");//topic = multicast, queue = p2p
-		config.setApplicationDestinationPrefixes("/app");
-		config.setUserDestinationPrefix("/user"); 
-	}
+@EnableWebSocket
+public class WebSocketConfiguration implements WebSocketConfigurer {
 	
 	@Override
-	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/chat");
+	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+		registry.addHandler(getWebsocketHandler(), "/notifier");
 	}
 	
-	protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
-		messages
-			.simpDestMatchers("/**").hasRole("USER");
+	@Bean 
+	public WebSocketHandlerImpl getWebsocketHandler() {
+		return new WebSocketHandlerImpl();
 	}
 	
-	/**
-     * Disables CSRF for Websockets.
-     */
-    @Override
-    protected boolean sameOriginDisabled() {
-        return true;
-    }
+	public static class WebSocketHandlerImpl extends AbstractWebSocketHandler  {
+		
+		List<WebSocketSession> sessions = new ArrayList<>(WebSocketSession.class);
+		
+		public List<WebSocketSession> getSessions() {
+			return sessions;
+		}
+		
+		@Override
+		public synchronized void afterConnectionEstablished(WebSocketSession session) throws Exception {
+			sessions.add(session);
+		}
+		
+		@Override
+		public synchronized void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+			sessions.remove(session);
+		}
+	}
 }
