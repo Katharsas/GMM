@@ -64,10 +64,7 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 				taskList.update();
 			});
 	};
-	this.load = function(type) {
-		Ajax.post(contextUrl + "/workbench/loadType", { type: type })
-			.then(updateTasks);
-	};
+	
 	var initWorkbenchTabMenu = function() {
 		var $menuTabs = $workbench.find("#workbench-menu .workbench-menu-tab");
 		
@@ -124,8 +121,13 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		//-------------------------------------------------------
 		//load tab
 		//-------------------------------------------------------
+		$loadButtons.click(function() {
+			var type = $(this).data("type");
+			Ajax.post(contextUrl + "/workbench/loadType", { type: type })
+				.then(updateTasks);
+		});
+
 		var $loadForm = $tabs.find("form#workbench-loadForm");
-		
 		$loadForm.find(".form-element").change(function() {
 			Ajax.post(contextUrl + "/workbench/loadOptions", null, $loadForm);
 		});
@@ -134,7 +136,6 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		//sort tab
 		//-------------------------------------------------------
 		var $sortForm = $tabs.find("form#workbench-sortForm");
-		
 		$sortForm.find("select, input").change(function() {
 			Ajax.post(contextUrl + "/workbench/sort", null, $sortForm)
 				.then(taskList.update);

@@ -57,9 +57,7 @@ public abstract class TaskListState implements DataChangeCallback {
 					onRemoveAll(event.source, event.getChanged(target));
 					break;
 				case EDITED:
-					for(final Task task : event.getChanged(target)) {
-						onEdit(event.source, task);
-					}
+					onEditAll(event.source, event.getChanged(target));
 					break;
 				}
 			}
@@ -67,10 +65,9 @@ public abstract class TaskListState implements DataChangeCallback {
 	}
 	
 	public <T extends Task> void onAdd(User source, T task) {
-		final boolean isVisible = isSingleVisible(task);
-		synchronized (this) {
-			removeAdd(task, isVisible);
-			if(isVisible) {
+		if(shouldBeVisible(task)) {
+			synchronized (this) {
+				getVisible().add(task);
 				sortVisible();
 				final int index = getVisible().indexOf(task);
 				taskListEvents.add(new TaskListEvent.AddSingle(source, task.getIdLink(), index));
@@ -102,8 +99,10 @@ public abstract class TaskListState implements DataChangeCallback {
 	}
 	
 	public synchronized <T extends Task> void onRemove(User source, T task) {
-		getVisible().remove(task);
-		taskListEvents.add(new TaskListEvent.RemoveSingle(source, task.getIdLink()));
+		final boolean wasVisible = getVisible().remove(task);
+		if (wasVisible) {
+			taskListEvents.add(new TaskListEvent.RemoveSingle(source, task.getIdLink()));
+		}
 	}
 	
 	public synchronized <T extends Task> void onRemoveAll(User source, Collection<T> tasks) {
@@ -112,20 +111,45 @@ public abstract class TaskListState implements DataChangeCallback {
 	}
 	
 	public <T extends Task> void onEdit(User source, T task) {
-		final boolean isVisible = isSingleVisible(task);
+		final boolean wasVisible = isVisible(task);
+		final boolean isVisible = shouldBeVisible(task);
 		synchronized (this) {
-			final boolean wasVisible = removeAdd(task, isVisible);
-			if(isVisible) {
-				sortVisible();
-				final int index = getVisible().indexOf(task);
-				taskListEvents.add(wasVisible ?
-						new TaskListEvent.SortSingle(source, task.getIdLink(), index)
-						: new TaskListEvent.AddSingle(source, task.getIdLink(), index));
-			} else {
-				if (wasVisible) {
-					taskListEvents.add(new TaskListEvent.RemoveSingle(source, task.getIdLink()));
-				}
+			if (wasVisible) {
+				getVisible().remove(task);
 			}
+			if(isVisible) {
+				getVisible().add(task);
+				sortVisible();
+			}
+			if (!isVisible && !wasVisible) return;
+			else {
+				final int index = isVisible ? getVisible().indexOf(task) : -1;
+				taskListEvents.add(wasVisible ?
+						new TaskListEvent.EditSingle(source, task.getIdLink(), index)
+						: new TaskListEvent.AddSingle(source, task.getIdLink(), index));
+			}
+		}
+	}
+	
+	public <T extends Task> void onEditAll(User source, Collection<T> tasks) {
+		final Collection<T> toRemove = new LinkedList<>(tasks.getGenericType());
+		final Collection<T> toAdd = new LinkedList<>(tasks.getGenericType());
+		for(final T task : tasks) {
+			if (isVisible(task)) {
+				toRemove.add(task);
+			}
+			if (shouldBeVisible(task)) {
+				toAdd.add(task);
+			}
+		}
+		synchronized (this) {
+			getVisible().removeAll(toRemove);
+			getVisible().addAll(toAdd);
+			sortVisible();
+			final List<String> removedIds = getIds(toRemove);
+			final List<String> addedIds = getIds(toAdd);
+			final List<String> visibleIdsOrdered = getIds(getVisible());
+			taskListEvents.add(new TaskListEvent.EditAll(source, removedIds, addedIds, visibleIdsOrdered));
 		}
 	}
 	
@@ -151,35 +175,17 @@ public abstract class TaskListState implements DataChangeCallback {
 	protected abstract void sortVisible();
 	protected abstract <T extends Task> Collection<T> filter(Collection<T> tasks);
 	
-	/**
-	 * Remove task from visible (if it was visible before) and re-add it (at same position if it
-	 * was visible before).
-	 * @param isVisible - Only add task if this is true
-	 * @return True if the task was visible before, false otherwise.
-	 */
-	private <T extends Task> boolean removeAdd(T task, boolean isVisible) {
-		final int oldPos = getVisible().indexOf(task);
-		final boolean wasVisible = oldPos >= 0;
-		if (wasVisible) {
-			getVisible().remove(task);
-		}
-		if (isVisible) {
-			if (wasVisible) {
-				getVisible().add(oldPos, task);
-			} else {
-				getVisible().add(task);
-			}
-		}
-		return wasVisible;
+	
+	private <T extends Task> boolean isVisible(T task) {
+		return getVisible().indexOf(task) >= 0;
 	}
 	
 	/**
-	 * Find out if a task that was added or edited should be visible or not.
 	 * Checks type with {@link #isTaskTypeVisible(TaskType)} and filters with {@link #filter(Collection)}.
 	 */
-	private <T extends Task> boolean isSingleVisible(T task) {
+	private <T extends Task> boolean shouldBeVisible(T task) {
 		final Class<T> type = Util.classOf(task);
-		final List<T> single = new LinkedList<T>(type, task);
+		final List<T> single = new LinkedList<>(type, task);
 		if(isTaskTypeVisible(TaskType.fromClass(type))) {
 			final Collection<T> singleFiltered = filter(single);
 			return singleFiltered.size() >= 1;

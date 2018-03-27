@@ -25,21 +25,21 @@ import $ from "../lib/jquery";
  * 
  * @param {TaskCacheSettings} settings
  */
-var TaskCache = function(settings) {
+const TaskCache = function(settings) {
 	
-	var idToTaskData = {};
+	const idToTaskData = {};
 	
-	var subscriberToEventHandler = {};
+	const subscriberToEventHandler = {};
 	
-	var currentlyUpdating = false;
-	var currentUpdatePromise = undefined;
+	let currentlyUpdating = false;
+	let currentUpdatePromise = undefined;
 	
 	/**
 	 * - converts html strings to dom elements
 	 * - converts svg links to svg code
 	 * - hides bodies
 	 */
-	var preprocess = function(task) {
+	const preprocess = function(task) {
 		
 		task.$header = $(task.header);
 		delete task.header;
@@ -54,22 +54,20 @@ var TaskCache = function(settings) {
 	
 	/**
 	 * Retrieves all pending DataChangeEvents from the server and serially processes them.
-	 * Also calls callbacks from event subscribers. Returns promise of all processing finished.
+	 * Returns promise of all processing finished.
 	 * @returns {Promise}
 	 */
-	var updateCache = function() {
+	const updateCache = function() {
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(events) {
-			var tasks = [];
-			for(let event of events) {
-				tasks.push(function() {
-					return eventHandlers[event.eventType](event)
-					.then(function() {
-						return Promise.all(Object.keys(subscriberToEventHandler).map(function(id) {
-							return subscriberToEventHandler[id](event);
-						}));
+			const tasks = [];
+			for (const event of events) {
+				const eventHandler = eventHandlers[event.eventType];
+				if (eventHandler !== undefined) {
+					tasks.push(function() {
+						return eventHandler(event);
 					});
-				});
+				}
 			}
 			return runSerial(tasks);
 		});
@@ -78,12 +76,9 @@ var TaskCache = function(settings) {
 	/**
 	 * DataChangeEvent handlers. Always return a Promise, event if not async.
 	 */
-	var eventHandlers = {
-		ADDED : function(event) {
-			return Promise.resolve();// too lazy
-		},
+	const eventHandlers = {
 		REMOVED : function(event) {
-			for (let id of event.changedIds) {
+			for (const id of event.changedIds) {
 				delete idToTaskData[id];
 			}
 			return Promise.resolve();
@@ -96,9 +91,9 @@ var TaskCache = function(settings) {
 	/**
 	 * @param {string[]} idLinks 
 	 */
-	var loadTasks = function(idLinks) {
-		var idLinksMissing = idLinks.slice();
-		var data = { "idLinks[]" : idLinks };
+	const loadTasks = function(idLinks) {
+		const idLinksMissing = idLinks.slice();
+		const data = { "idLinks[]" : idLinks };
 		return Ajax.post(contextUrl + settings.renderUrl, data)
 		.then(function (taskRenders) {
 			taskRenders.forEach(function(task) {
@@ -106,13 +101,13 @@ var TaskCache = function(settings) {
 				idToTaskData[task.idLink] = task;
 				delete idLinksMissing[idLinksMissing.indexOf(task.idLink)];
 			});
-			for (var idLink of idLinksMissing) {
+			for (const idLink of idLinksMissing) {
 				idToTaskData[idLink] = getDummyTask(idLink);
 			}
 		});
 	};
 
-	var getDummyTask = function(idLink) {
+	const getDummyTask = function(idLink) {
 		return {
 			idLink : idLink,
 			$header : $("<div id='" + idLink + "' class='list-element task collapsed' style='padding:5px'>"
@@ -121,17 +116,6 @@ var TaskCache = function(settings) {
 	}
 	
 	return {
-		
-		/**
-		 * @param {callback} onEvent - Has one argument of type DataChangeEvent.
-		 */
-		registerEventSubscriber : function(subscriberId, onEvent) {
-			subscriberToEventHandler[subscriberId] = onEvent;
-		},
-		
-		unregisterEventSubscriber : function(subscriberId) {
-			delete subscriberToEventHandler[subscriberId];
-		},
 		
 		updateCache : function() {
 			if (!currentlyUpdating) {
@@ -157,7 +141,7 @@ var TaskCache = function(settings) {
 		 * this function may cause a request, try to call it seldom.
 		 */
 		makeAvailable : function(idLinks) {
-			var missing = [];
+			const missing = [];
 			idLinks.forEach(function(id) {
 				if (!idToTaskData.hasOwnProperty(id)) {
 					missing.push(id);

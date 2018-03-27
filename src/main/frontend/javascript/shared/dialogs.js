@@ -13,6 +13,21 @@ var Dialogs = (function() {
 	var $confirmDialogTemplate;
 	
 	var currentCallback;// for non-confirm-dialogs
+
+	$(document).ready(function() {
+		// define stuff
+		$confirmDialogContainer = $("#confirmDialog-container");
+		$confirmDialogTemplate = $("#confirmDialog-template");
+		$overlay = $("#overlay");
+		// hide stuff
+		hideOverlay();
+		$(".dialog").hide();
+		// prep stuff
+		var $saveTasksDialog = $("#dialog-saveTasks");
+		$saveTasksDialog.find("#dialog-saveTasks-cancelButton").on("click", function() {
+			hideDialog($saveTasksDialog);
+		});
+	});
 	
 	/**
 	 * @param width - int: Width of the dialog (default is min-width from css).
@@ -146,21 +161,6 @@ var Dialogs = (function() {
 	var confirmOk = function($dialog) {
 		currentCallback();
 	};
-	
-	$(document).ready(function() {
-		// define stuff
-		$confirmDialogContainer = $("#confirmDialog-container");
-		$confirmDialogTemplate = $("#confirmDialog-template");
-		$overlay = $("#overlay");
-		// hide stuff
-		hideOverlay();
-		$(".dialog").hide();
-		// prep stuff
-		var $saveTasksDialog = $("#dialog-saveTasks");
-		$saveTasksDialog.find("#dialog-saveTasks-cancelButton").on("click", function() {
-			hideDialog($saveTasksDialog);
-		});
-	});
 	
 	return {
 		

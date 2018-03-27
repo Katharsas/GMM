@@ -41,13 +41,6 @@
 	</div>
 </div>
 
-<%-- 
-##############################################
-#  Only For Admins
-##############################################
---%>
-<sec:authorize access="hasRole('ROLE_ADMIN')">
-
 <%-- Batch Dialog --%>
 
 <div id="batchDialog" class="dialog draggable">
@@ -90,6 +83,13 @@
 		<fmt:message key="admin.database.finish"/>
 	</div>
 </div>
+
+<%-- 
+##############################################
+#  Only For Admins
+##############################################
+--%>
+<sec:authorize access="hasRole('ROLE_ADMIN')">
 
 <%-- Save Tasks Dialog --%>
 

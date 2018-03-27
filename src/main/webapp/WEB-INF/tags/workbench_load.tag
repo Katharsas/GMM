@@ -5,8 +5,8 @@
 
 	<div id="workbench-load-typeButtons">
 		<c:forEach items="${cfn:values('TaskType')}" var="type">
-			<div class="button workbench-load-typeButton" onclick="workbench.load('${type.name()}')">
-				<c:set var="tvalue"><fmt:message key="${type.nameKey}"/></c:set> 
+			<div class="button workbench-load-typeButton" data-type="${type.name()}">
+				<c:set var="tvalue"><fmt:message key="${type.nameKey}"/></c:set>
 				<c:out value="${tvalue}"/>
 			</div>
 		</c:forEach>

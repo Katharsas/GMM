@@ -14,7 +14,7 @@ import Errors from "../shared/Errors";
  * @property {function} createBody($task) : $body - Returns a body ready to be inserted into dom.
  * @property {function} destroyBody($body) : void - Removes body from dom, may perform cleanup.
  */
-export default function() {
+var TaskSwitcher = function() {
 	
 	// queue
 	var expanded = new Queue(3, function($task1, $task2) {
@@ -235,3 +235,5 @@ export default function() {
         }
     };
 }
+
+export default TaskSwitcher;

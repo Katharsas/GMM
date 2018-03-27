@@ -27,16 +27,7 @@ var init = function() {
     var $old = $notifications.find("#notifications-old");
 
     var updateOldNotifics = function() {
-        return updateNotifics(contextUrl + "/notifics/old")
-        .then(function(items) {
-            for (let item of items) {
-                /** @type {JQuery} */ let $item = $(template);
-                let notificHtml = (item.taskName === undefined) ?
-                        item.text : getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
-                $item.find("span").html(notificHtml);
-                $old.prepend($item);
-            }
-        });
+        return updateNotifics(contextUrl + "/notifics/old", $old);
     }
     var updateNewNotifics = function() {
         return updateNotifics(contextUrl + "/notifics/new", $new);

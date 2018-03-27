@@ -10,7 +10,7 @@ import gmm.domain.User.UserId;
 
 /**
  * Events representing a change to a SINGLE (!) task list, thus syncing that list.
- * Do not mix up with task cache synching which always effects all tasklist of a session.
+ * Do not mix up with task cache syncing which always effects all tasklist of a session.
  * 
  * @author Jan Mothes
  */
@@ -116,6 +116,38 @@ public abstract class TaskListEvent {
 		public RemoveAll(User source, List<String> removedIds) {
 			super(source);
 			this.removedIds = removedIds;
+		}
+	}
+	
+	/**
+	 * A single task that was in the list previously (before the edit) has been edited.
+	 * If the edit caused it to be filtered out, newPos is -1. If an edited task was not in the list previously, and the
+	 * edit caused it to appear, an AddSingle event will be sent instead.
+	 */
+	public static class EditSingle extends TaskListEvent {
+		public final String editedId;
+		public final int newPos;
+		public EditSingle(User source, String editedId, int newPos) {
+			super(source);
+			this.editedId = editedId;
+			this.newPos = newPos;
+		}
+	}
+	
+	/**
+	 * Multiple tasks have been edited. The edited tasks that were in the list before the edit, are in removedIds.
+	 * The tasks that are still in the list after the edit, are in addedIds. Tasks can be in both lists, if they were
+	 * and still are in the list.
+	 */
+	public static class EditAll extends TaskListEvent {
+		public final List<String> removedIds;
+		public final List<String> addedIds;
+		public final List<String> visibleIdsOrdered;
+		public EditAll(User source, List<String> removedIds, List<String> addedIds, List<String> visibleIdsOrdered) {
+			super(source);
+			this.removedIds = removedIds;
+			this.addedIds = addedIds;
+			this.visibleIdsOrdered = visibleIdsOrdered;
 		}
 	}
 }
