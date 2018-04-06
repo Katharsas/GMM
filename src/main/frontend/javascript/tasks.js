@@ -2,12 +2,14 @@ import $ from "./lib/jquery";
 import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";
 import TaskForm from "./shared/TaskForm";
-import TaskCache from "./tasklist/TaskCache";
-import TaskSwitcher from "./tasklist/TaskSwitcher";
-import PinnedList from "./tasklist/PinnedList";
-import WorkbenchList from "./tasklist/WorkbenchList";
-import TaskEventBindings from "./tasklist/TaskEventBindings";
-import WebSocketListener from "./shared/WebSocketListener";
+import { DataChangeNotifierInit } from "./shared/DataChangeNotifier";
+import TaskCache from "./tasks/TaskCache";
+import TaskSwitcher from "./tasks/TaskSwitcher";
+import PinnedList from "./tasks/PinnedList";
+import WorkbenchList from "./tasks/WorkbenchList";
+import TaskEventBindings from "./tasks/TaskEventBindings";
+import TaskDialogs, { TaskDialogsInit } from "./shared/TaskDialog";
+import EventListener from "./shared/EventListener";
 import { contextUrl, getURLParameter, allVars } from "./shared/default";
 
 var tasksVars = {
@@ -278,7 +280,7 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 	initWorkbenchTabs();
 	updateTasks();
 
-	return taskList.update;
+	return taskList;
 };
 
 var PinnedTasks = function(taskCache, taskSwitcher, taskBinders) {
@@ -309,22 +311,18 @@ $(document).ready(
 	function() {
 		tasksVars.edit = getURLParameter("edit");
 		
+		DataChangeNotifierInit("/tasks/taskDataEvents");
+
 		var taskForm = TaskForm();
-		var taskCache = TaskCache({
-			renderUrl: "/tasks/renderTaskData",
-			eventUrl: "/tasks/taskDataEvents"
-		});
+		var taskCache = TaskCache("/tasks/renderTaskData");
 		var taskBinders = TaskEventBindings(taskForm.prepareEdit);
 		var taskSwitcher = TaskSwitcher();
 		
-		var updatePinnedTasks = new PinnedTasks(taskCache, taskSwitcher, taskBinders);
-		var updateWorkbenchTasks = new Workbench(taskCache, taskSwitcher, taskBinders);
+		var pinnedList = new PinnedTasks(taskCache, taskSwitcher, taskBinders);
+		var workbenchList = new Workbench(taskCache, taskSwitcher, taskBinders);
 
-		var wsListener = new WebSocketListener();
-		wsListener.subscribe("DataChangeEvent", function(answer) {
-			updatePinnedTasks();
-			updateWorkbenchTasks();
-		});
+		TaskDialogsInit(taskCache, taskBinders);
+		//TaskDialogs.openDialog(idLink);
 
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {

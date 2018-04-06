@@ -1,8 +1,8 @@
 import $ from "./lib/jquery";
-import TaskCache from "./tasklist/TaskCache";
-import TaskList from "./tasklist/TaskList";
-import TaskSwitcher from "./tasklist/TaskSwitcher";
-import TaskEventBindings from "./tasklist/TaskEventBindings";
+import TaskCache from "./tasks/TaskCache";
+import TaskList from "./tasks/TaskList";
+import TaskSwitcher from "./tasks/TaskSwitcher";
+import TaskEventBindings from "./tasks/TaskEventBindings";
 import { allVars } from "./shared/default";
 
 /**

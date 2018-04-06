@@ -2,6 +2,7 @@
 
 import Ajax from "../shared/ajax";
 import HtmlPreProcessor from "../shared/preprocessor";
+import DataChangeNotifier from "../shared/DataChangeNotifier";
 import { contextUrl, runSerial } from "../shared/default";
 import $ from "../lib/jquery";
 
@@ -10,29 +11,19 @@ import $ from "../lib/jquery";
  * @author Jan Mothes
  * 
  * @typedef UserId
- * @property {String} idLink
- * @property {String} name
+ * @property {string} idLink
+ * @property {string} name
  * 
  * @typedef DataChangeEvent
  * @property {UserId} source
  * @property {string} eventType - enum, possible values: "ADDED", "REMOVED" or "EDITED".
  * @property {string[]} changedIds - ids of the tasks that were changed as specified by eventType.
  * 
- * @typedef TaskCacheSettings
- * @property {String} renderUrl - used to get rendered task data for any task ids.
- * @property {String} eventUrl - used to get events about task data changes.
- * 
- * 
- * @param {TaskCacheSettings} settings
+ * @param {string} renderUrl - used to get rendered task data for any task ids.
  */
-const TaskCache = function(settings) {
+const TaskCache = function(renderUrl) {
 	
 	const idToTaskData = {};
-	
-	const subscriberToEventHandler = {};
-	
-	let currentlyUpdating = false;
-	let currentUpdatePromise = undefined;
 	
 	/**
 	 * - converts html strings to dom elements
@@ -53,23 +44,22 @@ const TaskCache = function(settings) {
 	};
 	
 	/**
-	 * Retrieves all pending DataChangeEvents from the server and serially processes them.
+	 * Serially processes the events to update the cache.
 	 * Returns promise of all processing finished.
 	 * @returns {Promise}
 	 */
-	const updateCache = function() {
-		return Ajax.get(contextUrl + settings.eventUrl)
-		.then(function(events) {
-			const tasks = [];
-			for (const event of events) {
-				const eventHandler = eventHandlers[event.eventType];
-				if (eventHandler !== undefined) {
-					tasks.push(function() {
-						return eventHandler(event);
-					});
-				}
+	const updateCache = function(events) {
+		const tasks = [];
+		for (const event of events) {
+			const eventHandler = eventHandlers[event.eventType];
+			if (eventHandler !== undefined) {
+				tasks.push(function() {
+					return eventHandler(event);
+				});
 			}
-			return runSerial(tasks);
+		}
+		return runSerial(tasks).then(function() {
+			console.log("Task cache updated!");
 		});
 	};
 	
@@ -94,7 +84,7 @@ const TaskCache = function(settings) {
 	const loadTasks = function(idLinks) {
 		const idLinksMissing = idLinks.slice();
 		const data = { "idLinks[]" : idLinks };
-		return Ajax.post(contextUrl + settings.renderUrl, data)
+		return Ajax.post(contextUrl + renderUrl, data)
 		.then(function (taskRenders) {
 			taskRenders.forEach(function(task) {
 				preprocess(task);
@@ -114,26 +104,12 @@ const TaskCache = function(settings) {
 				+ "Error: Task with id '" + idLink + "' was not returned from server!</div>")
 		};
 	}
+
+	DataChangeNotifier.registerSubscriber("TaskCache", function(events) {
+		return updateCache(events);
+	});
 	
 	return {
-		
-		updateCache : function() {
-			if (!currentlyUpdating) {
-				currentlyUpdating = true;
-				currentUpdatePromise = updateCache()
-				.then(function() {
-					currentlyUpdating = false;
-					currentUpdatePromise = undefined;
-				});
-			} else {
-				// Do not update if there is an update currently running.
-				// Instead just make the caller wait until its finished.
-				// Since the first call was probably chained to before a tasklist update
-				// the tasklist update is probably still running and cache should not interfere.
-				// TODO: synchronize/lock tasklist methods so we CAN interfere without breaking stuff.
-			}
-			return currentUpdatePromise;
-		},
 		
 		/**
 		 * Before getting a task header or task body, the task must be loaded into the cache.

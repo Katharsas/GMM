@@ -1,6 +1,7 @@
 import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
+import EventListener from "../shared/EventListener";
 import PreviewRenderer from "../shared/preview/PreviewRenderer";
 import { ShadingType } from "../shared/preview/CanvasRenderer";
 import { allVars, contextUrl, htmlDecode } from "../shared/default";
@@ -12,18 +13,11 @@ import { allVars, contextUrl, htmlDecode } from "../shared/default";
  */
 export default function(onedit) {
 	
-	var onTaskListChangeCallbacks = [];
-	var onPinnedChange;
-	
 	var updateTaskLists = function() {
-		for (let callback of onTaskListChangeCallbacks) {
-			callback();
-		}
+		EventListener.trigger(EventListener.events.TaskDataChangeEvent);
 	};
 	var updatePinnedList = function() {
-		if (onPinnedChange !== undefined) {
-			onPinnedChange();
-		}
+		EventListener.trigger(EventListener.events.PinnedListChangeEvent);
 	};
 	
 	//comments
@@ -68,15 +62,10 @@ export default function(onedit) {
 	
 	return {
 		
-		setOnPinnedChange : function(callback) {
-			onPinnedChange = callback;
-		},
-		
-		bindList : function($list, onswitch, onchange) {
+		bindList : function($list, onswitch) {
 			$list.on("click", ".task-header", function() {
 				onswitch($(this).parent(".task"));
 			});
-			onTaskListChangeCallbacks.push(onchange);
 		},
 		
 		bindHeader : function($task) {},

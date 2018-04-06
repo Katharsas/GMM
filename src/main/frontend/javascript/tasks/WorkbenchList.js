@@ -1,4 +1,5 @@
 import TaskList from "./TaskList";
+import EventListener from "../shared/EventListener";
 
 var WorkbenchList = function(settings, cache, taskSwitcher) {
 	
@@ -34,6 +35,13 @@ var WorkbenchList = function(settings, cache, taskSwitcher) {
 	};
 	
 	var list = TaskList(settings, cache, taskSwitcher, taskListEventHandlers);
+
+	EventListener.subscribe(EventListener.events.WorkbenchChangeEvent, list.update);
+	
+	// TODO: list should not need to listen for TaskDataChangeEvent
+	// (currently the server does not send specific WorkbenchChangeEvent)
+	EventListener.subscribe(EventListener.events.TaskDataChangeEvent, list.update);
+
 	return list;
 };
 

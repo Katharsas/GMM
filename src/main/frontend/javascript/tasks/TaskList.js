@@ -2,6 +2,7 @@
 
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
+import EventListener from "../shared/EventListener";
 import lozad from 'lozad';
 import { contextUrl, resortElementsById, runSerial, IllegalArgumentException } from "../shared/default";
 
@@ -157,21 +158,16 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		});
 	};
 	
-	const updateTaskList = function() {
-		// TODO more elegant way to update the cache?
-		return cache.updateCache()
-		.then(updateTaskListOld);
-	};
-	
 	/**
 	 * Async. Retrieve and process events.
 	 * @returns {Promise}
 	 */
-	const updateTaskListOld = function() {
+	const updateTaskList = function() {
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(taskListEvents) {
 			const asyncTasks = [];
 			for (const event of taskListEvents) {
+				console.log("TaskListEvent: " + event.eventName);
 				if (event.eventName in baseEventHandlers) {
 					asyncTasks.push(function() {
 						return baseEventHandlers[event.eventName](event);
@@ -253,28 +249,23 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 	const baseEventHandlers = {
 		
 		AddAll : function(event) {
-			console.log("event: AddAll");
 			return addTasks(event.addedIds)
 			.then(function() {
 				resortTaskList(event.visibleIdsOrdered);
 			});
 		},
 		AddSingle : function(event) {
-			console.log("event: AddSingle");
 			return addTask(event.addedId, event.insertedAtPos);
 		},
 		
 		RemoveAll : function(event) {
-			console.log("event: RemoveAll");
 			return promptAndRemoveTasks(event.removedIds, event.source, false);
 		},
 		RemoveSingle : function(event) {
-			console.log("event: RemoveSingle");
 			return promptAndRemoveTasks([event.removedId], event.source, false);
 		},
 
 		EditAll : function(event) {
-			console.log("event: EditAll");
 			return promptAndRemoveTasks(event.removedIds, event.source, true)
 			.then(function() {
 				return addTasks(event.addedIds)
@@ -284,7 +275,6 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			});
 		},
 		EditSingle : function(event) {
-			console.log("event: EditSingle");
 			const promise = current.includes(event.editedId) ? 
 				promptAndRemoveTasks([event.editedId], event.source, true) : Promise.resolve();
 

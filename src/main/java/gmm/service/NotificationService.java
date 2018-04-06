@@ -15,6 +15,8 @@ import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
 import gmm.service.users.UserService;
+import gmm.web.WebSocketEventSender;
+import gmm.web.WebSocketEventSender.WebSocketEvent;
 
 @Service
 public class NotificationService implements DataChangeCallback {
@@ -25,10 +27,12 @@ public class NotificationService implements DataChangeCallback {
 	private final static int MAX_NOTIFICATIONS = 1000;
 	
 	private final UserService userService;
+	private final WebSocketEventSender eventSender;
 	
 	@Autowired
-	public NotificationService(DataAccess data, UserService userService) {
+	public NotificationService(DataAccess data, UserService userService, WebSocketEventSender eventSender) {
 		this.userService = userService;
+		this.eventSender = eventSender;
 		data.registerForUpdates(this);
 	}
 	
@@ -39,14 +43,13 @@ public class NotificationService implements DataChangeCallback {
 				for (final Task task : event.getChanged(Task.class)) {
 					for (final User user : userService.get()) {
 						final TaskNotification notification = new TaskNotification(task, event.type, event.source);
-						final List<Notification> target;
-						if (!user.equals(event.source)) {
-							target = user.getNewNotifications();
-						} else {
-							target = user.getOldNotifications();
-						}
 						synchronized (user) {
-							addNotification(notification, target);
+							if (!user.equals(event.source)) {
+								addNotification(notification, user.getNewNotifications());
+								eventSender.unicastEvent(user, WebSocketEvent.NotificationChangeEvent);
+							} else {
+								addNotification(notification, user.getOldNotifications());
+							}
 						}
 					}
 				}

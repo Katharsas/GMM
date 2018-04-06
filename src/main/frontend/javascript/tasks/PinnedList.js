@@ -1,4 +1,5 @@
 import TaskList from "./TaskList";
+import EventListener from "../shared/EventListener";
 
 var PinnedList = function(settings, cache, taskSwitcher) {
 	
@@ -27,7 +28,12 @@ var PinnedList = function(settings, cache, taskSwitcher) {
 	
 	var list = TaskList(settings, cache, taskSwitcher, taskListEventHandlers);
 	
-	settings.eventBinders.setOnPinnedChange(list.update);
+	EventListener.subscribe(EventListener.events.PinnedListChangeEvent, list.update);
+	
+	// TODO: list should not need to listen for TaskDataChangeEvent
+	// (currently the server does not send specific PinnedListChangeEvents)
+	EventListener.subscribe(EventListener.events.TaskDataChangeEvent, list.update);
+
 	taskSwitcher.setIsPinnedTask(list.contains);
 	
 	return list;
