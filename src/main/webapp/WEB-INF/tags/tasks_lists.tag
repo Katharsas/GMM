@@ -17,7 +17,7 @@
 <%-- ########################## Searching ########################### --%>
 	
 		<div class="search listElement">
-			<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" commandName="search">
+			<form:form id="searchForm" method="POST" action="tasks/submitSearch?tab=${tab}" modelAttribute="search">
 				
 				<form:select id="searchTypeSelect" path="easySearch">
 					<form:option value="true" label="easySearch"/>
@@ -75,7 +75,7 @@
 <%-- ########################## Sorting ########################### --%>
 		
 		<div class="sort listElement">
-			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" commandName="sort">
+			<form:form id="sortForm" method="POST" action="tasks/submitSort?tab=${tab}" modelAttribute="sort">
 				<div class="left">
 				<fmt:message key="search.first"/><span></span>
 				</div>

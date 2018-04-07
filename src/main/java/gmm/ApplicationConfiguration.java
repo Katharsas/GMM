@@ -24,16 +24,16 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
@@ -66,9 +66,9 @@ import gmm.web.binding.PathEditor;
 @EnableWebMvc
 @EnableScheduling
 @Import({ WebSocketConfiguration.class })
-@PropertySource("classpath:config.properties")
-@PropertySource(value = "file:./config.properties", ignoreResourceNotFound = true)
-public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
+@PropertySource("classpath:default.properties")
+@PropertySource(value = "classpath:config.properties", ignoreResourceNotFound = true)
+public class ApplicationConfiguration implements WebMvcConfigurer {
 
 	@Autowired
     private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
@@ -208,18 +208,28 @@ public class ApplicationConfiguration extends WebMvcConfigurerAdapter {
 		}
 		Objects.requireNonNull(originalJacksonConverter);
 		customJackson2HttpMessageConverter(originalJacksonConverter);
- 
-        super.configureMessageConverters(messageConverters);
     }
+	
+	/**
+	 * Quickfix for Spring @Scheduled bug, see:
+	 * https://stackoverflow.com/questions/49343692/websocketconfigurer-and-scheduled-are-not-work-well-in-an-application
+	 */
+	@Bean
+	public TaskScheduler taskScheduler() {
+	    final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+	    taskScheduler.setPoolSize(2);
+	    taskScheduler.initialize();
+	    return taskScheduler;
+	}
 	
 	/**
 	 * ----------------------------- Custom Beans -----------------------------
 	 */
 	
-	@Bean
-	public MailSender mailSender() {
-		return new JavaMailSenderImpl();
-	}
+//	@Bean
+//	public MailSender mailSender() {
+//		return new JavaMailSenderImpl();
+//	}
 	
 	@Bean
 	public gmm.service.Spring applicationContextProvider() {

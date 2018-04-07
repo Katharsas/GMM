@@ -33,6 +33,7 @@ import gmm.web.sessions.tasklist.TaskListEvent;
 import gmm.web.sessions.tasklist.WorkbenchSession;
 
 @RequestMapping(value = "workbench")
+@ResponseBody
 @PreAuthorize("hasRole('ROLE_USER')")
 @Controller
 public class WorkbenchController {
@@ -79,7 +80,6 @@ public class WorkbenchController {
 	
 	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	@RequestMapping(value = "saveVisible", method = POST)
-	@ResponseBody
 	public void saveVisible(@RequestParam("name") String pathString) throws IOException {
 		manualBackups.saveTasksToXml(workbench.getTasks(), pathString);
 	}
@@ -97,7 +97,6 @@ public class WorkbenchController {
 	 * @param type - type whose corresponding button was clicked by user
 	 */
 	@RequestMapping(value = "loadType", method = POST)
-	@ResponseBody
 	public void loadType(@RequestParam("type") TaskType type) {
 		workbench.loadTasks(type);
 	}
@@ -107,7 +106,6 @@ public class WorkbenchController {
 	 * @param loadForm - object containing all task loading settings
 	 */
 	@RequestMapping(value = "loadOptions", method = POST)
-	@ResponseBody
 	public void loadOptions(@ModelAttribute("workbench-loadForm") LoadForm loadForm) {
 		workbench.updateLoad(loadForm);
 	}
@@ -118,7 +116,6 @@ public class WorkbenchController {
 	 * 		positions correspond to {@link TaskType#values()}.
 	 */
 	@RequestMapping(value = "selected", method = GET)
-	@ResponseBody
 	public boolean[] selected() {
 		return workbench.getSelectedTaskTypes();
 	}
@@ -130,7 +127,6 @@ public class WorkbenchController {
 	 * @param reset - true if user clicked the reset filter button (discard filterForm)
 	 */
 	@RequestMapping(value = "filter", method = { GET, POST }, produces = "application/json")
-	@ResponseBody
 	public Map<String, String> filter(
 			ControllerArgs args,
 			@ModelAttribute(filterFormName) FilterForm filterForm,
@@ -155,7 +151,6 @@ public class WorkbenchController {
 	 * @param searchForm - object containing all search information
 	 */
 	@RequestMapping(value = "search",  method = { GET, POST }, produces = "application/json")
-	@ResponseBody
 	public Map<String, String> search(
 			ControllerArgs args,
 			@ModelAttribute(searchFormName) SearchForm searchForm,
@@ -180,7 +175,6 @@ public class WorkbenchController {
 	 * @param sortForm - object containing all sort information
 	 */
 	@RequestMapping(value = "sort", method = POST)
-	@ResponseBody
 	public void sort(@ModelAttribute("workbench-sortForm") SortForm sortForm) {
 		workbench.updateSort(sortForm);
 	}
@@ -191,7 +185,6 @@ public class WorkbenchController {
 	 * Sync workbench taskList by exchanging taskList events.
 	 */
 	@RequestMapping(value = "taskListEvents", method = GET)
-	@ResponseBody
 	public List<TaskListEvent> taskListEvents() {
 		final List<TaskListEvent> events = workbench.retrieveEvents();
 		if (logger.isDebugEnabled()) {

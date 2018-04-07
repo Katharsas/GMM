@@ -2,7 +2,7 @@
 <%@tag description="template page" pageEncoding="UTF-8"%>
 
 <div id="workbench-sort-formWrapper">
-	<form:form id="workbench-sortForm" commandName="workbench-sortForm"
+	<form:form id="workbench-sortForm" modelAttribute="workbench-sortForm"
 			action="${contextUrl}/tasks/submitSort" method="POST">
 		
 			<div id="workbench-sort-primary">

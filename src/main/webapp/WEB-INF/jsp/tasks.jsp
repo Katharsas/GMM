@@ -32,7 +32,7 @@
 				</div>
 				<form:form id="taskForm" method="POST"
 						action="${contextUrl}/tasks/submitTask?edit=${edit}"
-						commandName="taskForm"
+						modelAttribute="taskForm"
 						style="display: none;">
 				</form:form>
 				<div class="clear"></div>

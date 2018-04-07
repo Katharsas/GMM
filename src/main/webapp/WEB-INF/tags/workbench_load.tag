@@ -13,7 +13,7 @@
 	</div>
 	
 	
-	<form:form id="workbench-loadForm" commandName="workbench-loadForm"
+	<form:form id="workbench-loadForm" modelAttribute="workbench-loadForm"
 			action="${contextUrl}/tasks/submitLoad" method="POST">
 		<div id="workbench-load-formWrapper">
 		
@@ -36,7 +36,6 @@
 						<c:set var="tvalue"><fmt:message key="${loadType.nameKey}"/></c:set> 
 						<form:option value="${loadType.name()}" label="${tvalue}"/>
 					</c:forEach>
-					<form:option value="NONE" label="NONE"/>
 				</form:select>
 			</div>
 			

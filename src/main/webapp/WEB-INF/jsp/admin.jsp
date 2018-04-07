@@ -68,7 +68,7 @@
 			<div id="selectedPaths" class="admin-inner"><ul></ul></div>
 
 			<div id="importTaskForm" class="admin-inner">
-				<form:form id="taskForm" commandName="taskForm">
+				<form:form id="taskForm" modelAttribute="taskForm">
 					${all_taskForm}
 				</form:form>
 				
