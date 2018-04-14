@@ -1,17 +1,40 @@
 /**
  * HOW TO BUILD
+ * 
+ * To build this web application, you must build the frontend and the backend.
  *
+ * FRONTEND BUILD:
+ * Nodejs and npm must be globally installed (windows: must be on PATH).
+ * Run 'gradle gulp_build' to build frontend (javascript abd sass).
+ * 
+ * BACKEND BUILD & RUN:
  * See 'https://github.com/bmuschko/gradle-tomcat-plugin' for detailed instructions.
  * User Gradle task 'tomcatRun' to start embedded tomcat and deploy webapp.
  * 
- * Configuration:
+ * CONFIGURATION:
  * Default configuration file can be found at 'src/main/resources/default.properties'.
  * Use configuration file at 'config/config.properties' to override defaults.
  */
 
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+	    	url "https://plugins.gradle.org/m2/"
+	    }
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
+        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'com.moowork.node'
+apply plugin: "com.moowork.gulp"
 
 group = 'de.gothic-reloaded-mod'
 version = '0.5.3-SNAPSHOT'
@@ -23,15 +46,6 @@ targetCompatibility = 1.9
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
-    }
 }
 
 repositories {
@@ -104,4 +118,26 @@ tomcat {
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
     //httpsProtocol = 'org.apache.coyote.http2.Http2Protocol'
     ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+}
+
+// Frontend build
+gulp_three.dependsOn 'npmInstall'
+gulp_three.dependsOn 'installGulp'
+
+gulp_build_js.dependsOn 'npmInstall'
+gulp_build_js.dependsOn 'installGulp'
+
+gulp_build_sass.dependsOn 'npmInstall'
+gulp_build_sass.dependsOn 'installGulp'
+
+gulp_build.dependsOn 'npmInstall'
+gulp_build.dependsOn 'installGulp'
+gulp_build.dependsOn 'gulp_three'
+
+node {
+	download = false
+	nodeModulesDir = file("${project.projectDir}/src/main/frontend")
+}
+gulp {
+	workDir = file("${project.projectDir}/src/main/frontend")
 }

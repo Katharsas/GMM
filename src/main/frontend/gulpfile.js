@@ -111,7 +111,7 @@ gulp.task("three", function () {
 		});
 });
 
-gulp.task("build-js", function () {
+gulp.task("build_js", function () {
 	//multiple files: http://fettblog.eu/gulp-browserify-multiple-bundles/
 	return buildScript(
 		["template.js",
@@ -123,7 +123,7 @@ gulp.task("build-js", function () {
 	);
 });
 
-gulp.task("build-sass", function () {
+gulp.task("build_sass", function () {
 	return gulp
 		.src(sassDir + sassFilter)
 		.pipe(gulpif(cssSourceMaps, sourcemaps.init()))
@@ -132,4 +132,4 @@ gulp.task("build-sass", function () {
 		.pipe(gulp.dest(sassDest));
 });
 
-gulp.task("build", ["build-js", "build-sass"]);
+gulp.task("build", ["build_js", "build_sass"]);

@@ -55,26 +55,6 @@ public abstract class UniqueObject implements Linkable {
 		if(u.getId() > idCount) idCount = u.getId();
 	}
 	
-//	public static long getIdFromIdLink(String idLink) {
-//		int offset = 0;
-//		final int length = idLink.length();
-//		while (offset < length) {
-//			final int current = idLink.codePointAt(offset);
-//			if (Character.isDigit(current)) {
-//				break;
-//			}
-//			offset += Character.charCount(current);
-//		}
-//		final StringBuilder sb = new StringBuilder();
-//		while (offset < length) {
-//			final int current = idLink.codePointAt(offset);
-//			sb.appendCodePoint(current);
-//			offset += Character.charCount(current);
-//		}
-//		final long id = Long.parseLong(sb.toString());
-//		return id;
-//	}
-	
 	public <U extends UniqueObject> void makeUnique() {
 		id = ++idCount;
 	}
