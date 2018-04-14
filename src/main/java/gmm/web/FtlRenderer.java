@@ -3,6 +3,8 @@ package gmm.web;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,7 +17,6 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
-import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
@@ -37,17 +38,15 @@ public class FtlRenderer {
 	}
 	
 	public static class TaskRenderResult {
-		public final String idLink;
 		public final String header;
 		public final String body;
 		public TaskRenderResult(Task task, String header, String body) {
-			this.idLink = task.getIdLink();
 			this.header = header;
 			this.body = body;
 		}
 		@Override
 		public String toString() {
-			return "TaskRenderResult\n  IDLink: "+idLink+"\n---------------------HEADER------------"
+			return "TaskRenderResult" + "\n---------------------HEADER------------"
 					+ "---------\n"+header+"\n---------------------BODY---------------------\n"+body;
 		}
 	}
@@ -72,15 +71,15 @@ public class FtlRenderer {
 	 * Renders tasks to a list with task html for JSON auto-convertion.
 	 * @see {@link #renderTask(Task, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
-	public List<TaskRenderResult> renderTasks(List<? extends Task> tasks, ControllerArgs requestData) {
+	public Map<Task, TaskRenderResult> renderTasks(List<? extends Task> tasks, ControllerArgs requestData) {
 		
 		requestData.request.setAttribute("commentForm", new CommentForm());
 		populateModel(requestData);
-		final List<TaskRenderResult> renderedTasks = new LinkedList<>(TaskRenderResult.class);
+		final Map<Task, TaskRenderResult> renderedTasks = new HashMap<>();
 		
 		for(final Task task : tasks) {
 			final TaskRenderResult result = renderSingleTask(task, requestData.model);
-			renderedTasks.add(result);
+			renderedTasks.put(task, result);
 		}
 		return renderedTasks;
 	}

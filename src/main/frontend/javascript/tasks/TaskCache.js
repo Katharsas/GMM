@@ -24,6 +24,9 @@ import $ from "../lib/jquery";
 const TaskCache = function(renderUrl) {
 	
 	const idToTaskData = {};
+
+	const currentlyLoadingIds = [];
+	let currentlyLoadingPromise = Promise.resolve();
 	
 	/**
 	 * - converts html strings to dom elements
@@ -82,19 +85,35 @@ const TaskCache = function(renderUrl) {
 	 * @param {string[]} idLinks 
 	 */
 	const loadTasks = function(idLinks) {
-		const idLinksMissing = idLinks.slice();
-		const data = { "idLinks[]" : idLinks };
-		return Ajax.post(contextUrl + renderUrl, data)
-		.then(function (taskRenders) {
-			taskRenders.forEach(function(task) {
-				preprocess(task);
-				idToTaskData[task.idLink] = task;
-				delete idLinksMissing[idLinksMissing.indexOf(task.idLink)];
+		currentlyLoadingIds.push(...idLinks);
+		currentlyLoadingPromise = currentlyLoadingPromise.then(function() {
+			const idLinksMissing = idLinks.slice();
+			console.debug("TaskCache: Loading task data for ids: " + idLinks);
+			const data = { "idLinks[]" : idLinks };
+
+			return Ajax.post(contextUrl + renderUrl, data)
+			.then(function (taskRenders) {
+				taskRenders.forEach(function(taskData) {
+					preprocess(taskData.render);
+					const idLink = taskData.idLink;
+					idToTaskData[idLink] = taskData;
+					// TODO: is there a better method to remove first equal object from arrays?
+					delete idLinksMissing[idLinksMissing.indexOf(idLink)];
+					delete currentlyLoadingIds[currentlyLoadingIds.indexOf(idLink)];
+					console.debug("TaskCache: Loading done for id: " + idLink);
+				});
+				for (const idLink of idLinksMissing) {
+					// TODO: how to clean up an array with empty slots?
+					// TODO: cleanup undefineds in idLinksMissing and currentlyLoading
+					if (idLink !== undefined) {
+						idToTaskData[idLink] = getDummyTask(idLink);
+						delete currentlyLoadingIds[currentlyLoadingIds.indexOf(idLink)];
+						console.debug("TaskCache: Loading done for id: " + idLink);
+					}
+				}
 			});
-			for (const idLink of idLinksMissing) {
-				idToTaskData[idLink] = getDummyTask(idLink);
-			}
 		});
+		return currentlyLoadingPromise;
 	};
 
 	const getDummyTask = function(idLink) {
@@ -103,6 +122,19 @@ const TaskCache = function(renderUrl) {
 			$header : $("<div id='" + idLink + "' class='list-element task collapsed' style='padding:5px'>"
 				+ "Error: Task with id '" + idLink + "' was not returned from server!</div>")
 		};
+	}
+
+	const logState = function(logFunction) {
+		logFunction("Cached Ids:");
+		for (const id of Object.entries(idToTaskData)) {
+			logFunction(id);
+		}
+	}
+
+	const checkThrowTaskNotFound = function(idLink) {
+		if (!(idLink in idToTaskData)) {
+			throw new Error("Could not find data for task '" + idLink + "' in cache!");
+		}
 	}
 
 	DataChangeNotifier.registerSubscriber("TaskCache", function(events) {
@@ -117,16 +149,18 @@ const TaskCache = function(renderUrl) {
 		 * this function may cause a request, try to call it seldom.
 		 */
 		makeAvailable : function(idLinks) {
-			const missing = [];
+			const toLoad = [];
 			idLinks.forEach(function(id) {
-				if (!idToTaskData.hasOwnProperty(id)) {
-					missing.push(id);
+				const isMissing = !idToTaskData.hasOwnProperty(id);
+				const isLoading = currentlyLoadingIds.includes(id);
+				if (isMissing && !isLoading) {
+					toLoad.push(id);
 				}
 			});
-			if (missing.length > 0) {
-				return loadTasks(missing);
+			if (toLoad.length > 0) {
+				return loadTasks(toLoad);
 			} else {
-				return Promise.resolve();
+				return currentlyLoadingPromise;
 			}
 		},
 		
@@ -135,10 +169,8 @@ const TaskCache = function(renderUrl) {
 		 * @see function makeAvailable
 		 */
 		getTaskHeader : function(idLink) {
-			if (!(idLink in idToTaskData)) {
-				throw new Error("Could not find data for task '" + idLink + "' in cache!");
-			}
-			return idToTaskData[idLink].$header.clone();
+			checkThrowTaskNotFound(idLink);
+			return idToTaskData[idLink].render.$header.clone();
 		},
 		
 		/**
@@ -146,10 +178,13 @@ const TaskCache = function(renderUrl) {
 		 * @see function makeAvailable
 		 */
 		getTaskBody : function(idLink) {
-			if (!(idLink in idToTaskData)) {
-				throw new Error("Could not find data for task '" + idLink + "' in cache!");
-			}
-			return idToTaskData[idLink].$body.clone();
+			checkThrowTaskNotFound(idLink);
+			return idToTaskData[idLink].render.$body.clone();
+		},
+
+		isPinned : function(idLink) {
+			checkThrowTaskNotFound(idLink);
+			return idToTaskData[idLink].isPinned;
 		}
 	};
 };

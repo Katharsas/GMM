@@ -6,6 +6,27 @@ import Errors from "./Errors";
  * Dialogs
  * --------------------------------------------------------------------
  */
+
+/**
+ * Places dialog in center with slight offset to prevent dialogs stacking up in exactly same place.
+ * @param {number} offsetIndex - int (optional): Number of already open dialogs to create offset (defaul is 0).
+ * @param {number} width - int (optional): Width of the dialog (default is min-width from css).
+ * @param {number} height - int (optional): Height of the dialog (default is min-width from css).
+ */
+const centerDialog = function($dialog, offsetIndex, width, height) {
+	if (offsetIndex === undefined) offsetIndex = 0;
+	if(width === undefined) width = $dialog.outerWidth();
+	if(height === undefined) height = $dialog.innerHeight();
+	var left = $(window).innerWidth()/2 - width/2;
+	var top = ($(window).innerHeight()/2 - height/2) * 0.7;
+	if ($dialog.hasClass("confirmDialog")) {
+		left += offsetIndex * 5;
+		top += offsetIndex * 5;
+	}
+	$dialog.css("left", left + "px");
+	$dialog.css("top", top + "px");
+};
+
 var Dialogs = (function() {
 	
 	var $overlay;
@@ -29,23 +50,7 @@ var Dialogs = (function() {
 		});
 	});
 	
-	/**
-	 * @param width - int: Width of the dialog (default is min-width from css).
-	 * @param height - int: Height of the dialog (default is min-width from css).
-	 */
-	var centerDialog = function($dialog, width, height) {
-		if(width === undefined) width = $dialog.outerWidth();
-		if(height === undefined) height = $dialog.innerHeight();
-		var left = $(window).innerWidth()/2 - width/2;
-		var top = ($(window).innerHeight()/2 - height/2) * 0.7;
-		if ($dialog.hasClass("confirmDialog")) {
-			var offsetMulti = $confirmDialogContainer.children().length;
-			left += offsetMulti * 5;
-			top += offsetMulti * 5;
-		}
-		$dialog.css("left", left + "px");
-		$dialog.css("top", top + "px");
-	};
+	
 	
 	var setDialogDimensions = function($dialog, width, height) {
 		if(width === undefined)  width = $dialog.outerWidth();
@@ -123,7 +128,8 @@ var Dialogs = (function() {
 		$cancelButton.toggle(hasCancel);
 		//set width and height & center
 		setDialogDimensions($dialog, width, height);
-		centerDialog($dialog, width, height);
+		var numberOfExisting = $confirmDialogContainer.children().length;
+		centerDialog($dialog, numberOfExisting, width, height);
 		//show
 		$dialog.show();
 		if(inputDefault !== undefined) {
@@ -139,7 +145,7 @@ var Dialogs = (function() {
 		}
 		currentCallback = callback;
 		showOverlay();
-		centerDialog($dialog, width, height);
+		centerDialog($dialog, 0, width, height);
 		$dialog.show();
 	};
 	
@@ -219,3 +225,4 @@ var Dialogs = (function() {
 })();
 
 export default Dialogs;
+export { centerDialog };

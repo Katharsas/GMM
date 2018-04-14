@@ -12,7 +12,7 @@ public abstract class UniqueObject implements Linkable {
 	private static long idCount = 0;
 	@XStreamAsAttribute
 	private long id;
-	private Date created;
+	private final Date created;
 	
 	//Methods---------------------------------------------------
 	public UniqueObject() {
@@ -29,7 +29,7 @@ public abstract class UniqueObject implements Linkable {
 	 * @return null if an element with this idLink does not exist in the given collection
 	 */
 	public  static <U extends UniqueObject> U getFromIdLink(Collection<U> c, String idLink) {
-		for(U u : c) {
+		for(final U u : c) {
 			if(u.getIdLink().equals(idLink)) return u;
 		}
 		return null;
@@ -39,14 +39,14 @@ public abstract class UniqueObject implements Linkable {
 	 * @return null if an element with this id does not exist in the given collection
 	 */
 	public  static <U extends UniqueObject> U getFromId(Collection<U> c, long id) {
-		for(U u : c) {
+		for(final U u : c) {
 			if(u.getId() == id) return u;
 		}
 		return null;
 	}
 	
 	public  static <U extends UniqueObject> void updateCounter(Collection<U> c) {
-		for(U u : c) {
+		for(final U u : c) {
 			updateCounter(u);
 		}
 	}
@@ -71,7 +71,7 @@ public abstract class UniqueObject implements Linkable {
 	@Override
 	public boolean equals(Object o) {
 		if((o!=null) && o instanceof UniqueObject){
-			UniqueObject p = (UniqueObject) o;
+			final UniqueObject p = (UniqueObject) o;
     		return getIdLink().equals(p.getIdLink());
     	}
     	return false;
@@ -84,7 +84,7 @@ public abstract class UniqueObject implements Linkable {
 	}
 	
 	public String getFormattedCreationDate() {
-		SimpleDateFormat formattter = new SimpleDateFormat("dd.MM.yyyy");
+		final SimpleDateFormat formattter = new SimpleDateFormat("dd.MM.yyyy");
 		return formattter.format(created);
 	}
 }

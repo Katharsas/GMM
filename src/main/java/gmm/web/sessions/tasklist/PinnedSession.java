@@ -30,7 +30,7 @@ public class PinnedSession extends TaskListState {
 	//user logged into this session
 	private final User user;
 	
-	List<Task> pinnedTasks;
+	private final List<Task> pinnedTasks;
 	
 	@Autowired
 	public PinnedSession(DataAccess data, UserService users) {

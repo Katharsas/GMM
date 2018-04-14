@@ -5,6 +5,8 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import gmm.collections.ArrayList;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.Comment;
@@ -252,18 +255,24 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
+	public static class TaskDataResult {
+		public String idLink;
+		public Boolean isPinned;
+		public TaskRenderResult render;
+	}
+	
 	/**
 	 * Get task data for specified ids.
 	 */
 	@RequestMapping(value = "/renderTaskData", method = POST)
 	@ResponseBody
-	public List<TaskRenderResult> renderSelectedTasks(
+	public List<TaskDataResult> renderSelectedTasks(
 			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks,
 			ModelMap model,
 			HttpServletRequest request,
 			HttpServletResponse response) {
 		
-		if(idLinks == null) return new LinkedList<>(TaskRenderResult.class);
+		if(idLinks == null) return new ArrayList<>(TaskDataResult.class, 0);
 		final List<Task> tasks = new LinkedList<>(Task.class);
 		for(final Task task : data.getList(Task.class)) {
 			final boolean contains = idLinks.remove(task.getIdLink());
@@ -271,8 +280,19 @@ public class TaskController {
 				tasks.add(task);
 			}
 		}
-		return ftlRenderer.renderTasks(tasks,
+		final Map<Task, TaskRenderResult> renders = ftlRenderer.renderTasks(tasks,
 				new ControllerArgs(model, request, response));
+		
+		final List<TaskDataResult> results = new ArrayList<>(TaskDataResult.class, idLinks.size());
+		for (final Entry<Task, TaskRenderResult> entry : renders.entrySet()) {
+			final TaskDataResult data = new TaskDataResult();
+			final Task task = entry.getKey();
+			data.idLink = task.getIdLink();
+			data.isPinned = user.get().getPinnedTaskIds().contains(task.getId());
+			data.render = entry.getValue();
+			results.add(data);
+		}
+		return results;
 	}
 	
 	/**

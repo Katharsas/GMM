@@ -307,7 +307,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			createBody : function($task) {
 				const idLink = $task.attr('id');
 				const $body = cache.getTaskBody(idLink);
-				settings.eventBinders.bindBody(idLink, $task, $body);
+				settings.eventBinders.bindBody(idLink, $body);
 				return $body;
 			},
 			

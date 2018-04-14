@@ -68,14 +68,13 @@ export default function(onedit) {
 			});
 		},
 		
-		bindHeader : function($task) {},
+		bindHeader : function($header) {},
 		
 		/**
 		 * @param $body - Complete body part of a task, bind functions to this (or its children).
-		 * @param $task - Will point to the complete task in the future. Use as callback parameter only.
 		 * @param {callback} updateTaskList - Function which returns a promise to finish updating.
 		 */
-		bindBody : function(id, $task, $body) {
+		bindBody : function(id, $body) {
 			
 			/* -------------------------------------------------------
 			 * GENERAL TASK

@@ -1,6 +1,7 @@
 import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
-import Dialogs from "../shared/dialogs";
+import Dialogs, { centerDialog } from "../shared/dialogs";
+import HtmlPreProcessor from "./preprocessor";
 import lozad from 'lozad';
 import { contextUrl, runSerial } from "../shared/default";
 
@@ -47,7 +48,7 @@ let TaskDialogs = {};
 const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
 
     const openDialog = function(idLink) {
-        dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
+        const dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
             delete idLinkToDialog[idLink];
         });
         idLinkToDialog[idLink] = dialog;
@@ -81,14 +82,18 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         };
 
         const attachTask = function() {
-            const $header = cache.getTaskHeader(id);
-            const $body = cache.getTaskBody(id);
+            return cache.makeAvailable([id])
+            .then(function(){
+                const $header = cache.getTaskHeader(id);
+                const $body = cache.getTaskBody(id);
 
-            binders.bindHeader($task);
-            binders.bindBody(id, $task, $body);
+                binders.bindHeader($header);
+                binders.bindBody(id, $body);
 
-            $headerContainer.attach($header);
-            $bodyContainer.attach($body)
+                $headerContainer.append($header);
+                $bodyContainer.append($body)
+                $body.show();
+            });
         };
 
         const bindEvents = function() {
@@ -98,8 +103,13 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         };
 
         bindEvents();
-        attachTask();
-        $taskDialogContainer.attach($dialog);
+        attachTask().then(function() {
+            $taskDialogContainer.append($dialog);
+            HtmlPreProcessor.apply($dialog);
+            $dialog.show();
+            const numberOfExisting = $taskDialogContainer.children().length;
+            centerDialog($dialog, numberOfExisting, $dialog.outerWidth(), $dialog.innerHeight())
+        });
 
         return {
             onRemoved : onRemoved,
@@ -107,10 +117,8 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         };
     }
 
-    TaskDialogs = {
-        openDialog : openDialog,
-        update : update,
-    }
+    TaskDialogs.openDialog = openDialog;
+    TaskDialogs.update = update;
 
     return TaskDialogs;
 }

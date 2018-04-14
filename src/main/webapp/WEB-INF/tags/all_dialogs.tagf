@@ -86,7 +86,7 @@
 
 <%-- Task Dialog --%>
 
-<div id="taskDialog-template" class="dialog draggable">
+<div id="taskDialog-template" class="dialog draggable" style="width:600px">
 	<div class="taskDialog-task-container">
 		<div>
 			<div class="taskDialog-task-header left"></div>
