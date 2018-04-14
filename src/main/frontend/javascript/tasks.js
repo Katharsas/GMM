@@ -315,14 +315,16 @@ $(document).ready(
 
 		var taskForm = TaskForm();
 		var taskCache = TaskCache("/tasks/renderTaskData");
-		var taskBinders = TaskEventBindings(taskForm.prepareEdit);
+		var taskBinders = TaskEventBindings(
+			taskForm.prepareEdit, taskCache.triggerIsPinned, taskCache.isPinned);
 		var taskSwitcher = TaskSwitcher();
 		
 		var pinnedList = new PinnedTasks(taskCache, taskSwitcher, taskBinders);
 		var workbenchList = new Workbench(taskCache, taskSwitcher, taskBinders);
 
 		TaskDialogsInit(taskCache, taskBinders);
-		//TaskDialogs.openDialog(idLink);
+		//TaskDialogs.openDialog("GeneralTask133");
+		// TaskDialogs.openDialog("GeneralTask155");
 
 		//TODO sidebarmarker creation on task select
 //			SidebarMarkers = SidebarMarkers(function() {

@@ -149,7 +149,7 @@ function resortElementsById(orderedIds, $unorderedList, selector, getIdOfElement
  */
 function runSerial(tasks) {
 	var promiseChain = Promise.resolve();
-	for (let task of tasks) {
+	for (const task of tasks) {
 		promiseChain = promiseChain.then(task);
 	}
 	return promiseChain;

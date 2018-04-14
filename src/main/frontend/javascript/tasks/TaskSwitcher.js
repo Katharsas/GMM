@@ -27,8 +27,6 @@ var TaskSwitcher = function() {
 	// {string} taskListId -> {TaskBodyCallbacks}
 	var listIdToCallbacks = {};
 	
-	var isPinnedTask;
-	
 	// animation settings
 	
 	var slideDownTime = 0.5;
@@ -44,12 +42,6 @@ var TaskSwitcher = function() {
 	}
 	
 	var getIdOfTaskElement = function(task) {return task.id;};
-	
-	var switchPinOperation = function($task, isPinned) {
-		var $operations = $task.find(".task-operations");
-		$operations.find(".task-operations-unpin").toggle(isPinned !== null && isPinned);
-		$operations.find(".task-operations-pin").toggle(isPinned !== null && !isPinned);
-	};
 	
 	  /**
      * Plays a slideUp animation and removes task detail DOM from page.
@@ -108,8 +100,8 @@ var TaskSwitcher = function() {
     		$task.addClass("expanding");
 			
 			// TODO Taskswitcher should not have anything to do with pinned tasks
-    		var hide = isPinnedTask === undefined;
-    		switchPinOperation($task, hide ? null : isPinnedTask(taskId));
+    		// var hide = isPinnedTask === undefined;
+    		// switchPinOperation($task, hide ? null : isPinnedTask(taskId));
     		
     		$body.show();
     		$body.css("height","");
@@ -135,13 +127,6 @@ var TaskSwitcher = function() {
     };
     
     return {
-    	
-    	/**
-    	 * @param {Callback} isPinnedTaskCallback - Takes task id as parameter, retuens boolean.
-    	 */
-    	setIsPinnedTask : function(isPinnedTaskCallback) {
-    		isPinnedTask = isPinnedTaskCallback;
-    	},
     	
     	/**
     	 * Allow tasks of the given taskListId to expand/collapse.

@@ -28,7 +28,8 @@ public class WebSocketEventSender implements DataChangeCallback {
 
 	public static enum WebSocketEvent {
 		TaskDataChangeEvent,
-		NotificationChangeEvent,
+//		TaskPinChangeEvent,
+		NotificationChangeEvent
 //		WorkbenchChangeEvent,
 //		PinnedListChangeEvent
 	}

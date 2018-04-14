@@ -1,5 +1,6 @@
 import $ from "../lib/jquery";
 import Ajax from "./ajax";
+import TaskDialogs from "./TaskDialog";
 import { contextUrl, allVars } from "./default";
 
 var template = `
@@ -41,9 +42,22 @@ var init = function() {
                  let notificHtml = (item.taskName === undefined) ? item.text :
                         getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
                  $item.find("span").html(notificHtml);
+                 bindTaskDialog($item);
                  $list.prepend($item);
             }
         });
+    }
+
+    var bindTaskDialog = function($item) {
+        // TODO bind to list instead of each single notific, as soon as lists are combined
+        const $taskName = $item.find(".notific-task-name");
+        if ($taskName.length > 0) {
+            const idLink = $taskName.data("id");
+            $taskName.click(function() {
+                // TODO TaskDialogs is not initialized because babel -> browserify fucks up live export bindings
+                TaskDialogs.openDialog(idLink);
+            })
+        }
     }
 
     var clearNotifications = function() {

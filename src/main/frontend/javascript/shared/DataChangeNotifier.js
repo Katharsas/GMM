@@ -14,7 +14,7 @@ const DataChangeNotifierInit = function(eventUrl) {
     thisEventUrl = eventUrl;
 }
 
-const subscriberToEventHandler = {};
+const subscriberToEventHandler = new Map();
 
 /**
  * @param {function} eventsHandler 
@@ -22,11 +22,13 @@ const subscriberToEventHandler = {};
  *      Returns: Promise of the finished handler action
  */
 const registerSubscriber = function(id, eventsHandler) {
-    subscriberToEventHandler[id] = eventsHandler;
+    console.debug("DataChangeNotifier: Registered handler with id '" + id + "'.");
+    subscriberToEventHandler.set(id, eventsHandler);
 }
 
 const unregisterSubscriber = function(id) {
-    delete subscriberToEventHandler[id];
+    console.debug("DataChangeNotifier: Unregistered handler with id '" + id + "'.");
+    subscriberToEventHandler.delete(id);
 }
 
 /** 
@@ -48,13 +50,14 @@ const triggerUpdate = function() {
         if (events.length <= 0) {
             return Promise.resolve();
         }
-        console.log("Received data change events from server:");
-        console.log(events);
         const asyncTasks = [];
-        for (const [_, eventsHandler] of Object.entries(subscriberToEventHandler)) {
-            asyncTasks.push(eventsHandler(events));
+        for (const [handlerId, eventsHandler] of subscriberToEventHandler) {
+            console.debug("DataChangeNotifier: Calling handler with id '" + handlerId + "'.");
+            asyncTasks.push(function() {
+                return eventsHandler(events);
+            });
         }
-        return Promise.all(asyncTasks);
+        return runSerial(asyncTasks);
     })
     .then(function() {
         updatesPending--;

@@ -3,8 +3,10 @@
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
 import EventListener from "../shared/EventListener";
+import { switchPinOperation } from "./Task";
 import lozad from 'lozad';
 import { contextUrl, resortElementsById, runSerial, IllegalArgumentException } from "../shared/default";
+import TaskCache from "./TaskCache";
 
 /** default parameter for required arguments */
 const r = function() {
@@ -322,6 +324,14 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			lozadObserver.observe();
 		};
 		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
+
+		cache.subscribePinnedEvent(function(idLink, isPinned) {
+			console.log(idLink);
+			const $task = findTask(idLink);
+			if ($task != null) {
+				switchPinOperation($task, isPinned);
+			}
+		});
 	};
 	init();
 	

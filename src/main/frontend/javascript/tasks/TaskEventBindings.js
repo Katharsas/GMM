@@ -1,6 +1,7 @@
 import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
+import { switchPinOperation } from "./Task";
 import EventListener from "../shared/EventListener";
 import PreviewRenderer from "../shared/preview/PreviewRenderer";
 import { ShadingType } from "../shared/preview/CanvasRenderer";
@@ -11,7 +12,7 @@ import { allVars, contextUrl, htmlDecode } from "../shared/default";
  * Provides methods to bind all needed listeners to task header or body
  * 
  */
-export default function(onedit) {
+export default function(onedit, setIsPinned, isPinned) {
 	
 	var updateTaskLists = function() {
 		EventListener.trigger(EventListener.events.TaskDataChangeEvent);
@@ -99,10 +100,14 @@ export default function(onedit) {
 						});
 					}, "Are you sure you want to delete this task?");
 				});
+
+				const isTaskPinned = isPinned(id);
+				switchPinOperation($operations, isTaskPinned);
 				//pin task
 				$operations.find(".task-operations-pin").click(function() {
 					Ajax.post(contextUrl + "/tasks/pinned/pin", { idLink: id })
 					.then(function() {
+						setIsPinned(id, true);
 						updatePinnedList();
 					});
 				});
@@ -110,6 +115,7 @@ export default function(onedit) {
 				$operations.find(".task-operations-unpin").click(function() {
 					Ajax.post(contextUrl + "/tasks/pinned/unpin", { idLink: id })
 					.then(function() {
+						setIsPinned(id, false);
 						updatePinnedList();
 					});
 				});

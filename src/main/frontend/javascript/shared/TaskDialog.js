@@ -2,6 +2,8 @@ import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs, { centerDialog } from "../shared/dialogs";
 import HtmlPreProcessor from "./preprocessor";
+import { switchPinOperation } from "../tasks/Task";
+import DataChangeNotifier from "../shared/DataChangeNotifier";
 import lozad from 'lozad';
 import { contextUrl, runSerial } from "../shared/default";
 
@@ -19,12 +21,8 @@ $(document).ready(function() {
 
 const idLinkToDialog = {};
 
-const onCacheChange = function(event) {
+const onTaskDataChange = function(event) {
 
-    if (event.eventType === "edited") {
-        cache.updateCache();
-    }
-    // TODO then
     for (const [taskId, dialog] of Object.entries(idLinkToDialog)) {
         if (event.changedIds.includes(taskId)) {
             switch (event.eventType) {
@@ -48,19 +46,32 @@ let TaskDialogs = {};
 const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
 
     const openDialog = function(idLink) {
+        if (idLink in idLinkToDialog) {
+            // TODO bring existing to focus
+            return;
+        }
         const dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
             delete idLinkToDialog[idLink];
         });
         idLinkToDialog[idLink] = dialog;
-    }
+    };
 
     const update = function() {
         
-    }
+    };
 
     const init = function() {
-
-    }
+        DataChangeNotifier.registerSubscriber("TaskDialogs", function(events) {
+            for (const event of events) {
+                onTaskDataChange(event);
+            }
+        });
+        taskCache.subscribePinnedEvent(function(idLink, isPinned) {
+            if (idLink in idLinkToDialog) {
+                idLinkToDialog[idLink].onPinned(isPinned);
+            }
+        });
+    };
 
     const TaskDialog = function(cache, binders, id, closeCallback) {
         
@@ -80,6 +91,10 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
             $bodyContainer.empty();
             attachTask();
         };
+        
+        const onPinned = function(isPinned) {
+            switchPinOperation($bodyContainer, isPinned);
+        }
 
         const attachTask = function() {
             return cache.makeAvailable([id])
@@ -114,8 +129,11 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         return {
             onRemoved : onRemoved,
             onEdited : onEdited,
+            onPinned : onPinned
         };
-    }
+    };
+
+    init();
 
     TaskDialogs.openDialog = openDialog;
     TaskDialogs.update = update;

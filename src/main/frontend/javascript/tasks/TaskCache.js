@@ -27,6 +27,8 @@ const TaskCache = function(renderUrl) {
 
 	const currentlyLoadingIds = [];
 	let currentlyLoadingPromise = Promise.resolve();
+
+	const pinnedSubscribers = [];
 	
 	/**
 	 * - converts html strings to dom elements
@@ -85,6 +87,9 @@ const TaskCache = function(renderUrl) {
 	 * @param {string[]} idLinks 
 	 */
 	const loadTasks = function(idLinks) {
+		if (idLinks.length <= 0) {
+			return currentlyLoadingPromise;
+		}
 		currentlyLoadingIds.push(...idLinks);
 		currentlyLoadingPromise = currentlyLoadingPromise.then(function() {
 			const idLinksMissing = idLinks.slice();
@@ -157,11 +162,7 @@ const TaskCache = function(renderUrl) {
 					toLoad.push(id);
 				}
 			});
-			if (toLoad.length > 0) {
-				return loadTasks(toLoad);
-			} else {
-				return currentlyLoadingPromise;
-			}
+			return loadTasks(toLoad);
 		},
 		
 		/**
@@ -182,9 +183,34 @@ const TaskCache = function(renderUrl) {
 			return idToTaskData[idLink].render.$body.clone();
 		},
 
+
+		/** 
+		 * All of this pinned stuff is a hack, because it is not clear how to do this properly.
+		 * (Would require backend architecture changes).
+		 * @returns true, false or undefined (is current user is not logged in)
+		 */
 		isPinned : function(idLink) {
 			checkThrowTaskNotFound(idLink);
 			return idToTaskData[idLink].isPinned;
+		},
+
+		/**
+		 * Subscribe to get info about pinning/unpinning of tasks.
+		 * @param {function} callback - Parameters: idLink : string, isPinned : bool
+		 */
+		subscribePinnedEvent(callback) {
+			pinnedSubscribers.push(callback);
+		},
+
+		/**
+		 * @param {*} isPinned - true, false or undefined (if current user is not logged in)
+		 */
+		triggerIsPinned(idLink, isPinned) {
+			checkThrowTaskNotFound(idLink);
+			idToTaskData[idLink].isPinned = isPinned;
+			for (const callback of pinnedSubscribers) {
+				callback(idLink, isPinned);
+			}
 		}
 	};
 };

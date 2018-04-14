@@ -334,4 +334,18 @@ public class TaskController {
 		final Task task = UniqueObject.getFromIdLink(pinned.getTasks(), idLink);
 		pinned.unpin(task);
 	}
+	
+//	@RequestMapping(value = "/isPinned", method = POST)
+//	@ResponseBody
+//	public java.util.Map<String, Boolean> isPinned(
+//			@RequestParam(value="idLinks[]", required=false) java.util.List<String> idLinks) {
+//		
+//		final java.util.Map<String, Boolean> results = new java.util.HashMap<>(idLinks.size());
+//		for (final String idLink : idLinks) {
+//			final long id = UniqueObject.getIdFromIdLink(idLink);
+//			final boolean pinned = user.get().getPinnedTaskIds().contains(id);
+//			results.put(idLink, pinned);
+//		}
+//		return results;
+//	}
 }
