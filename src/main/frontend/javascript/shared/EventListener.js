@@ -14,7 +14,8 @@ const EventListener = function() {
 		TaskDataChangeEvent : "TaskDataChangeEvent",
 		NotificationChangeEvent : "NotificationChangeEvent",
 		WorkbenchChangeEvent : "WorkbenchChangeEvent",
-		PinnedListChangeEvent : "PinnedListChangeEvent"
+		PinnedListChangeEvent : "PinnedListChangeEvent",
+		AssetImportRunningEvent : "AssetImportRunningEvent"
 	}
 
 	const callbacks = {};

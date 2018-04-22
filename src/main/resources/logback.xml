@@ -13,7 +13,7 @@
 <configuration scan="true" scanPeriod="30 seconds" debug="false">
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<Pattern>%d{HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
+			<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -28,7 +28,7 @@
 			<FileNamePattern>gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
 
 			<!-- keep 30 days' worth of history -->
-			<maxHistory>30</maxHistory>			
+			<maxHistory>60</maxHistory>			
 		</rollingPolicy>
 		
 		<encoder>
@@ -44,7 +44,7 @@
 	<logger name="org.springframework" level="WARN"/>
 	
 	<!-- Suppress scan details -->
-	<logger name="gmm.service.assets.AssetScanner" level="INFO"/>
+	<logger name="gmm.service.assets.AssetScanner" level="DEBUG"/>
 	<!-- Suppress notification logging -->
 	<logger name="gmm.service.NotificationService" level="INFO"/>
 	<!-- Suppress blender conversion script output -->

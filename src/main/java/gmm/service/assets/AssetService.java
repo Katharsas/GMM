@@ -344,12 +344,14 @@ public class AssetService {
 				
 				// asset was removed
 				if (oldHasAsset && !currentHasAsset) {
+					assertTaskHasAssetProperties(task, type);
 					updater.removePropsAndSetInfo(task, Optional.of(currentInfo));
 				// asset was added
 				} else if (!oldHasAsset && currentHasAsset) {
 					updater.recreatePropsAndSetInfo(task, currentInfo);
 				// asset still exists
 				} else if (oldHasAsset && currentHasAsset) {
+					assertTaskHasAssetProperties(task, type);
 					final AssetProperties props = task.getAssetProperties(type);
 					// file path hasn't changed, content has changed
 					if (changedPaths.contains(currentInfo.getAssetFilePath(config).normalize())) {
@@ -394,6 +396,14 @@ public class AssetService {
 			newAssetFolders.remove(notFound);
 			newAssetFoldersWithoutTasks.remove(notFound);
 			deleteNewAssetPreview(notFound);
+		}
+	}
+	
+	private void assertTaskHasAssetProperties(AssetTask<?> task, AssetGroupType type) {
+		final AssetProperties props = task.getAssetProperties(type);
+		if (props == null) {
+			throw new IllegalStateException("Failed updating asset properties for asset " + task.getAssetName() + "!\n"
+					+ "Task " + task.toString() + " exists and should have had asset properties already, but does not!");
 		}
 	}
 	

@@ -323,10 +323,6 @@ public class DataBase implements DataAccess {
 	@Override
 	public void registerForUpdates(DataChangeCallback onUpdate) {
 		weakConsumerCallbacks.add(onUpdate);
-		//TODO delete when tested with more than 10 sessions
-		logger.debug("Callback object count: '" + weakConsumerCallbacks.size() + "'");
-		if (weakConsumerCallbacks.size() > 20)
-			logger.error("Memory leak: Callback objects not getting garbage collected!");
 	}
 
 	@Override

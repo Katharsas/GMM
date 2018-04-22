@@ -1,6 +1,7 @@
 package gmm.service.tasks;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -12,8 +13,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,9 +169,8 @@ public class PythonTCPSocket {
 		public void run() {
 			synchronized(PythonTCPSocket.this) {
 				logger.info("Internal thread: starting execution...");
-				try {
-					startPythonScript();
-					final int waitUntilStartedMillis = 500;
+				try (ScriptRessources process = startPythonScript()) {
+					final int waitUntilStartedMillis = 700;
 					try {
 						Thread.sleep(waitUntilStartedMillis);
 					} catch (final InterruptedException e) {logger.debug("", e);}
@@ -185,7 +185,7 @@ public class PythonTCPSocket {
 			}
 		}
 		
-		private void startPythonScript() {
+		private ScriptRessources startPythonScript() {
 			final Path blenderPathAbsolute = config.blender().resolve("blender");
 			final Path scriptPathAbsolute = config.blenderPythonScript();
 			try {
@@ -198,18 +198,20 @@ public class PythonTCPSocket {
 						scriptPathAbsolute.toString(),
 						"--");// append script args here
 				final Process process = pb.start();
+				logger.info("Blender Python Script Server started.");
 				
 				// log output from process
-				final Stream<String> standardLines = 
-		                new BufferedReader(new InputStreamReader(process.getInputStream())).lines();
-				final Stream<String> errorLines = 
-		                new BufferedReader(new InputStreamReader(process.getErrorStream())).lines();
+				final BufferedReader standardLines = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				final BufferedReader errorLines = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+		                
 				new Thread(()->{
-					standardLines.forEach(line -> {logger.debug(line);});
+					standardLines.lines().forEach(line -> {logger.debug(line);});
 				}).start();
 				new Thread(()->{
-					errorLines.forEach(line -> {logger.warn(line);});
+					errorLines.lines().forEach(line -> {logger.warn(line);});
 				}).start();
+				
+				return new ScriptRessources(process, standardLines, errorLines);
 				
 			} catch (final IOException e1) {
 				throw new UncheckedIOException(e1);
@@ -221,9 +223,9 @@ public class PythonTCPSocket {
 			boolean success = false;
 			while(currentTry <= tryReconnectCount && !success) {
 				try(Socket socket = new Socket("localhost", port)) {
+					logger.info("Connected to Blender Python Script Server.");
 					connectStreamsAndSend(socket);
 					success = true;
-					logger.info("Connected to Blender Python Script Server.");
 				}
 				catch (final ConnectException e) {
 					final String message = "Connect failed, trying to reconnect.";
@@ -258,7 +260,7 @@ public class PythonTCPSocket {
 					flush();
 				}
 			};
-			socket.setSoTimeout(60000); // never wait more than 1 minute
+			socket.setSoTimeout(120000); // never wait more than 2 minutes
 			w.println(conversionStart);
 			retrievePathsAndSend(w, r);
 			w.println(conversionEnd);
@@ -310,4 +312,36 @@ public class PythonTCPSocket {
 			toPython.println(paths.target.toString());
 		}
 	};
+	
+	private class ScriptRessources implements Closeable {
+		private final Process proc;
+		private final BufferedReader stdIn;
+		private final BufferedReader errIn;
+		public ScriptRessources(Process proc, BufferedReader stdIn, BufferedReader errIn) {
+			this.proc = proc;
+			this.stdIn = stdIn;
+			this.errIn = errIn;
+		}
+		@Override
+		public void close() {
+			// used timeout in python script instead of process.destroy because of
+			// https://bugs.openjdk.java.net/browse/JDK-5101298
+			//			proc.destroy();
+			while (proc.isAlive()) {
+				try {
+					if (!proc.waitFor(2000, TimeUnit.MILLISECONDS)) {
+						logger.warn("Python server not responding to shutdown. Forcefully terminating server!");
+						proc.destroy();
+					}
+				} catch (final InterruptedException e) {}
+			}
+			logger.info("Blender Python Script Server shut down.");
+			try {
+				stdIn.close();
+				errIn.close();
+			} catch (final IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+	}
 }

@@ -198,7 +198,8 @@ def main():
 	
 	adress = ("localhost", 8090)
 	server = socketserver.TCPServer(adress, ConversionRequestHandler)
-
+	
+	server.timeout = 1.5 #seconds
 	server.handle_request()
 	server.server_close()
 	

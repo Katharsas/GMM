@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import gmm.domain.task.asset.AssetGroupType;
@@ -16,6 +17,8 @@ import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
+import gmm.web.WebSocketEventSender;
+import gmm.web.WebSocketEventSender.WebSocketEvent;
 
 /**
  * This service implements the state machines that model how AssetTask properties & info need to
@@ -72,11 +75,13 @@ public class AssetTaskUpdater {
 	}
 	
 	private final TaskServiceFinder serviceFinder;
+	private final WebSocketEventSender eventSender;
 	
 	private final Map<AssetTask<?>, CompletableFuture<Void>> processingAssetTasks;
 	
-	public AssetTaskUpdater(TaskServiceFinder serviceFinder) {
+	public AssetTaskUpdater(TaskServiceFinder serviceFinder, WebSocketEventSender eventSender) {
 		this.serviceFinder = serviceFinder;
+		this.eventSender = eventSender;
 		
 		processingAssetTasks = new HashMap<>();
 	}
@@ -141,6 +146,13 @@ public class AssetTaskUpdater {
 	public synchronized void waitForAsyncTaskProcessing(AssetTask<?> task) {
 		final CompletableFuture<Void> old = processingAssetTasks.get(task);
 		if (old != null) old.join();
+	}
+	
+	@Scheduled(fixedRate=5000)
+	public synchronized void checkIfAsyncTaskProcessingIsRunning() {
+		if (processingAssetTasks.size() > 0) {
+			eventSender.broadcastEvent(WebSocketEvent.AssetImportRunningEvent);
+		}
 	}
 	
 	public class AsyncPreviewCreationException extends RuntimeException {

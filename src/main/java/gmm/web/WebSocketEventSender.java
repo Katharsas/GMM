@@ -29,16 +29,18 @@ public class WebSocketEventSender implements DataChangeCallback {
 	public static enum WebSocketEvent {
 		TaskDataChangeEvent,
 //		TaskPinChangeEvent,
-		NotificationChangeEvent
+		NotificationChangeEvent,
 //		WorkbenchChangeEvent,
 //		PinnedListChangeEvent
+		AssetImportRunningEvent
 	}
 	
-	@Autowired WebSocketHandlerImpl handler;
+	private final WebSocketHandlerImpl handler;
 	
 	@Autowired
-	public WebSocketEventSender(DataAccess data) {
+	public WebSocketEventSender(DataAccess data, WebSocketHandlerImpl handler) {
 		data.registerForUpdates(this);
+		this.handler = handler;
 	}
 
 	@Override
