@@ -67,7 +67,7 @@ import gmm.web.binding.PathEditor;
 @EnableScheduling
 @Import({ WebSocketConfiguration.class })
 @PropertySource("classpath:default.properties")
-@PropertySource(value = "classpath:config.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "file:./config/config.properties", ignoreResourceNotFound = false)
 public class ApplicationConfiguration implements WebMvcConfigurer {
 
 	@Autowired

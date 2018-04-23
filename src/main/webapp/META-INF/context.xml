@@ -35,7 +35,10 @@
         	defaultPluggabilityScan="false"
         	pluggabilitySkip="*"
         	defaultTldScan="false"
-        	tldSkip="*"/>
+        	tldScan="
+        		jstl-1.2.jar,
+        		spring-webmvc-*.jar,
+        		spring-security-taglibs-*.jar"/>
     </JarScanner> 
     
 </Context>
