@@ -28,9 +28,7 @@
 				</sec:authorize>
 			</script>
 			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
-<!-- 			<script src="//code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script> -->
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
-			<script src="<c:url value="/res/javascript/compiled/template.bundle.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
 			<link href="<c:url value="/res/css/compiled/all_template.css"/>" media="screen" rel="stylesheet" type="text/css" />

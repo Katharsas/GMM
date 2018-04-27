@@ -6,6 +6,7 @@ import TaskSwitcher from "./tasks/TaskSwitcher";
 import TaskEventBindings from "./tasks/TaskEventBindings";
 import TaskDialogs, { TaskDialogsInit } from "./shared/TaskDialog";
 import { allVars } from "./shared/default";
+import {} from "./shared/template";
 
 /**
  * This function is executed when document is ready for interactivity!

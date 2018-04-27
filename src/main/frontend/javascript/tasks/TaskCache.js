@@ -124,8 +124,12 @@ const TaskCache = function(renderUrl) {
 	const getDummyTask = function(idLink) {
 		return {
 			idLink : idLink,
-			$header : $("<div id='" + idLink + "' class='list-element task collapsed' style='padding:5px'>"
-				+ "Error: Task with id '" + idLink + "' was not returned from server!</div>")
+			isPinned : false,
+			render : {
+				$header : $("<div id='" + idLink + "' class='list-element task collapsed' style='padding:5px'>"
+				+ "Error: Task with id '" + idLink + "' was not returned from server!</div>"),
+				$body : $("<div class='task-body' css='display:none;'></div>")
+			}
 		};
 	}
 

@@ -2,6 +2,7 @@ import $ from "./lib/jquery";
 import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";
 import { contextUrl } from "./shared/default";
+import {} from "./shared/template";
 
 
 var ChangePassword = function() {

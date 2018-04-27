@@ -1,4 +1,5 @@
 import $ from "./lib/jquery";
+import {} from "./shared/template";
 
 $(document).ready(function() {
 	var $submit = $("#login-form-submit");

@@ -3,6 +3,7 @@ import Ajax from "./shared/ajax";
 import Dialogs from "./shared/dialogs";
 import ResponseBundleHandler from "./shared/responseBundleHandler";
 import { contextUrl, allVars, allFuncs } from "./shared/default";
+import {} from "./shared/template";
 
 $(document).ready( function() {
 	

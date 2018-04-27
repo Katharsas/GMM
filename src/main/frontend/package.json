@@ -1,5 +1,8 @@
 {
 	"private": true,
+	"scripts": {
+		"build_js": "webpack --config webpack.config.js"
+	},
 	"dependencies": {
 		"lozad": "1.0.6",
 		"uuid": "3.1.0",
@@ -25,7 +28,8 @@
 		"uglify-js": "3.3.21",
 		"vinyl-buffer": "1.0.1",
 		"vinyl-source-stream": "2.0.0",
-		"webpack": "4.5.0"
+		"webpack": "4.5.0",
+		"webpack-cli": "2.0.15"
 	},
 	"unused": {
 		"gulp-babel": "6.1.2",

@@ -136,6 +136,7 @@ gretty {
 	servletContainer = "tomcat9"
 	//serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
 	logbackConfigFile = "src/main/resources/logback.xml"
+	recompileOnSourceChange = false // call javaCompile to reload or auto reload
 }
 
 

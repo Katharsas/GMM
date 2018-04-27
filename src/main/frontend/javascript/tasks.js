@@ -10,7 +10,9 @@ import WorkbenchList from "./tasks/WorkbenchList";
 import TaskEventBindings from "./tasks/TaskEventBindings";
 import TaskDialogs, { TaskDialogsInit } from "./shared/TaskDialog";
 import EventListener from "./shared/EventListener";
+import Notifications from "./shared/notifications";
 import { contextUrl, getURLParameter, allVars } from "./shared/default";
+import {} from "./shared/template";
 
 var tasksVars = {
 	"edit" : "",
@@ -333,6 +335,8 @@ $(document).ready(
 //			SidebarMarkers.registerSidebar("#page-tabmenu-spacer", true);
 //			SidebarMarkers.addMarker("#test1");
 //			SidebarMarkers.addMarker("#test2");
+		
+		Notifications.init();
 });
 
 /**
