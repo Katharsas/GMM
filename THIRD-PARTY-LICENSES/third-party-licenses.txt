@@ -1,0 +1,29 @@
+This file contains a collection of items which contain file paths to third-party content
+and the corresponding license or a reference to the corresponding license file:
+
+
+Content:
+../src/main/java/com/realityinteractive/imageio/tga/
+License: see LICENSE_LGPL.TXT
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/CSSPlugin.min.js
+../src/main/webapp/resources/javascript/lib/TweenLite.min.js
+License: see LICENSE_Greensock.TXT
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/jquery.js
+License:
+jQuery v2.2.0 | (c) jQuery Foundation | jquery.org/license
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/jquery.form.min.js
+License: see LICENSE_jQueryForm.TXT
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/OrbitControls.js
+License: see LICENSE_MIT_threejs.TXT

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="46" height="46" version="1.1" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg">
+ <path d="m46 23c0-13-10-23-23-23-13 0-23 10-23 23h5c0-10 8-18 18-18s18 8 18 18z">
+  <animateTransform attributeName="transform" attributeType="xml" dur="0.6s" from="0 23 23" repeatCount="indefinite" to="360 23 23" type="rotate"/>
+ </path>
+</svg>
