@@ -275,4 +275,8 @@ public class WorkbenchSession extends TaskListState {
 	public SearchForm getSearchForm() {
 		return searchFilter;
 	}
+	
+	public LoadForm getLoadForm() {
+		return user.getLoadForm();
+	}
 }

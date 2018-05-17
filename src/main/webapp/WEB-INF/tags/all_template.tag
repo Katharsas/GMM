@@ -27,6 +27,7 @@
 					</c:if>
 				</sec:authorize>
 			</script>
+			<script src="<c:url value="/res/javascript/lib/bluebird.core.min.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
@@ -73,6 +74,9 @@
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
 				</div>
 			</sec:authorize>
+			<div id="loading" class="left">
+				<img class="svg" src="<c:url value="/res/gfx/loading.svg"/>">
+			</div>
 			<div id="metainfo" class="left">
 				<spring:eval expression="@config.getProperty('app.name')" /><br/>
 				<spring:eval expression="@config.getProperty('app.version')" />

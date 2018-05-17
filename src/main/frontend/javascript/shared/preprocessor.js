@@ -1,4 +1,5 @@
 import $ from "../lib/jquery";
+import Errors from "./Errors";
 
 /**
  * HtmlPreProcessor
@@ -31,11 +32,14 @@ export default (function() {
 		/* Replace all SVG images with inline SVG
 		 * from: http://stackoverflow.com/questions/11978995/how-to-change-color-of-svg-image-using-css-jquery-svg-image-replacement
 		 */
+
+		var promises = [];
+
 		$range.findSelf('img.svg').each(function(){
 			
 		    var $img = $(this);
 		    var imgURL = $img.attr('src');
-		    
+			
 		    //look into cache
 		    if (urlTo$svg[imgURL] !== undefined) {
 		    	replaceImgWithSvg($img, urlTo$svg[imgURL].clone());
@@ -44,12 +48,15 @@ export default (function() {
 		    else if(urlTo$imgs[imgURL] !== undefined) {
 		    	//queue image for replacing when first request ready
 		    	urlTo$imgs[imgURL].push($img);
-		    }
+			}
+			else if (urlTo$imgs[imgURL] === null) {
+				throw new Errors.IllegalStateException("Cache must contain image '" + imgUrl + "' already!");
+			}
 		    else {
 		    	//initialize async cache queue
 		    	urlTo$imgs[imgURL] = [];
 		    	
-		    	$.get(imgURL, function(data) {
+		    	const jqPromise = $.get(imgURL, function(data) {
 			        var $svg = $(data).find('svg');
 			        // Remove any invalid XML tags as per http://validator.w3.org
 			        $svg = $svg.removeAttr('xmlns:a');
@@ -64,11 +71,14 @@ export default (function() {
 			        	replaceImgWithSvg($img, $svg.clone());
 			        });
 			        //destroy asynch cache queue
-			        delete urlTo$imgs[imgURL];
+			        urlTo$imgs[imgURL] = null;
 			        
-			    }, 'xml');
+				}, 'xml');
+				
+				promises.push(jqPromise);
 		    }
 		});
+		return Promise.all(promises);
 	};
 	
 	/**
@@ -93,9 +103,10 @@ export default (function() {
 		 * For completely unprocessed elements.
 		 */
 		apply : function($range) {
-			replaceSvgImages($range);
+			const promise = replaceSvgImages($range);
 			prepareButtons($range);
 			makeDraggable($range);
+			return promise;
 		},
 		
 		/**

@@ -40,13 +40,13 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 	var $tabs = $workbench.find("#workbench-tabs .workbench-tab");
 	var tabIdsToMenuTabs = {};
 	
-	var $loadButtons = $tabs.find(".workbench-load-typeButton");
 	var $count = $workbenchList.find(".list-count span");
 	
 	var taskListSettings = {
 		taskListId : "workbench",
 		$list : $workbenchList,
 		eventUrl : "/workbench/taskListEvents",
+		initUrl : "/workbench/init",
 		eventBinders : taskBinders,
 		onChange : function(newSize) {
 			$count.text(newSize);
@@ -54,20 +54,6 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		currentUser : allVars.currentUser
 	};
 	var taskList = WorkbenchList(taskListSettings, taskCache, taskSwitcher);
-
-	var updateTasks = function() {
-		Ajax.get(contextUrl + "/workbench/selected")
-			.then(function(selected) {
-				$loadButtons.each(function(index, element) {
-					if (selected[index]) {
-						$(element).addClass("selected");
-					} else {
-						$(element).removeClass("selected");
-					}
-				});
-				taskList.update();
-			});
-	};
 	
 	var initWorkbenchTabMenu = function() {
 		var $menuTabs = $workbench.find("#workbench-menu .workbench-menu-tab");
@@ -125,16 +111,48 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		//-------------------------------------------------------
 		//load tab
 		//-------------------------------------------------------
-		$loadButtons.click(function() {
-			var type = $(this).data("type");
-			Ajax.post(contextUrl + "/workbench/loadType", { type: type })
-				.then(updateTasks);
-		});
+		(function() {
+			const tabId = "load";
+			const $tab = tabIdsToMenuTabs[tabId].$tab;
+			let $loadForm;
+			let $loadButtons;
 
-		var $loadForm = $tabs.find("form#workbench-loadForm");
-		$loadForm.find(".form-element").change(function() {
-			Ajax.post(contextUrl + "/workbench/loadOptions", null, $loadForm);
-		});
+			var updateLoadedButtons = function() {
+				Ajax.get(contextUrl + "/workbench/selected")
+				.then(function(selected) {
+					$loadButtons.each(function(index, element) {
+						if (selected[index]) {
+							$(element).addClass("selected");
+						} else {
+							$(element).removeClass("selected");
+						}
+					});
+				});
+			}
+
+			Ajax.get(contextUrl + "/workbench/load")
+			.then(function(answer){
+				var html = answer.html;
+				$tab.append(html);
+				$loadForm = $tab.find("form#workbench-loadForm");
+				$loadButtons = $tab.find(".workbench-load-typeButton");
+				
+				updateLoadedButtons();
+
+				$loadButtons.click(function() {
+					var type = $(this).data("type");
+					Ajax.post(contextUrl + "/workbench/loadType", { type: type })
+						.then(function() {
+							updateLoadedButtons();
+							taskList.update();
+						});
+				});
+
+				$loadForm.find(".form-element").change(function() {
+					Ajax.post(contextUrl + "/workbench/loadOptions", null, $loadForm);
+				});
+			});
+		})();
 		
 		//-------------------------------------------------------
 		//sort tab
@@ -280,7 +298,6 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 	};
 	initWorkbenchTabMenu();
 	initWorkbenchTabs();
-	updateTasks();
 
 	return taskList;
 };
@@ -294,6 +311,7 @@ var PinnedTasks = function(taskCache, taskSwitcher, taskBinders) {
 		taskListId : "pinnedTasks",
 		$list : $pinnedList,
 		eventUrl : "/tasks/pinned/taskListEvents",
+		initUrl : "/tasks/pinned/init",
 		eventBinders : taskBinders,
 		onChange : function(newSize) {
 			$pinned.toggle(newSize > 0);
@@ -301,8 +319,6 @@ var PinnedTasks = function(taskCache, taskSwitcher, taskBinders) {
 		currentUser : allVars.currentUser
 	};
 	var taskList = PinnedList(taskListSettings, taskCache, taskSwitcher);
-	taskList.update();
-
 	return taskList.update;
 };
 

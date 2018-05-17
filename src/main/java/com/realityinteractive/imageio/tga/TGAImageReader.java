@@ -27,11 +27,11 @@ import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
 /**
- * <p>The {@link javax.imageio.ImageReader} that exposes the TGA image reading.
+ * <p>The {@link ImageReader} that exposes the TGA image reading.
  * 8, 15, 16, 24 and 32 bit true color or color mapped (RLE compressed or 
  * uncompressed) are supported.  Monochrome images are not supported.</p>
  * 
- * <p>Great care should be employed with {@link javax.imageio.ImageReadParam}s.
+ * <p>Great care should be employed with {@link ImageReadParam}s.
  * Little to no effort has been made to correctly handle sub-sampling or 
  * specified bands.</p> 
  * 
@@ -48,15 +48,15 @@ import javax.imageio.stream.ImageInputStream;
 public class TGAImageReader extends ImageReader
 {
     /**
-     * <p>The {@link javax.imageio.stream.ImageInputStream} from which the TGA
-     * is read.  This may be <code>null</code> if {@link javax.imageio.ImageReader#setInput(java.lang.Object)}
+     * <p>The {@link ImageInputStream} from which the TGA
+     * is read.  This may be <code>null</code> if {@link ImageReader#setInput(Object)}
      * (or the other forms of <code>setInput()</code>) has not been called.  The
      * stream will be set litle-endian when it is set.</p>
      */
     private ImageInputStream inputStream;
 
     /**
-     * <p>The {@link com.realityinteractive.imageio.tga.TGAHeader}.  If <code>null</code>
+     * <p>The {@link TGAHeader}.  If <code>null</code>
      * then the header has not been read since <code>inputStream</code> was 
      * last set.  This is created lazily.</p>
      */
@@ -64,7 +64,7 @@ public class TGAImageReader extends ImageReader
 
     // =========================================================================
     /**
-     * @see javax.imageio.ImageReader#ImageReader(javax.imageio.spi.ImageReaderSpi)
+     * @see ImageReader#ImageReader(ImageReaderSpi)
      */
     public TGAImageReader(final ImageReaderSpi originatingProvider)
     {
@@ -72,18 +72,18 @@ public class TGAImageReader extends ImageReader
     }
 
     /**
-     * <p>Store the input if it is an {@link javax.imageio.stream.ImageInputStream}.
-     * Otherwise {@link java.lang.IllegalArgumentException} is thrown.  The
+     * <p>Store the input if it is an {@link ImageInputStream}.
+     * Otherwise {@link IllegalArgumentException} is thrown.  The
      * stream is set to little-endian byte ordering.</p>  
      * 
-     * @see javax.imageio.ImageReader#setInput(java.lang.Object, boolean, boolean)
+     * @see ImageReader#setInput(Object, boolean, boolean)
      */
     // NOTE:  can't read the header in here as there would be no place for
     //        exceptions to go.  It must be read lazily.
     public void setInput(final Object input, final boolean seekForwardOnly,
                          final boolean ignoreMetadata)
     {
-        // delegate to the partent
+        // delegate to the parent
         super.setInput(input, seekForwardOnly, ignoreMetadata);
 
         // if the input is null clear the inputStream and header
@@ -110,7 +110,7 @@ public class TGAImageReader extends ImageReader
     }
 
     /**
-     * <p>Create and read the {@link com.realityinteractive.imageio.tga.TGAHeader}
+     * <p>Create and read the {@link TGAHeader}
      * only if there is not one already.</p>
      * 
      * @return the <code>TGAHeader</code> (for convenience)
@@ -138,7 +138,7 @@ public class TGAImageReader extends ImageReader
 
     /**
      * <p>Only a single image can be read by this reader.  Validate the 
-     * specified image index and if not <code>0</code> then {@link java.lang.IndexOutOfBoundsException}
+     * specified image index and if not <code>0</code> then {@link IndexOutOfBoundsException}
      * is thrown.</p>
      * 
      * @param  imageIndex the index of the image to validate
@@ -156,7 +156,7 @@ public class TGAImageReader extends ImageReader
     // =========================================================================
     // Required ImageReader methods
     /**
-     * @see javax.imageio.ImageReader#getImageTypes(int)
+     * @see ImageReader#getImageTypes(int)
      */
     public Iterator<ImageTypeSpecifier> getImageTypes(final int imageIndex) 
         throws IOException
@@ -210,7 +210,7 @@ public class TGAImageReader extends ImageReader
         }
 
         // create a list and add the ImageTypeSpecifier to it
-        final List<ImageTypeSpecifier> imageSpecifiers = new ArrayList<>();
+        final List<ImageTypeSpecifier> imageSpecifiers = new ArrayList<ImageTypeSpecifier>();
         imageSpecifiers.add(imageTypeSpecifier);
 
         return imageSpecifiers.iterator();
@@ -219,7 +219,7 @@ public class TGAImageReader extends ImageReader
     /**
      * <p>Only a single image is supported.</p>
      * 
-     * @see javax.imageio.ImageReader#getNumImages(boolean)
+     * @see ImageReader#getNumImages(boolean)
      */
     public int getNumImages(final boolean allowSearch) 
         throws IOException
@@ -232,7 +232,7 @@ public class TGAImageReader extends ImageReader
     /**
      * <p>There is no stream metadata (i.e.  <code>null</code> is returned).</p>
      * 
-     * @see javax.imageio.ImageReader#getStreamMetadata()
+     * @see ImageReader#getStreamMetadata()
      */
     public IIOMetadata getStreamMetadata() 
         throws IOException
@@ -244,7 +244,7 @@ public class TGAImageReader extends ImageReader
     /**
      * <p>There is no image metadata (i.e.  <code>null</code> is returned).</p>
      * 
-     * @see javax.imageio.ImageReader#getImageMetadata(int)
+     * @see ImageReader#getImageMetadata(int)
      */
     public IIOMetadata getImageMetadata(final int imageIndex) 
         throws IOException
@@ -254,7 +254,7 @@ public class TGAImageReader extends ImageReader
     }
 
     /**
-     * @see javax.imageio.ImageReader#getHeight(int)
+     * @see ImageReader#getHeight(int)
      */
     public int getHeight(final int imageIndex) 
         throws IOException
@@ -267,7 +267,7 @@ public class TGAImageReader extends ImageReader
     }
 
     /**
-     * @see javax.imageio.ImageReader#getWidth(int)
+     * @see ImageReader#getWidth(int)
      */
     public int getWidth(final int imageIndex) 
         throws IOException
@@ -276,11 +276,11 @@ public class TGAImageReader extends ImageReader
         checkImageIndex(imageIndex);
 
         // get the header and return the width
-        return getHeader().getHeight();
+        return getHeader().getWidth();
     }
 
     /**
-     * @see javax.imageio.ImageReader#read(int, javax.imageio.ImageReadParam)
+     * @see ImageReader#read(int, ImageReadParam)
      */
     public BufferedImage read(final int imageIndex, final ImageReadParam param)
         throws IOException
@@ -374,6 +374,8 @@ public class TGAImageReader extends ImageReader
             // account for the width
             // TODO:  this doesn't take into account the destination size or bands
             index *= width;
+
+            byte[] buffer = new byte[4];
 
             // loop over the columns
             // TODO:  this should be destinationROI.width (right?)
@@ -474,18 +476,14 @@ public class TGAImageReader extends ImageReader
 
                         // true color RGB(A) (8 bits per pixel)
                         case 24:
-                        case 32:
-                            // read each color component -- the alpha is only
-                            // read if there are 32 bits per pixel
-                            blue  = inputStream.readByte() & 0xFF; // unsigned
-                            green = inputStream.readByte() & 0xFF; // unsigned
-                            red   = inputStream.readByte() & 0xFF; // unsigned
-                            if(header.getBitsPerPixel() == 32)
-                                alpha = (inputStream.readByte() & 0xFF); // unsigned
-                            /* else -- 24 bits per pixel (i.e. no alpha) */
+                            inputStream.read(buffer, 0, 3);
 
-                            // combine each component into the result
-                            pixel = (red << 0) | (green << 8) | (blue << 16) | (alpha << 24);
+                            pixel = ((buffer[2] & 0xFF) << 0) | ((buffer[1] & 0xFF) << 8) | ((buffer[0] & 0xFF) << 16) | (0xFF << 24);
+                            break;
+                        case 32:
+                            inputStream.read(buffer, 0, 4);
+
+                            pixel = ((buffer[2] & 0xFF) << 0) | ((buffer[1] & 0xFF) << 8) | ((buffer[0] & 0xFF) << 16) | ((buffer[3] & 0xFF) << 24);
 
                             break;
                     }
@@ -532,6 +530,8 @@ public class TGAImageReader extends ImageReader
         // CHECK:  why is tge explicit +1 needed here ?!? 
         final int[] colorMap = new int[numberOfColors + 1];
 
+        byte[] buffer = new byte[4];
+
         // read each color map entry
         for(int i=0; i<numberOfColors; i++)
         {
@@ -570,9 +570,11 @@ public class TGAImageReader extends ImageReader
                 case 32:
                     // read each color component 
                     // CHECK:  is there an alpha?!?
-                    blue  = inputStream.readByte() & 0xFF; // unsigned
-                    green = inputStream.readByte() & 0xFF; // unsigned
-                    red   = inputStream.readByte() & 0xFF; // unsigned
+                    inputStream.read(buffer, 0, 3);
+
+                    blue  = buffer[0] & 0xFF; // unsigned
+                    green = buffer[1] & 0xFF; // unsigned
+                    red   = buffer[2] & 0xFF; // unsigned
 
                     break;
             }
@@ -585,12 +587,12 @@ public class TGAImageReader extends ImageReader
     }
 
     /**
-     * <p>Validate that the specified {@link javax.imageio.ImageReadParam} 
+     * <p>Validate that the specified {@link ImageReadParam}
      * contains only the default values.  If non-default values are present,
-     * {@link java.io.IOException} is thrown.</p>
+     * {@link IOException} is thrown.</p>
      * 
      * @param  param the <code>ImageReadParam</code> to be validated
-     * @param  head the <code>TGAHeader</code> that contains information about
+     * @param  header the <code>TGAHeader</code> that contains information about
      *         the source image
      * @throws IOException if the <code>ImageReadParam</code> contains non-default
      *         values

@@ -139,7 +139,7 @@ var TaskSwitcher = function() {
     	
     	unregisterTaskList : function(taskListId) {
     		if(!(taskListId in listIdToCallbacks)) {
-    			throw new Errors.IllegalArgumentError("Cannot unregister taskList that is not registered!");
+    			throw new Errors.IllegalArgumentException("Cannot unregister taskList that is not registered!");
     		}
     		delete listIdToCallbacks[taskListId];
     	},
@@ -159,7 +159,7 @@ var TaskSwitcher = function() {
          */
         switchTask : function($task, taskId, taskListId) {
         	if(!(taskListId in listIdToCallbacks)) {
-    			throw new Errors.IllegalArgumentError("Given taskListId is not registered / invalid!");
+    			throw new Errors.IllegalArgumentException("Given taskListId is not registered / invalid!");
     		}
             if(this.isTaskExpanded($task)) {
             	// collape
@@ -185,7 +185,7 @@ var TaskSwitcher = function() {
          */
         collapseTaskIfExpanded : function($task, taskId, taskListId, instant) {
 	    	if(!(taskListId in listIdToCallbacks)) {
-	    		throw new Errors.IllegalArgumentError("Given taskListId is not registered / invalid!");
+	    		throw new Errors.IllegalArgumentException("Given taskListId is not registered / invalid!");
 			}
 			if(this.isTaskExpanded($task)) {
 				expanded.remove($task);

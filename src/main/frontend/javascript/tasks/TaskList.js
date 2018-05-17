@@ -5,7 +5,8 @@ import Dialogs from "../shared/dialogs";
 import EventListener from "../shared/EventListener";
 import { switchPinOperation } from "./Task";
 import lozad from 'lozad';
-import { contextUrl, resortElementsById, runSerial, IllegalArgumentException } from "../shared/default";
+import { contextUrl, resortElementsById, runSerial } from "../shared/default";
+import { IllegalArgumentException } from "../shared/Errors"
 import TaskCache from "./TaskCache";
 
 /** default parameter for required arguments */
@@ -20,6 +21,7 @@ const r = function() {
  * @typedef TaskListSettings
  * @property {JQuery} $list - The container element which holds all task elements as children.
  * @property {string} eventUrl - The url path providing taskList events for synchronization.
+ * @property {string} initUrl - The url path to call to init the list state on the server side.
  * @property {Callback} onChange - Executed whenever the taskList has changed. Can be null.
  * 		Count of current tasks will be passed as parameter.
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
@@ -33,6 +35,8 @@ const r = function() {
  */
 
 /**
+ * Create & initialize a task list.
+ * 
  * @param {TaskListSettings} settings - Settings needed to create this taskList.
  * @param {TaskCache} cache - Task data container.
  * @param {TaskSwitcher} taskSwitcher - Contains state about which tasks are expanded/collpased.
@@ -304,6 +308,8 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 	
 	const init = function() {
 
+		const serverInitDone = Ajax.post(contextUrl + settings.initUrl);
+
 		taskSwitcher.registerTaskList(taskListId, {
 			
 			createBody : function($task) {
@@ -332,6 +338,8 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 				switchPinOperation($task, isPinned);
 			}
 		});
+
+		serverInitDone.then(updateTaskList);
 	};
 	init();
 	

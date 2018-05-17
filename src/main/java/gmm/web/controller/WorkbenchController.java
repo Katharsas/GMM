@@ -50,10 +50,12 @@ public class WorkbenchController {
 	// names used to reference a form template
 	private final String filterFormName = "workbench-generalFilterForm";
 	private final String searchFormName = "workbench-searchForm";
+	private final String loadFormName = "workbench-loadForm";
 	
 	// template file name (without file ending)
 	private final String filterFormTemplate = "workbench_filters";
 	private final String searchFormTemplate = "workbench_search";
+	private final String loadFormTemplate = "workbench_load";
 	
 	@Autowired
 	public WorkbenchController(WorkbenchSession workbench, DataAccess data,
@@ -68,9 +70,11 @@ public class WorkbenchController {
 		
 		templates.registerForm(filterFormName, workbench::getFilterForm);
 		templates.registerForm(searchFormName, workbench::getSearchForm);
+		templates.registerForm(loadFormName, workbench::getLoadForm);// TODO just use user directly?
 		
 		templates.registerFtl(filterFormTemplate, filterFormName);
 		templates.registerFtl(searchFormTemplate, searchFormName);
+		templates.registerFtl(loadFormTemplate, loadFormName);
 	}
 	
 	/**
@@ -118,6 +122,16 @@ public class WorkbenchController {
 	@RequestMapping(value = "selected", method = GET)
 	public boolean[] selected() {
 		return workbench.getSelectedTaskTypes();
+	}
+	
+	@RequestMapping(value = "load", method = GET)
+	public Map<String, String> load(
+			ControllerArgs args,
+			@ModelAttribute(loadFormName) LoadForm loadForm) {
+		
+		final Map<String, String> answer = new HashMap<>();
+		answer.put("html", templates.insertFtl(loadFormTemplate, args));
+		return answer;
 	}
 	
 	/**
@@ -191,5 +205,10 @@ public class WorkbenchController {
 			logger.debug(user.get() + " retrieved events: " + Arrays.toString(events.toArray()));
 		}
 		return events;
+	}
+	
+	@RequestMapping(value = "init", method = POST)
+	public void provideInit() {
+		workbench.createInitEvent();
 	}
 }

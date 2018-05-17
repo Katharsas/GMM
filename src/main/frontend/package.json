@@ -7,7 +7,8 @@
 		"lozad": "1.0.6",
 		"uuid": "3.1.0",
 		"three": "0.87.1",
-		"three-matcap-material": "1.0.0"
+		"three-matcap-material": "1.0.0",
+		"bluebird": "3.5.1"
 	},
 	"devDependencies": {
 		"babel-core": "6.26.0",

@@ -10,15 +10,20 @@ import { contextUrl } from "./default";
  * 
  * @author Jan Mothes
  */
-var Ajax = (function() {
+const Ajax = (function() {
+
+	let requestsInFlight = 0;
+	const onSendCallbacks = [];
+	const onReceiveCallbacks = [];
+
 	//CSRF tokens must be included into POST/PUT/DELETE to GMM
 	//Just throwing it into every request that goes to GMM.
-	var token = $("meta[name='_csrf']").attr("content");
-	var header = $("meta[name='_csrf_header']").attr("content");
+	const token = $("meta[name='_csrf']").attr("content");
+	const header = $("meta[name='_csrf_header']").attr("content");
 	
-	var getAjaxDefaultSettings = function(url, data, settings) {
+	const getAjaxDefaultSettings = function(url, data, settings) {
 		if (url === undefined || url === null) return undefined;
-		var result = {
+		const result = {
 			url: url,
 			headers: {accept:"application/json;q=1.0,*/*;q=0.8"},
 		};
@@ -29,15 +34,15 @@ var Ajax = (function() {
 			result.data = data;
 		}
 		if (settings !== undefined && settings !== null) {
-			for(var key in settings) {
+			for(const key in settings) {
 				result[key] = settings[key];
 			}
 		}
 		return result;
 	};
 	
-	var failHandler = function(responseData) {
-		var httpStatus = responseData.status;
+	const failHandler = function(responseData) {
+		const httpStatus = responseData.status;
 		if(httpStatus === 403) {
 			Dialogs.alert(function(){
 				location.reload();
@@ -51,6 +56,21 @@ var Ajax = (function() {
 		}
 	};
 
+	const onSend = function() {
+		for (const onSendCb of onSendCallbacks) {
+			onSendCb(requestsInFlight);
+		}
+		requestsInFlight++;
+	}
+
+	const onReceive = function(responseData) {
+		requestsInFlight--;
+		for (const onReceiveCb of onReceiveCallbacks) {
+			onReceiveCb(requestsInFlight);
+		}
+		return responseData;
+	}
+
 	return {
 		
 		/**
@@ -61,12 +81,14 @@ var Ajax = (function() {
 		 * @param $form - optional, will cause this form the be submitted
 		 */
 		post : function(url, data, $form) {
-			var settings = getAjaxDefaultSettings(url, data, {
+			onSend();
+			const settings = getAjaxDefaultSettings(url, data, {
 				type: "POST",
 			});
-			var jqPromise = (($form === undefined) ?
+			const jqPromise = (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(failHandler);
+					.fail(failHandler)
+					.always(onReceive);
 			return Promise.resolve(jqPromise);
 		},
 		
@@ -78,12 +100,14 @@ var Ajax = (function() {
 		 * @param $form - optional, will cause this form the be submitted
 		 */
 		get : function (url, data, $form) {
-			var settings = getAjaxDefaultSettings(url, data, {
+			onSend();
+			const settings = getAjaxDefaultSettings(url, data, {
 				type: "GET",
 			});
-			var jqPromise = (($form === undefined) ?
+			const jqPromise = (($form === undefined) ?
 					$.ajax(settings) : $form.ajaxSubmit(settings).data('jqxhr'))
-					.fail(failHandler);
+					.fail(failHandler)
+					.always(onReceive);
 			return Promise.resolve(jqPromise);
 		},
 		
@@ -94,15 +118,25 @@ var Ajax = (function() {
 		 * @param file - Single file. See HTML 5 File API
 		 */
 		upload : function(url, file) {
-			var formData = new FormData();
+			onSend();
+			const formData = new FormData();
 			formData.append('file', file);
-			var settings = getAjaxDefaultSettings(url, formData, {
+			const settings = getAjaxDefaultSettings(url, formData, {
 		    	processData: false,
 		    	contentType: false,
 		    	type: "POST"
 			});
-			var jqPromise = $.ajax(settings).fail(failHandler);
+			const jqPromise = $.ajax(settings)
+					.fail(failHandler)
+					.always(onReceive);
 			return Promise.resolve(jqPromise);
+		},
+
+		registerOnSend : function(onSend) {
+			onSendCallbacks.push(onSend);
+		},
+		registerOnReceive : function(onReceive) {
+			onReceiveCallbacks.push(onReceive);
 		}
 	};
 })();

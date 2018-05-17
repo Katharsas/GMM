@@ -42,6 +42,9 @@ var init = function() {
                  let notificHtml = (item.taskName === undefined) ? item.text :
                         getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
                  $item.find("span").html(notificHtml);
+
+                 // TODO dont bind task dialogs for elements that have already been deleted! (independent of current changeType)
+                 // Refactor TaskNotification.java so it has a flag for "exists". Make sure deletions during runtime also deactivate task dialogs.
                  bindTaskDialog($item);
                  $list.prepend($item);
             }
@@ -54,7 +57,6 @@ var init = function() {
         if ($taskName.length > 0) {
             const idLink = $taskName.data("id");
             $taskName.click(function() {
-                // TODO TaskDialogs is not initialized because babel -> browserify fucks up live export bindings
                 TaskDialogs.openDialog(idLink);
             })
         }

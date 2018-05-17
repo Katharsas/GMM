@@ -90,8 +90,6 @@
 	    			<div id="workbench-tabs">
 	    				<c:set var="tabId" value="load"/>
 		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">
-		    				<t:workbench_load>
-		    				</t:workbench_load>
 		    			</div>
 		    			<c:set var="tabId" value="sort"/>
 		    			<div id="workbench-tab-${tabId}" class="workbench-tab" data-tabid="${tabId}">

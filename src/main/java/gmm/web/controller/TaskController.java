@@ -66,18 +66,16 @@ public class TaskController {
 	
 	private final TaskSession taskSession;
 	private final WorkbenchSession workbench;
-	private final PinnedSession pinned;
 	private final DataAccess data;
 	private final FtlRenderer ftlRenderer;
 	private final FtlTemplateService ftlTemplates;
 	private final CurrentUser user;
 	
 	@Autowired
-	public TaskController(TaskSession taskSession, WorkbenchSession workbench, PinnedSession pinned,
+	public TaskController(TaskSession taskSession, WorkbenchSession workbench,
 			DataAccess data, FtlRenderer ftlRenderer, CurrentUser user, FtlTemplateService templates) {
 		this.taskSession = taskSession;
 		this.workbench = workbench;
-		this.pinned = pinned;
 		this.data = data;
 		this.ftlRenderer = ftlRenderer;
 		this.ftlTemplates = templates;
@@ -100,7 +98,7 @@ public class TaskController {
 	@RequestMapping(value="/deleteTask/{idLink}", method = POST)
 	@ResponseBody
 	public void handleTasksDelete(@PathVariable String idLink) {
-		data.remove(UniqueObject.getFromIdLink(workbench.getTasks(), idLink));
+		data.remove(UniqueObject.getFromIdLink(data.getList(Task.class), idLink));
 	}
 	
 	
@@ -118,7 +116,7 @@ public class TaskController {
 				@PathVariable String commentIdLink,
 				@RequestParam("editedComment") String edited) {
 		
-		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), taskIdLink);
+		final Task task = UniqueObject.getFromIdLink(data.getList(Task.class), taskIdLink);
 		final Comment comment = UniqueObject.getFromIdLink(task.getComments(), commentIdLink);
 		if(comment.getAuthor().getId() == user.get().getId()) {
 			comment.setText(edited);
@@ -140,7 +138,7 @@ public class TaskController {
 				@PathVariable String idLink,
 				@ModelAttribute("commentForm") CommentForm form) {
 		
-		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
+		final Task task = UniqueObject.getFromIdLink(data.getList(Task.class), idLink);
 		final Comment comment = new Comment(user.get(), form.getText());
 		task.getComments().add(comment);
 		//TODO: Tasks immutable
@@ -168,7 +166,10 @@ public class TaskController {
 	@ResponseBody
 	public void editTask(
 			@ModelAttribute("taskForm") TaskForm form) {
-		
+		// TODO we need to make sure that the client can only edit a task if he is on the tasks page,
+		// -> send user to task page when he clicks edit?
+		// OR editing a task needs to work from any page, if user is logged in
+		// -> allow "in-place" editing? save temp progress of edit?
 		taskSession.executeEdit(form);
 	}
 	
@@ -241,8 +242,6 @@ public class TaskController {
 	@RequestMapping(method = GET)
 	public String send(ModelMap model) {
 		taskSession.cleanUp();
-		pinned.createInitEvent();
-		workbench.createInitEvent();
 		
 		// TODO remove when converted to ftl to reduce dependencies on Workbench
 		model.addAttribute("workbench-sortForm", workbench.getSortForm());
@@ -304,34 +303,4 @@ public class TaskController {
 		return taskSession.retrieveTaskDataEvents();
 	}
 	
-	/**
-	 * Pinned Tasks
-	 * -----------------------------------------------------------------
-	 */
-	
-	@RequestMapping(value = "/pinned/taskListEvents", method = GET)
-	@ResponseBody
-	public List<TaskListEvent> syncPinned() {
-		final List<TaskListEvent> events = pinned.retrieveEvents();
-		if (logger.isDebugEnabled()) {
-			logger.debug(user.get() + " retrieved events: " + Arrays.toString(events.toArray()));
-		}
-		return events;
-	}
-	
-	@RequestMapping(value = "/pinned/pin", method = POST)
-	@ResponseBody
-	public void pin(
-			@RequestParam("idLink") String idLink) {
-		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
-		pinned.pin(task);
-	}
-	
-	@RequestMapping(value = "/pinned/unpin", method = POST)
-	@ResponseBody
-	public void unpin(
-			@RequestParam("idLink") String idLink) {
-		final Task task = UniqueObject.getFromIdLink(pinned.getTasks(), idLink);
-		pinned.unpin(task);
-	}
 }

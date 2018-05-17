@@ -4,14 +4,40 @@ import HtmlPreProcessor from "./preprocessor";
 import { contextUrl, allVars, htmlDecode } from "./default";// must import to execute default
 import EventListener from "./EventListener";
 
+global.Promise.onPossiblyUnhandledRejection(function(error) {
+    throw error;
+});
+
 var pageName = window.location.pathname.substr(window.location.pathname.lastIndexOf("/")+1);
 
 /**
  * This function needs to be executed when document is ready for interactivity!
  */
 $(document).ready(function() {
+
+	var $menu = $("#page-tabmenu");
+
+
+	HtmlPreProcessor.apply($("body")).then(function() {
+
+		var $menuLoading = $menu.find("#loading");
+
+		Ajax.registerOnSend(function(requests) {
+			if (requests <= 0) {
+				var menuLoadingSVG = $menuLoading[0].getElementsByTagName("svg")[0];
+				menuLoadingSVG.setCurrentTime(0);
+				$menuLoading.addClass("active");
+			}
+		});
+		Ajax.registerOnReceive(function(requests) {
+			if (requests <= 0) {
+				$menuLoading.removeClass("active");
+			}
+		});
+	});
+
 	//find page tab by URL and set as active tab
-	var activeTab = $("#page-tabmenu .tab a[href=\""+ contextUrl +"/"+pageName+"\"]").parent();
+	var activeTab = $menu.find(".tab a[href=\""+ contextUrl +"/"+pageName+"\"]").parent();
 	activeTab.addClass("activeTab activePage");
 	
 	$("#page-tabmenu #logout").click(function()  {
@@ -28,8 +54,6 @@ $(document).ready(function() {
 		$adminBanner.html(doubleDecoded);
 	}
 	
-	HtmlPreProcessor.apply($("body"));
-
 	console.log("Subscribing to import events");
 	EventListener.subscribe(EventListener.events.AssetImportRunningEvent, function() {
 		console.log("Received AssetImportRunningEvent!");

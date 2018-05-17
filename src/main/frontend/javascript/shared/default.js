@@ -128,7 +128,7 @@ function getURLParameter(sParam)
 function resortElementsById(orderedIds, $unorderedList, selector, getIdOfElement) {
 	var $unorderedElements = $unorderedList.children(selector);
 	if (orderedIds.length !== $unorderedElements.length) {
-		throw new Errors.IllegalArgumentError("List lengths do not match!");
+		throw new Errors.IllegalArgumentException("List lengths do not match!");
 	}
 	var idToIndexOrdered = {};
 	for(var i = 0; i < orderedIds.length; i++) {
@@ -179,16 +179,6 @@ var waitForFinalEvent = (function() {
     };
 })();
 
-
-function IllegalArgumentException(sMessage) {
-    this.name = "IllegalArgumentException";
-    this.message = sMessage;
-    this.stack = (new Error()).stack;
-}
-IllegalArgumentException.prototype = Object.create(Error.prototype);
-IllegalArgumentException.prototype.constructor = IllegalArgumentException;
-
-
 export { contextUrl, allVars, allFuncs, htmlDecode, getURLParameter, 
-	resortElementsById, runSerial, waitForFinalEvent, IllegalArgumentException };
+	resortElementsById, runSerial, waitForFinalEvent };
 export default {};

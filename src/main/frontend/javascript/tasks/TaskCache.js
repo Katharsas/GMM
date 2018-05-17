@@ -25,7 +25,7 @@ const TaskCache = function(renderUrl) {
 	
 	const idToTaskData = {};
 
-	const currentlyLoadingIds = [];
+	let currentlyLoadingIds = [];
 	let currentlyLoadingPromise = Promise.resolve();
 
 	const pinnedSubscribers = [];
@@ -82,17 +82,26 @@ const TaskCache = function(renderUrl) {
 			return loadTasks(event.changedIds);
 		}
 	};
+
+	const removeFirst = function(array, element) {
+		const index = array.indexOf(element);
+		if (index !== -1) {
+			delete array[index];
+		}
+		return index !== -1;
+	}
 	
 	/**
 	 * @param {string[]} idLinks 
 	 */
 	const loadTasks = function(idLinks) {
 		if (idLinks.length <= 0) {
-			return currentlyLoadingPromise;
+			return currentlyLoadingPromise
+			.then(() => []);
 		}
 		currentlyLoadingIds.push(...idLinks);
 		currentlyLoadingPromise = currentlyLoadingPromise.then(function() {
-			const idLinksMissing = idLinks.slice();
+			let idLinksMissing = idLinks.slice();
 			console.debug("TaskCache: Loading task data for ids: " + idLinks);
 			const data = { "idLinks[]" : idLinks };
 
@@ -102,20 +111,20 @@ const TaskCache = function(renderUrl) {
 					preprocess(taskData.render);
 					const idLink = taskData.idLink;
 					idToTaskData[idLink] = taskData;
-					// TODO: is there a better method to remove first equal object from arrays?
-					delete idLinksMissing[idLinksMissing.indexOf(idLink)];
-					delete currentlyLoadingIds[currentlyLoadingIds.indexOf(idLink)];
+					removeFirst(idLinksMissing, idLink);
+					removeFirst(currentlyLoadingIds, idLink);
 					console.debug("TaskCache: Loading done for id: " + idLink);
 				});
 				for (const idLink of idLinksMissing) {
-					// TODO: how to clean up an array with empty slots?
-					// TODO: cleanup undefineds in idLinksMissing and currentlyLoading
 					if (idLink !== undefined) {
 						idToTaskData[idLink] = getDummyTask(idLink);
-						delete currentlyLoadingIds[currentlyLoadingIds.indexOf(idLink)];
+						removeFirst(currentlyLoadingIds, idLink);
 						console.debug("TaskCache: Loading done for id: " + idLink);
 					}
 				}
+				currentlyLoadingIds = currentlyLoadingIds.filter(__ => true);
+				idLinksMissing = idLinksMissing.filter(__ => true);
+				return idLinksMissing;
 			});
 		});
 		return currentlyLoadingPromise;
@@ -156,6 +165,7 @@ const TaskCache = function(renderUrl) {
 		 * Before getting a task header or task body, the task must be loaded into the cache.
 		 * This function ensures that all given tasks are present in the cache. Since calling
 		 * this function may cause a request, try to call it seldom.
+		 * @returns {string[]} idLinks that could not be resolved by the server
 		 */
 		makeAvailable : function(idLinks) {
 			const toLoad = [];

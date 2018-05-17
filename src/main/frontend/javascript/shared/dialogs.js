@@ -141,7 +141,7 @@ var Dialogs = (function() {
 	
 	var showDialog = function($dialog, callback, width, height) {
 		if ($dialog.hasClass("confirmDialog")) {
-			throw new Errors.IllegalArgumentError("Cannot be called on confirm dialog!");
+			throw new Errors.IllegalArgumentException("Cannot be called on confirm dialog!");
 		}
 		currentCallback = callback;
 		showOverlay();
@@ -151,7 +151,7 @@ var Dialogs = (function() {
 	
 	var hideDialog = function($dialog) {
 		if ($dialog === undefined) {
-			throw new Errors.IllegalArgumentError("Dialog cannot be undefined anymore!");
+			throw new Errors.IllegalArgumentException("Dialog cannot be undefined anymore!");
 		}
 		if($dialog.hasClass("confirmDialog")) {
 			$dialog.remove();
