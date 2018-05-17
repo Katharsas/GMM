@@ -48,7 +48,10 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		eventUrl : "/workbench/taskListEvents",
 		initUrl : "/workbench/init",
 		eventBinders : taskBinders,
-		onChange : function(newSize) {
+		onUpdateStart : function() {
+			$count.text("...");
+		},
+		onUpdateDone : function(newSize) {
 			$count.text(newSize);
 		},
 		currentUser : allVars.currentUser
@@ -313,7 +316,7 @@ var PinnedTasks = function(taskCache, taskSwitcher, taskBinders) {
 		eventUrl : "/tasks/pinned/taskListEvents",
 		initUrl : "/tasks/pinned/init",
 		eventBinders : taskBinders,
-		onChange : function(newSize) {
+		onUpdateDone : function(newSize) {
 			$pinned.toggle(newSize > 0);
 		},
 		currentUser : allVars.currentUser

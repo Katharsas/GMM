@@ -22,7 +22,8 @@ const r = function() {
  * @property {JQuery} $list - The container element which holds all task elements as children.
  * @property {string} eventUrl - The url path providing taskList events for synchronization.
  * @property {string} initUrl - The url path to call to init the list state on the server side.
- * @property {Callback} onChange - Executed whenever the taskList has changed. Can be null.
+ * @property {Callback} onUpdateStart - Optional: Executed whenever the tasklist starts updating/changing itself.
+ * @property {Callback} onUpdateDone - Optional: Executed whenever the taskList has updated/changed itself.
  * 		Count of current tasks will be passed as parameter.
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
  * @property {UserId} currentUser - Current user or null if user is not logged in.
@@ -169,6 +170,9 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 	 * @returns {Promise}
 	 */
 	const updateTaskList = function() {
+		if (settings.onUpdateStart != null) {
+			settings.onUpdateStart();
+		}
 		return Ajax.get(contextUrl + settings.eventUrl)
 		.then(function(taskListEvents) {
 			const asyncTasks = [];
@@ -188,8 +192,8 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			return runSerial(asyncTasks);
 		})
 		.then(function() {
-			if (settings.onChange !== null) {
-				settings.onChange(current.length);
+			if (settings.onUpdateDone != null) {
+				settings.onUpdateDone(current.length);
 			}
 		});
 	};
