@@ -27,3 +27,19 @@ License: see LICENSE_jQueryForm.TXT
 Content:
 ../src/main/webapp/resources/javascript/lib/OrbitControls.js
 License: see LICENSE_MIT_threejs.TXT
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/bluebird.core.min.js
+License: see LICENSE_MIT_bluebird.TXT
+
+
+Content:
+../src/main/frontend/javascript/shared/jquery/jqueryFileTree.js
+License:
+This plugin is dual-licensed under the GNU General Public License and the MIT License and is copyright 2008 A Beautiful Site, LLC.
+
+
+Content:
+../src/main/frontend/javascript/shared/preview/MatcapMaterial.js
+License: ISC (see https://spdx.org/licenses/ISC.html)
