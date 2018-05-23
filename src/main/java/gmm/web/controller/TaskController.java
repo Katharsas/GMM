@@ -4,7 +4,6 @@ package gmm.web.controller;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -43,8 +42,6 @@ import gmm.web.FtlTemplateService;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.TaskForm;
 import gmm.web.sessions.TaskSession;
-import gmm.web.sessions.tasklist.PinnedSession;
-import gmm.web.sessions.tasklist.TaskListEvent;
 import gmm.web.sessions.tasklist.WorkbenchSession;
 
 /**
@@ -62,10 +59,11 @@ import gmm.web.sessions.tasklist.WorkbenchSession;
 @Controller
 public class TaskController {
 	
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final TaskSession taskSession;
-	private final WorkbenchSession workbench;
+	private final WorkbenchSession workbench;// TODO remove
 	private final DataAccess data;
 	private final FtlRenderer ftlRenderer;
 	private final FtlTemplateService ftlTemplates;
@@ -155,7 +153,7 @@ public class TaskController {
 	public void editTask(
 			@RequestParam("idLink") String idLink) {
 		
-		final Task task = UniqueObject.getFromIdLink(workbench.getTasks(), idLink);
+		final Task task = UniqueObject.getFromIdLink(data.getList(Task.class), idLink);
 		if(task == null) {
 			throw new IllegalArgumentException("Cannot edit task: idLink does not exist!");
 		}
@@ -245,7 +243,6 @@ public class TaskController {
 		
 		// TODO remove when converted to ftl to reduce dependencies on Workbench
 		model.addAttribute("workbench-sortForm", workbench.getSortForm());
-		model.addAttribute("workbench-loadForm", user.get().getLoadForm());
 	    return "tasks";
 	}
 	

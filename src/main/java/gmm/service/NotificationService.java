@@ -66,21 +66,22 @@ public class NotificationService implements DataChangeCallback {
 		}
 	}
 	
-	public List<Notification> getNewAndMoveToOld(User user) {
-		List<Notification> result;
+	public List<Notification> getNew(User user) {
 		synchronized (user) {
-			result = user.getNewNotifications().copy();
-			for (final Notification item : result) {
-				addNotification(item, user.getOldNotifications());
-			}
-			user.getNewNotifications().clear();
+			return user.getNewNotifications().copy();
 		}
-		return result;
 	}
 	
 	public List<Notification> getOld(User user) {
 		synchronized (user) {
 			return user.getOldNotifications().copy();
+		}
+	}
+	
+	public void moveNewToOld(User user) {
+		synchronized (user) {
+			user.getOldNotifications().addAll(user.getNewNotifications());
+			user.getNewNotifications().clear();
 		}
 	}
 	

@@ -4,7 +4,6 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +21,6 @@ import gmm.collections.List;
 import gmm.domain.task.TaskType;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.ManualBackupService;
-import gmm.service.users.CurrentUser;
 import gmm.web.ControllerArgs;
 import gmm.web.FtlTemplateService;
 import gmm.web.forms.FilterForm;
@@ -38,14 +36,13 @@ import gmm.web.sessions.tasklist.WorkbenchSession;
 @Controller
 public class WorkbenchController {
 
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final WorkbenchSession workbench;
 	private final DataAccess data;
 	private final ManualBackupService manualBackups;
 	private final FtlTemplateService templates;
-	
-	private final CurrentUser user;
 	
 	// names used to reference a form template
 	private final String filterFormName = "workbench-generalFilterForm";
@@ -59,18 +56,16 @@ public class WorkbenchController {
 	
 	@Autowired
 	public WorkbenchController(WorkbenchSession workbench, DataAccess data,
-			ManualBackupService manualBackups, CurrentUser user, FtlTemplateService templates) {
+			ManualBackupService manualBackups, FtlTemplateService templates) {
 		
 		this.workbench = workbench;
 		this.data = data;
 		this.manualBackups = manualBackups;
 		this.templates = templates;
 		
-		this.user = user;
-		
 		templates.registerForm(filterFormName, workbench::getFilterForm);
 		templates.registerForm(searchFormName, workbench::getSearchForm);
-		templates.registerForm(loadFormName, workbench::getLoadForm);// TODO just use user directly?
+		templates.registerForm(loadFormName, workbench::getLoadForm);
 		
 		templates.registerFtl(filterFormTemplate, filterFormName);
 		templates.registerFtl(searchFormTemplate, searchFormName);
@@ -200,11 +195,7 @@ public class WorkbenchController {
 	 */
 	@RequestMapping(value = "taskListEvents", method = GET)
 	public List<TaskListEvent> taskListEvents() {
-		final List<TaskListEvent> events = workbench.retrieveEvents();
-		if (logger.isDebugEnabled()) {
-			logger.debug(user.get() + " retrieved events: " + Arrays.toString(events.toArray()));
-		}
-		return events;
+		return workbench.retrieveEvents();
 	}
 	
 	@RequestMapping(value = "init", method = POST)

@@ -9,6 +9,7 @@ import gmm.collections.List;
 import gmm.domain.Linkable;
 import gmm.domain.User;
 import gmm.domain.User.UserId;
+import gmm.domain.task.Task;
 import gmm.util.Util;
 
 /**
@@ -27,12 +28,22 @@ public class DataChangeEvent {
 	public final boolean isSingleItem;
 	public final Collection<? extends Linkable> changed;
 	
+	/**
+	 * @param changed - The generic type of the collection must be one of:
+	 *  <br> - {@link Task}
+	 *  <br> - {@link User}
+	 *  <br> or any subclass of those classes.
+	 */
 	public DataChangeEvent(DataChangeType type, User source, Collection<? extends Linkable> changed) {
 		Objects.requireNonNull(type);
 		Objects.requireNonNull(source);
 		Objects.requireNonNull(changed);
 		if (changed.size() == 0) {
 			throw new IllegalArgumentException("Don't emit stupid events!");
+		}
+		if (!Task.class.isAssignableFrom(changed.getGenericType())
+				&& !User.class.isAssignableFrom(changed.getGenericType())) {
+			throw new IllegalArgumentException("Only User/Task (sub-)types are supported.");
 		}
 		this.type = type;
 		this.source = source;

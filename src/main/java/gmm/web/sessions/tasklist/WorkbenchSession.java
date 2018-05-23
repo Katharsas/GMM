@@ -256,6 +256,9 @@ public class WorkbenchSession extends TaskListState {
 		synchronized (taskListEvents) {
 			final List<TaskListEvent> result = taskListEvents.copy();
 			taskListEvents.clear();
+			if (logger.isDebugEnabled()) {
+				logger.debug(user + " retrieved events: " + Arrays.toString(taskListEvents.toArray()));
+			}
 			return result;
 		}
 	}

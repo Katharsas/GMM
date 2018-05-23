@@ -2,41 +2,95 @@
 
 // make variable for menu height=top distance, variable for space left of main=width
 
+$bgc-notific-list: setLightness($bgc-task-inner, 1.4);
+
 #notifications {
     position: fixed;
     left: 0;
     top: 40px;
     height: calc(100% - 40px);
     width:300px;
-    background-color: $bgc-subpage-bright;
+    background-color: $bgc-notific-list;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
     padding-top: 5px;
+    padding-right: 2px;
+    padding-bottom: 2px;
 
-    box-shadow: 2px 0px 5px #0B0B0B;
+    box-shadow: 3px 0px 5px #040404;
 
-    .button, .notifications-list-label {
+    .button {
         flex: 0 0 auto;
     }
     .notifications-list {
         flex-grow: 1;
         overflow-y: auto;
-    }
-    .notifications-list-label {
-        margin: 3px;
+        direction:rtl;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
     .notific {
         padding: 3px 5px;
-        margin: 3px;
+        margin: 2px;
         background-color: $bgc-task;
+        word-wrap: break-word;
+        @include indented-shadow-for-color(setLightness($bgc-task, 1.7));
+
+        .notific-task-user {
+            padding-left: 5px;
+            padding-right: 5px;
+            border-radius: 3px;
+
+            background-color: #DDD;
+            @include colorTheme-usertag;
+            @include indented-shadow-for-bright($bgc-usertag);
+        }
+        .notific-task-change {
+            padding-left: 5px;
+            padding-right: 5px;
+            border-radius: 3px;
+
+            margin-right: 5px;
+
+            &.ADDED {
+                background-color: setLightness($c-green, 0.7);
+                @include indented-shadow-for-color(setLightness($c-green, 0.7));
+            }
+            &.REMOVED {
+                background-color: rgb(136, 19, 35);
+                @include indented-shadow-for-color(rgb(136, 19, 35));
+            }
+            &.EDITED {
+                $editedColor : getBrightScheme($bgc-task-inner);
+                background-color: $editedColor;
+                @include indented-shadow-for-color($editedColor);
+            }
+        }
+
+        .notific-task-name {
+            display: inline-block;
+            margin: 3px 2px;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+    }
+    .notific.notific-taskExists:hover {
+        background-color: setLightness($bgc-task, 1.7);
     }
 
-    #notifications-new .notific {
-        border: 2px solid $c-orange;
+    .notifications-container {
+        direction: ltr;
+        border-right: 2px solid $bgc-notific-list;
+        margin-right: 2px;
     }
-    #notifications-old .notific {
-        border: 2px solid $bgc-task-inner;
+    
+    #notifications-new {
+        border-color: $c-orange;
+        margin-bottom: 10px;
+
+        padding: 1px 0px;
+        background-color: #555;
     }
 }

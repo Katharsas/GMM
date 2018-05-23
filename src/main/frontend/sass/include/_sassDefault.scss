@@ -107,7 +107,7 @@
 }
 
 @function getBrightScheme($darkColor) {
-	$result: lighten($bgc-subpage-dark, 10%);
+	$result: lighten($darkColor, 10%);
 	$result: setSaturation($result, 0.66);
 	@return $result;
 }

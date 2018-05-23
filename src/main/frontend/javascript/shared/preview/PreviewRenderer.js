@@ -154,9 +154,6 @@ var PreviewRenderer = (function() {
 			{
 				let camDistance = cameraDistances.reduce((a, b) => a + b) / cameraDistances.length;
 				let camTarget = multiplyScalar(cameraTargets.reduce((a, b) => add(a, b)), 1/cameraTargets.length);
-
-				console.log(camDistance);
-				console.log(camTarget);
 	
 				camera = createCamera(camDistance);
 				createControls($canvasAreas.find("canvas"), camera, camTarget, animationCallbacks);

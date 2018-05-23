@@ -48,6 +48,10 @@ public class UserProvider implements Supplier<Collection<User>> {
 		return getLoggedInUser(get());
 	}
 	
+	/**
+	 * Get the logged in user that corresponds to current thread execution.
+	 * @throws IllegalStateException if no user is logged in for current thread.
+	 */
 	private static User getLoggedInUser(Collection<User> users) {
 		final Authentication auth = getAuth();
 		if (!isUserLoggedIn(auth)) throw new IllegalStateException("User is not logged in!");
@@ -55,7 +59,7 @@ public class UserProvider implements Supplier<Collection<User>> {
 	}
 	
 	/**
-	 * Finds a user that can be linked to the current thread execution. This is the logged in user
+	 * Finds a user that corresponds to the current thread execution. This is the logged in user
 	 * if called from a request session thread or "SYSTEM" if called from a non-session thread.
 	 * 
 	 * @return Always a user object, never null.

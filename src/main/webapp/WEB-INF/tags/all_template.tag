@@ -30,8 +30,11 @@
 			<script src="<c:url value="/res/javascript/lib/bluebird.core.min.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/lib/jquery-ui.min.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>
 		<!-- CSS -->
+			<link href="<c:url value="/res/css/lib/jquery-ui.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
+			<link href="<c:url value="/res/css/lib/jquery-ui.structure.min.css"/>" media="screen" rel="stylesheet" type="text/css" />
 			<link href="<c:url value="/res/css/compiled/all_template.css"/>" media="screen" rel="stylesheet" type="text/css" />
 			<jsp:invoke fragment="css"/>
 	</head>
@@ -129,11 +132,14 @@
 			###############################################################
 		-->
 		<div id="notifications" style="display:none;">
-   			<div class="notifications-list-label">New notifications:</div>
-   			<div id="notifications-new" class="notifications-list"></div>
-   			<div class="notifications-list-label">Old notifications:</div>
-   			<div id="notifications-old" class="notifications-list"></div>
-   			<div id="notifications-clear" class="button" style="">Clear</div>
+			<div id="notifications-markRead" class="button">Mark Read</div>
+			<div class="notifications-list">
+				<div id="notifications-new" class="notifications-container"></div>
+				<div id="notifications-old" class="notifications-container"></div>
+			</div>
+			<div id="notifications-clear" class="button" style="">Clear</div>
+   			<%-- <div class="notifications-list-label">New notifications:</div> --%>
+   			<%-- <div class="notifications-list-label">Old notifications:</div> --%>
    		</div>
 		
 	</body>

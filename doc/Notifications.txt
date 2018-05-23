@@ -1,0 +1,32 @@
+Notifications inform users about changes made in the GMM. General notifications consists of a message key and a date of creation. Notifications can have 2 states:
+- Unread ("new")
+- Read ("old")
+The user can mark new notifications as "read", making them old notifications, and can remove notifications entirely. Notifications are displayed in a simple list. To open the list, the user clicks the notification icon. The icon changes if new notifications are available to read. When an notification event occurs, while the user views the list, the new notifications are prepended to the list.
+
+Implementation:
+- Upon page load, the client checks if the user has any new notifications, and sets the icon state accordingly.
+- Whenever a NotificationChangeEvent event occurs for the user, the client sets the icon state accordingly.
+- When the user clicks the icon to display the list, old and new notifications are downloaded from the server and inserted into the list.
+- When a new notfic gets created while client displays list, new notifications are removed from the list and redownloaded from the server and prepended to the list.
+- Button "Mark read" causes client to convert new to old notifics, adjust icon and send "mark read" request to server
+- Button "Delete read" causes client to remove old notifics and send "clear read" request to server
+
+Needed server endpoints:
+- Websocket event: "NotificationChangeEvent@UserId"
+- GET hasNewNotifics : Number of new notifications
+- GET old/read : List<Notifications>
+- GET new      : List<Notifications>
+- POST markRead => Server moves new to old
+- POST clearRead => Server clears old
+
+TaskNotifications:
+A TaskNotifications is notifications about a task related event and usually the majority of notifications are TaskNotifications. It contains information about the type of event (ADDED/REMOVED/EDITED), the task's id & name and the user that caused the event. It's message key is empty, since the message will be rendered from the other information by the client.
+
+The client allows the user to click on TaskNotifications to show the corresponding task in a dialog.
+
+TaskNotifications referring to deleted Tasks:
+When sending any notifications, the server checks if the referred tasks actually exist and sends that information to the client too (or clients asks through separate endpoint).
+While the notifications list is living on the client, the client maintains a mapping of taskIds to TaskNotifications items for all existing taskIds. It listens to TaskChange events and if a task is deleted that was present in the mapping, it gets removed from the mapping and the linked notifications get rerendered.
+
+Needed server endpoints:
+- GET doTasksExist(idLink[]) : Map<idLink,boolean> (Could be integrated into GET for notifications)

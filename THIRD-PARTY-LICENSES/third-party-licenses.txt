@@ -43,3 +43,10 @@ This plugin is dual-licensed under the GNU General Public License and the MIT Li
 Content:
 ../src/main/frontend/javascript/shared/preview/MatcapMaterial.js
 License: ISC (see https://spdx.org/licenses/ISC.html)
+
+
+Content:
+../src/main/webapp/resources/javascript/lib/jquery-ui.min.js
+../src/main/webapp/resources/css/lib/jquery-ui.min.css
+../src/main/webapp/resources/css/lib/jquery-ui.structure.min.css
+License: see LICENSE_jQueryUI.TXT

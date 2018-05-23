@@ -2,7 +2,7 @@
 
 <div id="${task.getIdLink()}" class="list-element task collapsed">
 	<div class="task-header clickable">
-		<div>
+		<div class="task-header-left">
 			<div class="task-id">
 				${task.getId()}
 			</div>
@@ -15,7 +15,7 @@
 				${task.getName()}
 		    </div>
 		</div>
-	    <div>
+	    <div class="task-header-right">
 	    	<#if task.getAssigned()??>
 			    <div class="task-assigned userTag">
 			    	${task.getAssigned().getName()}

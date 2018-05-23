@@ -3,67 +3,94 @@ import Ajax from "./ajax";
 import TaskDialogs from "./TaskDialog";
 import { contextUrl, allVars } from "./default";
 
-var template = `
+const template = `
 <div class="notific"><span></span>
 <div/>
 `
 
-var getTaskNotificText = function(taskIdLink, taskName, changeType, userName) {
+const getTaskNotificText = function(taskIdLink, taskName, changeType, userName) {
     return `
-    Task <span class="notific-task-name" ${taskIdLink === null ? "" : `data-id="${taskIdLink}"`}>${taskName}</span> 
-    was <span class="notific-task-change">${changeType}</span> 
-    by <span class="notific-task-user">${userName}</span>.`
+    <span class="notific-task-user">${userName}</span> 
+    <span class="notific-task-change ${changeType}">${changeType}</span>
+    <span class="notific-task-name" data-id="${taskIdLink}"}>${taskName}</span> 
+    `
 }
 
-var init = function() {
+/** @type {JQuery} */ let $toggle;
+/** @type {JQuery} */ let $notifications;
 
-    /** @type {JQuery} */ var $toggle = $("#notifications-toggle");
+const init = function() {
 
     if (!allVars.isUserLoggedIn) {return;}
 
-    /** @type {JQuery} */ var $notifications = $("#notifications");
-    /** @type {JQuery} */ var $clear = $notifications.find("#notifications-clear");
+    $toggle = $("#notifications-toggle");
+    $notifications = $("#notifications");
+
+    $notifications.resizable({ handles: 'e', minWidth: 100 });
+
+    /** @type {JQuery} */ const $mark = $notifications.find("#notifications-markRead");
+    /** @type {JQuery} */ const $clear = $notifications.find("#notifications-clear");
 
     var $new = $notifications.find("#notifications-new");
     var $old = $notifications.find("#notifications-old");
 
-    var updateOldNotifics = function() {
+    const onClickTaskName = function() {
+        const $taskName = $(this);
+        const idLink = $taskName.data("id");
+        console.log(this);
+        TaskDialogs.openDialog(idLink);
+    }
+
+    $new.on("click", ".notific.notific-taskExists .notific-task-name", onClickTaskName);
+    $old.on("click", ".notific.notific-taskExists .notific-task-name", onClickTaskName);
+
+    const updateOldNotifics = function() {
         return updateNotifics(contextUrl + "/notifics/old", $old);
     }
-    var updateNewNotifics = function() {
-        return updateNotifics(contextUrl + "/notifics/new", $new);
+    const updateNewNotifics = function() {
+        return updateNotifics(contextUrl + "/notifics/new", $new)
+        .then(function(isVisible) {
+            $mark.toggle(isVisible);
+        });
     };
 
-    var updateNotifics = function(url, $list) {
+    const bindTaskDialog = function($notific) {
+        $notific.addClass("notific-taskExists");
+        $notific.addClass("clickable");
+    }
+    const unbindTaskDialog = function($notific) {
+        $notific.removeClass("notific-taskExists");
+        $notific.removeClass("clickable");
+    }
+
+    const updateNotifics = function(url, $list) {
         return Ajax.post(url)
-        .then(function(items) {
-            for (let item of items) {
-                 /** @type {JQuery} */ let $item = $(template);
-                 let notificHtml = (item.taskName === undefined) ? item.text :
-                        getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName);
+        .then(function(result) {
+            const existsMap = result.idLinkToExists;
+            $list.empty();
+            for (const item of result.notifications) {
+                 /** @type {JQuery} */ const $item = $(template);
+                 const isTaskNotific = (item.taskName !== undefined)
+                 const notificHtml = isTaskNotific ?
+                        getTaskNotificText(item.taskIdLink, item.taskName, item.changeType, item.userName) : item.text;
                  $item.find("span").html(notificHtml);
 
-                 // TODO dont bind task dialogs for elements that have already been deleted! (independent of current changeType)
-                 // Refactor TaskNotification.java so it has a flag for "exists". Make sure deletions during runtime also deactivate task dialogs.
-                 bindTaskDialog($item);
+                 // TODO Make sure deletions during runtime also deactivate task dialogs.
+                 if (isTaskNotific) {
+                    if (existsMap[item.taskIdLink] === true) {
+                        bindTaskDialog($item);
+                    }
+                 }
                  $list.prepend($item);
             }
+            const shouldBeVisible = $list.children().length > 0;
+            $list.toggle(shouldBeVisible);
+            return shouldBeVisible;
         });
     }
 
-    var bindTaskDialog = function($item) {
-        // TODO bind to list instead of each single notific, as soon as lists are combined
-        const $taskName = $item.find(".notific-task-name");
-        if ($taskName.length > 0) {
-            const idLink = $taskName.data("id");
-            $taskName.click(function() {
-                TaskDialogs.openDialog(idLink);
-            })
-        }
-    }
-
     var clearNotifications = function() {
-        return Ajax.post(contextUrl + "/notifics/clear")
+        return Ajax.post(contextUrl + "/notifics/clearRead")
         .then(function() {
             $toggle.click();
         });
@@ -74,9 +101,8 @@ var init = function() {
         var active = $toggle.hasClass("activeTab");
         $notifications.toggle(active);
         if (active) {
-            Promise.resolve()
-            .then(updateOldNotifics)
-            .then(updateNewNotifics);
+            updateOldNotifics();
+            updateNewNotifics();
         } else {
             $new.empty();
             $old.empty();
@@ -84,6 +110,15 @@ var init = function() {
     });
     $clear.on("click", function() {
         clearNotifications();
+    })
+    $mark.on("click", function() {
+        // TODO Server needs to reorder old notifics after adding new ones to them (by creation date)
+
+        Ajax.post(contextUrl + "/notifics/markRead")
+        .then(function() {
+            updateOldNotifics();
+            updateNewNotifics();
+        });
     })
 };
 
