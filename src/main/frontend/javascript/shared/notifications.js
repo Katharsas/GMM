@@ -75,7 +75,7 @@ const init = function() {
                 $mark.toggle(hasNewNotifics);
                 $toggle.toggleClass(alarmClass, hasNewNotifics);
                 $count.text(newNotificCount);
-                return notificCount;
+                return newNotificCount;
             });
         };
 
@@ -109,11 +109,6 @@ const init = function() {
             $notific.addClass("clickable");
             $notific.attr("data-id", idLink);
         }
-        // const unbindTaskDialog = function($notific) {
-        //     $notific.removeClass("notific-taskExists");
-        //     $notific.removeClass("clickable");
-        //     $notific.removeAttr("data-id");
-        // }
 
         const onClickTaskName = function() {
             const $taskName = $(this);
@@ -138,8 +133,8 @@ const init = function() {
         $clear.on("click", function() {
             Ajax.post(contextUrl + "/notifics/clearRead")
             .then(updateNewNotifics)
-            .then(function(notificCount) {
-                if (notificCount <= 0) {
+            .then(function(newNotificCount) {
+                if (newNotificCount <= 0) {
                     $toggle.click();
                 }
             });
@@ -157,22 +152,6 @@ const init = function() {
                 $old.empty();
             }
         });
-
-        // TODO: Remove this (unbinds dialogs when tasks get deleted)
-        // This is not really necessary, because we could just rely on NotificationChangeEvent being sent,
-        // which will cause notifications to be reloaded anyway.
-        // DataChangeNotifier.registerSubscriber("Notifications", function(events) {
-        //     for (const event of events) {
-        //         if (event.eventType === "REMOVED") {
-        //             for (const idLink of event.changedIds) {
-        //                 const $taskNotifics = $notifications.find(".notific.notific-taskExists");
-        //                 const $deleted = $taskNotifics.filter("[data-id='" + idLink + "']");
-        //                 unbindTaskDialog($deleted);
-        //             }
-        //         }
-        //     }
-        //     return Promise.resolve();
-        // });
     }
     
     initToggle();

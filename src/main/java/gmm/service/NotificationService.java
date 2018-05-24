@@ -80,10 +80,6 @@ public class NotificationService implements DataChangeCallback {
 		synchronized (user) {
 			user.getOldNotifications().addAll(user.getNewNotifications());
 			user.getNewNotifications().clear();
-			// TODO sorting not needed because specification says that all notifications go through new notifications.
-//			user.getOldNotifications().sort((notificA, notificB)-> {
-//				return notificA.getCreationDate().compareTo(notificB.getCreationDate());
-//			});
 		}
 	}
 	

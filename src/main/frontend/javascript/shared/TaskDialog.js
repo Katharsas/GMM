@@ -10,8 +10,8 @@ import { contextUrl, runSerial } from "../shared/default";
 let $taskDialogContainer;
 let $taskDialogTemplate;
 
-const taskHeaderContainerSelector = ".taskDialog-task-header";
-const taskBodyContainerSelector = ".taskDialog-task-body";
+// const taskHeaderContainerSelector = ".taskDialog-task-header";
+// const taskBodyContainerSelector = ".taskDialog-task-body";
 const closeSelector = ".taskDialog-close";
 
 $(document).ready(function() {
@@ -76,10 +76,12 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
     const TaskDialog = function(cache, binders, id, closeCallback) {
         
         const $dialog = $taskDialogTemplate.clone();
-        const $closeButton =$dialog.find(closeSelector);
+        $dialog.removeAttr("id");
+        $dialog.resizable({ handles: 'e, s, w, ne, se, sw, nw', minWidth: 400 });
 
-        const $headerContainer = $dialog.find(taskHeaderContainerSelector);
-        const $bodyContainer = $dialog.find(taskBodyContainerSelector);
+        const $closeButton = $dialog.find(closeSelector);
+
+        const $taskContainer = $dialog.find(".taskDialog-task");
 
         const onRemoved = function() {
             $dialog.remove();
@@ -87,13 +89,12 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         };
 
         const onEdited = function() {
-            $headerContainer.empty();
-            $bodyContainer.empty();
+            $taskContainer.empty();
             attachTask();
         };
         
         const onPinned = function(isPinned) {
-            switchPinOperation($bodyContainer, isPinned);
+            switchPinOperation($taskContainer, isPinned);
         }
 
         const attachTask = function() {
@@ -105,8 +106,11 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
                 binders.bindHeader($header);
                 binders.bindBody(id, $body);
 
-                $headerContainer.append($header);
-                $bodyContainer.append($body)
+                $header.removeClass("list-element");
+                $header.removeClass("collapsed");
+                $header.findSelf(".task-header").removeClass("clickable");
+                $taskContainer.append($header);
+                $header.append($body)
                 $body.show();
             });
         };

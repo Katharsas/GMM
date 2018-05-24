@@ -86,14 +86,16 @@
 
 <%-- Task Dialog --%>
 
-<div id="taskDialog-template" class="dialog draggable" style="width:600px">
-	<div class="taskDialog-task-container">
-		<div>
+<div id="taskDialog-template" class="taskDialog dialog draggable" style="width:600px">
+	<div class="taskDialog-close button right"><span>X</span></div>
+	<div class="clear"></div>
+	<div class="taskDialog-task">
+		<%-- <div>
 			<div class="taskDialog-task-header left"></div>
-			<div class="taskDialog-close button right">X</div>
+			
 			<div class="clear"></div>
 		</div>
-		<div class="taskDialog-task-body"></div>
+		<div class="taskDialog-task-body"></div> --%>
 	</div>
 </div>
 <div id="taskDialog-container"></div>

@@ -138,4 +138,19 @@
  * Task Dialog
  * #####################################
  */
- // TODO
+ 
+.taskDialog {
+	// background-color: $bgc-task-expanded;
+	background-color: #333;
+
+	.taskDialog-close {
+		height: 20px;
+		width: 50px;
+		vertical-align: top;
+
+		span {
+			top: -3px;
+			position: relative;
+		}
+	}
+ }
