@@ -71,18 +71,22 @@
 		<div id="page-tabmenu" class="tabmenu h3">
 			<sec:authorize access="hasRole('ROLE_USER')">
 				<div id="notifications-toggle" class="tab left">
-					<img class="svg" src="<c:url value="/res/gfx/notification.svg"/>">
+					<div id="notifications-icon" class="left">
+						<img class="svg" src="<c:url value="/res/gfx/notification.svg"/>">
+					</div>
+					<div id="notifications-count" class="left">12</div>
+					<div class="clear"></div>
 				</div>
 				<div class="tab left">
 					<a href="<c:url value="/tasks"/>"><fmt:message key="menu.tasks"/><span></span></a>
 				</div>
 			</sec:authorize>
-			<div id="loading" class="left">
-				<img class="svg" src="<c:url value="/res/gfx/loading.svg"/>">
-			</div>
 			<div id="metainfo" class="left">
 				<spring:eval expression="@config.getProperty('app.name')" /><br/>
 				<spring:eval expression="@config.getProperty('app.version')" />
+			</div>
+			<div id="loading" class="left">
+				<img class="svg" src="<c:url value="/res/gfx/loading.svg"/>">
 			</div>
 			<sec:authorize access="isAnonymous()">
 				<div class="tab right">
@@ -132,14 +136,12 @@
 			###############################################################
 		-->
 		<div id="notifications" style="display:none;">
-			<div id="notifications-markRead" class="button">Mark Read</div>
+			<div id="notifications-markRead" class="button" style="display: none;">Mark Read</div>
 			<div class="notifications-list">
-				<div id="notifications-new" class="notifications-container"></div>
-				<div id="notifications-old" class="notifications-container"></div>
+				<div id="notifications-new" class="notifications-container" style="display: none;"></div>
+				<div id="notifications-old" class="notifications-container" style="display: none;"></div>
 			</div>
-			<div id="notifications-clear" class="button" style="">Clear</div>
-   			<%-- <div class="notifications-list-label">New notifications:</div> --%>
-   			<%-- <div class="notifications-list-label">Old notifications:</div> --%>
+			<div id="notifications-clearRead" class="button" style="">Clear Read</div>
    		</div>
 		
 	</body>

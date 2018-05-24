@@ -3,6 +3,10 @@ Notifications inform users about changes made in the GMM. General notifications 
 - Read ("old")
 The user can mark new notifications as "read", making them old notifications, and can remove notifications entirely. Notifications are displayed in a simple list. To open the list, the user clicks the notification icon. The icon changes if new notifications are available to read. When an notification event occurs, while the user views the list, the new notifications are prepended to the list.
 
+Spawning of notifications on the server:
+- Changes made to tasks by user will appear as new notification for any other. The user that caused the change will not receive a notification.
+- Notifications cannot be added to the old notifications if they haven't been in new notifications before.
+
 Implementation:
 - Upon page load, the client checks if the user has any new notifications, and sets the icon state accordingly.
 - Whenever a NotificationChangeEvent event occurs for the user, the client sets the icon state accordingly.

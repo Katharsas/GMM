@@ -1,6 +1,32 @@
 @import '../include';
 
-// make variable for menu height=top distance, variable for space left of main=width
+#notifications-toggle {
+    display: none;
+
+    &.enabled {
+        display: block;
+    }
+
+    &.notifications-alarm #notifications-count {
+        display: block;
+    }
+
+    #notifications-count {
+        display: none;
+
+        border-radius: 3px;
+        padding-left: 3px;
+        padding-right: 3px;
+
+        background-color: setLightness($c-orange, 0.9);
+        font-size: 0.6em;
+        text-shadow: 0px 0px 1px #000;
+        font-weight: 900;
+        font-family: Tahoma, Calibri, Verdana, Arial, sans-serif;
+
+        margin-top: 3px;
+    }
+}
 
 $bgc-notific-list: setLightness($bgc-task-inner, 1.4);
 

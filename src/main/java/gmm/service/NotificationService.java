@@ -47,8 +47,6 @@ public class NotificationService implements DataChangeCallback {
 							if (!user.equals(event.source)) {
 								addNotification(notification, user.getNewNotifications());
 								eventSender.unicastEvent(user, WebSocketEvent.NotificationChangeEvent);
-							} else {
-								addNotification(notification, user.getOldNotifications());
 							}
 						}
 					}
@@ -82,6 +80,10 @@ public class NotificationService implements DataChangeCallback {
 		synchronized (user) {
 			user.getOldNotifications().addAll(user.getNewNotifications());
 			user.getNewNotifications().clear();
+			// TODO sorting not needed because specification says that all notifications go through new notifications.
+//			user.getOldNotifications().sort((notificA, notificB)-> {
+//				return notificA.getCreationDate().compareTo(notificB.getCreationDate());
+//			});
 		}
 	}
 	
