@@ -1,0 +1,92 @@
+Several parts of the application may attempt to write/read from files in new asset folder at the same time, which may pose problems if uncontrolled / unsynchronized. The same goes for preview creation, which has the additional problem of running asynchronously.
+
+
+Overview
+==============================
+
+Actors/Operations which operate on files in new asset folder:
+
+1. Startup
+1.a) SVNPlugin startup: Updating or creating working copy (init)
+1.b) AssetService startup: Initial new asset scan (onNewAssetFilesChanged)
+
+2. Repo change
+2.a) SVNPlugin controller: SVN change POST request causing WC update (notifyRepoChange)
+2.b) AssetService scan: New asset scan triggered by SVNPlugin on WC change (onNewAssetFilesChanged)
+
+3. User changes files through client
+3.a) User change: Using SVNPlugin to change the WC and commit the change
+3.b) AssetService update: Caused by User change to reflect changes made to WC after commit
+
+4. Previews
+Preview creation can be caused by any of the above, and run asynchronously.
+(expecting the WC to be in the state that it was when the Preview creation was ordered)
+
+
+Order/Multiplicity
+==============================
+
+1.a) SVNPlugin startup:
+	- happens once
+	- before anything else because constructor code
+1.b) AssetService startup:
+	- happense once
+	- after SVNPlugin startup because SVNPlugin is a dependency
+	- before anything else becasue constructor code
+	
+2.a) SVNPlugin controller:
+	- after SVNPlugin startup because SVNPlugin is a dependency
+	- can happen anytime multiple times whith very short delay in between, but the controller is a singleton, so controller cannot call at the same time through multiple threads
+2.b) AssetService scan:
+	- same as SVNPlugin controller, because it gets called by SVNPlugin (same thread)
+
+3.a) User change:
+	- can happen anytime multiple times concurrently (from any user session thread)
+3.b) AssetService update:
+	- same as User change, because it gets called by the same session thread after WC change
+	
+4. Preview Creation:
+	- may always get called by a thread after that thread finishes 1.b), 2.b) or 3.b)
+
+	
+Concurrency
+==============================
+
+1., 2., 3.:
+- While 1. (initialization) is not a problem in itself, and 2. (repo change) only becomes a problem if multiple changes are triggered extremly fast or directly after startup (while 1.b) still runs), a User change (3.) can interfere with another concurrent User change and also with 2., if that is currently running.
+=> There must be some kind of synchronization (for example mutex on being allowed to change new asset folder, which any operation would have to aquire)
+
+4.:
+- Previews is a general problem, since its a job queue where the creation of each individual asset preview may get executed at some unknown time long after (hours after) the job was queued, and when finally executed the job expects the asset to still be in the same condition as when the job was queued. The queue currently checks the state of task properties before inserting a job, which makes it hard to simply overwrite a job without reaching the intermediate asset state first. Exampe:
+"Create preview" job requires asset props to not exist (it doesn't), job gets added to queue (will create required asset props). Asset gets changed by concurrent operation before job gets started: If we now simply remove "Create preview" job from queue and instead add "Recreate Preview" Job to queue, the Job would fail to get added to queue since it requires asset props to already exist (they don't, becasue create Job was canceled). So we would have to add a "Create" instead of "Recreate" job. Way too complex, thus not feasible.
+
+=> Similar to 1.,2.,3., there must be synchronization which blocks other asset operations while preview creation is running. While running, operations on the new asset folder need to be queued for 2. and be invalid for 3..
+Also, an operations that is followed by preview creation needs to always make sure preview creation gets done before other independent operations are allowed to change anything.
+
+- Previews are currently not synchronized with their asset Task. If task gets deleted while preview job is still in queue/currently runnung, the preview creation may work or be interrupted by preview deletion, and in most cases, the database would reject the EDIT operation for that task, since it has already been deleted, causing the job to fail with exception (both cases are acceptable though, as long as job queue continued to work, and the first case should be fixed with synchronization idea above. We don't want to disallow users to change asset tasks while preview is running, maybe we could cancel (re)create jobs on delete).
+Similar complications with backups
+
+
+Atomicity
+==============================
+With simple locks in place, do we need to combine several operations (like 2.a) and 2.b)) into atomic operations?
+
+- A new asset folder does currently not exist, so User1 creates one. But at the same time, 2.a) is running which detects that a folder for that asset was created through repo change. 3.a) is blocked until 2.a) finishes creating the folder. 3.a) now runs, creating the same folder, but at a different location (or failes if at same position). After 3.a), 2.b) starts and scans, finds two folders, creates invalid duplicate info. 3.b) runs, does not rescan (because it assumes 3.a) created a valid folder) and creates asset info with valid info. No we are left with a valid info on an asset at upload folder location, with the asset folder at repo change location being ignored. Not good.
+
+=> Any operations that make assumptions about the files not changing between them need to be executed atomically (without another concurrent operation getting in between.)
+
+Operations that make such assumptions:
+- 1.a) and 1.b) do not, but are followed by preview creation which very much does.
+- 2.a) and 2.b) do not currently, because 2.b) does an entire rescan anyway, but again followed by preview creation which does.
+- 3.a) and 3.b) do potentially (not yet implemented) to be able to be faster (not having to rescan entire new asset folder), and again preview creation.
+
+
+Solution
+==============================
+Operations will be grouped together. Each group of operations wil get executed atomically, and hold a lock on new asset folder changes during execution:
+
+- Startup & corresponding Preview Creation (1.a, 1.b, 4.)
+- Repo change & corresponding Preview Creation (2.a, 2.b, 4.)
+- User change & corresponding Preview Creation (3.a, 3.b 4.)
+
+While the lock is being held, Repo changes will be queued and executed once lock is free, User changes will be blocked (and corresponding actions will not be available in user interface).
