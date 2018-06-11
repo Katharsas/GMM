@@ -20,7 +20,7 @@ import gmm.util.Util;
  * 
  * @author Jan Mothes
  */
-public abstract class TaskListState implements DataChangeCallback {
+public abstract class TaskListState implements DataChangeCallback<Task> {
 	
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -32,34 +32,30 @@ public abstract class TaskListState implements DataChangeCallback {
 	}
 	
 	@Override
-	public void onEvent(DataChangeEvent event) {		
-		final Class<?> clazz = event.changed.getGenericType();
-		if (Task.class.isAssignableFrom(clazz)) {
-			final Class<Task> target = Task.class;
-			if(event.isSingleItem) {
-				switch(event.type) {
-				case ADDED:
-					onAdd(event.source, event.getChangedSingle(target));
-					break;
-				case REMOVED:
-					onRemove(event.source, event.getChangedSingle(target));
-					break;
-				case EDITED:
-					onEdit(event.source, event.getChangedSingle(target));
-					break;
-				}
-			} else {
-				switch(event.type) {
-				case ADDED:
-					onAddAll(event.source, event.getChanged(target));
-					break;
-				case REMOVED:
-					onRemoveAll(event.source, event.getChanged(target));
-					break;
-				case EDITED:
-					onEditAll(event.source, event.getChanged(target));
-					break;
-				}
+	public void onEvent(DataChangeEvent<Task> event) {		
+		if(event.isSingleItem) {
+			switch(event.type) {
+			case ADDED:
+				onAdd(event.source, event.getChangedSingle());
+				break;
+			case REMOVED:
+				onRemove(event.source, event.getChangedSingle());
+				break;
+			case EDITED:
+				onEdit(event.source, event.getChangedSingle());
+				break;
+			}
+		} else {
+			switch(event.type) {
+			case ADDED:
+				onAddAll(event.source, event.changed);
+				break;
+			case REMOVED:
+				onRemoveAll(event.source, event.changed);
+				break;
+			case EDITED:
+				onEditAll(event.source, event.changed);
+				break;
 			}
 		}
 	}

@@ -19,14 +19,14 @@ import gmm.util.Util;
  * 
  * @author Jan Mothes
  */
-public class DataChangeEvent {
+public class DataChangeEvent<T extends Linkable> {
 
 	public final DataChangeType type;
 	public final Instant created;
 	public final User source;
 	
 	public final boolean isSingleItem;
-	public final Collection<? extends Linkable> changed;
+	public final Collection<T> changed;
 	
 	/**
 	 * @param changed - The generic type of the collection must be one of:
@@ -34,7 +34,7 @@ public class DataChangeEvent {
 	 *  <br> - {@link User}
 	 *  <br> or any subclass of those classes.
 	 */
-	public DataChangeEvent(DataChangeType type, User source, Collection<? extends Linkable> changed) {
+	public DataChangeEvent(DataChangeType type, User source, Collection<T> changed) {
 		Objects.requireNonNull(type);
 		Objects.requireNonNull(source);
 		Objects.requireNonNull(changed);
@@ -52,23 +52,15 @@ public class DataChangeEvent {
 		created = Instant.now();
 	}
 	
-	public <T extends Linkable> DataChangeEvent(DataChangeType type, User source, T changed) {
-		this(type, source, new ArrayList<>(Util.classOf(changed), changed));
+	public DataChangeEvent(DataChangeType type, User source, T changed) {
+		this(type, source, new ArrayList<T>(Util.classOf(changed), changed));
 	}
 	
-	/**
-	 * Convenience function to cast {@link DataChangeEvent#changed} generics to a caller-known type.
-	 */
-	public <T> Collection<? extends T> getChanged(Class<T> clazz) {
-		return Util.castBound(changed, clazz);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <T> T getChangedSingle(Class<T> clazz) {
+	public T getChangedSingle() {
 		if (!isSingleItem) {
 			throw new UnsupportedOperationException("Change was not on single item!");
 		} else {
-			return (T) changed.iterator().next();
+			return changed.iterator().next();
 		}
 	}
 	

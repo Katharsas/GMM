@@ -88,7 +88,7 @@ public class WorkbenchSession extends TaskListState {
 			load(load.getDefaultStartupType(), LoadOperation.ONLY);
 		}
 		
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 	}
 	
 	@Override

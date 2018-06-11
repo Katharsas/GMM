@@ -60,11 +60,10 @@ Concurrency
 - Previews is a general problem, since its a job queue where the creation of each individual asset preview may get executed at some unknown time long after (hours after) the job was queued, and when finally executed the job expects the asset to still be in the same condition as when the job was queued. The queue currently checks the state of task properties before inserting a job, which makes it hard to simply overwrite a job without reaching the intermediate asset state first. Exampe:
 "Create preview" job requires asset props to not exist (it doesn't), job gets added to queue (will create required asset props). Asset gets changed by concurrent operation before job gets started: If we now simply remove "Create preview" job from queue and instead add "Recreate Preview" Job to queue, the Job would fail to get added to queue since it requires asset props to already exist (they don't, becasue create Job was canceled). So we would have to add a "Create" instead of "Recreate" job. Way too complex, thus not feasible.
 
-=> Similar to 1.,2.,3., there must be synchronization which blocks other asset operations while preview creation is running. While running, operations on the new asset folder need to be queued for 2. and be invalid for 3..
-Also, an operations that is followed by preview creation needs to always make sure preview creation gets done before other independent operations are allowed to change anything.
+- Previews are currently not synchronized with their asset Task. If task gets deleted while preview job is still in queue/currently runnung, the preview creation may work or be interrupted by preview deletion, and in most cases, the database would reject the EDIT operation for that task, since it has already been deleted, causing the job to fail with exception (both cases are kind of acceptable/uncritical though).
 
-- Previews are currently not synchronized with their asset Task. If task gets deleted while preview job is still in queue/currently runnung, the preview creation may work or be interrupted by preview deletion, and in most cases, the database would reject the EDIT operation for that task, since it has already been deleted, causing the job to fail with exception (both cases are acceptable though, as long as job queue continued to work, and the first case should be fixed with synchronization idea above. We don't want to disallow users to change asset tasks while preview is running, maybe we could cancel (re)create jobs on delete).
-Similar complications with backups
+=> Similar to 1.,2.,3., there must be synchronization which blocks other asset operations while preview creation is running. While running, operations on the new asset folder need to be queued for 2. and be invalid for 3..
+Also, preview creation always needs to get executed/aquire potential mutex immediatly after the operation causing itm without other operations in between (see next section).
 
 
 Atomicity

@@ -6,13 +6,16 @@ import static gmm.service.data.DataChangeType.REMOVED;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import gmm.collections.ArrayList;
@@ -45,36 +48,35 @@ public class DataBase implements DataAccess {
 	// OBSERVER PATTERN
 	// ###################
 	
-	final private java.util.Set<DataChangeCallback> weakPostProcessorCallbacks =
-			Collections.newSetFromMap(new WeakHashMap<DataChangeCallback, Boolean>());
+	@SuppressWarnings("rawtypes")
+	final private Map<DataChangeCallback, Class> weakPostProcessorCallbacks = new WeakHashMap<>();
+	@SuppressWarnings("rawtypes")
+	final private Map<DataChangeCallback, Class> weakConsumerCallbacks = new WeakHashMap<>();
 	
-	final private java.util.Set<DataChangeCallback> weakConsumerCallbacks =
-			Collections.newSetFromMap(new WeakHashMap<DataChangeCallback, Boolean>());
 	
-	final private DataChangeCallback callbacks = event -> {
-		for(final DataChangeCallback c : weakPostProcessorCallbacks) {
-			c.onEvent(event);
-		}
-		for(final DataChangeCallback c : weakConsumerCallbacks) {
-			c.onEvent(event);
-		}
-	};
+	// ###################
+	// DATA TYPES
+	// ###################
+	
+	/** Contains all types (concrete & compound) which can be mapped to collections of data.
+	 */
+	private final Set<Class<? extends Linkable>> listTypes = new HashSet<>(null, Util.createArray(new Class<?>[]{}));
+	
+	/** Map compound types to all concrete types they include.
+	 */
+	private final Multimap<Class<? extends Linkable>, Class<? extends Linkable>> compoundTypesToConcreteTypes = ArrayListMultimap.create();
 	
 	// ###################
 	// DATA
 	// ###################
 	
-	/** Contains all types (concrete & compound) which can be mapped to collections of data.
-	 */
-	final private Set<Class<?>> listTypes = new HashSet<>(null, new Class<?>[]{});
-	
 	/** Map concrete types to collections of objects of respective type.
 	 */
-	final private CollectionTypeMap concretes = new CollectionTypeMap();
+	final private CollectionTypeMap<Linkable> concretes = new CollectionTypeMap<>();
 	
 	/** Maps supertypes (=compounds) to collection views of objects of concrete types from {@link #concretes}.
 	 */
-	final private CollectionTypeMap compounds = new CollectionTypeMap();
+	final private CollectionTypeMap<Linkable> compounds = new CollectionTypeMap<>();
 	
 	// ###################
 	// INIT
@@ -83,13 +85,13 @@ public class DataBase implements DataAccess {
 	private DataBase() {
 		
 		// Initialize lists for concrete types
-		initConcreteLists(new Class<?>[] {
+		initConcreteLists(Util.createArray(new Class<?>[] {
 			User.class,
 			GeneralTask.class,
 			TextureTask.class,
 			ModelTask.class,
 			Label.class
-		});
+		}));
 		// Initialize AssetTask compound view
 		initCompoundList(AssetTask.class, Util.createArray(new Class<?>[]
 				{ TextureTask.class, ModelTask.class }
@@ -106,12 +108,12 @@ public class DataBase implements DataAccess {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> void initConcreteLists(Class<? extends T>[] types) {
-		for (final Class<?> type : types) {
+	private void initConcreteLists(Class<? extends Linkable>[] types) {
+		for (final Class<? extends Linkable> type : types) {
 			// even though ArrayLists are used,
 			// public methods ensure elements cannot be added twice
-			final ArrayList<?> list = new ArrayList<>(type);
-			concretes.putSafe((Class<Object>)list.getGenericType(), (Collection<Object>)list);// fuck u generics
+			final ArrayList<? extends Linkable> list = new ArrayList<>(type);
+			concretes.putSafe((Class<Linkable>) type, (ArrayList<Linkable>) list);// fuck u generics
 		}
 		listTypes.addAll(Arrays.asList(types));
 	}
@@ -119,17 +121,22 @@ public class DataBase implements DataAccess {
 	/**
 	 * Initializes a live combined list view of the lists from given {@code includedTypes} and maps
 	 * them to given type in {@link DataBase#compounds}.
+	 * 
+	 * @param includedTypes - Included types can be concrete or compound. If compound, they must already be initialized.
 	 */
-	private <T> void initCompoundList(Class<T> type, Class<T>[] includedTypes) {
-		final Collection<T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
+	private <T extends Linkable> void initCompoundList(Class<T> type, Class<? extends T>[] includedTypes) {
+		final Collection<? extends T>[] included = Util.createArray(new Collection<?>[includedTypes.length]);
 		for (int i = 0; i < included.length; i++) {
-			Collection<T> list = concretes.getSafe(includedTypes[i]);
+			Collection<? extends T> list = concretes.getSafe(includedTypes[i]);
 			if (list == null) {
 				list = compounds.getSafe(includedTypes[i]);
 				if (list == null) {
 					throw new IllegalArgumentException("Cannot build compound list:"
 							+ " Included type '" + includedTypes[i] + "' unknown!");
 				}
+				compoundTypesToConcreteTypes.putAll(type, compoundTypesToConcreteTypes.get(includedTypes[i]));
+			} else {
+				compoundTypesToConcreteTypes.put(type, includedTypes[i]);
 			}
 			included[i] = Util.cast(list, includedTypes[i]);
 		}
@@ -149,7 +156,7 @@ public class DataBase implements DataAccess {
 	 * 		given. Compound collections do not support add/remove operations and may have worse
 	 * 		performance for other operations!
 	 */
-	private <T> Collection<T> concreteOrCompound(Class<T> clazz) {
+	private synchronized <T extends Linkable> Collection<T> concreteOrCompound(Class<T> clazz) {
 		// concrete list type
 		final Collection<T> result = concretes.getSafe(clazz);
 		if (result != null) {
@@ -173,13 +180,13 @@ public class DataBase implements DataAccess {
 	 * 		support add/remove operations.
 	 * @return Live collection.
 	 */
-	private <T> Collection<T> concreteOnly(Class<T> clazz) {
-		final Collection<?> result = concretes.getSafe(clazz);
+	private synchronized <T extends Linkable> Collection<T> concreteOnly(Class<T> clazz) {
+		final Collection<T> result = concretes.getSafe(clazz);
 		if (result != null) {
-			return Util.cast(result, clazz);
+			return result;
 		} else {
 			throw new IllegalArgumentException(
-					"A list for type '"+clazz.getSimpleName()+"' cannot be found!");
+					"A list for type '" + clazz.getSimpleName() + "' cannot be found!");
 		}
 	}
 	
@@ -199,30 +206,36 @@ public class DataBase implements DataAccess {
 		final Collection<Label> taskLabels = concreteOnly(Label.class);
 		if(data instanceof Task) {
 			final Task task = (Task) data;
-			taskLabels.add(new Label(task.getLabel()));
+			final Label taskLabel = new Label(task.getLabel());
+			if (!taskLabels.contains(taskLabel)) {
+				taskLabels.add(taskLabel);
+			}
 		}
-		callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
+		fireEvent(new DataChangeEvent<>(ADDED, executingUser.get(), data));
 	}
 	
 	@Override
 	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
 		logger.debug("Adding multiple elements of type " + data.getGenericType().getSimpleName());
-		if (data.size() >= 1) {
-			// TODO split per type if data type is compound (see removeAll)
-			final Collection<T> collection = concreteOnly(data.getGenericType());
-			if(!Collections.disjoint(data, collection)) {
+		this.<T>mapToConcreteGroups(data, concreteData -> {
+			final Class<? extends Linkable> concreteType = concreteData.getGenericType();
+			@SuppressWarnings("unchecked")
+			final Collection<Linkable> concreteExisting = (Collection<Linkable>) concreteOnly(concreteType);
+			if(!Collections.disjoint(concreteData, concreteExisting)) {
 				throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
 			}
-			collection.addAll(data);
-			if(Task.class.isAssignableFrom(data.getGenericType())) {
-				final Collection<? extends Task> tasks = Util.castBound(data, Task.class);
-				final Collection<Label> taskLabels = concreteOnly(Label.class);
-				for (final Task task : tasks) {
-					taskLabels.add(new Label(task.getLabel()));
+			if (Task.class.isAssignableFrom(concreteType)) {
+				for (final Linkable element : concreteData) {
+					final Task task = (Task) element;
+					final Label taskLabel = new Label(task.getLabel());
+					if (!concreteOnly(Label.class).contains(taskLabel)) {
+						concreteOnly(Label.class).add(taskLabel);
+					}
 				}
 			}
-			callbacks.onEvent(new DataChangeEvent(ADDED, executingUser.get(), data));
-		}
+			concreteExisting.addAll(concreteData);
+			fireEvent(new DataChangeEvent<>(ADDED, executingUser.get(), concreteData));
+		});
 	}
 
 	@Override
@@ -233,28 +246,48 @@ public class DataBase implements DataAccess {
 			throw new IllegalArgumentException("Element cannot be removed because it does not exist!");
 		}
 		collection.remove(data);
-		callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), data));
+		fireEvent(new DataChangeEvent<>(REMOVED, executingUser.get(), data));
 	}
 	
+	/**
+	 * Groups items per concrete class. Creates event for each group.
+	 */
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {	
 		logger.debug("Removing multiple elements of type " + data.getGenericType().getSimpleName());
+		mapToConcreteGroups(data, concreteData -> {
+			final Class<? extends Linkable> concreteType = concreteData.getGenericType();
+			if(!concreteOnly(concreteType).containsAll(data)) {
+				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
+			}
+			concreteOnly(concreteType).removeAll(concreteData);
+			fireEvent(new DataChangeEvent<>(REMOVED, executingUser.get(), concreteData));
+		});
+	}
+	
+	/**
+	 * Splits a collection of compound/concrete type into multiple collections, each of concrete type.
+	 * 
+	 * @param data - A collection with concrete or compound generic type.
+	 * @param action - An action that will be supplied with collections of concrete generic type only, called once for
+	 * 		each such collection so that each item from data will be supplied once. Simply passes data if data is concrete.
+	 */
+	private <T extends Linkable> void mapToConcreteGroups(Collection<T> data, Consumer<Collection<? extends T>> action) {
 		if (data.size() >= 1) {
-			// TODO split per type only if data type is compound
-			final Multimap<Class<T>, T> clazzToData = ArrayList.getMultiMap(data.getGenericType());
-			for(final T item : data) {
-				clazzToData.put(Util.classOf(item), item);
-			}
-			for(final Class<T> clazz : clazzToData.keySet()) {
-				if(!concreteOnly(clazz).containsAll(clazzToData.get(clazz))) {
-					throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
+			final Class<T> genericType = data.getGenericType();
+			final java.util.Set<Class<? extends Linkable>> concreteTypes = concretes.keySet();
+			// If data is concrete, pass it, else create mapping
+			if (concreteTypes.contains(genericType)) {
+				action.accept(data);
+			} else {
+				final Multimap<Class<T>, T> clazzToData = ArrayList.getMultiMap(genericType);
+				for(final T item : data) {
+					clazzToData.put(Util.classOf(item), item);
 				}
-			}
-			for(final Class<T> clazz : clazzToData.keySet()) {
-				final java.util.Collection<T> part = clazzToData.get(clazz);
-				concreteOnly(clazz).removeAll(part);
-				final ArrayList<T> wrapped = new ArrayList<>(clazz, part);
-				callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), wrapped));
+				for(final Class<T> clazz : clazzToData.keySet()) {
+					final ArrayList<? extends T> concreteData = new ArrayList<>(clazz, clazzToData.get(clazz));
+					action.accept(concreteData);
+				}
 			}
 		}
 	}
@@ -262,13 +295,21 @@ public class DataBase implements DataAccess {
 	@Override
 	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
 		logger.debug("Removing all elements of type " + clazz.getSimpleName());
-		final Collection<T> removed = getList(clazz);
-		if (removed.size() >= 1) {
-			for (final T t : removed) {
-				logger.debug(t.toString());
+		if (concretes.containsKey(clazz)) {
+			clearConcrete(clazz);
+		} else {
+			for (final Class<? extends Linkable> concreteClass : compoundTypesToConcreteTypes.get(clazz)) {
+				clearConcrete(concreteClass);
 			}
-			concreteOrCompound(clazz).clear();
-			callbacks.onEvent(new DataChangeEvent(REMOVED, executingUser.get(), removed));
+		}
+	}
+	
+	private <T extends Linkable> void clearConcrete(Class<T> concreteType) {
+		final Collection<T> toRemove = concreteOnly(concreteType);
+		if (toRemove.size() >= 1) {
+			final Collection<T> removed = toRemove.copy();
+			toRemove.clear();
+			fireEvent(new DataChangeEvent<T>(REMOVED, executingUser.get(), removed));
 		}
 	}
 	
@@ -289,7 +330,7 @@ public class DataBase implements DataAccess {
 		edit(data, cause);
 	}
 	
-	private <T extends Linkable> void edit(T data, User cause) {
+	private synchronized <T extends Linkable> void edit(T data, User cause) {
 		logger.debug("Replacing element of type " + data.getClass().getSimpleName());
 		final Collection<T> collection = concreteOnly(Util.classOf(data));
 		if(!collection.contains(data)){
@@ -297,7 +338,7 @@ public class DataBase implements DataAccess {
 		}
 		collection.remove(data);
 		collection.add(data);
-		callbacks.onEvent(new DataChangeEvent(EDITED, cause, data));
+		fireEvent(new DataChangeEvent<T>(EDITED, cause, data));
 	}
 
 	@Override
@@ -319,15 +360,34 @@ public class DataBase implements DataAccess {
 		}
 		return false;
 	}
-
+	
 	@Override
-	public void registerForUpdates(DataChangeCallback onUpdate) {
-		weakConsumerCallbacks.add(onUpdate);
+	public <T extends Linkable> void registerPostProcessor(DataChangeCallback<T> onUpdate, Class<T> clazz) {
+		weakPostProcessorCallbacks.put(onUpdate, clazz);
+	}
+	
+	@Override
+	public <T extends Linkable> void registerForUpdates(DataChangeCallback<T> onUpdate, Class<T> clazz) {
+		weakConsumerCallbacks.put(onUpdate, clazz);
 	}
 
-	@Override
-	public void registerPostProcessor(DataChangeCallback onUpdate) {
-		weakPostProcessorCallbacks.add(onUpdate);
+	/**
+	 * All events are guaranteed to contain collections of concrete types only.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void fireEvent(DataChangeEvent<?> event) {
+		final Class<? extends Linkable> concreteType = event.changed.getGenericType();
+		// we fire any callback that has registered on this type or a supertype
+		
+		for (final Map.Entry<DataChangeCallback, Class> entry : weakPostProcessorCallbacks.entrySet()) {
+			if (entry.getValue().isAssignableFrom(concreteType)) {
+				entry.getKey().onEvent(event);
+			}
+		}
+		for (final Map.Entry<DataChangeCallback, Class> entry : weakConsumerCallbacks.entrySet()) {
+			if (entry.getValue().isAssignableFrom(concreteType)) {
+				entry.getKey().onEvent(event);
+			}
+		}
 	}
-
 }

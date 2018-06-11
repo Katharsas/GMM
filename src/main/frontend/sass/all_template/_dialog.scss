@@ -27,7 +27,10 @@
   	z-index: 250;
   	position: fixed;
   	border-width: 5px;
-  	border-style: solid;
+	border-style: solid;
+	
+	outline: #777 solid 1px;
+	overflow: hidden; // fix for firefox outline problem (background shining through)
 }
 
 .dialog-button {
@@ -142,6 +145,9 @@
 .taskDialog {
 	// background-color: $bgc-task-expanded;
 	background-color: #333;
+	min-width: 500px;
+	max-width: 870px;
+	width: 70%;
 
 	.taskDialog-close {
 		height: 20px;

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.List;
+import gmm.domain.Linkable;
 import gmm.domain.Notification;
 import gmm.domain.TaskNotification;
 import gmm.domain.User;
@@ -15,11 +16,12 @@ import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
 import gmm.service.users.UserService;
+import gmm.util.Util;
 import gmm.web.WebSocketEventSender;
 import gmm.web.WebSocketEventSender.WebSocketEvent;
 
 @Service
-public class NotificationService implements DataChangeCallback {
+public class NotificationService implements DataChangeCallback<Linkable> {
 
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -33,14 +35,15 @@ public class NotificationService implements DataChangeCallback {
 	public NotificationService(DataAccess data, UserService userService, WebSocketEventSender eventSender) {
 		this.userService = userService;
 		this.eventSender = eventSender;
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Linkable.class);
 	}
 	
 	@Override
-	public void onEvent(DataChangeEvent event) {
+	public void onEvent(DataChangeEvent<Linkable> event) {
 		if (event.source.isNormalUser() || event.source == User.UNKNOWN) {
 			if (Task.class.isAssignableFrom(event.changed.getGenericType())) {
-				for (final Task task : event.getChanged(Task.class)) {
+				for (final Linkable linkable : event.changed) {
+					final Task task = (Task) linkable;
 					for (final User user : userService.get()) {
 						final TaskNotification notification = new TaskNotification(task, event.type, event.source);
 						synchronized (user) {

@@ -8,10 +8,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ * Thread-safe.
+ */
 public class FileTreeScript {
 	
 	/**
+	 * <pre>
 	 * jQuery File Tree JSP Connector
 	 * Version 1.0
 	 * Copyright 2008 Joshua Gould
@@ -22,6 +25,9 @@ public class FileTreeScript {
 	 * Original License from https://github.com/jak/jQuery-File-Tree:
 	 * "This plugin is dual-licensed under the GNU General Public License and the MIT License and is copyright 2008 A 
 	 * Beautiful Site, LLC."
+	 * </pre>
+	 * 
+	 * Thread-safe.
 	 */	
 	public String[] html(Path relDir, Path root) {
 		

@@ -235,12 +235,22 @@ export default function(onedit, setIsPinned, isPinned) {
 					// maximized view
 					var isMaximized = false;
 					var $maximize = $canvasContainer.find(".task-preview-maximize .button");
+					var draggableTransform;
 					$maximize.on("click", function() {
 						isMaximized = !isMaximized;
 						$assets.find("table").toggleClass("maximized", isMaximized);
 						$canvasContainer.find(".task-preview-visual").toggleClass("maximized", isMaximized);
 						//$canvasContainer.find("canvas").removeAttr("width");
 						$canvasContainer.find("canvas").removeAttr("height");
+						// task dialog
+						var $draggable = $body.closest(".draggable");
+						if (isMaximized) {
+							draggableTransform = $draggable.css("transform");
+							$draggable.css("transform", "");
+						} else {
+							$draggable.css("transform", draggableTransform);
+							draggableTransform = undefined;
+						}
 					});
 				}
 				

@@ -21,7 +21,7 @@ const r = function() {
  * @typedef TaskListSettings
  * @property {JQuery} $list - The container element which holds all task elements as children.
  * @property {string} eventUrl - The url path providing taskList events for synchronization.
- * @property {string} initUrl - The url path to call to init the list state on the server side.
+ * @property {string} initUrl - Optional: The url path to call to init the list state on the server side.
  * @property {Callback} onUpdateStart - Optional: Executed whenever the tasklist starts updating/changing itself.
  * @property {Callback} onUpdateDone - Optional: Executed whenever the taskList has updated/changed itself.
  * 		Count of current tasks will be passed as parameter.
@@ -312,7 +312,8 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 	
 	const init = function() {
 
-		const serverInitDone = Ajax.post(contextUrl + settings.initUrl);
+		const serverInitDone = settings.initUrl == null ?
+			Promise.resolve() : Ajax.post(contextUrl + settings.initUrl);
 
 		taskSwitcher.registerTaskList(taskListId, {
 			

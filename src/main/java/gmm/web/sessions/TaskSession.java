@@ -30,7 +30,7 @@ import gmm.web.forms.TaskForm;
 
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
-public class TaskSession implements DataChangeCallback {
+public class TaskSession implements DataChangeCallback<Task> {
 	
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
@@ -53,7 +53,7 @@ public class TaskSession implements DataChangeCallback {
 		this.assetNameConflictCheckerFactory = conflictCheckerFactory;
 		
 		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 	}
 	
 	public void cleanUp() {
@@ -61,12 +61,9 @@ public class TaskSession implements DataChangeCallback {
 	}
 	
 	@Override
-	public void onEvent(DataChangeEvent event) {		
-		final Class<?> clazz = event.changed.getGenericType();
-		if (Task.class.isAssignableFrom(clazz)) {
-			if (!event.type.equals(DataChangeType.ADDED)) {
-				taskDataEvents.add(event.toClientEvent());
-			}
+	public void onEvent(DataChangeEvent<Task> event) {		
+		if (!event.type.equals(DataChangeType.ADDED)) {
+			taskDataEvents.add(event.toClientEvent());
 		}
 	}
 	

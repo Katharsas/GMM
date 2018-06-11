@@ -20,7 +20,7 @@ import gmm.service.data.DataChangeType;
 import gmm.util.StringUtil;
 
 @Service
-public class UserService extends UserProvider implements DataChangeCallback {
+public class UserService extends UserProvider implements DataChangeCallback<Task> {
 
 	private final DataAccess data;
 	private final SecureRandom random;
@@ -30,7 +30,7 @@ public class UserService extends UserProvider implements DataChangeCallback {
 	public UserService(DataAccess data, PasswordEncoder encoder) {
 		super(() -> data.<User>getList(User.class));
 		this.data = data;
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 		this.encoder = encoder;
 		random = new SecureRandom();
 	}
@@ -57,19 +57,17 @@ public class UserService extends UserProvider implements DataChangeCallback {
 	 * Clean up pinned tasks on task deletion.
 	 */
 	@Override
-	public void onEvent(DataChangeEvent event) {
+	public void onEvent(DataChangeEvent<Task> event) {
 		if (event.type == DataChangeType.REMOVED) {
-			if (Task.class.isAssignableFrom(event.changed.getGenericType())) {
-				final Multimap<Long, User> pinnedTasks = MultimapBuilder.hashKeys().arrayListValues().build();
-				for (final User user : get()) {
-					for (final long taskId : user.getPinnedTaskIds()) {
-						pinnedTasks.put(taskId, user);
-					}
+			final Multimap<Long, User> pinnedTasks = MultimapBuilder.hashKeys().arrayListValues().build();
+			for (final User user : get()) {
+				for (final long taskId : user.getPinnedTaskIds()) {
+					pinnedTasks.put(taskId, user);
 				}
-				for (final Task task : event.getChanged(Task.class)) {
-					for (final User user : pinnedTasks.get(task.getId())) {
-						user.getPinnedTaskIds().remove(task.getId());
-					}
+			}
+			for (final Task task : event.changed) {
+				for (final User user : pinnedTasks.get(task.getId())) {
+					user.getPinnedTaskIds().remove(task.getId());
 				}
 			}
 		}

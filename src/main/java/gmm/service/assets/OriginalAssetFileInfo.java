@@ -7,6 +7,11 @@ import gmm.domain.task.asset.AssetName;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.AssetTaskService;
 
+/**
+ * Immutable.
+ * 
+ * @author Jan Mothes
+ */
 public class OriginalAssetFileInfo implements AssetInfo {
 
 	private final Path assetFile;

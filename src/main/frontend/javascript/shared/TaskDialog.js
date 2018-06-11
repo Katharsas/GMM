@@ -17,6 +17,7 @@ const closeSelector = ".taskDialog-close";
 $(document).ready(function() {
     $taskDialogContainer = $("#taskDialog-container");
     $taskDialogTemplate = $("#taskDialog-template");
+    $taskDialogTemplate.css("z-index", "150");
 });
 
 const idLinkToDialog = {};
@@ -77,7 +78,7 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
         
         const $dialog = $taskDialogTemplate.clone();
         $dialog.removeAttr("id");
-        $dialog.resizable({ handles: 'e, s, w, ne, se, sw, nw', minWidth: 400 });
+        $dialog.resizable({ handles: 'e, w,', minWidth: 500 });
 
         const $closeButton = $dialog.find(closeSelector);
 
@@ -109,6 +110,7 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
                 $header.removeClass("list-element");
                 $header.removeClass("collapsed");
                 $header.findSelf(".task-header").removeClass("clickable");
+                $header.addClass("expanded");
                 $taskContainer.append($header);
                 $header.append($body)
                 $body.show();
@@ -121,11 +123,20 @@ const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
             });
         };
 
+        const bringToForeground = function() {
+            $taskDialogContainer.find(".taskDialog").css('z-index', 150);
+            $dialog.css('z-index', 151);
+        }
+
         bindEvents();
         attachTask().then(function() {
             $taskDialogContainer.append($dialog);
             HtmlPreProcessor.apply($dialog);
             $dialog.show();
+            $dialog.on("mousedown", function() {
+                bringToForeground();
+            });
+            bringToForeground();
             const numberOfExisting = $taskDialogContainer.children().length;
             centerDialog($dialog, numberOfExisting, $dialog.outerWidth(), $dialog.innerHeight())
         });

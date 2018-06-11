@@ -35,7 +35,7 @@ public class PinnedSession extends TaskListState {
 	@Autowired
 	public PinnedSession(DataAccess data, UserService users) {
 		user = users.getLoggedInUser();
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 		
 		final List<Long> pinnedIds = user.getPinnedTaskIds();
 		pinnedTasks = new ArrayList<>(Task.class, pinnedIds.size() + 5);

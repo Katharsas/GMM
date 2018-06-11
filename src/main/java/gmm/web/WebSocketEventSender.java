@@ -10,6 +10,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import gmm.WebSocketConfiguration.WebSocketHandlerImpl;
 import gmm.domain.User;
+import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
@@ -24,7 +25,7 @@ import gmm.service.data.DataChangeEvent;
  * @author Jan Mothes
  */
 @Service
-public class WebSocketEventSender implements DataChangeCallback {
+public class WebSocketEventSender implements DataChangeCallback<Task> {
 
 	public static enum WebSocketEvent {
 		TaskDataChangeEvent,
@@ -39,12 +40,12 @@ public class WebSocketEventSender implements DataChangeCallback {
 	
 	@Autowired
 	public WebSocketEventSender(DataAccess data, WebSocketHandlerImpl handler) {
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 		this.handler = handler;
 	}
 
 	@Override
-	public void onEvent(DataChangeEvent event) {
+	public void onEvent(DataChangeEvent<Task> event) {
 		broadcastEvent(WebSocketEvent.TaskDataChangeEvent);
 	}
 	

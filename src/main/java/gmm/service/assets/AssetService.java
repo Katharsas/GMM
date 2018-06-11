@@ -18,9 +18,7 @@ import gmm.collections.HashSet;
 import gmm.collections.List;
 import gmm.collections.Set;
 import gmm.collections.UnmodifiableCollection;
-import gmm.domain.Linkable;
 import gmm.domain.User;
-import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
@@ -73,7 +71,7 @@ public class AssetService {
 	// TODO currently, there is a small preview leak, because new assets are scanned for the first
 	// time AFTER VcsPlugin updated the WC. This means that any new assets that were deleted during
 	// offline GMM will still have previews left and cannot be found because AssetInfo is missing in
-	// new scan. This could be fixed by scanning once more before initialising VcsPlugin. AssetInfo
+	// new scan. This could be fixed by scanning once more before initializing VcsPlugin. AssetInfo
 	// would then be removed together with previews when scanning updated WC.
 	
 	private final Map<AssetName, AssetTask<?>> assetTasks;
@@ -83,7 +81,7 @@ public class AssetService {
 	
 	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
 	
-	private final DataChangeCallback reference;
+	private final DataChangeCallback<AssetTask<?>> reference;
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetName assetName) {
 		return newAssetFolders.get(assetName);
@@ -118,43 +116,35 @@ public class AssetService {
 		fileService.createDirectory(config.assetsOriginal());
 		
 		reference = initTasksAndGetPostProcessor(data);
-		data.registerPostProcessor(reference);
+		data.registerPostProcessor(reference, AssetTask.getGenericClass());
 		
 		onOriginalAssetFilesChanged();
 		vcs.registerFilesChangedHandler(this);
 	}
 	
-	private DataChangeCallback initTasksAndGetPostProcessor(DataAccess data) {
+	private DataChangeCallback<AssetTask<?>> initTasksAndGetPostProcessor(DataAccess data) {
 		for (final AssetTask<?> assetTask : data.getList(AssetTask.class)) {
 			assetTasks.put(assetTask.getAssetName(), assetTask);
 		}
-		return this::onDataChangeEvent;
+		return event -> onDataChangeEvent(event);
 	}
 	
-	private void onDataChangeEvent(DataChangeEvent event) {
-		// TODO should DataChangeEvent only have concrete classes as generic type for easier checking?
-		final Class<? extends Linkable> clazz = event.changed.getGenericType();
-		if (Task.class.isAssignableFrom(clazz)) {
-			switch(event.type) {
-			case ADDED:
-				for (final Task task : event.getChanged(Task.class)) {
-					if (task instanceof AssetTask) {
-						onAssetTaskCreation((AssetTask<?>) task);
-					}
-				}
-				break;
-			case EDITED:
-				// TODO AssetService needs to get notified manually on AssetName change,
-				// see AssetTaskService todo, AssetService needs old AssetName to cleanup
-				break;
-			case REMOVED:
-				for (final Task task : event.getChanged(Task.class)) {
-					if (task instanceof AssetTask) {
-						onAssetTaskDeletion((AssetTask<?>) task);
-					}
-				}
-				break;
+	private void onDataChangeEvent(DataChangeEvent<AssetTask<?>> event) {
+		switch(event.type) {
+		case ADDED:
+			for (final AssetTask<?> task : event.changed) {
+				onAssetTaskCreation((AssetTask<?>) task);
 			}
+			break;
+		case EDITED:
+			// TODO AssetService needs to get notified manually on AssetName change,
+			// see AssetTaskService todo, AssetService needs old AssetName to cleanup
+			break;
+		case REMOVED:
+			for (final AssetTask<?> task : event.changed) {
+				onAssetTaskDeletion((AssetTask<?>) task);
+			}
+			break;
 		}
 	}
 	
@@ -212,7 +202,7 @@ public class AssetService {
 					
 					final boolean bothNull = task.getNewAssetFolderInfo() == null && info == null;
 					final boolean sameInvalid = task.getNewAssetFolderInfo() != null && info != null
-							&& task.getNewAssetFolderInfo().equals(info.getStatus()); 
+							&& task.getNewAssetFolderInfo().getStatus().equals(info.getStatus()); 
 					if (!bothNull && !sameInvalid) {
 						updater.setInfo(task, Optional.ofNullable(info));
 					}

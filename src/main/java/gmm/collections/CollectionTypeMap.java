@@ -2,7 +2,7 @@ package gmm.collections;
 
 import java.util.HashMap;
 
-public class CollectionTypeMap extends HashMap<Class<?>, Collection<?>> {
+public class CollectionTypeMap<T> extends HashMap<Class<? extends T>, Collection<? extends T>> {
 
 	private static final long serialVersionUID = 4834657898911264523L;
 	
@@ -12,12 +12,12 @@ public class CollectionTypeMap extends HashMap<Class<?>, Collection<?>> {
 	 */
 	@Deprecated
 	@Override
-	public Collection<?> put(Class<?> key, Collection<?> value) {
+	public Collection<? extends T> put(Class<? extends T> key, Collection<? extends T> value) {
 		return super.put(key, value);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <E> Collection<E> putSafe(Class<E> key, Collection<E> value) {
+	public <E extends T> Collection<E> putSafe(Class<E> key, Collection<E> value) {
 		return (Collection<E>) super.put(key, value);
 	}
 	
@@ -27,12 +27,12 @@ public class CollectionTypeMap extends HashMap<Class<?>, Collection<?>> {
 	 */
 	@Deprecated
 	@Override
-	public Collection<?> get(Object key) {
+	public Collection<? extends T> get(Object key) {
 		return super.get(key);
 	}
 
 	@SuppressWarnings("unchecked")
-	public <E> Collection<E> getSafe(Class<E> key) {
+	public <E extends T> Collection<E> getSafe(Class<E> key) {
 		return (Collection<E>) super.get(key);
 	}
 }

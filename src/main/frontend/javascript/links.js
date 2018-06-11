@@ -25,8 +25,9 @@ $(document).ready(
 			taskListId : "linkedTasks",
 			$list : $("#taskList"),
 			eventUrl : "/public/linkedTasks/taskListEvents",
+			initUrl : null,
 			eventBinders : taskBinders,
-			onChange : null, // TODO add count for list
+			onUpdateDone : null, // TODO add count for list
 			currentUser : allVars.currentUser
 		};
 		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher, {});

@@ -6,26 +6,31 @@ import java.util.Objects;
 
 import gmm.collections.Set;
 
+/**
+ * @author Jan Mothes
+ */
 public class CombinedData {
 	
 	private boolean isCustomAdminBannerActive = true;
 	private String customAdminBanner = "";
+	
+	// TODO make thread-safe
 	final private Map<Set<Long>, String> tasksToLinkKeys = new HashMap<>();
 
-	public String getCustomAdminBanner() {
+	public synchronized String getCustomAdminBanner() {
 		return customAdminBanner;
 	}
 
-	public void setCustomAdminBanner(String customAdminBanner) {
+	public synchronized void setCustomAdminBanner(String customAdminBanner) {
 		Objects.requireNonNull(customAdminBanner);
 		this.customAdminBanner = customAdminBanner;
 	}
 
-	public boolean isCustomAdminBannerActive() {
+	public synchronized boolean isCustomAdminBannerActive() {
 		return isCustomAdminBannerActive;
 	}
 
-	public void setCustomAdminBannerActive(boolean isCustomAdminBannerActive) {
+	public synchronized void setCustomAdminBannerActive(boolean isCustomAdminBannerActive) {
 		this.isCustomAdminBannerActive = isCustomAdminBannerActive;
 	}
 	

@@ -30,12 +30,12 @@ public interface DataAccess {
 	 * Observer/Callback interface.
 	 */
 	@FunctionalInterface
-	public static interface DataChangeCallback {
+	public static interface DataChangeCallback<T extends Linkable> {
 		/**
 		 * Called when a data change occurs.
 		 * @param event - Event object which holds information about the changes.
 		 */
-		public void onEvent(DataChangeEvent event);
+		public void onEvent(DataChangeEvent<T> event);
 	}
 	
 	/**
@@ -44,12 +44,14 @@ public interface DataAccess {
 	 * <br>
 	 * Important: DOES NOT HOLD A (STRONG) REFERENCE to onUpdate object.<br>
 	 * => Caller must ensure there is a reference so that the object does not get GCed.
+	 * 
+	 * TODO always register only for a certain type
 	 */
-	public void registerForUpdates(DataChangeCallback onUpdate);
+	public <T extends Linkable> void registerForUpdates(DataChangeCallback<T> onUpdate, Class<T> clazz);
 	
 	/**
 	 * Similar to {@link #registerForUpdates(DataChangeCallback)}, but allows to post process data
 	 * after a change before update listeners are notified.
 	 */
-	public void registerPostProcessor(DataChangeCallback onUpdate);
+	public <T extends Linkable> void registerPostProcessor(DataChangeCallback<T> onUpdate, Class<T> clazz);
 }

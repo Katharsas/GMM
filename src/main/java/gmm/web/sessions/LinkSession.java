@@ -35,11 +35,11 @@ public class LinkSession extends StaticTaskListState {
 		this.data = data;
 		
 		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
-		data.registerForUpdates(this);
+		data.registerForUpdates(this, Task.class);
 	}
 	
 	/**
-	 * @param ids - String of task id/ids seperated by comma.
+	 * @param ids - String of task id/ids separated by comma.
 	 * @param key - linkKey of given task or key from taskToLinkKeyMapping for multiple tasks.
 	 */
 	public void setTaskLinks(String ids, String key) {
@@ -98,12 +98,9 @@ public class LinkSession extends StaticTaskListState {
 	
 	
 	@Override
-	public void onEvent(DataChangeEvent event) {
-		final Class<?> clazz = event.changed.getGenericType();
-		if (Task.class.isAssignableFrom(clazz)) {
-			if (!event.type.equals(DataChangeType.ADDED)) {
-				taskDataEvents.add(event.toClientEvent());
-			}
+	public void onEvent(DataChangeEvent<Task> event) {
+		if (!event.type.equals(DataChangeType.ADDED)) {
+			taskDataEvents.add(event.toClientEvent());
 		}
 		super.onEvent(event);
 	}
