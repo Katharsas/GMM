@@ -52,6 +52,11 @@ body {
 
 		padding-left: 1%;
 		padding-right: 1%;
+
+		.svg {
+			width: 26px;
+			height: 26px;
+		}
 	}
 	
 	.tab:hover, .activeTab {
@@ -81,8 +86,10 @@ body {
 		padding-top:9px;
 		padding-left:3px;
 		text-align: right;
-		
+
 		& > .svg {
+			width: 24px;
+			height: 24px;
 			display: none;
 		}
 		&.active > .svg{

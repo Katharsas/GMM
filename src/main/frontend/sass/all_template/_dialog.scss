@@ -143,20 +143,25 @@
  */
  
 .taskDialog {
-	// background-color: $bgc-task-expanded;
 	background-color: #333;
+	border-top: 1px solid #777;
+
 	min-width: 500px;
 	max-width: 870px;
 	width: 70%;
 
-	.taskDialog-close {
+	.taskDialog-close.button {
+		@include button-color(#777);
+		
 		height: 20px;
 		width: 50px;
-		vertical-align: top;
-
-		span {
-			top: -3px;
-			position: relative;
+		padding: 2px;
+		margin-bottom: 2px;
+		
+		.svg {
+			fill: #EEE;
+			width: 16px;
+			height: 16px;
 		}
 	}
  }

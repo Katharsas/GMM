@@ -87,15 +87,9 @@
 <%-- Task Dialog --%>
 
 <div id="taskDialog-template" class="taskDialog dialog draggable"">
-	<div class="taskDialog-close button right"><span>X</span></div>
+	<div class="taskDialog-close button right"><img class="svg" src="<c:url value="/res/gfx/close.svg"/>"></div>
 	<div class="clear"></div>
 	<div class="taskDialog-task">
-		<%-- <div>
-			<div class="taskDialog-task-header left"></div>
-			
-			<div class="clear"></div>
-		</div>
-		<div class="taskDialog-task-body"></div> --%>
 	</div>
 </div>
 <div id="taskDialog-container"></div>
