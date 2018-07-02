@@ -33,7 +33,8 @@ public class WebSocketEventSender implements DataChangeCallback<Task> {
 		NotificationChangeEvent,
 //		WorkbenchChangeEvent,
 //		PinnedListChangeEvent
-		AssetImportRunningEvent
+//		AssetImportRunningEvent
+		AssetFileOperationsChangeEvent
 	}
 	
 	private final WebSocketHandlerImpl handler;

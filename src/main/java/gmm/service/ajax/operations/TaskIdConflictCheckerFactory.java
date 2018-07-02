@@ -2,6 +2,7 @@ package gmm.service.ajax.operations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,8 @@ public class TaskIdConflictCheckerFactory {
 		this.data = data;
 	}
 	
-	public TaskIdConflictChecker create() {
-		return new TaskIdConflictChecker();
+	public TaskIdConflictChecker create(Consumer<Task> onAdd) {
+		return new TaskIdConflictChecker(onAdd);
 	}
 	
 	private final Conflict<Task> conflict = new Conflict<Task>() {
@@ -38,7 +39,7 @@ public class TaskIdConflictCheckerFactory {
 		}
 	};
 	
-	public Map<String, Operation<Task>> createOperations(DataAccess data) {
+	public Map<String, Operation<Task>> createOperations(DataAccess data, Consumer<Task> onAdd) {
 		final Map<String, Operation<Task>> map = new HashMap<>();
 		
 		map.put("skip", (conflict, element) -> {
@@ -46,12 +47,12 @@ public class TaskIdConflictCheckerFactory {
 		});
 		map.put("overwrite", (conflict, element) -> {
 			data.remove(element);
-			data.add(element);
+			onAdd.accept(element);
 			return "Overwriting existing task with this "+print(element);
 		});
 		map.put("both", (conflict, element) -> {
 			element.makeUnique();
-			data.add(element);
+			onAdd.accept(element);
 			return "Adding this as new "+print(element);
 		});
 		return map;
@@ -65,9 +66,11 @@ public class TaskIdConflictCheckerFactory {
 	public class TaskIdConflictChecker extends ConflictChecker<Task> {
 		
 		private final Map<String, Operation<Task>> ops;
+		private final Consumer<Task> onAdd;
 		
-		private TaskIdConflictChecker() {
-			ops = createOperations(data);
+		private TaskIdConflictChecker(Consumer<Task> onAdd) {
+			ops = createOperations(data, onAdd);
+			this.onAdd = onAdd;
 		}
 		
 		@Override
@@ -87,7 +90,7 @@ public class TaskIdConflictCheckerFactory {
 		}
 		
 		@Override public String onDefault(Task element) {
-			data.add(element);
+			onAdd.accept(element);
 			return "Successfully added "+print(element);
 		}
 	}

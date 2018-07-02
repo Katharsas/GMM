@@ -3,8 +3,7 @@ package gmm.web.sessions.tasklist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Multimap;
-
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
@@ -72,17 +71,14 @@ public abstract class TaskListState implements DataChangeCallback<Task> {
 	}
 	
 	public <T extends Task> void onAddAll(User source, Collection<T> tasks) {
-		final Multimap<Class<? extends T>, T> typeToTask =
-				LinkedList.getMultiMap(tasks.getGenericType());
+		final Collection<T> visibleTypeAdded = new ArrayList<>(tasks.getGenericType());
 		for(final T task : tasks) {
-			typeToTask.put(Util.getClass(task), task);
-		}
-		final Collection<T> filteredAdded = new LinkedList<>(tasks.getGenericType());
-		for(final Class<? extends T> clazz : typeToTask.keys()) {
-			if(isTaskTypeVisible(TaskType.fromClass(clazz))) {
-				filteredAdded.addAll(filter((Collection<T>) typeToTask.get(clazz)));
+			if (isTaskTypeVisible(TaskType.fromClass(task.getClass()))) {
+				visibleTypeAdded.add(task);
 			}
 		}
+		final Collection<T> filteredAdded = new LinkedList<>(tasks.getGenericType());
+		filteredAdded.addAll(filter(visibleTypeAdded));
 		if (filteredAdded.size() >= 1) {
 			synchronized(this) {
 				getVisible().addAll(filteredAdded);

@@ -78,22 +78,43 @@ body {
 		font-size:0.5em;
 		color:#BBB;
 	}
-
-	#loading {
+	
+	.tabmenu-statusIcon {
 		width:4%;
 		min-width:27px;
 		max-width:40px;
-		padding-top:9px;
-		padding-left:3px;
 		text-align: right;
 
-		& > .svg {
-			width: 24px;
-			height: 24px;
+		.tabmenu-statusIcon-visual {
 			display: none;
 		}
-		&.active > .svg{
+		&.active .tabmenu-statusIcon-visual {
 			display: initial;
+		}
+	}
+
+	#loading {
+		padding-top:9px;
+		.svg {
+			width: 24px;
+			height: 24px;
+		}
+	}
+
+	#assetOperations {
+		padding-top:10px;
+		.svg {
+			width: 22px;
+			height: 22px;
+			animation: blinker 2s linear infinite;
+		}
+		@keyframes blinker {
+			40%, 60% {
+				opacity: 1;
+			}
+			50% {
+				opacity: 0.4;
+			}
 		}
 	}
 }

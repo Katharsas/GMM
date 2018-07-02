@@ -62,7 +62,7 @@ public class BackupFileService {
 	 * 		will be deleted. All files in the directory with ".xml" ending are
 	 * 		expected to be valid backup files with expected file name pattern!
 	 */
-	protected void createBackup(Path directory, Object toSave, int maxSaveFiles) {
+	protected synchronized void createBackup(Path directory, Object toSave, int maxSaveFiles) {
 		final Class<?> fileNameType;
 		if (toSave instanceof Collection) {
 			fileNameType = ((Collection<?>)toSave).getGenericType();
@@ -105,7 +105,7 @@ public class BackupFileService {
 	 * @param type - Generic type of the collection, which is the type of its elements.
 	 * @return Data from latest backup file, or null if no file exists.
 	 */
-	protected <T extends Linkable> Collection<T> getFromLatestListBackup(Class<T> type, Path... parents) {
+	protected synchronized <T extends Linkable> Collection<T> getFromLatestListBackup(Class<T> type, Path... parents) {
 		final Path path = getLatestBackupPath(type, parents);
 		if (path == null) return null;
 		else {
@@ -118,7 +118,7 @@ public class BackupFileService {
 	 * @param type - Type of the object.
 	 * @return Data from latest backup file, or null if no file exists.
 	 */
-	protected <T> T getFromLatestObjectBackup(Class<T> type, Path... parents) {
+	protected synchronized <T> T getFromLatestObjectBackup(Class<T> type, Path... parents) {
 		final Path path = getLatestBackupPath(type, parents);
 		if (path == null) return null;
 		else {

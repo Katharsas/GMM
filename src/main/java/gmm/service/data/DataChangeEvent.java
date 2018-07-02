@@ -86,4 +86,9 @@ public class DataChangeEvent<T extends Linkable> {
 			this.changedIds = changedIds;
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static Class<DataChangeEvent<?>> getGenericClass() {
+		return (Class<DataChangeEvent<?>>) (Class<?>) DataChangeEvent.class;
+	}
 }

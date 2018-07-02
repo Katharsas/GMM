@@ -40,6 +40,7 @@ import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.List;
 import gmm.service.FileService;
+import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.DataConfigService;
 
@@ -50,7 +51,7 @@ import gmm.service.data.DataConfigService;
  * Under the hood, SVNKit uses a Java re-implementation of the native SVN client. It seems like this
  * re-implementation provides a low level client interface which matches the native interfaces, so
  * in theory it should be possible to run the high level SVN API on top of the native API (JavaHL)
- * by witching out the low level implementation.
+ * by switching out the low level implementation.
  * It's unclear though, which dependency would need to be exchanged for SVNKit to use JavaHL instead
  * of its own implementation, or if its even possible to do so.
  * 
@@ -82,6 +83,10 @@ public class SvnPlugin extends VcsPlugin {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	private final FileService fileService;
+	private final NewAssetLockService lockService;
+	
+	private Thread repoChangeThread1 = null;
+	private Thread repoChangeThread2 = null;
 	
 	private final Path workingCopyDir;
 	
@@ -91,13 +96,14 @@ public class SvnPlugin extends VcsPlugin {
 	private final SvnOperationFactory svnOperationFactory;
 	
 	@Autowired
-	public SvnPlugin(DataConfigService config, FileService fileService,
+	public SvnPlugin(DataConfigService config, FileService fileService, NewAssetLockService lockService,
 			@Value("${vcs.plugin.svn.repository}") String repositoryUriString,
 			@Value("${vcs.plugin.svn.username}") String repositoryUsername,
 			@Value("${vcs.plugin.svn.password}") String repositoryPassword
 			) {
 		
 		this.fileService = fileService;
+		this.lockService = lockService;
 		
 		svnOperationFactory = new SvnOperationFactory();
 		if (repositoryUsername != null && repositoryUsername != "") {
@@ -119,13 +125,23 @@ public class SvnPlugin extends VcsPlugin {
 		workingCopyDir = config.assetsNew();
 		workingCopy = SvnTarget.fromFile(workingCopyDir.toFile(), SVNRevision.WORKING);
 		
-		initializeWorkingCopy(workingCopyDir.toFile());
+		try {
+			lockService.lock();
+			initializeWorkingCopy(workingCopyDir.toFile());
+		} finally {
+			lockService.unlock();
+		}
 	}
 
 	@Override
 	public void init() {
-		final List<Path> changedPaths = diffAndUpdate();
-		onFilesChanged(changedPaths);
+		try {
+			lockService.lock();
+			final List<Path> changedPaths = diffAndUpdate();
+			onFilesChanged(changedPaths);
+		} finally {
+			lockService.unlock();
+		}
 	}
 	
 	/**
@@ -305,8 +321,26 @@ public class SvnPlugin extends VcsPlugin {
 
 	@Override
 	public synchronized void notifyRepoChange() {
-		final List<Path> changedPaths = diffAndUpdate();
-		onFilesChanged(changedPaths);
+		if (!repoChangeThread1.isAlive()) {
+			repoChangeThread1 = new Thread(this::onNotifyRepoChange);
+			repoChangeThread1.start();
+			return;
+		}
+		if (!repoChangeThread2.isAlive()) {
+			repoChangeThread2 = new Thread(this::onNotifyRepoChange);
+			repoChangeThread2.start();
+			return;
+		}
+	}
+	
+	private void onNotifyRepoChange() {
+		try {
+			lockService.lock();
+			final List<Path> changedPaths = diffAndUpdate();
+			onFilesChanged(changedPaths);
+		} finally {
+			lockService.unlock();
+		}
 	}
 
 	@Override

@@ -85,8 +85,15 @@
 				<spring:eval expression="@config.getProperty('app.name')" /><br/>
 				<spring:eval expression="@config.getProperty('app.version')" />
 			</div>
-			<div id="loading" class="left">
-				<img class="svg" src="<c:url value="/res/gfx/loading.svg"/>">
+			<div id="loading" class="tabmenu-statusIcon left">
+				<span class="tabmenu-statusIcon-visual">
+					<img class="svg" src="<c:url value="/res/gfx/loading.svg"/>">
+				</span>
+			</div>
+			<div id="assetOperations" class="tabmenu-statusIcon left">
+				<span class="tabmenu-statusIcon-visual" title="Asset operations are currently running on server.">
+					<img class="svg" src="<c:url value="/res/gfx/file.svg"/>">
+				</span>
 			</div>
 			<sec:authorize access="isAnonymous()">
 				<div class="tab right">

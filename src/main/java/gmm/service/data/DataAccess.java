@@ -5,9 +5,14 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.domain.User;
+import gmm.service.assets.AssetTaskUpdater;
+import gmm.service.assets.NewAssetLockService;
 
 /**
  * DB interface, provides methods to change data, provides Observer pattern to notify on changes.
+ * <br><br>
+ * Methods that change data must NOT be called by main/startup thread! Otherwise {@link AssetTaskUpdater}
+ * cannot schedule a reopen for {@link NewAssetLockService} lock, causing the main thread to deadlock itself.
  * 
  * @author Jan Mothes
  */

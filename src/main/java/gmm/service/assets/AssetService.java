@@ -1,10 +1,10 @@
 package gmm.service.assets;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
@@ -67,6 +67,7 @@ public class AssetService {
 	private final TaskServiceFinder serviceFinder;
 	private final AssetTaskUpdater taskUpdater;
 	private final DataAccess data;
+	private final NewAssetLockService lockService;
 	
 	// TODO currently, there is a small preview leak, because new assets are scanned for the first
 	// time AFTER VcsPlugin updated the WC. This means that any new assets that were deleted during
@@ -97,20 +98,21 @@ public class AssetService {
 	
 	@Autowired
 	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, AssetTaskUpdater taskUpdater,
-			VcsPlugin vcs, DataConfigService config, FileService fileService, DataAccess data) {
+			VcsPlugin vcs, DataConfigService config, FileService fileService, DataAccess data, NewAssetLockService lockService) {
 		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
 		this.taskUpdater = taskUpdater;
 		this.data = data;
 		this.vcs = vcs;
+		this.lockService = lockService;
 		
 		this.config = config;
 		this.fileService = fileService;
 		
-		assetTasks = new HashMap<>();
-		newAssetFolders = new HashMap<>();
-		newAssetFoldersWithoutTasks = new HashMap<>();
-		originalAssetFiles = new HashMap<>();
+		assetTasks = new ConcurrentHashMap<>();
+		newAssetFolders = new ConcurrentHashMap<>();
+		newAssetFoldersWithoutTasks = new ConcurrentHashMap<>();
+		originalAssetFiles = new ConcurrentHashMap<>();
 		
 		fileService.createDirectory(config.assetsNew());
 		fileService.createDirectory(config.assetsOriginal());
@@ -132,10 +134,15 @@ public class AssetService {
 	private void onDataChangeEvent(DataChangeEvent<AssetTask<?>> event) {
 		switch(event.type) {
 		case ADDED:
-			for (final AssetTask<?> task : event.changed) {
-				onAssetTaskCreation((AssetTask<?>) task);
+			try {
+				lockService.lock();
+				for (final AssetTask<?> task : event.changed) {
+					onAssetTaskCreation((AssetTask<?>) task);
+				}
+				break;
+			} finally {
+				lockService.unlock();
 			}
-			break;
 		case EDITED:
 			// TODO AssetService needs to get notified manually on AssetName change,
 			// see AssetTaskService todo, AssetService needs old AssetName to cleanup
@@ -154,8 +161,6 @@ public class AssetService {
 	private <A extends AssetProperties> void onAssetTaskCreation(AssetTask<A> task) {
 		final AssetName name = task.getAssetName();
 		assetTasks.put(name, task);
-		
-		taskUpdater.waitForAsyncTaskProcessing(task);
 		
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
 		
@@ -254,7 +259,6 @@ public class AssetService {
 			if (task != null) {
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
 				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.classOf(task));
-				taskUpdater.waitForAsyncTaskProcessing(task);
 				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
 					data.edit(task);
 				});
@@ -278,7 +282,6 @@ public class AssetService {
 		for (final AssetName notFound : oldFiles) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
-				taskUpdater.waitForAsyncTaskProcessing(task);
 				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
 					data.edit(task);
 				});
@@ -322,8 +325,6 @@ public class AssetService {
 			if (task == null) {
 				newAssetFoldersWithoutTasks.put(folderName, currentInfo);
 			} else {
-				taskUpdater.waitForAsyncTaskProcessing(task);
-				
 				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
 				
 				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
@@ -411,12 +412,16 @@ public class AssetService {
 		
 	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		Assert.isTrue(folderInfo.getStatus().isValid());
+		if (!folderInfo.getStatus().isValid()) {
+			throw new IllegalArgumentException("Asset folder for given asset deletion is in invalid state!");
+		}
 		
 		final Path absoluteFile;
 		
 		if (fileType.isAsset()) {
-			Assert.isTrue(folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			if (folderInfo.getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
+				throw new IllegalArgumentException("Asset to delete does not exist!");
+			}
 			absoluteFile = folderInfo.getAssetFilePathAbsolute(config);
 		} else {
 			final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
@@ -424,7 +429,6 @@ public class AssetService {
 			absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		}
 		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
-		
 		fileService.delete(absoluteFile);
 		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 		
@@ -433,7 +437,6 @@ public class AssetService {
 			
 			final AssetTask<?> task = assetTasks.get(assetFolderName);
 			Objects.requireNonNull(task);
-			taskUpdater.waitForAsyncTaskProcessing(task);
 			
 			if (newInfo.isPresent()) {
 				newAssetFolders.put(assetFolderName, newInfo.get());
@@ -450,7 +453,7 @@ public class AssetService {
 	private void addFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
 		
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		Assert.isTrue(folderInfo.getStatus().isValid());
+		Assert.isTrue(folderInfo.getStatus().isValid(), "");
 		
 		final Path absoluteFile;
 		

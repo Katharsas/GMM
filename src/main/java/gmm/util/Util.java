@@ -68,6 +68,11 @@ public class Util {
 		return (Class<? extends T>) t.getClass();
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <T> Class<T> castClass(Class<?> clazz) {
+		return (Class) clazz;
+	}
+	
 	public static class SingleIterator<T> implements Iterator<T> {
 		private boolean hasNext = true;
 		private final T element;

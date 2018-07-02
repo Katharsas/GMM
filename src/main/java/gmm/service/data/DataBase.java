@@ -196,56 +196,64 @@ public class DataBase implements DataAccess {
 	}
 
 	@Override
-	public synchronized <T extends Linkable> void add(T data) {
+	public <T extends Linkable> void add(T data) {
 		logger.debug("Adding element of type " + data.getClass().getSimpleName());
-		final Collection<T> collection = concreteOnly(Util.classOf(data));
-		if (collection.contains(data)) {
-			throw new IllegalArgumentException("Element cannot be added because it already exists!");
-		}
-		collection.add(data);
-		final Collection<Label> taskLabels = concreteOnly(Label.class);
-		if(data instanceof Task) {
-			final Task task = (Task) data;
-			final Label taskLabel = new Label(task.getLabel());
-			if (!taskLabels.contains(taskLabel)) {
-				taskLabels.add(taskLabel);
+		synchronized(this) {
+			final Collection<T> collection = concreteOnly(Util.classOf(data));
+			if (collection.contains(data)) {
+				throw new IllegalArgumentException("Element cannot be added because it already exists!");
+			}
+			collection.add(data);
+			final Collection<Label> taskLabels = concreteOnly(Label.class);
+			if(data instanceof Task) {
+				final Task task = (Task) data;
+				final Label taskLabel = new Label(task.getLabel());
+				if (!taskLabels.contains(taskLabel)) {
+					taskLabels.add(taskLabel);
+				}
 			}
 		}
 		fireEvent(new DataChangeEvent<>(ADDED, executingUser.get(), data));
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> void addAll(Collection<T> data) {
+	public <T extends Linkable> void addAll(Collection<T> data) {
 		logger.debug("Adding multiple elements of type " + data.getGenericType().getSimpleName());
-		this.<T>mapToConcreteGroups(data, concreteData -> {
-			final Class<? extends Linkable> concreteType = concreteData.getGenericType();
-			@SuppressWarnings("unchecked")
-			final Collection<Linkable> concreteExisting = (Collection<Linkable>) concreteOnly(concreteType);
-			if(!Collections.disjoint(concreteData, concreteExisting)) {
-				throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
-			}
-			if (Task.class.isAssignableFrom(concreteType)) {
-				for (final Linkable element : concreteData) {
-					final Task task = (Task) element;
-					final Label taskLabel = new Label(task.getLabel());
-					if (!concreteOnly(Label.class).contains(taskLabel)) {
-						concreteOnly(Label.class).add(taskLabel);
+		final Collection<DataChangeEvent<?>> events = new ArrayList<>(DataChangeEvent.getGenericClass());
+		synchronized(this) {
+			this.<T>mapToConcreteGroups(data, concreteData -> {
+				final Class<? extends Linkable> concreteType = concreteData.getGenericType();
+				@SuppressWarnings("unchecked")
+				final Collection<Linkable> concreteExisting = (Collection<Linkable>) concreteOnly(concreteType);
+				if(!Collections.disjoint(concreteData, concreteExisting)) {
+					throw new IllegalArgumentException("Elements cannot be added because at least one of them already exist!");
+				}
+				if (Task.class.isAssignableFrom(concreteType)) {
+					for (final Linkable element : concreteData) {
+						final Task task = (Task) element;
+						final Label taskLabel = new Label(task.getLabel());
+						if (!concreteOnly(Label.class).contains(taskLabel)) {
+							concreteOnly(Label.class).add(taskLabel);
+						}
 					}
 				}
-			}
-			concreteExisting.addAll(concreteData);
-			fireEvent(new DataChangeEvent<>(ADDED, executingUser.get(), concreteData));
-		});
+				concreteExisting.addAll(concreteData);
+				events.add(new DataChangeEvent<>(ADDED, executingUser.get(), concreteData));
+			});
+		}
+		fireEvents(events);
 	}
 
 	@Override
-	public synchronized <T extends Linkable> void remove(T data) {
+	public <T extends Linkable> void remove(T data) {
 		logger.debug("Removing element of type " + data.getClass().getSimpleName());
-		final Collection<T> collection = concreteOnly(Util.classOf(data));
-		if(!collection.contains(data)){
-			throw new IllegalArgumentException("Element cannot be removed because it does not exist!");
+		synchronized(this) {
+			final Collection<T> collection = concreteOnly(Util.classOf(data));
+			if(!collection.contains(data)){
+				throw new IllegalArgumentException("Element cannot be removed because it does not exist!");
+			}
+			collection.remove(data);
 		}
-		collection.remove(data);
 		fireEvent(new DataChangeEvent<>(REMOVED, executingUser.get(), data));
 	}
 	
@@ -253,16 +261,20 @@ public class DataBase implements DataAccess {
 	 * Groups items per concrete class. Creates event for each group.
 	 */
 	@Override
-	public synchronized <T extends Linkable> void removeAll(Collection<T> data) {	
+	public <T extends Linkable> void removeAll(Collection<T> data) {	
 		logger.debug("Removing multiple elements of type " + data.getGenericType().getSimpleName());
-		mapToConcreteGroups(data, concreteData -> {
-			final Class<? extends Linkable> concreteType = concreteData.getGenericType();
-			if(!concreteOnly(concreteType).containsAll(data)) {
-				throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
-			}
-			concreteOnly(concreteType).removeAll(concreteData);
-			fireEvent(new DataChangeEvent<>(REMOVED, executingUser.get(), concreteData));
-		});
+		final Collection<DataChangeEvent<?>> events = new ArrayList<>(DataChangeEvent.getGenericClass());
+		synchronized(this) {
+			mapToConcreteGroups(data, concreteData -> {
+				final Class<? extends Linkable> concreteType = concreteData.getGenericType();
+				if(!concreteOnly(concreteType).containsAll(data)) {
+					throw new IllegalArgumentException("Elements cannot be removed because at least one of them does not exist!");
+				}
+				concreteOnly(concreteType).removeAll(concreteData);
+				events.add(new DataChangeEvent<>(REMOVED, executingUser.get(), concreteData));
+			});
+		}
+		fireEvents(events);
 	}
 	
 	/**
@@ -280,7 +292,7 @@ public class DataBase implements DataAccess {
 			if (concreteTypes.contains(genericType)) {
 				action.accept(data);
 			} else {
-				final Multimap<Class<T>, T> clazzToData = ArrayList.getMultiMap(genericType);
+				final Multimap<Class<T>, T> clazzToData = ArrayListMultimap.create();
 				for(final T item : data) {
 					clazzToData.put(Util.classOf(item), item);
 				}
@@ -293,23 +305,27 @@ public class DataBase implements DataAccess {
 	}
 	
 	@Override
-	public synchronized <T extends Linkable> void removeAll(Class<T> clazz) {
+	public <T extends Linkable> void removeAll(Class<T> clazz) {
 		logger.debug("Removing all elements of type " + clazz.getSimpleName());
-		if (concretes.containsKey(clazz)) {
-			clearConcrete(clazz);
-		} else {
-			for (final Class<? extends Linkable> concreteClass : compoundTypesToConcreteTypes.get(clazz)) {
-				clearConcrete(concreteClass);
+		final Collection<DataChangeEvent<?>> events = new ArrayList<>(DataChangeEvent.getGenericClass());
+		synchronized(this) {
+			if (concretes.containsKey(clazz)) {
+				clearConcrete(clazz, events);
+			} else {
+				for (final Class<? extends Linkable> concreteClass : compoundTypesToConcreteTypes.get(clazz)) {
+					clearConcrete(concreteClass, events);
+				}
 			}
 		}
+		fireEvents(events);
 	}
 	
-	private <T extends Linkable> void clearConcrete(Class<T> concreteType) {
+	private <T extends Linkable> void clearConcrete(Class<T> concreteType, Collection<DataChangeEvent<?>> events) {
 		final Collection<T> toRemove = concreteOnly(concreteType);
 		if (toRemove.size() >= 1) {
 			final Collection<T> removed = toRemove.copy();
 			toRemove.clear();
-			fireEvent(new DataChangeEvent<T>(REMOVED, executingUser.get(), removed));
+			events.add(new DataChangeEvent<T>(REMOVED, executingUser.get(), removed));
 		}
 	}
 	
@@ -330,14 +346,16 @@ public class DataBase implements DataAccess {
 		edit(data, cause);
 	}
 	
-	private synchronized <T extends Linkable> void edit(T data, User cause) {
+	private <T extends Linkable> void edit(T data, User cause) {
 		logger.debug("Replacing element of type " + data.getClass().getSimpleName());
-		final Collection<T> collection = concreteOnly(Util.classOf(data));
-		if(!collection.contains(data)){
-			throw new IllegalArgumentException("Element cannot be replaced because it does not exist!");
+		synchronized(this) {
+			final Collection<T> collection = concreteOnly(Util.classOf(data));
+			if(!collection.contains(data)){
+				throw new IllegalArgumentException("Element cannot be replaced because it does not exist!");
+			}
+			collection.remove(data);
+			collection.add(data);
 		}
-		collection.remove(data);
-		collection.add(data);
 		fireEvent(new DataChangeEvent<T>(EDITED, cause, data));
 	}
 
@@ -363,12 +381,22 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public <T extends Linkable> void registerPostProcessor(DataChangeCallback<T> onUpdate, Class<T> clazz) {
-		weakPostProcessorCallbacks.put(onUpdate, clazz);
+		synchronized(weakPostProcessorCallbacks) {
+			weakPostProcessorCallbacks.put(onUpdate, clazz);
+		}
 	}
 	
 	@Override
 	public <T extends Linkable> void registerForUpdates(DataChangeCallback<T> onUpdate, Class<T> clazz) {
-		weakConsumerCallbacks.put(onUpdate, clazz);
+		synchronized (weakConsumerCallbacks) {
+			weakConsumerCallbacks.put(onUpdate, clazz);
+		}
+	}
+	
+	private void fireEvents(Collection<DataChangeEvent<?>> events) {
+		for (final DataChangeEvent<?> event : events) {
+			fireEvent(event);
+		}
 	}
 
 	/**
@@ -378,16 +406,27 @@ public class DataBase implements DataAccess {
 	private void fireEvent(DataChangeEvent<?> event) {
 		final Class<? extends Linkable> concreteType = event.changed.getGenericType();
 		// we fire any callback that has registered on this type or a supertype
+
+		final int maxCallbacks = weakPostProcessorCallbacks.size() + weakConsumerCallbacks.size();
+		final Collection<DataChangeCallback> callbacks = new ArrayList<>(DataChangeCallback.class, maxCallbacks);
 		
-		for (final Map.Entry<DataChangeCallback, Class> entry : weakPostProcessorCallbacks.entrySet()) {
-			if (entry.getValue().isAssignableFrom(concreteType)) {
-				entry.getKey().onEvent(event);
+		synchronized(weakPostProcessorCallbacks) {
+			for (final Map.Entry<DataChangeCallback, Class> entry : weakPostProcessorCallbacks.entrySet()) {
+				if (entry.getValue().isAssignableFrom(concreteType)) {
+					callbacks.add(entry.getKey());
+				}
 			}
 		}
-		for (final Map.Entry<DataChangeCallback, Class> entry : weakConsumerCallbacks.entrySet()) {
-			if (entry.getValue().isAssignableFrom(concreteType)) {
-				entry.getKey().onEvent(event);
+		synchronized (weakConsumerCallbacks) {
+			for (final Map.Entry<DataChangeCallback, Class> entry : weakConsumerCallbacks.entrySet()) {
+				if (entry.getValue().isAssignableFrom(concreteType)) {
+					callbacks.add(entry.getKey());
+				}
 			}
+		}
+		
+		for (final DataChangeCallback callback : callbacks) {
+			callback.onEvent(event);
 		}
 	}
 }

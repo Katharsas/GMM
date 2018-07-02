@@ -23,11 +23,18 @@ $.fn.onEnter = function(eventHandler) {
 var paramString = window.location.search.substring(1);
 
 var allVars = {
-	"selectedAssetFile":$(),
-	"selectedBackupFile":$(),
-	"taskBackgroundColor":"#111",
-	"$htmlElement":$("html")
+	selectedAssetFile : $(),
+	selectedBackupFile : $(),
+	taskBackgroundColor : "#111",
+	$htmlElement : $("html"),
+	adminBanner : global.templateVars.adminBanner,
+	isUserLoggedIn : global.templateVars.isUserLoggedIn,
+	currentUser : !global.templateVars.isUserLoggedIn ? null : {
+		idLink : global.templateVars.userIdLink,
+		name : global.templateVars.userName
+	}
 };
+global.allVars = allVars;//TODO: remove it unused from html
 
 var allFuncs = {
 	"selectTreeElement":
@@ -48,14 +55,6 @@ var allFuncs = {
 			};
 		}
 };
-
-allVars.adminBanner = global.templateVars.adminBanner;
-allVars.isUserLoggedIn = global.templateVars.isUserLoggedIn;
-allVars.currentUser = !allVars.isUserLoggedIn ? null : {
-	idLink : global.templateVars.userIdLink,
-	name : global.templateVars.userName
-};
-global.allVars = allVars;//TODO: remove it unused from html
 
 var contextUrl = global.contextUrl;
 
@@ -170,7 +169,7 @@ var waitForFinalEvent = (function() {
 	
     return function(callback, ms, uniqueId) {
         if (!uniqueId) {
-            uniqueId = "Don't call this twice without a uniqueId";
+			throw new Errors.IllegalArgumentException("uniqueId required!");
         }
         if (timers[uniqueId]) {
             clearTimeout(timers[uniqueId]);

@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.HashSet;
-import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.task.GeneralTask;
 import gmm.domain.task.Task;
@@ -31,6 +31,7 @@ import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory.TaskIdConflictChecker;
+import gmm.service.data.DataAccess;
 
 /**
  * Provides methods to load a collection of tasks of arbitrary subtype,
@@ -51,13 +52,16 @@ import gmm.service.ajax.operations.TaskIdConflictCheckerFactory.TaskIdConflictCh
 @Scope("prototype")
 public class TaskBackupLoader {
 	
+	private final DataAccess data;
 	private final AssetNameConflictCheckerFactory assetPathConflictCheckerFactory;
 	private final TaskIdConflictCheckerFactory taskIdConflictCheckerFactory;
 	
 	@Autowired
 	public TaskBackupLoader(
+			DataAccess data,
 			AssetNameConflictCheckerFactory assetPathConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory) {
+		this.data = data;
 		this.assetPathConflictCheckerFactory = assetPathConflictCheckerFactory;
 		this.taskIdConflictCheckerFactory = taskIdConflictCheckerFactory;
 	}
@@ -69,13 +73,16 @@ public class TaskBackupLoader {
 	private Collection<AssetTask<?>> assetImportChecked;
 	private boolean isAssetImportCheckDone;
 	
+	private Collection<Task> fullyChecked;
+	
 	public void prepareLoadTasks(Collection<Task> tasks) {
 		// split tasks into types to use correct conflict checker for loading
 		multiMap = HashMultimap.create();
 		StreamSupport.stream(tasks.spliterator(), false)
 			.forEach(task -> multiMap.put(task.getClass(), task));
-		assetImportChecked = new LinkedList<AssetTask<?>>(AssetTask.getGenericClass());
+		assetImportChecked = new ArrayList<AssetTask<?>>(AssetTask.getGenericClass(), tasks.size());
 		isAssetImportCheckDone = false;
+		fullyChecked = new ArrayList<>(Task.class, tasks.size());
 	}
 	
 	public BundledMessageResponsesProducer getBundledMessageResponses() {
@@ -110,11 +117,11 @@ public class TaskBackupLoader {
 		final AssetNameConflictChecker ops =
 				assetPathConflictCheckerFactory.create(onAssetNameChecked, false);
 		
-		final Runnable onFinished = () -> {
+		final Runnable onAssetImportCheckDone = () -> {
 			assetTaskLoader = null;
 			isAssetImportCheckDone = true;
 		};
-		assetTaskLoader = new BundledMessageResponses<AssetName>(assetNameToTask.keySet(), ops, onFinished);
+		assetTaskLoader = new BundledMessageResponses<AssetName>(assetNameToTask.keySet(), ops, onAssetImportCheckDone);
 		
 		return assetTaskLoader.firstBundle();
 	}
@@ -127,9 +134,13 @@ public class TaskBackupLoader {
 		final java.util.Collection<Task> tasks = multiMap.get(GeneralTask.class);
 		tasks.addAll(assetImportChecked);
 		
-		final TaskIdConflictChecker ops = taskIdConflictCheckerFactory.create();
-		generalTaskLoader = new BundledMessageResponses<>(
-				tasks, ops, ()->{generalTaskLoader = null;});
+		final TaskIdConflictChecker ops = taskIdConflictCheckerFactory.create(task -> fullyChecked.add(task));
+		
+		final Runnable onAllChecksDone = () -> {
+			generalTaskLoader = null;
+			data.addAll(fullyChecked);
+		};
+		generalTaskLoader = new BundledMessageResponses<>(tasks, ops, onAllChecksDone);
 		
 		return generalTaskLoader.firstBundle();
 	}

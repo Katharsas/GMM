@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 
 import gmm.collections.ArrayList;
 import gmm.collections.Collection;
-import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetTask;
 import gmm.service.VirtualNewAssetFileSystem;
 import gmm.service.ajax.BundledMessageResponses;
 import gmm.service.ajax.ConflictAnswer;
@@ -61,7 +61,7 @@ public class AdminSession extends TaskBackupLoader {
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
 			DataAccess data, UserService users) {
 		
-		super(assetNameConflictCheckerFactory, taskIdConflictCheckerFactory);
+		super(data, assetNameConflictCheckerFactory, taskIdConflictCheckerFactory);
 		
 		this.assets = assets;
 		this.taskService = taskService;
@@ -87,8 +87,9 @@ public class AdminSession extends TaskBackupLoader {
 	 * ---------------------------------------------------*/
 	
 	private BundledMessageResponses<AssetName> assetImporter;
-	private final List<Path> importFilePaths = new LinkedList<>(Path.class);
+	private final List<Path> importFilePaths = new ArrayList<>(Path.class);
 	private AssetGroupType type = AssetGroupType.ORIGINAL;
+	private Collection<AssetTask<?>> importedTasks;
 	
 	// Add asset paths
 	
@@ -115,11 +116,13 @@ public class AdminSession extends TaskBackupLoader {
 	
 	public List<MessageResponse> firstImportCheckBundle(TaskForm form) {
 		
+		importedTasks = new ArrayList<>(AssetTask.getGenericClass(), importFilePaths.size());
+		
 		final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
 			form.setAssetName(assetName.get());
 			final AssetTaskService<?> service = taskService.getAssetService(assetName);
 			form.setType(service.getTaskType());
-			data.add(service.create(form, loggedInUser));
+			importedTasks.add(service.create(form, loggedInUser));
 		};
 		final AssetNameConflictChecker ops =
 				assetNameConflictCheckerFactory.create(onAssetNameChecked, true);
@@ -132,6 +135,7 @@ public class AdminSession extends TaskBackupLoader {
 		assetImporter = new BundledMessageResponses<>(
 				fileNames, ops, ()->{
 					assetImporter = null;
+					data.addAll(importedTasks);
 					newAssetsWithoutTasksVfs.update();
 					backups.triggerTaskBackup(false);
 		});

@@ -2,6 +2,7 @@ import $ from "../lib/jquery";
 import Ajax from "./ajax";
 import HtmlPreProcessor from "./preprocessor";
 import { contextUrl, allVars, htmlDecode } from "./default";// must import to execute default
+import AssetFileOperationsNotifier, { AssetFileOperationsNotifierInit } from "./AssetFileOperationsNotifier";
 import EventListener from "./EventListener";
 
 global.Promise.onPossiblyUnhandledRejection(function(error) {
@@ -54,8 +55,16 @@ $(document).ready(function() {
 		$adminBanner.html(doubleDecoded);
 	}
 	
-	console.log("Subscribing to import events");
-	EventListener.subscribe(EventListener.events.AssetImportRunningEvent, function() {
-		console.log("Received AssetImportRunningEvent!");
-	})
+	// init asset file operations icon
+	if (allVars.isUserLoggedIn) {
+		AssetFileOperationsNotifierInit("/tasks/newAssetFileOperationsEnabled");
+		const $icon = $("#page-tabmenu #assetOperations");
+		AssetFileOperationsNotifier.registerSubscriber(function(noAssetOperations) {
+			if (noAssetOperations) {
+				$icon.removeClass("active");
+			} else {
+				$icon.addClass("active");
+			}
+		}, "statusIcon");
+	}
 });

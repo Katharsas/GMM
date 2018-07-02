@@ -5,8 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +20,6 @@ import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
-import gmm.web.WebSocketEventSender;
-import gmm.web.WebSocketEventSender.WebSocketEvent;
 
 /**
  * This service implements the state machines that model how AssetTask properties & info need to
@@ -31,6 +32,8 @@ import gmm.web.WebSocketEventSender.WebSocketEvent;
  */
 @Service
 public class AssetTaskUpdater {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	public static enum Properties {
 		NULL, EXISTS
@@ -75,13 +78,13 @@ public class AssetTaskUpdater {
 	}
 	
 	private final TaskServiceFinder serviceFinder;
-	private final WebSocketEventSender eventSender;
+	private final NewAssetLockService lockService;
 	
 	private final Map<AssetTask<?>, CompletableFuture<Void>> processingAssetTasks;
 	
-	public AssetTaskUpdater(TaskServiceFinder serviceFinder, WebSocketEventSender eventSender) {
+	public AssetTaskUpdater(TaskServiceFinder serviceFinder, NewAssetLockService lockService) {
 		this.serviceFinder = serviceFinder;
-		this.eventSender = eventSender;
+		this.lockService = lockService;
 		
 		processingAssetTasks = new HashMap<>();
 	}
@@ -97,13 +100,21 @@ public class AssetTaskUpdater {
 	private synchronized <A extends AssetProperties> void recreateAssetPropertiesAndInfo(
 			AssetTask<A> task, AssetInfo info, Optional<Runnable> onCompletion) {
 		
+		lockService.closeLock();
 		CompletableFuture<Void> future = getService(task).recreateAssetProperties(task, info);
 		if (onCompletion.isPresent()) {
 			future = future.thenRun(onCompletion.get());
 		}
 		if (!future.isDone()) {
-			future = future.thenRun(() -> {
+			future = future.handle((__, e) -> {
+				if (e != null) {
+					if (e instanceof CompletionException) {
+						e = e.getCause();
+					}
+					logger.error("Asset task preview creation threw exception.", e);
+				}
 				processingAssetTasks.remove(task);
+				return null;
 			});
 			processingAssetTasks.put(task, future);
 		}
@@ -125,33 +136,19 @@ public class AssetTaskUpdater {
 		getService(task).changeOriginalAssetInfo(task, info);
 	}
 	
-	/**
-	 * @see {@link #waitForAsyncTaskProcessing(AssetTask)}
-	 */
-	public void waitForAllAsyncTaskProcessings() {
-		for (final AssetTask<?> task : processingAssetTasks.keySet()) {
-			waitForAsyncTaskProcessing(task);
-		}
-	}
-	
 	public synchronized CompletableFuture<Void> allAyncTaskProcessing() {
 		final Collection<CompletableFuture<Void>> futures = processingAssetTasks.values();
 		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
 	}
 	
-	/**
-	 * Since asset task properties & info can be changed asynchronously, check that for the given task nothing is still
-	 * running (or block until it is finished).
-	 */
-	public synchronized void waitForAsyncTaskProcessing(AssetTask<?> task) {
-		final CompletableFuture<Void> old = processingAssetTasks.get(task);
-		if (old != null) old.join();
+	private boolean isAssetImportRunning() {
+		return processingAssetTasks.size() > 0;
 	}
 	
-	@Scheduled(fixedRate=5000)
-	public synchronized void checkIfAsyncTaskProcessingIsRunning() {
-		if (processingAssetTasks.size() > 0) {
-			eventSender.broadcastEvent(WebSocketEvent.AssetImportRunningEvent);
+	@Scheduled(fixedRate=1000)
+	private synchronized void attemptOpenNewAssetLock() {
+		if (!isAssetImportRunning()) {
+			lockService.attemptOpenLock();
 		}
 	}
 	
@@ -167,11 +164,8 @@ public class AssetTaskUpdater {
 		private boolean usedUp = false;
 		protected final Optional<Runnable> onCompletion;
 		
-		public OnUpdate() {
-			this.onCompletion = Optional.empty();
-		}
-		public OnUpdate(Runnable onCompletion) {
-			this.onCompletion = Optional.of(onCompletion);
+		public OnUpdate(Optional<Runnable> onCompletion) {
+			this.onCompletion = onCompletion;
 		}
 		
 		protected synchronized void doUpdate(Runnable updateMethod) {
@@ -190,22 +184,24 @@ public class AssetTaskUpdater {
 		AssetGroupType type = AssetGroupType.NEW;
 		
 		/**
-		 * Create an update to execute one of the available operations asynchronously.
+		 * Create an update to execute one of the available operations, some of which are async.
 		 */
 		public OnNewAssetUpdate() {
-			super();
+			this(null);
 		}
 		
 		/**
-		 * Create an update to execute one of the available operations asynchronously.
-		 * After the async operation has been completed, the given Runnable will be executed (can be
-		 * used to call data.edit(task) to broadcast task change for example).
+		 * Create an update to execute one of the available operations, some of which are async.
+		 * After an operation has been completed, the given Runnable will be executed (can be used to
+		 * call data.edit(task) to broadcast task change for example).
 		 */
 		public OnNewAssetUpdate(Runnable onCompletion) {
-			super(onCompletion);
+			super(Optional.ofNullable(onCompletion));
 		}
 		
 		/**
+		 * Async.
+		 * The calling thread must own the lock available from {@link NewAssetLockService}.
 		 * @param validAssetInfo - status of info must be {@link AssetFolderStatus#VALID_WITH_ASSET}
 		 */
 		public <A extends AssetProperties> void recreatePropsAndSetInfo(AssetTask<A> task, NewAssetFolderInfo validAssetInfo) {
@@ -258,7 +254,7 @@ public class AssetTaskUpdater {
 		 * Create an update to execute one of the available operations asynchronously.
 		 */
 		public OnOriginalAssetUpdate() {
-			super();
+			this(null);
 		}
 
 		/**
@@ -267,7 +263,7 @@ public class AssetTaskUpdater {
 		 * used to call data.edit(task) to broadcast task change for example).
 		 */
 		public OnOriginalAssetUpdate(Runnable onCompletion) {
-			super(onCompletion);
+			super(Optional.ofNullable(onCompletion));
 		}
 		
 		public void recreatePropsAndSetInfo(AssetTask<?> task, OriginalAssetFileInfo info) {
