@@ -2,6 +2,7 @@ package gmm.web;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
+import gmm.util.ThrottlingExecutioner;
 
 /**
  * TODO:
@@ -27,6 +29,8 @@ import gmm.service.data.DataChangeEvent;
 @Service
 public class WebSocketEventSender implements DataChangeCallback<Task> {
 
+	private final ThrottlingExecutioner executioner;
+	
 	public static enum WebSocketEvent {
 		TaskDataChangeEvent,
 //		TaskPinChangeEvent,
@@ -43,6 +47,8 @@ public class WebSocketEventSender implements DataChangeCallback<Task> {
 	public WebSocketEventSender(DataAccess data, WebSocketHandlerImpl handler) {
 		data.registerForUpdates(this, Task.class);
 		this.handler = handler;
+		
+		executioner = new ThrottlingExecutioner(2000);
 	}
 
 	@Override
@@ -51,14 +57,23 @@ public class WebSocketEventSender implements DataChangeCallback<Task> {
 	}
 	
 	public void broadcastEvent(WebSocketEvent event) {
-		sendEvent(event.name());
+		sendEvent(event, Optional.empty());
 	}
 	
 	public void unicastEvent(User target, WebSocketEvent event) {
-		sendEvent(event.name() + "@" + target.getIdLink());
+		sendEvent(event, Optional.of(target));
 	}
 	
-	public void sendEvent(String eventText) {
+	private void sendEvent(WebSocketEvent event, Optional<User> target) {
+		final String targetSuffix = target.isPresent() ? "@" + target.get().getIdLink() : "";
+		final String eventText = event.name() + targetSuffix;
+		
+		executioner.curbYourEnthusiasm(eventText, () -> {
+			sendEvent(eventText);
+		});
+	}
+	
+	private void sendEvent(String eventText) {
 		try {
 			final TextMessage message = new TextMessage(eventText);
 			synchronized (handler) {

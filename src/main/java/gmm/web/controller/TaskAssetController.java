@@ -2,6 +2,7 @@ package gmm.web.controller;
 
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,7 +11,11 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -31,30 +36,28 @@ import gmm.service.FileService;
 import gmm.service.assets.AssetService;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
+import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataConfigService;
 import gmm.service.tasks.ModelTaskService;
-import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
-import gmm.web.sessions.tasklist.WorkbenchSession;
 
 
 @Controller
 @RequestMapping("tasks")
 @PreAuthorize("hasRole('ROLE_USER')")
-
+@ResponseBody
 public class TaskAssetController {
 
-	@Autowired WorkbenchSession session;
-	@Autowired DataAccess data;
-	@Autowired TaskServiceFinder taskService;
-	@Autowired TextureTaskService textureService;
-	@Autowired ModelTaskService modelService;
-	@Autowired DataConfigService config;
-	@Autowired FileService fileService;
-	@Autowired AssetService assetService;
+	@Autowired private DataAccess data;
+	@Autowired private TextureTaskService textureService;
+	@Autowired private ModelTaskService modelService;
+	@Autowired private DataConfigService config;
+	@Autowired private FileService fileService;
+	@Autowired private AssetService assetService;
+	@Autowired private NewAssetLockService lockService;
 	
 	private final DateTimeFormatter expiresFormatter = 
 			DateTimeFormat.forPattern("EEE, dd MMM yyy hh:mm:ss z").withLocale(Locale.US);
@@ -85,7 +88,7 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 */
 	@RequestMapping(value="/preview/texture", method = RequestMethod.GET, produces="image/png")
-	public @ResponseBody void sendTexturePreview(
+	public void sendTexturePreview(
 			HttpServletResponse response,
 			@RequestParam(value="small", defaultValue="true") boolean small,
 			@RequestParam(value="ver") String version,
@@ -105,7 +108,7 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 */
 	@RequestMapping(value="/preview/3Dmodel", method = RequestMethod.GET, produces="application/json")
-	public @ResponseBody void sendModelPreview(
+	public void sendModelPreview(
 			HttpServletResponse response,
 			@RequestParam(value="ver") String version,
 			@RequestParam(value="id") String idLink) throws Exception {
@@ -139,7 +142,7 @@ public class TaskAssetController {
 	 * @param dir - relative path to the requested directory/file
 	 */
 	@RequestMapping(value = {"/files/{isAssets}/{idLink}"} , method = RequestMethod.POST)
-	public @ResponseBody String[] showAssetFiles(
+	public String[] showAssetFiles(
 			@PathVariable String idLink,
 			@PathVariable Boolean isAssets,
 			@RequestParam("dir") Path dir) {
@@ -158,6 +161,40 @@ public class TaskAssetController {
 				return new FileTreeScript().html(dirRelative, visible);
 			}
 		}
+	}
+	
+	// TODO we need to show user the new asset root and allow him to navigate it / create new folder if necessary.
+	// User can select a folder, and then manually change the path string to create new folders.
+	// User should not be able to change asset type folder, but to see it.
+	
+	/**
+	 * @param idLink
+	 * @param path - relative to asset type folder (if those are enabled)
+	 */
+	@RequestMapping(value = "/createAssetFolder/{idLink}", method = RequestMethod.POST)
+	public void createAssetFolder(
+			@PathVariable final String idLink,
+			@RequestParam("path") final String path) {
+		// validate that idLink is an asset task
+		
+		// TODO validate path, validate that it is not inside an existing asset folder,
+		// validate that the asset folder does not yet exist
+		
+		// TODO lock any user actions while sn svn update is running (or in general make sure that assets can only be changed by atomic operations)
+		// commit asset folder to svn
+	}
+	
+	/**
+	 * @param idLink
+	 * @param assetName - without extension i guess
+	 */
+	@RequestMapping(value = "/renameAsset/{idLink}/{assetName}")
+	public void renameAsset(
+			@PathVariable final String idLink,
+			@PathVariable final String assetName) {
+		// TODO validate that idLink is an asset task
+		// find asset folder if exist, rename it, rename asset if exits (make sure not other operation is running)
+		// commit, rescan to to relink, edit event
 	}
 	
 //	/**
@@ -180,10 +217,12 @@ public class TaskAssetController {
 //		taskService.addFile(task, file);
 //	}
 	
+	/**
+	 * Download an asset.
+	 */
 	@RequestMapping(value = {"/download/{idLink}/{groupType}/ASSET/"},
 			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	@ResponseBody
-	public FileSystemResource handleAssetDownload(final HttpServletResponse response,
+	public ResponseEntity<Resource> handleAssetDownload(final HttpServletResponse response,
 			@PathVariable final String idLink,
 			@PathVariable final AssetGroupType groupType) {
 		
@@ -192,46 +231,51 @@ public class TaskAssetController {
 		final Path absolute;
 		if (groupType.isOriginal()) {
 			final OriginalAssetFileInfo info = assetService.getOriginalAssetFileInfo(name);
-			Assert.notNull(info);
+			Assert.notNull(info, "");
 			absolute = info.getAssetFilePathAbsolute(config);
 		} else {
 			final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(name);
-			Assert.notNull(info);
-			Assert.isTrue(info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
+			Assert.notNull(info, "");
+			Assert.isTrue(info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET, "");
 			absolute = info.getAssetFilePathAbsolute(config);
 		}
-		response.setHeader("Content-Disposition", "attachment; filename=\""+absolute.getFileName()+"\"");
-		return new FileSystemResource(absolute.toFile());
+		
+		return tryAquireNewAssetLock(() -> {
+			final HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "attachment; filename=\"" + absolute.getFileName() + "\"");
+			final Resource file = new FileSystemResource(absolute.toFile());
+			return new ResponseEntity<>(file, headers, HttpStatus.OK);
+		});
 	}
 	
 	/**
-	 * Download File
-	 * 
-	 * Downloads file from an asset task shown in view. Can be used to download the files
-	 * shown in the preview or to download files shown in the task file manager.
+	 * Download any file associated with given asset (WIP files).
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
-	 * @param fileType - on of the enum values of its type {@link FileType}
-	 * @param dir - relative path to the downloaded file (if preview: "original" or "newest")
+	 * @param fileType - one of the enum values of its type {@link FileType}
+	 * @param relativeFile - path to the downloaded file relative to asset folder and  {@link FileType} subfolder
 	 */
 	@RequestMapping(value = {"/download/{idLink}/NEW/{fileType}/{relativeFile}/"},
 			method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	@ResponseBody
-	public FileSystemResource handleOtherDownload(final HttpServletResponse response,
+	public ResponseEntity<Resource> handleOtherDownload(
 			@PathVariable final String idLink,
 			@PathVariable final FileType fileType,
 			@PathVariable final Path relativeFile) {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
-		Assert.notNull(info);
-		Assert.isTrue(info.getStatus().isValid());
+		Assert.notNull(info, "");
+		Assert.isTrue(info.getStatus().isValid(), "");
 		final Path assetFolder = config.assetsNew().resolve(info.getAssetFolder());
 		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
 		final Path absolute = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		
-		response.setHeader("Content-Disposition", "attachment; filename=\""+absolute.getFileName()+"\"");
-		return new FileSystemResource(absolute.toFile());
+		return tryAquireNewAssetLock(() -> {
+			final HttpHeaders headers = new HttpHeaders();
+			headers.add("Content-Disposition", "attachment; filename=\"" + absolute.getFileName() + "\"");
+			final Resource file = new FileSystemResource(absolute.toFile());
+			return new ResponseEntity<>(file, headers, HttpStatus.OK);
+		});
 	}
 	
 	/**
@@ -240,21 +284,47 @@ public class TaskAssetController {
 	 * @param idLink - identifies the corresponding task
 	 * @param isAsset - true if file is an asset
 	 * @param relativeFile - relative path to the deleted file (only if not asset)
+	 * @return 
 	 */
 	@RequestMapping(value = {"/deleteFile/{idLink}"} , method = RequestMethod.POST)
-	@ResponseBody
-	public void handleDeleteFile(
+	public ResponseEntity<Void> handleDeleteFile(
 			@PathVariable String idLink,
 			@RequestParam("asset") Boolean isAsset,
 			@RequestParam(value="dir", required=false) Path relativeFile) {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final FileType fileType = isAsset ? FileType.ASSET : FileType.WIP;
-		if (isAsset) {
-			assetService.deleteAssetFile(task.getAssetName());
-		} else {
-			Assert.notNull(relativeFile);
-			assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
+		if (!isAsset && relativeFile == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
+		
+		return tryAquireNewAssetLock(() -> {
+			if (isAsset) {
+				assetService.deleteAssetFile(task.getAssetName());
+			} else {
+				assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
+			}
+			return new ResponseEntity<>(HttpStatus.OK);
+		});
+	}
+	
+	private <T> ResponseEntity<T> tryAquireNewAssetLock(Supplier<ResponseEntity<T>> runIfAquired) {
+		System.out.println("Controller trying to aquire lock...");
+		if(lockService.tryLock()) {
+			System.out.println("Controller succeeded");
+			try {
+				return runIfAquired.get();
+			} finally {
+				lockService.unlock();
+			}
+		} else {
+			System.out.println("Controller failed");
+			return new ResponseEntity<>(HttpStatus.LOCKED);
+		}
+	}
+	
+	@RequestMapping(value = {"/newAssetFileOperationsEnabled"} , method = RequestMethod.GET)
+	public boolean isNewAssetFileOperationsEnabled() {
+		return lockService.isAvailable();
 	}
 }

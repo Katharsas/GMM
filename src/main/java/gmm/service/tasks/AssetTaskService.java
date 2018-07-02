@@ -43,7 +43,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	protected abstract A newPropertyInstance();
 	
-	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, AssetGroupType type, Optional<A> props);
+	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, AssetGroupType type);
 	protected abstract void deletePreview(Path previewFolder, AssetGroupType isOriginal);
 	protected abstract boolean hasPreview(Path previewFolder, AssetGroupType isOriginal);
 	
@@ -130,15 +130,15 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final AssetGroupType type = info.getType();
 		final Path assetPathAbs = getRestrictedAssetPathAbsolute(type, info);
 		
-		final Optional<A> assetProps = Optional.ofNullable(task.getAssetProperties(type));
+//		final Optional<A> assetProps = Optional.ofNullable(task.getAssetProperties(type));
 		
 		final Path previewFolder = getPreviewFolder(info.getAssetFileName());
-		final CompletableFuture<A> future = recreatePreview(assetPathAbs, previewFolder, type, assetProps);
+		final CompletableFuture<A> future = recreatePreview(assetPathAbs, previewFolder, type);
 		
 		return future.thenAccept(completedAssetProps -> {
+			logger.debug("Set properties & storage info of asset file '" + task.getAssetName() + "' on task '" + task + "'. Type: '" + type.name() + "'");
 			completedAssetProps.setSizeInBytes(assetPathAbs.toFile().length());
 			completedAssetProps.setLastModified(assetPathAbs.toFile().lastModified());
-			logger.debug("Set properties & storage info of asset file '" + task.getAssetName() + "' on task '" + task + "'. Type: '" + type.name() + "'");
 			if (type.isOriginal()) {
 				task.setOriginalAsset(completedAssetProps, (OriginalAssetFileInfo) info);
 			} else {

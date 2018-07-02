@@ -19,7 +19,7 @@ public class MockPersistanceService implements PersistenceService {
 	}
 	
 	@Override
-	public void serialize(Object object, Path path) {
+	public synchronized void serialize(Object object, Path path) {
 		persistedObjects.put(path.toAbsolutePath(), object);
 		
 		if (simulateFilesReadWrite) {
@@ -32,7 +32,7 @@ public class MockPersistanceService implements PersistenceService {
 	}
 
 	@Override
-	public <T> T deserialize(Path path, Class<T> clazz) {
+	public synchronized <T> T deserialize(Path path, Class<T> clazz) {
 		if (simulateFilesReadWrite) {
 			try (FileReader fileReader = new FileReader(path.toFile().getAbsolutePath())) {
 				fileReader.read();

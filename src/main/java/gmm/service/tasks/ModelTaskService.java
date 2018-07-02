@@ -4,10 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.IOUtils;
@@ -47,26 +45,24 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 
 	@Override
 	public CompletableFuture<ModelProperties> recreatePreview(
-			Path sourceFile, Path previewFolder, AssetGroupType type, Optional<ModelProperties> assetOrNull) {
-		
-		fileService.createDirectory(previewFolder);
-		final Path target = getPreviewFilePath(previewFolder, type);
+			Path sourceFile, Path previewFolder, AssetGroupType type) {
 		
 		return CompletableFuture.supplyAsync(() -> {
-			final boolean hasAsset = assetOrNull.isPresent();
-			final ModelProperties asset = assetOrNull.orElse(newPropertyInstance());
 			
-			if (!type.isOriginal() || !Files.exists(target) || !hasAsset) {
-				deletePreview(target);
-				final MeshData meshData = python.createPreview(sourceFile, target);
-				final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
-				final Set<String> textureNames = new HashSet<>(String.class);
-				for(final String path : texturePaths) {
-					textureNames.add(Paths.get(path).getFileName().toString());
-				}
-				asset.setTextureNames(textureNames);
-				asset.setPolyCount(meshData.getPolygonCount());
+			fileService.createDirectory(previewFolder);
+			final Path target = getPreviewFilePath(previewFolder, type);
+			fileService.testReadFile(sourceFile);
+			
+			deletePreview(target);
+			final ModelProperties asset = newPropertyInstance();
+			final MeshData meshData = python.createPreview(sourceFile, target);
+			final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
+			final Set<String> textureNames = new HashSet<>(String.class);
+			for(final String path : texturePaths) {
+				textureNames.add(Paths.get(path).getFileName().toString());
 			}
+			asset.setTextureNames(textureNames);
+			asset.setPolyCount(meshData.getPolygonCount());
 			return asset;
 		}, asyncWorkerThreadPool);
 	}

@@ -5,9 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.PostConstruct;
@@ -63,40 +61,26 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	 */
 	@Override
 	public CompletableFuture<TextureProperties> recreatePreview(
-			Path sourceFile, Path previewFolder, AssetGroupType type, Optional<TextureProperties> assetPropsOrNull) {
-		
-		fileService.testReadFile(sourceFile);
+			Path sourceFile, Path previewFolder, AssetGroupType type) {
 		
 		final Path fullPreview = getPreviewFilePath(previewFolder, type, false);
 		final Path smallPreview = getPreviewFilePath(previewFolder, type, true);
 		
-		fileService.testCreateDeleteFile(fullPreview);
-		fileService.testCreateDeleteFile(smallPreview);
-		
 		return CompletableFuture.supplyAsync(() -> {
-			final boolean hasAsset = assetPropsOrNull.isPresent();
-			final boolean existsFull = Files.exists(fullPreview);
-			final boolean existsSmall = Files.exists(smallPreview);
-			final TextureProperties assetProps = assetPropsOrNull.orElse(newPropertyInstance());
+			final TextureProperties assetProps = newPropertyInstance();
 			
-			if (!type.isOriginal() || !existsFull || !existsSmall || !hasAsset) {
-				BufferedImage image = readImage(sourceFile);
-				assetProps.setDimensions(image.getHeight(), image.getWidth());
-				
-				// always redo image if type = new, only redo originals if they don't exist
-				
-				if (!type.isOriginal() || !existsFull) {
-					// full preview
-					writeImage(image, fullPreview);
-				}
-				if (!type.isOriginal() || !existsSmall) {
-					//small preview
-					if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
-						image = Scalr.resize(image, Method.SPEED, SMALL_SIZE);
-					}
-					writeImage(image, smallPreview);
-				}
+			fileService.testReadFile(sourceFile);
+			BufferedImage image = readImage(sourceFile);
+			assetProps.setDimensions(image.getHeight(), image.getWidth());
+			
+			// full preview
+			writeImage(image, fullPreview);
+			//small preview
+			if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
+				image = Scalr.resize(image, Method.SPEED, SMALL_SIZE);
 			}
+			writeImage(image, smallPreview);
+				
 			return assetProps;
 		}, asyncWorkerThreadPool);
 	}

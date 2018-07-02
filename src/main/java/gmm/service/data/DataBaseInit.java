@@ -28,32 +28,37 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	private final TaskBackupLoader backupLoader;
 	private final DataAccess data;
 	private final UserService userService;
+	private final DataBaseInitNotifier notifier;
 	
-	private boolean initialized = false;
+	private boolean initStarted = false;
 	
 	@Autowired
 	public DataBaseInit(BackupAccessService backups, TaskBackupLoader backupLoader,
-			DataAccess data, UserService userService) {
+			DataAccess data, UserService userService, DataBaseInitNotifier notifier) {
 		this.backups = backups;
 		this.backupLoader = backupLoader;
 		this.data = data;
 		this.userService = userService;
+		this.notifier = notifier;
 	}
 	
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		if (!initialized) {
-			initUsers();
-			initTasks();
-			initCombinedData(data.getCombinedData());
+		if (!initStarted) {
+			new Thread(() -> {
+				initUsers();
+				initTasks();
+				initCombinedData(data.getCombinedData());
+				notifier.setInitDone();
+			}).start();
 		}
-		initialized = true;
+		initStarted = true;
 	}
 	
 	@Value("${autoload.tasks}")
 	private boolean autoloadTasks;
 	
-	protected void initTasks() {
+	private void initTasks() {
 		if (autoloadTasks) {
 			final Collection<Task> tasks = backups.getLatestTaskBackup();
 			if (tasks != null) {
@@ -98,7 +103,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	@Value("${default.password}")
 	private String defaultUserPW;
 	
-	protected void initUsers() {
+	private void initUsers() {
 		if(autoloadUsers) {
 			final Collection<User> users = backups.getLatestUserBackup();
 			if (users != null) {
@@ -146,7 +151,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		return defaultUser;
 	}
 	
-	protected void initCombinedData(CombinedData target) {
+	private void initCombinedData(CombinedData target) {
 		final CombinedData combined = backups.getLatestCombinedDataBackup();
 		if (combined != null) {
 			target.setCustomAdminBanner(combined.getCustomAdminBanner());
