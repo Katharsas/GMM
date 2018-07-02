@@ -16,7 +16,6 @@ import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
 import gmm.service.users.UserService;
-import gmm.util.Util;
 import gmm.web.WebSocketEventSender;
 import gmm.web.WebSocketEventSender.WebSocketEvent;
 

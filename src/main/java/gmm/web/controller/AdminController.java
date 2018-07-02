@@ -107,20 +107,17 @@ public class AdminController {
 	@RequestMapping(value = {"/changeBannerMessage"} , method = RequestMethod.POST)
 	public @ResponseBody void setBannerMessage(
 			@RequestParam("message") String message) {
-		System.out.println("new message: " + message);
 		data.getCombinedData().setCustomAdminBanner(message);
 	}
 	
 	@RequestMapping(value = {"/activateBanner"} , method = RequestMethod.GET)
 	public String activateBannerMessage() {
-		System.out.println("activated");
 		data.getCombinedData().setCustomAdminBannerActive(true);
 		return "redirect:/admin";
 	}
 	
 	@RequestMapping(value = {"/deactivateBanner"} , method = RequestMethod.GET)
 	public String deactivateBannerMessage() {
-		System.out.println("deactivated");
 		data.getCombinedData().setCustomAdminBannerActive(false);
 		return "redirect:/admin";
 	}

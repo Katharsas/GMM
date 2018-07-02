@@ -201,7 +201,7 @@ const TaskCache = function(renderUrl) {
 		/** 
 		 * All of this pinned stuff is a hack, because it is not clear how to do this properly.
 		 * (Would require backend architecture changes).
-		 * @returns true, false or undefined (is current user is not logged in)
+		 * @returns true, false or undefined (if current user is not logged in)
 		 */
 		isPinned : function(idLink) {
 			checkThrowTaskNotFound(idLink);

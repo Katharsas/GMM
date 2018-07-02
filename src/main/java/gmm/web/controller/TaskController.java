@@ -164,10 +164,7 @@ public class TaskController {
 	@ResponseBody
 	public void editTask(
 			@ModelAttribute("taskForm") TaskForm form) {
-		// TODO we need to make sure that the client can only edit a task if he is on the tasks page,
-		// -> send user to task page when he clicks edit?
-		// OR editing a task needs to work from any page, if user is logged in
-		// -> allow "in-place" editing? save temp progress of edit?
+		// if tasks can be viewed from any page, edit will be broken because it only works on tasks page
 		taskSession.executeEdit(form);
 	}
 	

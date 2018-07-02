@@ -1,19 +1,11 @@
 package gmm.collections;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 public class LinkedList<E> extends java.util.LinkedList<E> implements List<E>{
 	private static final long serialVersionUID = -857844793375508167L;
-	
-	public static <K,V> Multimap<K,V> getMultiMap(Class<V> clazz) {
-		return Multimaps.newListMultimap(
-				new HashMap<K, java.util.Collection<V>>(), () -> new LinkedList<V>(clazz));
-	}
 	
 	@XStreamAsAttribute
 	private final Class<E> genericType;

@@ -102,17 +102,14 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final File assetFile = getRestrictedAssetPathAbsolute(info.getType(), info).toFile();
 		
 		if (assetFile.lastModified() != props.getLastModified()) {
-			System.out.println(" - modified!");
 			return false;
 		}
 		if (assetFile.length() != props.getSizeInBytes()) {
-			System.out.println(" - length!");
 			return false;
 		}
 		// TODO hashcode
 		
 		if (!hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType())) {
-			System.out.println(" - preview!");
 			return false;
 		}
 		return true;

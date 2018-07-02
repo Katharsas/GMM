@@ -93,7 +93,6 @@ public class AdminUserController {
 	 */
 	@RequestMapping(value = "/users/save", method = RequestMethod.POST)
 	public @ResponseBody void saveUsers() {
-		
 		backups.triggerUserBackup();
 	}
 	

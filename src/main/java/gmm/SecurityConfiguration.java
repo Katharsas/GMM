@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import gmm.service.users.CustomUserDetailsService;
 
@@ -42,7 +41,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 	    http
-	    	//.addFilterAfter(new TestDelayFilter(), BasicAuthenticationFilter.class)
 	    	.csrf()
 	    		.ignoringAntMatchers("/plugins/**")
 	    		.and()

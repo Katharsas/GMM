@@ -174,7 +174,7 @@ public class WorkbenchSession extends TaskListState {
 	}
 	
 	/**
-	 * Reloads, refilters and resorts all tasks.
+	 * Reloads, prefilters and resorts all tasks.
 	 * Not thread-safe.
 	 */
 	private void reload() {
