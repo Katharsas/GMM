@@ -5,6 +5,7 @@ import { switchPinOperation } from "./Task";
 import EventListener from "../shared/EventListener";
 import PreviewRenderer from "../shared/preview/PreviewRenderer";
 import { ShadingType } from "../shared/preview/CanvasRenderer";
+import AssetFileOperationsNotifier from "../shared/AssetFileOperationsNotifier";
 import { allVars, contextUrl, htmlDecode } from "../shared/default";
 
 /**
@@ -260,22 +261,29 @@ export default function(onedit, setIsPinned, isPinned) {
 					 * ASSET TASK - ASSET FILES
 					 * -------------------------------------------------------
 					 */
-					var $assetInfo = $assets.find(".task-asset-info");
-					var $assetButtons = $assets.find(".task-asset-buttons");
+					const $assetInfo = $assets.find(".task-asset-info");
+					const $assetButtons = $assets.find(".task-asset-buttons");
 					
 					// download
-					$assetButtons.filter(".task-asset-original").find(".action-download").click(function() {
+					const $downloadOriginalAsset = $assetButtons.filter(".task-asset-original").find(".action-download");
+					$downloadOriginalAsset.click(function () {
 						downloadAssetFile(id, 'ORIGINAL');
-					});
-					$assetButtons.filter(".task-asset-newest").find(".action-download").click(function() {
+					})
+					const $downloadNewestAsset = $assetButtons.filter(".task-asset-newest").find(".action-download");
+					AssetFileOperationsNotifier.registerNewAssetOperation($downloadNewestAsset, "click", function() {
 						downloadAssetFile(id, 'NEW');
 					});
 					// upload
-					// TODO
+					const $uploadNewestAsset = $assetButtons.filter(".task-asset-newest").find(".action-upload");
+					$uploadNewestAsset.hide();// TODO
+					// create folder
+					const $createFolder = $assetButtons.filter(".task-asset-newest").find(".action-folder");
+					$createFolder.hide();// TODO
 					//delete
-					$assetButtons.filter(".task-asset-newest").find(".action-delete").click(function() {
-						var filename = $assetInfo.filter(".task-asset-newest").data("filename");
-						var $dialog = Dialogs.confirm(function() {
+					const $deleteNewAssetFile = $assetButtons.filter(".task-asset-newest").find(".action-delete");
+					AssetFileOperationsNotifier.registerNewAssetOperation($deleteNewAssetFile, "click", function() {
+						const filename = $assetInfo.filter(".task-asset-newest").data("filename");
+						const $dialog = Dialogs.confirm(function() {
 							Ajax.post(contextUrl + "/tasks/deleteFile/" + id, {asset: true})
 								.then(function() {
 									Dialogs.hideDialog($dialog);
@@ -315,30 +323,34 @@ export default function(onedit, setIsPinned, isPinned) {
 					//upload
 					var $inputFile = $fileOps.find(".task-files-uploadInput");
 					//upload when a file is chosen (on hidden input tag)
-					$inputFile.change(function() {
+					AssetFileOperationsNotifier.registerNewAssetOperation($inputFile, "change", function() {
 						Dialogs.showOverlay();
 						var file = $inputFile[0].files[0];
 						Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 							.then(function() {
 								Dialogs.hideOverlay();
-								createFileTrees();
 							});
 					});
 					//bind triggering of filechooser to button
-					$fileOps.find(".task-file-button.action-upload").click(function() {
-						$inputFile.click();
-					});
+					const $uploadWipFile = $fileOps.find(".task-file-button.action-upload");
+					// TODO: upload needs to be redone anyway
+					$uploadWipFile.hide();
+					// $uploadWipFile.click(function() {
+					// 	$inputFile.click();
+					// });
 					
 					//download
-					$fileOps.find(".task-file-button.action-download").click(function() {
-						var dir = filePath();
+					const $downloadWipFile = $fileOps.find(".task-file-button.action-download");
+					AssetFileOperationsNotifier.registerNewAssetOperation($downloadWipFile, "click", function() {
+						const dir = filePath();
 						if (dir === undefined || dir === "") return;
 						downloadOtherFile(id, dir);
 					});
 					
 					//delete
-					$fileOps.find(".task-file-button.action-delete").click(function() {
-						var dir = filePath();
+					const $deleteWipFile = $fileOps.find(".task-file-button.action-delete");
+					AssetFileOperationsNotifier.registerNewAssetOperation($deleteWipFile, "click", function() {
+						const dir = filePath();
 						if (dir === undefined || dir === "") {
 							return;
 						}
@@ -347,7 +359,6 @@ export default function(onedit, setIsPinned, isPinned) {
 									{dir: dir, asset: false})
 								.then(function() {
 									Dialogs.hideDialog($dialog);
-									createFileTrees();
 								});
 						}, "Delete wip file at '" + filePath() + "' ?");
 					});

@@ -82,7 +82,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 			writeImage(image, smallPreview);
 				
 			return assetProps;
-		}, asyncWorkerThreadPool);
+		}, threadPool);
 	}
 	
 	private BufferedImage readImage(Path file) {

@@ -105,18 +105,22 @@ public class AssetTaskUpdater {
 		if (onCompletion.isPresent()) {
 			future = future.thenRun(onCompletion.get());
 		}
-		if (!future.isDone()) {
-			future = future.handle((__, e) -> {
-				if (e != null) {
-					if (e instanceof CompletionException) {
-						e = e.getCause();
-					}
-					logger.error("Asset task preview creation threw exception.", e);
+		future = future.handle((__, e) -> {
+			if (e != null) {
+				if (e instanceof CompletionException) {
+					e = e.getCause();
 				}
-				processingAssetTasks.remove(task);
-				return null;
-			});
+				logger.error("Asset task preview creation threw exception.", e);
+			}
+			return null;
+		});
+		if (!future.isDone()) {
 			processingAssetTasks.put(task, future);
+			future = future.thenRun(() -> {
+				synchronized(this) {
+					processingAssetTasks.remove(task);
+				}
+			});
 		}
 	}
 	

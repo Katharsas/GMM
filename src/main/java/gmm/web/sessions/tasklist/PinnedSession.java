@@ -76,7 +76,7 @@ public class PinnedSession extends TaskListState {
 	 * Update session information
 	 * ---------------------------------------------------*/
 	
-	public void pin(Task task) {
+	public synchronized void pin(Task task) {
 		if (pinnedTasks.contains(task)) {
 			throw new IllegalArgumentException("Cannot pin a task that is already pinned!");
 		} else {
@@ -87,7 +87,7 @@ public class PinnedSession extends TaskListState {
 		}
 	}
 	
-	public void unpin(Task task) {
+	public synchronized void unpin(Task task) {
 		if (!pinnedTasks.contains(task)) {
 			throw new IllegalArgumentException("Cannot unpin a task that has not been pinned!");
 		} else {
@@ -101,19 +101,13 @@ public class PinnedSession extends TaskListState {
 	 * Retrieve session information
 	 * ---------------------------------------------------*/
 	
-	public List<Task> getTasks() {
-		return pinnedTasks.copy();
-	}
-	
 	/**
 	 * RETRIEVED EVENTS WILL BE DELETED.
 	 * The same event cannot be retrieved multiple times.
 	 */
-	public List<TaskListEvent> retrieveEvents() {
-		synchronized (taskListEvents) {
+	public synchronized List<TaskListEvent> retrieveEvents() {
 			final List<TaskListEvent> result = taskListEvents.copy();
 			taskListEvents.clear();
 			return result;
-		}
 	}
 }

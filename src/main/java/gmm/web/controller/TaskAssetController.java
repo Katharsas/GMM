@@ -240,12 +240,17 @@ public class TaskAssetController {
 			absolute = info.getAssetFilePathAbsolute(config);
 		}
 		
-		return tryAquireNewAssetLock(() -> {
+		final Supplier<ResponseEntity<Resource>> getReturnFile = () -> {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.add("Content-Disposition", "attachment; filename=\"" + absolute.getFileName() + "\"");
 			final Resource file = new FileSystemResource(absolute.toFile());
 			return new ResponseEntity<>(file, headers, HttpStatus.OK);
-		});
+		};
+		if (groupType.isOriginal()) {
+			return getReturnFile.get();
+		} else {
+			return tryAquireNewAssetLock(getReturnFile);
+		}
 	}
 	
 	/**

@@ -46,13 +46,13 @@ public class WorkbenchSession extends TaskListState {
 	private final TaskSortService sortService;
 	
 	//user logged into this session
-	private User user;
+	private final User user;
 	
 	//currently active task lists (any of TaskType)
 	private final boolean[] selected = new boolean[TaskType.values().length];
 	
 	//task filtered by general filter & search
-	private List<Task> visible;
+	private final List<Task> visible;
 
 	//current settings for general filter
 	private FilterForm generalFilter;
@@ -252,15 +252,13 @@ public class WorkbenchSession extends TaskListState {
 	 * RETRIEVED EVENTS WILL BE DELETED.
 	 * The same event cannot be retrieved multiple times.
 	 */
-	public List<TaskListEvent> retrieveEvents() {
-		synchronized (taskListEvents) {
-			final List<TaskListEvent> result = taskListEvents.copy();
-			taskListEvents.clear();
-			if (logger.isDebugEnabled()) {
-				logger.debug(user + " retrieved events: " + Arrays.toString(taskListEvents.toArray()));
-			}
-			return result;
+	public synchronized List<TaskListEvent> retrieveEvents() {
+		final List<TaskListEvent> result = taskListEvents.copy();
+		taskListEvents.clear();
+		if (logger.isDebugEnabled()) {
+			logger.debug(user + " retrieved events: " + Arrays.toString(taskListEvents.toArray()));
 		}
+		return result;
 	}
 	
 	public boolean[] getSelectedTaskTypes() {

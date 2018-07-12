@@ -18,14 +18,20 @@ const AssetFileOperationsNotifierInit = function(statusUrl) {
 }
 
 /**
- * @param {function} changeHandler 
- *      Parameter: {bool} isNewAssetFileOperationsEnabled
+ * @param {function(boolean):void} changeHandler 
+ *      Parameter: {boolean} isNewAssetFileOperationsEnabled
  */
 const registerSubscriber = function(changeHandler, id) {
     console.debug("AssetFileOperationsNotifier: Registered handler with id '" + id + "'.");
     subscriberToChangeHandler.set(id, changeHandler);
 }
 
+/**
+ * 
+ * @param {JQuery} $button 
+ * @param {string} inputEventType 
+ * @param {function():void} eventHandler
+ */
 const registerNewAssetOperation = function($button, inputEventType, eventHandler) {
     $button.on(inputEventType, function() {
         if (isNewAssetFileOperationsEnabled) {
@@ -41,7 +47,6 @@ const registerNewAssetOperation = function($button, inputEventType, eventHandler
 const onEvent = function() {
     Ajax.get(contextUrl + thisStatustUrl)
     .then(function(isFileOperationsEnabled){
-        console.log(isFileOperationsEnabled);
         if (isNewAssetFileOperationsEnabled !== isFileOperationsEnabled) {
             isNewAssetFileOperationsEnabled = isFileOperationsEnabled;
             for (const [_, changeHandler] of subscriberToChangeHandler) {
@@ -55,9 +60,6 @@ EventListener.subscribe(EventListener.events.AssetFileOperationsChangeEvent, onE
 
 
 const AssetFileOperationsNotifier = {
-    // isNewAssetFileOperationsEnabled : function() {
-    //     return isNewAssetFileOperationsEnabled;
-    // },
     registerSubscriber : registerSubscriber,
     registerNewAssetOperation : registerNewAssetOperation,
 }

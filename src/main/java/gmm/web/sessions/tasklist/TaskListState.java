@@ -148,7 +148,7 @@ public abstract class TaskListState implements DataChangeCallback<Task> {
 	/**
 	 * Allow client to retrieve initial TaskListState after reloading page.
 	 */
-	public void createInitEvent() {
+	public synchronized void createInitEvent() {
 		taskListEvents.clear();
 		final List<String> initialIds =  getIds(getVisible());
 		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, initialIds, initialIds));

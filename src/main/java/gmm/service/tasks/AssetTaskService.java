@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataConfigService;
+import gmm.util.PriorityWorkerThreadFactory;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -39,7 +41,8 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	@Autowired private DataConfigService config;
 	@Autowired private FileService fileService;
 	
-	protected ForkJoinPool asyncWorkerThreadPool = new ForkJoinPool(8);
+	protected final ForkJoinPool threadPool;
+	private final int numberOfThreads = 8;
 	
 	protected abstract A newPropertyInstance();
 	
@@ -55,6 +58,9 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	public AssetTaskService() {
 		extensionFilter = new FileExtensionFilter(getExtensions());
+		final ForkJoinWorkerThreadFactory factory = new PriorityWorkerThreadFactory(Thread.MIN_PRIORITY);
+		// Note: UncaughtExceptionHandler does not work with Futures
+		threadPool = new ForkJoinPool(numberOfThreads, factory, null, true);
 	}
 	
 	@Override
