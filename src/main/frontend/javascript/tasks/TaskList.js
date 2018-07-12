@@ -2,9 +2,8 @@
 
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
-import EventListener from "../shared/EventListener";
 import { switchPinOperation } from "./Task";
-import lozad from 'lozad';
+import HtmlPreProcessor from "../shared/preprocessor";
 import { contextUrl, resortElementsById, runSerial } from "../shared/default";
 import { IllegalArgumentException } from "../shared/Errors"
 import TaskCache from "./TaskCache";
@@ -46,8 +45,6 @@ const r = function() {
  * 		after the baseEventHandlers.
  */
 const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers =r) {
-
-	const lozadObserver = lozad();
 
 	const taskListId = settings.taskListId;
 	const taskSelector = ".task:not(.removed)";
@@ -177,7 +174,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		.then(function(taskListEvents) {
 			const asyncTasks = [];
 			for (const event of taskListEvents) {
-				console.log("TaskListEvent: " + event.eventName);
+				console.debug("TaskList: Received event '" + event.eventName + "'");
 				if (event.eventName in baseEventHandlers) {
 					asyncTasks.push(function() {
 						return baseEventHandlers[event.eventName](event);
@@ -321,6 +318,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 				const idLink = $task.attr('id');
 				const $body = cache.getTaskBody(idLink);
 				settings.eventBinders.bindBody(idLink, $body);
+				HtmlPreProcessor.lazyload($body);
 				return $body;
 			},
 			
@@ -332,7 +330,6 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		
 		const onswitch = function($task) {
 			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
-			lozadObserver.observe();
 		};
 		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
 

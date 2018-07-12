@@ -39,7 +39,7 @@ import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
@@ -54,7 +54,7 @@ public class TaskAssetController {
 	@Autowired private DataAccess data;
 	@Autowired private TextureTaskService textureService;
 	@Autowired private ModelTaskService modelService;
-	@Autowired private DataConfigService config;
+	@Autowired private PathConfig config;
 	@Autowired private FileService fileService;
 	@Autowired private AssetService assetService;
 	@Autowired private NewAssetLockService lockService;

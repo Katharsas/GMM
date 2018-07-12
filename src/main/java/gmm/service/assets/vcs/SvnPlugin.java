@@ -42,7 +42,7 @@ import gmm.collections.List;
 import gmm.service.FileService;
 import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 
 /**
  * SVN client implementation using SVNKit new high-level interface (org.tmatesoft.svn.core.wc2.*).
@@ -96,7 +96,7 @@ public class SvnPlugin extends VcsPlugin {
 	private final SvnOperationFactory svnOperationFactory;
 	
 	@Autowired
-	public SvnPlugin(DataConfigService config, FileService fileService, NewAssetLockService lockService,
+	public SvnPlugin(PathConfig config, FileService fileService, NewAssetLockService lockService,
 			@Value("${vcs.plugin.svn.repository}") String repositoryUriString,
 			@Value("${vcs.plugin.svn.username}") String repositoryUsername,
 			@Value("${vcs.plugin.svn.password}") String repositoryPassword

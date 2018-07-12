@@ -18,7 +18,7 @@ import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.CombinedData;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 
 /**
  * Saves names are constructed like:
@@ -109,7 +109,7 @@ public class BackupAccessService {
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final DataConfigService config;
+	private final PathConfig config;
 	private final BackupFileService fileService;
 	
 	private final Path backupPath = Paths.get("autoBackups");
@@ -120,7 +120,7 @@ public class BackupAccessService {
 	protected final BackupExecutor triggeredBackup;
 	
 	@Autowired
-	public BackupAccessService(DataConfigService config, BackupFileService service) {
+	public BackupAccessService(PathConfig config, BackupFileService service) {
 		this.config = config;
 		this.fileService = service;
 		

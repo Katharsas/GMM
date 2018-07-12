@@ -32,7 +32,7 @@ import gmm.service.assets.vcs.VcsPlugin;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.util.Util;
@@ -98,7 +98,7 @@ public class AssetService {
 	
 	@Autowired
 	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, AssetTaskUpdater taskUpdater,
-			VcsPlugin vcs, DataConfigService config, FileService fileService, DataAccess data, NewAssetLockService lockService) {
+			VcsPlugin vcs, PathConfig config, FileService fileService, DataAccess data, NewAssetLockService lockService) {
 		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
 		this.taskUpdater = taskUpdater;
@@ -402,7 +402,7 @@ public class AssetService {
 		serviceFinder.getAssetService(name).deleteNewAssetPreview(name);
 	}
 	
-	final DataConfigService config;
+	final PathConfig config;
 	final FileService fileService;
 	
 	public void deleteAssetFile(AssetName assetFolderName) {
@@ -432,12 +432,11 @@ public class AssetService {
 		fileService.delete(absoluteFile);
 		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
 		
+		final AssetTask<?> task = assetTasks.get(assetFolderName);
+		Objects.requireNonNull(task);
+		
 		if (fileType.isAsset()) {
 			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleNewAssetRemoved(folderInfo.getAssetFolder());
-			
-			final AssetTask<?> task = assetTasks.get(assetFolderName);
-			Objects.requireNonNull(task);
-			
 			if (newInfo.isPresent()) {
 				newAssetFolders.put(assetFolderName, newInfo.get());
 			} else {
@@ -447,6 +446,8 @@ public class AssetService {
 			taskUpdater.new OnNewAssetUpdate(() -> {
 				data.edit(task);
 			}).removePropsAndSetInfo(task, newInfo);
+		} else {
+			data.edit(task);
 		}
 	}
 	

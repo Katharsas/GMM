@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
 
 /**
@@ -42,7 +42,7 @@ public class OriginalAssetFileInfo implements AssetInfo {
 	}
 
 	@Override
-	public Path getAssetFilePathAbsolute(DataConfigService config) {
+	public Path getAssetFilePathAbsolute(PathConfig config) {
 		return config.assetsOriginal()
 				.resolve(assetFile);
 	}

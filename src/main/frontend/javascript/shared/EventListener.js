@@ -30,8 +30,8 @@ const EventListener = function() {
 	const webSocket = new WebSocket("ws://" + urlBase + contextUrl + "/notifier");
 
 	webSocket.onerror = function(event) {
-		console.log("Websocket connection error!");
-		console.log(event);
+		console.error("Websocket connection error!");
+		console.error(event);
 	}
 
 	const onMessageReceived = function(message) {
@@ -44,7 +44,7 @@ const EventListener = function() {
 				return;
 			}
 		}
-		console.log("EventListener received: " + message);
+		console.info("EventListener: Received event '" + message + "'");
 		
 		for (const callback of callbacks[eventName]) {
 			currentPromise = currentPromise.then(callback);

@@ -3,8 +3,8 @@ package gmm.service.data.backup;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -18,7 +18,7 @@ import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.data.xstream.XMLService;
 
 @Category(IntegrationTest.class)
@@ -29,18 +29,23 @@ import gmm.service.data.xstream.XMLService;
 		gmm.SecurityConfiguration.class})
 public class BackUpServiceIT {
 	
+	private static PathConfig config;
+	
 	@Autowired private BackupAccessService backupAccess;
 	@Autowired private BackupExecutorService backupExecutor;
 	@Autowired private DataAccess data;
-	@Autowired private DataConfigService config;
 	@Autowired private XMLService xmlService;
 	
 	// TODO use test config with autoload/defaultUser disabled!
 	
+	@BeforeClass
+	public static void init() {
+		config = new MockDataConfigService();// TODO set paths / load mock config
+	}
+	
 	@Test
 	public void backupTest() {
 		//deserialize tasks/users from test directory
-		config.updateWorkspace(Paths.get("WEB-INF/dataTesting"));
 		
 		final Path tasksFile = config.dbTasks().resolve("someGeneralTasks.xml");
 		final Collection<Task> tasks = xmlService.deserializeAll(tasksFile, Task.class);
@@ -51,7 +56,7 @@ public class BackUpServiceIT {
 		
 		//trigger task/user save
 		backupExecutor.triggerUserBackup();
-		backupExecutor.triggerTaskBackup();
+		backupExecutor.triggerTaskBackup(true);
 		
 		//assert correct tasks backup
 		final Collection<Task> backupedTasks = backupAccess.getLatestTaskBackup();

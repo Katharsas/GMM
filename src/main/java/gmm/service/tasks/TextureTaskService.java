@@ -25,7 +25,8 @@ import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.TextureProperties;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.Config;
+import gmm.service.data.DataAccess;
 
 /**
  * Should maybe be joined with {@link TextureAssetService} after Mesh implementation.
@@ -34,12 +35,14 @@ import gmm.service.data.DataConfigService;
  */
 @Service
 public class TextureTaskService extends AssetTaskService<TextureProperties> {
-
-	@Autowired private DataConfigService config;
-	@Autowired private FileService fileService;
 	
 	private static final String[] extensions = new String[] {"tga"};
 	
+	@Autowired
+	public TextureTaskService(DataAccess data, Config config, FileService fileService) {
+		super(data, config, fileService);
+	}
+
 	// changing the scaling size requires manual deletion of all generated previews
 	private static final int SMALL_SIZE = 256;
 	

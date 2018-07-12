@@ -179,7 +179,7 @@
 		    		<#if task.originalAssetProperties?has_content>
 			    		<td class="task-preview-visual clickable">
 			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
-			    				<img class="lozad" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+			    				<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
@@ -188,7 +188,7 @@
 			    	<#if task.newAssetProperties?has_content>
 				    	<td class="task-preview-visual clickable">
 				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
-				    			<img class="lozad" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+				    			<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    		</a>
 				    	</td>
 				    <#else>

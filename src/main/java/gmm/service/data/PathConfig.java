@@ -18,7 +18,7 @@ import gmm.service.FileService;
 
 
 @Service
-public class DataConfigService {
+public class PathConfig {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -75,7 +75,7 @@ public class DataConfigService {
 	private final Path subOther = Paths.get("wip");
 	
 	@Autowired
-	public DataConfigService(FileService fileService, ServletContext context) {
+	public PathConfig(FileService fileService, ServletContext context) {
 		this.fileService = fileService;
 		base = Paths.get(context.getRealPath(""));
 	}

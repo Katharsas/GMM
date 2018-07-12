@@ -3,7 +3,6 @@ package gmm.service.data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
@@ -29,17 +28,20 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	private final DataAccess data;
 	private final UserService userService;
 	private final DataBaseInitNotifier notifier;
+	private final Config config;
 	
 	private boolean initStarted = false;
 	
 	@Autowired
 	public DataBaseInit(BackupAccessService backups, TaskBackupLoader backupLoader,
-			DataAccess data, UserService userService, DataBaseInitNotifier notifier) {
+			DataAccess data, UserService userService, DataBaseInitNotifier notifier,
+			Config config) {
 		this.backups = backups;
 		this.backupLoader = backupLoader;
 		this.data = data;
 		this.userService = userService;
 		this.notifier = notifier;
+		this.config = config;
 	}
 	
 	@Override
@@ -55,11 +57,8 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		initStarted = true;
 	}
 	
-	@Value("${autoload.tasks}")
-	private boolean autoloadTasks;
-	
 	private void initTasks() {
-		if (autoloadTasks) {
+		if (config.autoloadTasks()) {
 			final Collection<Task> tasks = backups.getLatestTaskBackup();
 			if (tasks != null) {
 				loadTasks(tasks);
@@ -91,20 +90,8 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		});
 	}
 	
-	@Value("${autoload.users}")
-	private boolean autoloadUsers;
-	
-	@Value("${default.user}")
-	private boolean createDefaultUser;
-	
-	@Value("${default.username}")
-	private String defaultUserName;
-	
-	@Value("${default.password}")
-	private String defaultUserPW;
-	
 	private void initUsers() {
-		if(autoloadUsers) {
+		if(config.autoloadUsers()) {
 			final Collection<User> users = backups.getLatestUserBackup();
 			if (users != null) {
 				final Collection<User> validated = users.copy();
@@ -123,7 +110,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		} else {
 			logger.info("Configuration caused users not to be autoloaded.");
 		}
-		if (createDefaultUser && data.getList(User.class).size() == 0) {
+		if (config.createDefaultUser() && data.getList(User.class).size() == 0) {
 			data.add(createDefaultUser());
 		} else {
 			logger.info("\n"
@@ -135,6 +122,8 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	}
 	
 	private User createDefaultUser() {
+		final String defaultUserName = config.getDefaultUserName();
+		final String defaultUserPW = config.getDefaultUserPW();
 		if (!userService.isFreeUserName(defaultUserName)) {
 			throw new UserNameOccupiedException(defaultUserName);
 		}

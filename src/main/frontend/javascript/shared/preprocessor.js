@@ -114,6 +114,19 @@ export default (function() {
 		 */
 		applyOnlyDataAndEvents : function($range) {
 			makeDraggable($range);
+		},
+
+		/**
+		 * Lazy load images.
+		 */
+		lazyload : function($range) {
+			const $images = $range.findSelf("img.lazyload");
+			$images.each(function(){
+				const $image = $(this);
+				$image.attr("src", $image.data("src"));
+				$image.removeAttr("data-src");
+				$image.removeClass("lazyload");
+			});
 		}
 	};
 })();

@@ -21,18 +21,24 @@ import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.ModelProperties;
 import gmm.domain.task.asset.ModelTask;
 import gmm.service.FileService;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.Config;
+import gmm.service.data.DataAccess;
 import gmm.service.tasks.PythonTCPSocket.MeshData;
 
 @Service
 public class ModelTaskService extends AssetTaskService<ModelProperties> {
 
-	@Autowired private DataConfigService config;
-	@Autowired private FileService fileService;
-	@Autowired private PythonTCPSocket python;
+	private final PythonTCPSocket python;
 	
 	private static final String[] extensions = new String[] {"3ds"};
 	
+	@Autowired
+	public ModelTaskService(DataAccess data, Config config, FileService fileService,
+			PythonTCPSocket python) {
+		super(data, config, fileService);
+		this.python = python;
+	}
+
 	@Override
 	protected String[] getExtensions() {
 		return extensions;

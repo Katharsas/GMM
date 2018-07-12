@@ -1,11 +1,8 @@
 import $ from "../lib/jquery";
-import Ajax from "../shared/ajax";
-import Dialogs, { centerDialog } from "../shared/dialogs";
+import { centerDialog } from "../shared/dialogs";
 import HtmlPreProcessor from "./preprocessor";
 import { switchPinOperation } from "../tasks/Task";
 import DataChangeNotifier from "../shared/DataChangeNotifier";
-import lozad from 'lozad';
-import { contextUrl, runSerial } from "../shared/default";
 
 let $taskDialogContainer;
 let $taskDialogTemplate;
@@ -44,7 +41,7 @@ const onTaskDataChange = function(event) {
 
 let TaskDialogs = {};
 
-const TaskDialogsInit = function(taskCache, taskBinders, eventUrl) {
+const TaskDialogsInit = function(taskCache, taskBinders) {
 
     const openDialog = function(idLink) {
         if (idLink in idLinkToDialog) {

@@ -82,8 +82,8 @@
 				</div>
 			</sec:authorize>
 			<div id="metainfo" class="left">
-				<spring:eval expression="@config.getProperty('app.name')" /><br/>
-				<spring:eval expression="@config.getProperty('app.version')" />
+				<spring:eval expression="@metaConfig.getProperty('app.name')" /><br/>
+				<spring:eval expression="@metaConfig.getProperty('app.version')" />
 			</div>
 			<div id="loading" class="tabmenu-statusIcon left">
 				<span class="tabmenu-statusIcon-visual">

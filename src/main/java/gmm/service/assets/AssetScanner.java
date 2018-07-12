@@ -21,7 +21,7 @@ import gmm.collections.ArrayList;
 import gmm.collections.List;
 import gmm.domain.task.asset.AssetName;
 import gmm.service.FileService.FileExtensionFilter;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 
@@ -32,10 +32,10 @@ public class AssetScanner {
 	
 	private final static boolean assetTypeFoldersEnabled = true;
 	
-	private final DataConfigService config;
+	private final PathConfig config;
 	private final TaskServiceFinder serviceFinder;
 	
-	public AssetScanner(DataConfigService config, TaskServiceFinder serviceFinder) {
+	public AssetScanner(PathConfig config, TaskServiceFinder serviceFinder) {
 		this.config = config;
 		this.serviceFinder = serviceFinder;
 	}
@@ -211,7 +211,7 @@ public class AssetScanner {
 	 * Remove any paths from given list that do not qualify as new asset file. Does not guarantee
 	 * that all remaining asset paths are valid or exist.
 	 * @param pathsRelative - The list that should be modified which contains any paths relative to 
-	 * 		{@link DataConfigService#assetsNew()}.
+	 * 		{@link PathConfig#assetsNew()}.
 	 */
 	public void filterForNewAssets(List<Path> pathsRelative) {
 		final List<Path> toRemove = new ArrayList<>(Path.class, pathsRelative.size());

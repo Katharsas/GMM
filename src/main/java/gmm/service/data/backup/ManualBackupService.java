@@ -9,19 +9,19 @@ import org.springframework.stereotype.Service;
 import gmm.collections.Collection;
 import gmm.domain.task.Task;
 import gmm.service.FileService;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.data.xstream.XMLService;
 
 @Service
 public class ManualBackupService {
 	
 	private final FileService fileService;
-	private final DataConfigService config;
+	private final PathConfig config;
 	private final XMLService xmlService;
 	
 	@Autowired
 	public ManualBackupService(
-			FileService fileService, DataConfigService config, XMLService xmlService) {
+			FileService fileService, PathConfig config, XMLService xmlService) {
 		this.fileService = fileService;
 		this.config = config;
 		this.xmlService = xmlService;

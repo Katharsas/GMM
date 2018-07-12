@@ -30,7 +30,7 @@ import gmm.service.FileService.PathFilter;
 import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.data.backup.BackupExecutorService;
 import gmm.service.data.backup.ManualBackupService;
 import gmm.service.data.xstream.XMLService;
@@ -52,7 +52,7 @@ public class AdminController {
 	@Autowired private AdminSession session;
 	
 	@Autowired private DataAccess data;
-	@Autowired private DataConfigService config;
+	@Autowired private PathConfig config;
 	@Autowired private FileService fileService;
 	@Autowired private XMLService xmlService;
 	@Autowired private BackupExecutorService backups;

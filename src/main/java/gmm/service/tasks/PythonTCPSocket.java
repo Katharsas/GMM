@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 
 /**
  * This service is responsible for converting 3DS files to JSON 3D files using blender.
@@ -82,7 +82,7 @@ public class PythonTCPSocket {
 		}
 	}
 	
-	@Autowired private DataConfigService config;
+	@Autowired private PathConfig config;
 	
 	private volatile AssetConversionPaths next = null;
 	private volatile ConversionResult result = null;

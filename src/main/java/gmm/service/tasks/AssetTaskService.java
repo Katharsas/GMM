@@ -12,7 +12,6 @@ import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
 import gmm.domain.User;
@@ -26,7 +25,9 @@ import gmm.service.assets.AssetInfo;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.OriginalAssetFileInfo;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.Config;
+import gmm.service.data.DataAccess;
+import gmm.service.data.PathConfig;
 import gmm.util.PriorityWorkerThreadFactory;
 import gmm.web.forms.TaskForm;
 
@@ -38,11 +39,10 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired private DataConfigService config;
-	@Autowired private FileService fileService;
+	protected final PathConfig config;
+	protected final FileService fileService;
 	
 	protected final ForkJoinPool threadPool;
-	private final int numberOfThreads = 8;
 	
 	protected abstract A newPropertyInstance();
 	
@@ -56,11 +56,15 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	private final FileExtensionFilter extensionFilter;
 	
-	public AssetTaskService() {
+	public AssetTaskService(DataAccess data, Config config, FileService fileService) {
+		super(data);
+		this.config = config.getPathConfig();
+		this.fileService = fileService;
+		
 		extensionFilter = new FileExtensionFilter(getExtensions());
 		final ForkJoinWorkerThreadFactory factory = new PriorityWorkerThreadFactory(Thread.MIN_PRIORITY);
 		// Note: UncaughtExceptionHandler does not work with Futures
-		threadPool = new ForkJoinPool(numberOfThreads, factory, null, true);
+		threadPool = new ForkJoinPool(config.getPreviewThreadCount(), factory, null, true);
 	}
 	
 	@Override

@@ -3,16 +3,16 @@ package gmm.domain.task.asset;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 
 public enum FileType {
 
 	ASSET(config -> config.subAssets()),
 	WIP(config -> config.subOther());
 	
-	Function<DataConfigService, Path> subPathGetter;
+	Function<PathConfig, Path> subPathGetter;
 	
-	private FileType(Function<DataConfigService, Path> subPathGetter) {
+	private FileType(Function<PathConfig, Path> subPathGetter) {
 		this.subPathGetter = subPathGetter;
 	}
 	
@@ -20,7 +20,7 @@ public enum FileType {
 		return this.equals(ASSET);
 	}
 	
-	public Path getSubPath(DataConfigService config) {
+	public Path getSubPath(PathConfig config) {
 		return subPathGetter.apply(config);
 	}
 }

@@ -64,7 +64,7 @@ const TaskCache = function(renderUrl) {
 			}
 		}
 		return runSerial(tasks).then(function() {
-			console.log("Task cache updated!");
+			console.debug("TaskCache: Cache updated.");
 		});
 	};
 	

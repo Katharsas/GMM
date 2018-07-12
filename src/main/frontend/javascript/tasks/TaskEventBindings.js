@@ -15,46 +15,46 @@ import { allVars, contextUrl, htmlDecode } from "../shared/default";
  */
 export default function(onedit, setIsPinned, isPinned) {
 	
-	var updateTaskLists = function() {
+	const updateTaskLists = function() {
 		EventListener.trigger(EventListener.events.TaskDataChangeEvent);
 	};
-	var updatePinnedList = function() {
+	const updatePinnedList = function() {
 		EventListener.trigger(EventListener.events.PinnedListChangeEvent);
 	};
 	
 	//comments
-	var hideCommentForm = function($commentForm) {
-		var $elementComments = $commentForm.parent();
+	const hideCommentForm = function($commentForm) {
+		const $elementComments = $commentForm.parent();
 		if ($elementComments.is(":visible:blank")) {
 			$elementComments.hide();
 		}
 		$commentForm.hide();
 	};
 	
-	var showCommentForm = function ($commentForm) {
+	const showCommentForm = function ($commentForm) {
 		$commentForm.parent().show();
 		$commentForm.show();
 	};
 	
 	//download
-	var downloadAssetFile = function(taskId, groupType) {
-		var uri = contextUrl + "/tasks/download/" + taskId + "/" + groupType + "/ASSET/";
+	const downloadAssetFile = function(taskId, groupType) {
+		const uri = contextUrl + "/tasks/download/" + taskId + "/" + groupType + "/ASSET/";
 		window.open(uri);
 	};
 	
-	var downloadOtherFile = function(taskId, dir) {
-		var uri = contextUrl + "/tasks/download/" + taskId + "/NEW/" + selectedFileType + "/" + dir + "/";
+	const downloadOtherFile = function(taskId, dir) {
+		const uri = contextUrl + "/tasks/download/" + taskId + "/NEW/" + selectedFileType + "/" + dir + "/";
 		window.open(uri);
 	};
 	
 	// file trees
-	var selectedFileType;
-	var $selectedFile = $();
+	let selectedFileType;
+	let $selectedFile = $();
 	
-	var filePath = function() {
+	const filePath = function() {
 		return $selectedFile.attr("rel");
 	};
-	var selectFile = function($file, fileType) {
+	const selectFile = function($file, fileType) {
 		selectedFileType = fileType;
 		$selectedFile.removeClass("task-files-selected");
 		$selectedFile = $file;
@@ -73,7 +73,7 @@ export default function(onedit, setIsPinned, isPinned) {
 		bindHeader : function($header) {},
 		
 		/**
-		 * @param $body - Complete body part of a task, bind functions to this (or its children).
+		 * @param {JQuery} $body - Complete body part of a task, bind functions to this (or its children).
 		 * @param {callback} updateTaskList - Function which returns a promise to finish updating.
 		 */
 		bindBody : function(id, $body) {
@@ -83,7 +83,7 @@ export default function(onedit, setIsPinned, isPinned) {
 			 * -------------------------------------------------------
 			 */
 			
-			var $operations = $body.find(".task-body-footer").children(".task-operations");
+			const $operations = $body.find(".task-body-footer").children(".task-operations");
 			
 			if (allVars.isUserLoggedIn) {
 				
@@ -93,7 +93,7 @@ export default function(onedit, setIsPinned, isPinned) {
 				});
 				//delete task
 				$operations.find(".task-operations-deleteTask").click(function() {
-					var $confirm = Dialogs.confirm(function() {
+					const $confirm = Dialogs.confirm(function() {
 						Ajax.post(contextUrl + "/tasks/deleteTask/" + id)
 						.then(function() {
 							Dialogs.hideDialog($confirm);
@@ -129,16 +129,16 @@ export default function(onedit, setIsPinned, isPinned) {
 			
 			if (allVars.isUserLoggedIn) {
 				//comments
-				var $comments = $body.find(".task-comments");
-				var $form = $comments.children("form.task-comments-form");
+				const $comments = $body.find(".task-comments");
+				const $form = $comments.children("form.task-comments-form");
 				//show comment edit dialog
 				$comments.on("click", ".task-comment-editButton", function() {
-					var $comment = $(this).parent(".task-comment");
-					var comment = htmlDecode($comment.children(".task-comment-text").html());
-					var commentId = $comment.attr("id");
-					var $confirm = Dialogs.confirm(
+					const $comment = $(this).parent(".task-comment");
+					const comment = htmlDecode($comment.children(".task-comment-text").html());
+					const commentId = $comment.attr("id");
+					const $confirm = Dialogs.confirm(
 						function(input, textarea) {
-							var url = contextUrl + "/tasks/editComment/" + id + "/" + commentId;
+							const url = contextUrl + "/tasks/editComment/" + id + "/" + commentId;
 							Ajax.post(url, {"editedComment" : textarea}) 
 								.then(function() {
 									Dialogs.hideDialog($confirm);
@@ -153,7 +153,7 @@ export default function(onedit, setIsPinned, isPinned) {
 				});
 				//submit new comment
 				$form.find(".task-comment-form-submitButton").click(function() {
-					var url = contextUrl + "/tasks/submitComment/" + id;
+					const url = contextUrl + "/tasks/submitComment/" + id;
 					Ajax.post(url, {}, $form)
 						.then(function() {
 							updateTaskLists();
@@ -166,7 +166,7 @@ export default function(onedit, setIsPinned, isPinned) {
 			 * -------------------------------------------------------
 			 */
 			
-			var $assets = $body.find(".task-assets");
+			const $assets = $body.find(".task-assets");
 			if($assets.length > 0)
 			{
 				/* -------------------------------------------------------
@@ -174,39 +174,39 @@ export default function(onedit, setIsPinned, isPinned) {
 				 * -------------------------------------------------------
 				 */
 				
-				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
-				var $optionsContainer = $assets.find(".task-preview-options");
+				const $canvasContainer = $assets.find(".task-previews.task-preview-3D");
+				const $optionsContainer = $assets.find(".task-preview-options");
 				if($canvasContainer.find(".task-preview-visual").length > 0) {
-					var renderer = PreviewRenderer($canvasContainer);
+					const renderer = PreviewRenderer($canvasContainer);
 					$canvasContainer.data("renderer", renderer);// store for unbinding
 					
-					var $renderOptions = $optionsContainer.find(".task-preview-renderOptions");
+					const $renderOptions = $optionsContainer.find(".task-preview-renderOptions");
 					// checkboxes
-					var $wire = $renderOptions.find(".renderOption-wire input");
+					const $wire = $renderOptions.find(".renderOption-wire input");
 					$wire.prop('checked', renderer.getOption("wireframe"));
 					$wire.on("change", function() {
 						renderer.setOptions({wireframe: $(this).is(":checked")});
 					});
-					// var $shadows = $renderOptions.find(".renderOption-shadows input");
+					// const $shadows = $renderOptions.find(".renderOption-shadows input");
 					// $shadows.prop('checked', renderer.getOption("shadowsEnabled"));
 					// $shadows.on("change", function() {
 					// 	renderer.setOptions({shadowsEnabled: $(this).is(":checked")});
 					// });
-					var $rotLight = $renderOptions.find(".renderOption-rotLight input");
+					const $rotLight = $renderOptions.find(".renderOption-rotLight input");
 					$rotLight.prop('checked', renderer.getOption("rotateLight"));
 					$rotLight.on("change", function() {
 						renderer.setOptions({rotateLight: $(this).is(":checked")});
 					});
-					var $rotCamera = $renderOptions.find(".renderOption-rotCamera input");
+					const $rotCamera = $renderOptions.find(".renderOption-rotCamera input");
 					$rotCamera.prop('checked', renderer.getOption("rotateCamera"));
 					$rotCamera.on("change", function() {
 						renderer.setOptions({rotateCamera: $(this).is(":checked")});
 					});
 					// number input
-					var $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
+					const $rotCameraSpeed = $renderOptions.find(".renderOption-rotCameraSpeed");
 					$rotCameraSpeed.val(renderer.getOption("rotateCameraSpeed"));
 					$rotCameraSpeed.on("input", function() {
-						var speed = parseFloat(this.value);
+						const speed = parseFloat(this.value);
 						if (!isNaN(speed) && speed < 100) {
 							renderer.setOptions({rotateCameraSpeed: speed});
 						} else {
@@ -214,13 +214,13 @@ export default function(onedit, setIsPinned, isPinned) {
 						}
 					});
 					// render mode
-					var modes = [
+					const modes = [
 						{ type: ShadingType.Matcap, selector : ".renderOption-matcap" },
 						{ type: ShadingType.Solid, selector : ".renderOption-solid" },
 						{ type: ShadingType.None, selector : ".renderOption-none" }
 					];
-					var setSolidOptionsDisabled = function(shading) {
-						var isSolid = shading === ShadingType.Solid;
+					const setSolidOptionsDisabled = function(shading) {
+						const isSolid = shading === ShadingType.Solid;
 						$rotLight.prop('disabled', !isSolid);
 						$rotLight.closest('.renderOption-rotLight').toggleClass('disabled', !isSolid);
 					}
@@ -234,9 +234,9 @@ export default function(onedit, setIsPinned, isPinned) {
 					}
 					setSolidOptionsDisabled(ShadingType.Matcap);
 					// maximized view
-					var isMaximized = false;
-					var $maximize = $canvasContainer.find(".task-preview-maximize .button");
-					var draggableTransform;
+					const $maximize = $canvasContainer.find(".task-preview-maximize .button");
+					let isMaximized = false;
+					let draggableTransform;
 					$maximize.on("click", function() {
 						isMaximized = !isMaximized;
 						$assets.find("table").toggleClass("maximized", isMaximized);
@@ -244,7 +244,7 @@ export default function(onedit, setIsPinned, isPinned) {
 						//$canvasContainer.find("canvas").removeAttr("width");
 						$canvasContainer.find("canvas").removeAttr("height");
 						// task dialog
-						var $draggable = $body.closest(".draggable");
+						const $draggable = $body.closest(".draggable");
 						if (isMaximized) {
 							draggableTransform = $draggable.css("transform");
 							$draggable.css("transform", "");
@@ -295,37 +295,28 @@ export default function(onedit, setIsPinned, isPinned) {
 					 * ASSET TASK - WIP FILES
 					 * -------------------------------------------------------
 					 */
-					
-					// TODO file tree changes need to be events received by all task lists.
-					// (instead of just rebuilding the filetree for the current task)
-					
-					var $files = $body.find(".task-files-wip");
+					const $files = $body.find(".task-files-wip");
 						
 					//file trees
-					var fileTreeOptions = function(isAsset) {
+					const fileTreeOptions = function(isAsset) {
 						return {
 							url: contextUrl + "/tasks/files/" + isAsset.toString() + "/" + id,
 							directoryClickable: false
 						};
 					};
-					var $fileTreeOther = $files.find(".task-files-wip-tree");
-					var createFileTrees = function() {
-						$fileTreeOther.fileTree(fileTreeOptions(false),
-							function($file) {
-								selectFile($file, "WIP");
-							}
-						);
-					};
-					createFileTrees();
+					const $fileTreeOther = $files.find(".task-files-wip-tree");
+					$fileTreeOther.fileTree(fileTreeOptions(false), function($file) {
+						selectFile($file, "WIP");
+					});
 					
-					var $fileOps = $files.find(".task-files-wip-operations");
+					const $fileOps = $files.find(".task-files-wip-operations");
 					
 					//upload
-					var $inputFile = $fileOps.find(".task-files-uploadInput");
+					const $inputFile = $fileOps.find(".task-files-uploadInput");
 					//upload when a file is chosen (on hidden input tag)
 					AssetFileOperationsNotifier.registerNewAssetOperation($inputFile, "change", function() {
 						Dialogs.showOverlay();
-						var file = $inputFile[0].files[0];
+						const file = $inputFile[0].files[0];
 						Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
 							.then(function() {
 								Dialogs.hideOverlay();
@@ -354,7 +345,7 @@ export default function(onedit, setIsPinned, isPinned) {
 						if (dir === undefined || dir === "") {
 							return;
 						}
-						var $dialog = Dialogs.confirm(function() {
+						const $dialog = Dialogs.confirm(function() {
 							Ajax.post(contextUrl + "/tasks/deleteFile/" + id,
 									{dir: dir, asset: false})
 								.then(function() {
@@ -373,7 +364,7 @@ export default function(onedit, setIsPinned, isPinned) {
 			 * -------------------------------------------------------
 			 */
 			
-			var $assets = $body.find(".task-assets");
+			const $assets = $body.find(".task-assets");
 			if($assets.length > 0)
 			{
 				/* -------------------------------------------------------
@@ -381,9 +372,9 @@ export default function(onedit, setIsPinned, isPinned) {
 				 * -------------------------------------------------------
 				 */
 
-				var $canvasContainer = $assets.find(".task-previews.task-preview-3D");
+				const $canvasContainer = $assets.find(".task-previews.task-preview-3D");
 				if($canvasContainer.find(".task-preview-visual").length > 0) {
-					var renderer = $canvasContainer.data("renderer");
+					const renderer = $canvasContainer.data("renderer");
 					renderer.destroy();
 				}
 			}

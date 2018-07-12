@@ -4,7 +4,6 @@
 		"build_js": "webpack --config webpack.config.js"
 	},
 	"dependencies": {
-		"lozad": "1.0.6",
 		"uuid": "3.1.0",
 		"three": "0.87.1",
 		"three-matcap-material": "1.0.0",

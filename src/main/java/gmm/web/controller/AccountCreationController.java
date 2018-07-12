@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import gmm.domain.User;
+import gmm.service.data.Config;
 import gmm.service.users.UserService;
 
 @RequestMapping("newaccount")
@@ -24,14 +24,12 @@ public class AccountCreationController {
 	private final UserService userService;
 	private final String accountToken;
 	
-	private AccountCreationController(UserService userService,
-			@Value("${accountcreation.token}") String accountToken) {
-		
+	private AccountCreationController(UserService userService, Config config) {
 		this.userService = userService;
+		accountToken = config.getAccountCreationToken();
 		if (accountToken == null || accountToken.equals("")) {
 			logger.warn("Configuration problem: accountcreation.token is missing or empty! Any attempts to use this token will fail.");
 		}
-		this.accountToken = accountToken;
 	}
 	
 	/**

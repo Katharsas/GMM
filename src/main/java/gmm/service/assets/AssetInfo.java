@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 
 /**
  * Represents the file (storage) information about an asset like actual name, key name, type and file path and status.
@@ -27,5 +27,5 @@ public interface AssetInfo {
 	public AssetGroupType getType();
 	public Path getDisplayPath();
 	
-	public Path getAssetFilePathAbsolute(DataConfigService config);
+	public Path getAssetFilePathAbsolute(PathConfig config);
 }

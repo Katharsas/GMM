@@ -246,10 +246,10 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 	}
 	
 	/**
-	 * Expose to <spring:eval expression="@config.getProperty(...)"  in jsps
+	 * Expose to <spring:eval expression="@metaConfig.getProperty(...)"  in jsps
 	 */
 	@Bean
-	public PropertiesFactoryBean config() {
+	public PropertiesFactoryBean metaConfig() {
 		final PropertiesFactoryBean factory = new PropertiesFactoryBean();
 		factory.setLocation(new ClassPathResource("meta.properties"));
 		return factory;

@@ -15,7 +15,7 @@ import gmm.collections.HashSet;
 import gmm.collections.Set;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
-import gmm.service.data.DataConfigService;
+import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
 
 /**
@@ -95,7 +95,7 @@ public class NewAssetFolderInfo implements AssetInfo {
 	/**
 	 * Use this constructor if no service could be found for this asset folder name to make this 
 	 * asset folder invalid.
-	 * @param base - absolute root folder for new assets as from {@link DataConfigService#assetsNew()}.
+	 * @param base - absolute root folder for new assets as from {@link PathConfig#assetsNew()}.
 	 * @param relative - path to asset folder relative to base (may include assetTypeFolder).
 	 */
 	public NewAssetFolderInfo(Path relative) {
@@ -110,7 +110,7 @@ public class NewAssetFolderInfo implements AssetInfo {
 	 * @param service - The service that is responsible for this asset folder. If assetTypeFolders
 	 * 		is enabled, it may not match the given asset folder name (which makes the folder invalid),
 	 * 		because it is the service for all folders inside the assetTypeFolder.
-	 * @param base - absolute root folder for new assets as from {@link DataConfigService#assetsNew()}.
+	 * @param base - absolute root folder for new assets as from {@link PathConfig#assetsNew()}.
 	 * @param relative - path to asset folder relative to base (may include assetTypeFolder).
 	 */
 	public NewAssetFolderInfo(AssetTaskService<?> service, Path relative, Path base) {
@@ -190,7 +190,7 @@ public class NewAssetFolderInfo implements AssetInfo {
 		return AssetGroupType.NEW;
 	}
 	
-	public Path getAssetFilePath(DataConfigService config) {
+	public Path getAssetFilePath(PathConfig config) {
 		if (status != AssetFolderStatus.VALID_WITH_ASSET) {
 			throw new UnsupportedOperationException("Cannot return path to asset since it does not exist!");
 		}
@@ -203,7 +203,7 @@ public class NewAssetFolderInfo implements AssetInfo {
 	}
 
 	@Override
-	public Path getAssetFilePathAbsolute(DataConfigService config) {
+	public Path getAssetFilePathAbsolute(PathConfig config) {
 		return config.assetsNew().resolve(getAssetFilePath(config));
 	}
 	

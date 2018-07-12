@@ -4,7 +4,7 @@ import TaskCache from "./tasks/TaskCache";
 import TaskList from "./tasks/TaskList";
 import TaskSwitcher from "./tasks/TaskSwitcher";
 import TaskEventBindings from "./tasks/TaskEventBindings";
-import TaskDialogs, { TaskDialogsInit } from "./shared/TaskDialog";
+import { TaskDialogsInit } from "./shared/TaskDialog";
 import { allVars } from "./shared/default";
 import {} from "./shared/template";
 
