@@ -38,7 +38,7 @@ apply plugin: 'com.moowork.node'
 apply plugin: "com.moowork.gulp"
 
 group = 'de.gothic-reloaded-mod'
-version = '0.5.3-SNAPSHOT'
+version = '0.6.0-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
