@@ -8,12 +8,15 @@
 	To decide if message gets logged, root/logger level is compared with level
 	from method call. No level attribute is synonym to level OFF or INHERITED.
  -->
+ 
 
 <!-- Enable scanning of this config file -->
 <configuration scan="true" scanPeriod="30 seconds" debug="false">
+	
+	<!-- Console -->
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
+			<Pattern>%d{HH:mm:ss.SSS} %-5level %logger{200} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -21,14 +24,19 @@
 		</filter>
 	</appender>
 	
-  	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<File>${catalina.base}/logs/gmm.log</File>
+    
+    <!-- Log Files -->
+    <insertFromJNDI env-entry-name="java:comp/env/gmm/workspace" as="workspace" />
+    
+    <appender name="fileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <File>${workspace}/logs/gmm.log</File>
+        
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- daily rollover -->
-			<FileNamePattern>gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
-
-			<!-- keep 30 days' worth of history -->
-			<maxHistory>60</maxHistory>			
+            <FileNamePattern>${workspace}/logs/gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
+			<!-- keep 60 days' worth of history -->
+			<maxHistory>60</maxHistory>
 		</rollingPolicy>
 		
 		<encoder>
@@ -40,26 +48,25 @@
 		</filter>
   	</appender>
   	
+  	
+  	<!-- Log Levels -->
+  	<!-- Suppress Spring logging -->
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
 	<logger name="org.springframework" level="WARN"/>
-	
-	<logger name="org.akhikhl.gretty" level="INFO"/>
+	<!-- Suppress template stuff -->
 	<logger name="freemarker.cache" level="INFO"/>
-	
-	<!-- Suppress scan details -->
-	<logger name="gmm.service.assets.AssetScanner" level="DEBUG"/>
-	<!-- Suppress notification logging -->
+	<!-- Suppress GMM details -->
+	<logger name="gmm.service.assets.AssetScanner" level="INFO"/>
 	<logger name="gmm.service.NotificationService" level="INFO"/>
-	<!-- Suppress blender conversion script output -->
 	<logger name="gmm.service.tasks.PythonTCPSocket" level="INFO"/>
-	<!-- Suppress pinned and workbench event info -->
 	<logger name="gmm.web.controller.TaskController" level="INFO"/>
 	<logger name="gmm.web.controller.WorkbenchController" level="INFO"/>
 
+    <!-- Default level & output methods -->
 	<root>
 		<level value="DEBUG" />
 		<appender-ref ref="consoleAppender" />
-		<appender-ref ref="dailyRollingFileAppender" />
+		<appender-ref ref="fileAppender" />
 	</root>
 
 </configuration>

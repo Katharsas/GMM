@@ -1,35 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Licensed to the Apache Software Foundation (ASF) under one or more
-  contributor license agreements.  See the NOTICE file distributed with
-  this work for additional information regarding copyright ownership.
-  The ASF licenses this file to You under the Apache License, Version 2.0
-  (the "License"); you may not use this file except in compliance with
-  the License.  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-<!-- The contents of this file will be loaded for each web application -->
+    Tomcat will copy this file to catalina.base/catalina/localhost/{appName}.xml,
+    unless that file already exists (which can be used to overwrite these settings).
+ -->
 <Context>
-
+    <!--
+        The Workspace contains the GMM configuration file, GMM logs, the database, assets
+        and temporary files. By default the GMM will only ever change data which is inside
+        this folder.
+        
+        Change the value of this environment entry to change its location. Absolute paths
+        work, too. If relative, the path is relative to the current's process working
+        directory (user dir).
+        
+        Default value: "./gmm-workspace"
+        
+        Example:
+        If you want the workspace folder to be located in your tomcat home directory, change
+        value to "${catalina.base}/<folder_name>".
+     -->
+    <Environment name="gmm/workspace" value="./gmm-workspace" type="java.lang.String"/>
+    
+    
     <!-- Default set of monitored resources. If one of these changes, the    -->
     <!-- web application will be reloaded.                                   -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
     <WatchedResource>WEB-INF/tomcat-web.xml</WatchedResource>
     <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
-
-    <!-- Uncomment this to disable session persistence across Tomcat restarts -->
-    <!--
-    <Manager pathname="" />
-    -->
     
-    <!-- Custom: For better startup time -->
+    <!-- Custom: Optional, for better startup time -->
     <JarScanner>
         <JarScanFilter
         	defaultPluggabilityScan="false"
@@ -39,6 +38,6 @@
         		jstl-1.2.jar,
         		spring-webmvc-*.jar,
         		spring-security-taglibs-*.jar"/>
-    </JarScanner> 
+    </JarScanner>
     
 </Context>

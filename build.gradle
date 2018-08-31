@@ -134,8 +134,12 @@ gretty {
 	contextPath = '/GMM'
 	servletContainer = "tomcat9"
 	//serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
-	logbackConfigFile = "src/main/resources/logback.xml"
 	recompileOnSourceChange = false // call javaCompile to reload or auto reload
+	enableNaming = true // enable JNDI in context.xml for embedded tomcat
+	
+	// gretty container log (has nothing to to with GMM's log)
+	logDir = "${project.projectDir}/build"
+	logFileName = "gretty"
 }
 
 

@@ -248,5 +248,4 @@ pip-log.txt
 /src/main/webapp/resources/javascript/compiled
 
 blender/
-workspace/
-/config.properties
+gmm-workspace/

@@ -24,16 +24,18 @@ public class PathConfig {
 	
 	private final FileService fileService;
 	
-	private final Path base;
+	private final Path userDir;
 	
 	/**
 	 * Absolute or relative to base.
 	 */
-	@Value("${path.workspace}") private Path workspace;
+	@Value("${gmm/workspace}") private Path workspace;
 	
 	/*
 	 * Absolute or relative to workspace:
 	 */
+	
+	@Value("${path.blender}") private Path blender;
 	
 	@Value("${path.assets.original}") private Path assetsOriginal;
 	@Value("${path.assets.new}") private Path assetsNew;
@@ -42,10 +44,6 @@ public class PathConfig {
 	@Value("${path.users}") private Path dbUsers;
 	@Value("${path.tasks}") private Path dbTasks;
 	@Value("${path.other}") private Path dbOther;
-	
-//	@Value("${path.upload}") private Path upload;
-	
-	@Value("${path.blender}") private Path blender;
 	
 	/*
 	 * Absolute paths, updated on workspace change:
@@ -58,7 +56,6 @@ public class PathConfig {
 	private Path ASSETS_NEW;
 	private Path ASSET_PREVIEWS;
 	private Path TASKS;
-//	private Path UPLOAD;
 	private Path DB_OTHER;
 	private Path BLENDER;
 	
@@ -71,29 +68,22 @@ public class PathConfig {
 //	@Value("${path.assets.new.worlds}") private Path subNewWorlds;
 	
 	private final Path subAssets = Paths.get(".");
-//	private final Path subPreview = Paths.get("preview");
 	private final Path subOther = Paths.get("wip");
 	
 	@Autowired
 	public PathConfig(FileService fileService, ServletContext context) {
 		this.fileService = fileService;
-		base = Paths.get(context.getRealPath(""));
+		userDir = Paths.get(System.getProperty("user.dir"));
 	}
 	
 	@PostConstruct
 	private void setUpConfigService() {
 		updateWorkspace(workspace);
-		BLENDER = base.resolve(blender).normalize();
-		logger.info("\n"
-				+	"##########################################################" + "\n\n"
-				+	"  Expecting blender installation folder to be at: " + "\n"
-				+	"  " + blender + "\n\n"
-				+	"##########################################################");
 	}
 	
 	protected void updateWorkspace(Path workspace) {
 		Objects.requireNonNull(workspace);
-		WORKSPACE = base.resolve(workspace).normalize();
+		WORKSPACE = userDir.resolve(workspace).normalize();
 		
 		logger.info("\n"
 				+	"##########################################################" + "\n\n"
@@ -101,12 +91,17 @@ public class PathConfig {
 				+	"  " + WORKSPACE + "\n\n"
 				+	"##########################################################");
 		
-
+		BLENDER = WORKSPACE.resolve(blender).normalize();
+		logger.info("\n"
+				+	"##########################################################" + "\n\n"
+				+	"  Expecting blender installation folder to be at: " + "\n"
+				+	"  " + BLENDER + "\n\n"
+				+	"##########################################################");
+		
 		TASKS = WORKSPACE.resolve(fileService.restrictAccess(dbTasks, WORKSPACE));
 		ASSETS_ORIGINAL = WORKSPACE.resolve(fileService.restrictAccess(assetsOriginal, WORKSPACE));
 		ASSETS_NEW = WORKSPACE.resolve(fileService.restrictAccess(assetsNew, WORKSPACE));
 		ASSET_PREVIEWS = WORKSPACE.resolve(fileService.restrictAccess(assetPreviews, WORKSPACE));
-//		UPLOAD = wsAbsolute.resolve(fileService.restrictAccess(upload, wsAbsolute));
 		USERS = WORKSPACE.resolve(fileService.restrictAccess(dbUsers, WORKSPACE));
 		DB_OTHER = WORKSPACE.resolve(fileService.restrictAccess(dbOther, WORKSPACE));
 		
@@ -140,15 +135,12 @@ public class PathConfig {
 	public Path dbOther() {
 		return DB_OTHER;
 	}
-//	public Path upload() {
-//		return UPLOAD;
-//	}
 
 	public Path blender() {
 		return BLENDER;
 	}
 	public Path blenderPythonScript() {
-		return base.resolve("WEB-INF/python/gothic3dsToThree.py");
+		return userDir.resolve("WEB-INF/python/gothic3dsToThree.py");
 	}
 	
 	public Path subNewTextures() {

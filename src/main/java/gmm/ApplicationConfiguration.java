@@ -67,7 +67,7 @@ import gmm.web.binding.PathEditor;
 @EnableScheduling
 @Import({ WebSocketConfiguration.class })
 @PropertySource("classpath:default.properties")
-@PropertySource(value = "file:./config.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "file:${gmm/workspace}/config.properties", ignoreResourceNotFound = true)
 public class ApplicationConfiguration implements WebMvcConfigurer {
 
 	@Autowired
@@ -76,6 +76,22 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
     @PostConstruct
     public void init() {
         requestMappingHandlerAdapter.setIgnoreDefaultModelOnRedirect(true);
+        
+        // TODO:
+        // The default.properties must be copied to workspace as config.properties if it does not yet exist.
+        // TODO
+        // Use cargo plugin to deploy with specific workspace location for test/staging/prod.
+        
+//        Context initContext;
+//		try {
+//			initContext = new InitialContext();
+//			final Context envContext  = (Context) initContext.lookup("java:/comp/env");
+//			final String logLocation = (String) envContext.lookup("log-folder-location");
+//			System.out.println(logLocation);
+//			
+//		} catch (final NamingException e) {
+//			e.printStackTrace();
+//		}
     }
 	
 	/**
