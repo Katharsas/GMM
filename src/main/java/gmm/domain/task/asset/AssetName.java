@@ -69,6 +69,9 @@ public class AssetName implements Comparable<AssetName> {
 		return assetNameOriginal;
 	}
 	
+	/**
+	 * @param path - Path to asset folder supposed to match this asset name.
+	 */
 	public void assertPathMatch(Path path) {
 		Objects.requireNonNull(path);
 		final StringUtil stringUtils = StringUtil.ignoreCase();

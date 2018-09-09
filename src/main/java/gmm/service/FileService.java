@@ -166,13 +166,48 @@ public class FileService {
 		}
 	}
 	
+	/**
+	 * Tests if a file and any necessary parent directories can be created (by creating them).
+	 * Deletes directories that were created during test afterwards. Fails if the given file
+	 * exists already.
+	 */
 	public synchronized void testCreateDeleteFile(Path path) {
-		createDirectory(path.getParent());
+		if (!path.isAbsolute()) {
+			throw new IllegalArgumentException("Path must be absolute!");
+		}
+		Path topLevelCreatedParent = null;
 		try {
-			path.toFile().createNewFile();
-			path.toFile().delete();
+			// check parent folders for conflict / create them / remember for deletion
+			final Path parent = path.getParent();
+			if (parent != null) {
+				Path current = parent.getRoot();
+				for (final Path pathElement : parent) {
+					current = current.resolve(pathElement);
+					if (Files.exists(current)) {
+						if (!Files.isDirectory(current)) {
+							throw new IOException("Parent folder '" + current.getParent() + "' of given file path cannot be a folder since it exists as a file!");
+						}
+					} else {
+						Files.createDirectory(current);
+						if (topLevelCreatedParent == null) {
+							topLevelCreatedParent = current;
+						}
+					}
+				}
+			}
+			// test create
+			Files.createFile(path);
 		} catch (final IOException e) {
-			throw new UncheckedIOException("Could not test-create/delete file at '" + path.toString() + "'", e);
+			throw new UncheckedIOException("Could not test-create file at '" + path.toString() + "'", e);
+		} finally {
+			// delete remembered parent folders & file
+			try {
+				if (topLevelCreatedParent != null) {
+					FileUtils.forceDelete(topLevelCreatedParent.toFile());
+				}
+			} catch (final IOException e) {
+				throw new UncheckedIOException("Could not clean up after file test-creation at '" + path.toString() + "'", e);
+			}
 		}
 	}
 	

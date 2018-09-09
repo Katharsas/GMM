@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import gmm.collections.Collection;
+import gmm.collections.EventMap;
+import gmm.collections.EventMapSource;
 import gmm.collections.HashSet;
 import gmm.collections.List;
 import gmm.collections.Set;
@@ -75,9 +77,9 @@ public class AssetService {
 	// new scan. This could be fixed by scanning once more before initializing VcsPlugin. AssetInfo
 	// would then be removed together with previews when scanning updated WC.
 	
-	private final Map<AssetName, AssetTask<?>> assetTasks;
+	private final EventMap<AssetName, AssetTask<?>> assetTasks;
 	
-	private final Map<AssetName, NewAssetFolderInfo> newAssetFolders;
+	private final EventMap<AssetName, NewAssetFolderInfo> newAssetFolders;
 	private final Map<AssetName, NewAssetFolderInfo> newAssetFoldersWithoutTasks;
 	
 	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
@@ -88,12 +90,23 @@ public class AssetService {
 		return newAssetFolders.get(assetName);
 	}
 	
+	/**
+	 * @return Live unmodifiable view.
+	 */
 	public Collection<NewAssetFolderInfo> getNewAssetFoldersWithoutTasks() {
 		return new UnmodifiableCollection<>(NewAssetFolderInfo.class, newAssetFoldersWithoutTasks.values());
 	}
 	
 	public OriginalAssetFileInfo getOriginalAssetFileInfo(AssetName assetName) {
 		return originalAssetFiles.get(assetName);
+	}
+	
+	public EventMapSource<AssetName, NewAssetFolderInfo> getNewAssetFoldersEvents() {
+		return newAssetFolders;
+	}
+	
+	public EventMapSource<AssetName, AssetTask<?>> getNewAssetFoldersTaskEvents() {
+		return assetTasks;
 	}
 	
 	@Autowired
@@ -109,8 +122,8 @@ public class AssetService {
 		this.config = config;
 		this.fileService = fileService;
 		
-		assetTasks = new ConcurrentHashMap<>();
-		newAssetFolders = new ConcurrentHashMap<>();
+		assetTasks = new EventMap<>(new ConcurrentHashMap<>());
+		newAssetFolders = new EventMap<>(new ConcurrentHashMap<>());
 		newAssetFoldersWithoutTasks = new ConcurrentHashMap<>();
 		originalAssetFiles = new ConcurrentHashMap<>();
 		
