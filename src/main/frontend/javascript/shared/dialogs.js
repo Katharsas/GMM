@@ -32,8 +32,6 @@ var Dialogs = (function() {
 	var $overlay;
 	var $confirmDialogContainer;
 	var $confirmDialogTemplate;
-	
-	var currentCallback;// for non-confirm-dialogs
 
 	$(document).ready(function() {
 		// define stuff
@@ -138,20 +136,27 @@ var Dialogs = (function() {
 		return $dialog;
 	};
 	
-	
-	var showDialog = function($dialog, callback, width, height) {
+	/**
+	 * @param {JQuery} $dialog
+	 * @param {number} width - optional
+	 * @param {number} height - optional
+	 */
+	var showDialog = function($dialog, width, height) {
 		if ($dialog.hasClass("confirmDialog")) {
 			throw new Errors.IllegalArgumentException("Cannot be called on confirm dialog!");
 		}
-		currentCallback = callback;
 		showOverlay();
 		centerDialog($dialog, 0, width, height);
 		$dialog.show();
+		return $dialog;
 	};
 	
+	/**
+	 * @param {JQuery} $dialog 
+	 */
 	var hideDialog = function($dialog) {
 		if ($dialog === undefined) {
-			throw new Errors.IllegalArgumentException("Dialog cannot be undefined anymore!");
+			throw new Errors.IllegalArgumentException("Dialog cannot be undefined!");
 		}
 		if($dialog.hasClass("confirmDialog")) {
 			$dialog.remove();
@@ -162,10 +167,6 @@ var Dialogs = (function() {
 			$dialog.hide();
 			hideOverlay();
 		}
-	};
-	
-	var confirmOk = function($dialog) {
-		currentCallback();
 	};
 	
 	return {
@@ -218,9 +219,7 @@ var Dialogs = (function() {
 				$stackTrace.show();
 			}
 			showDialog($exceptionDialog);
-		},
-		
-		confirmOk: confirmOk
+		}
 	};
 })();
 

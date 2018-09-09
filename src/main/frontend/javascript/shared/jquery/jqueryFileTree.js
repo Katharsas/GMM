@@ -36,7 +36,8 @@ import Ajax from "../ajax";
 //
 // MODIFIED FOR PRIVATE PROJECT, NOT ORIGINAL VERSION:
 //
-// Options:  directoryClickable - whether or not to call the callbackOnSelect function on directory click
+// Options:  fileClickable - whether or not to call the callbackOnSelect function on file (not directory) click 
+//			 directoryClickable - whether or not to call the callbackOnSelect function on directory click
 //			 url - alternative name for "script" option 
 //
 $.extend($.fn, {
@@ -55,6 +56,7 @@ $.extend($.fn, {
 		if( options.collapseEasing === undefined ) options.collapseEasing = null;
 		if( options.multiFolder === undefined ) options.multiFolder = true;
 		if( options.loadMessage === undefined ) options.loadMessage = 'Loading...';
+		if( options.fileClickable === undefined ) options.fileClickable = true;
 		if( options.directoryClickable === undefined ) options.directoryClickable = true;
 		
 		$(this).each( function() {
@@ -108,8 +110,10 @@ $.extend($.fn, {
 							return false;
 						}
 					} else {
-						callbackOnSelect($(this));
-						return false;
+						if (options.fileClickable) {
+							callbackOnSelect($(this));
+							return false;
+						}
 					}
 				});
 				// Prevent A from triggering the # on non-click events

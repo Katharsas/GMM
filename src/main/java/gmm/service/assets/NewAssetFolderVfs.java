@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import com.google.common.jimfs.UnixCompatible;
+import com.google.common.jimfs.VPath;
 
 import gmm.collections.EventMapSource;
 import gmm.domain.task.asset.AssetName;
@@ -29,19 +29,74 @@ import gmm.service.FileService;
 @Service
 public class NewAssetFolderVfs {
 
+	private class VirtualPath extends VPath {
+		public VirtualPath(String relativePath) {
+			super(relativePath);
+		}
+		public VirtualPath(Path relativePath) {
+			super(relativePath);
+		}
+		
+		protected VirtualPath(Path path, boolean internal) {
+			super(path, internal);
+		}
+		@Override
+		protected Path convert(String relativePath) {
+			return fileSystem.getPath(relativePath);
+		}
+		@Override
+		protected VPath create(Path vPath) {
+			return new VirtualPath(vPath, true);
+		}
+	}
+	
+	/**
+	 * Converts paths to virtual paths with correct underlying fs.
+	 */
+	public class VirtualPaths {
+		public final VPath root;
+		private VirtualPaths() {
+			this.root = new VirtualPath("/");
+		}
+		public VPath of(Path relativePath) {
+			return new VirtualPath(relativePath);
+		}
+		public VPath of(String relativePath) {
+			return new VirtualPath(relativePath);
+		}
+		public VPath root() {
+			return new VirtualPath("/");
+		}
+//		public Path root() {
+//			return fileSystem.getPath("/");
+//		}
+//		public Path get(Path path) {
+//			return fileSystem.getPath(path.toString());
+//		}
+//		public Path get(String path) {
+//			return fileSystem.getPath(path);
+//		}
+//		public Path getAsAbsolute(Path path) {
+//			return fileSystem.getPath("/", path.toString());
+//		}
+//		public Path getAsAbsolute(String path) {
+//			return fileSystem.getPath("/", path);
+//		}
+	}
+	
 	private final FileSystem fileSystem;
-	private final Path root;
+	private final VirtualPaths vPaths;
 	
 	private FileService fileService;
 	
 	@Autowired
 	public NewAssetFolderVfs(AssetService assetService) {
 		
-		fileSystem = Jimfs.newFileSystem(Configuration.unix());
-		root = fileSystem.getPath("/");
+		fileSystem = Jimfs.newFileSystem(UnixCompatible.config());
+		vPaths = new VirtualPaths();
 		
 		try {
-			Files.deleteIfExists(root.resolve("work"));
+			Files.deleteIfExists(vPaths.root.resolve("work").get());
 		} catch (final IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -54,12 +109,8 @@ public class NewAssetFolderVfs {
 		}
 	}
 	
-	public Path getVirtualRootAssetsNew() {
-		return root;
-	}
-	
-	public Path convertRelativePathToVfs(Path relative) {
-		return root.resolve(FilenameUtils.separatorsToUnix(relative.toString()));
+	public VirtualPaths virtualPaths() {
+		return vPaths;
 	}
 	
 	/**
@@ -67,10 +118,10 @@ public class NewAssetFolderVfs {
 	 * not exist already and that it is not inside another asset folder.
 	 */
 	public boolean isValidNewAssetFolderLocation(Path relative) {
-		final Path vfsRelative = convertRelativePathToVfs(relative);
-		if (Files.exists(vfsRelative)) return false;
+		final Path vfsPath = vPaths.root.resolve(relative).get();
+		if (Files.exists(vfsPath)) return false;
 		try {
-			fileService.testCreateDeleteFile(vfsRelative);
+			fileService.testCreateDeleteFile(vfsPath);
 			return true;
 		} catch(final UncheckedIOException e) {
 			return false;
@@ -80,9 +131,9 @@ public class NewAssetFolderVfs {
 	private void onPut(AssetName name, NewAssetFolderInfo info) {
 		final Path localPath = info.getAssetFolder();
 		if (localPath != null) {
-			final Path unixPath = convertRelativePathToVfs(localPath);
+			final Path vfsPath = vPaths.root.resolve(localPath).get();
 			try {
-				createFileAndParentFolders(unixPath);
+				createFileAndParentFolders(vfsPath);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
 			}
@@ -92,10 +143,10 @@ public class NewAssetFolderVfs {
 	private void onRemove(AssetName name, NewAssetFolderInfo info) {
 		final Path localPath = info.getAssetFolder();
 		if (localPath != null) {
-			final Path unixPath = convertRelativePathToVfs(localPath);
-			if (Files.isRegularFile(unixPath)) {
+			final Path vfsPath = vPaths.root.resolve(localPath).get();
+			if (Files.isRegularFile(vfsPath)) {
 				try {
-					deleteFileAndEmptyFolders(unixPath);
+					deleteFileAndEmptyFolders(vfsPath);
 				} catch (final IOException e) {
 					throw new UncheckedIOException(e);
 				}
@@ -112,7 +163,7 @@ public class NewAssetFolderVfs {
 		Path current = path;
 		Files.delete(current);
 		current = current.getParent();
-		while (isDirectoryEmpty(current) && !current.equals(root)) {
+		while (isDirectoryEmpty(current) && !current.equals(vPaths.root)) {
 			Files.delete(current);
 			current = current.getParent();
 		}

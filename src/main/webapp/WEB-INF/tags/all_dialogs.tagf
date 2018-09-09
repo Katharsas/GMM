@@ -86,13 +86,35 @@
 
 <%-- Task Dialog --%>
 
-<div id="taskDialog-template" class="taskDialog dialog draggable"">
+<div id="taskDialog-template" class="taskDialog dialog draggable">
 	<div class="taskDialog-close button right"><img class="svg" src="<c:url value="/res/gfx/close.svg"/>"></div>
 	<div class="clear"></div>
 	<div class="taskDialog-task">
 	</div>
 </div>
 <div id="taskDialog-container"></div>
+
+<%-- Create Asset Folder Dialog --%>
+
+<div id="folderDialog-template" class="dialog draggable">
+	Select the folder that a new asset should go into.
+	<div class="folderDialog-tree-description">
+		New asset folders:
+	</div>
+	<div class="folderDialog-tree"></div>
+	Alternativly, enter the folder path manually. Missing folders will be created:
+	<div class="input">
+		<input class="folderDialog-path-input" type="text" name=path>
+	</div>
+	<div class="folderDialog-ok dialog-button button left">
+		<fmt:message key="all_template.confirm"/>
+	</div>
+	<div class="folderDialog-cancel dialog-button button right">
+		<fmt:message key="all_template.cancel"/>
+	</div>
+	<div class="clear"></div>
+</div>
+<div id="folderDialog-container"></div>
 
 <%-- 
 ##############################################

@@ -1,7 +1,10 @@
 package gmm.web.controller;
 
+import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +28,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.common.jimfs.VPath;
+
 import gmm.domain.UniqueObject;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
@@ -36,11 +41,15 @@ import gmm.service.FileService;
 import gmm.service.assets.AssetService;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
+import gmm.service.assets.NewAssetFolderVfs;
+import gmm.service.assets.NewAssetFolderVfs.VirtualPaths;
 import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataAccess;
 import gmm.service.data.PathConfig;
+import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.ModelTaskService;
+import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.web.FileTreeScript;
 
@@ -58,6 +67,8 @@ public class TaskAssetController {
 	@Autowired private FileService fileService;
 	@Autowired private AssetService assetService;
 	@Autowired private NewAssetLockService lockService;
+	@Autowired private NewAssetFolderVfs newAssetFolderVfs;
+	@Autowired private TaskServiceFinder serviceFinder;
 	
 	private final DateTimeFormatter expiresFormatter = 
 			DateTimeFormat.forPattern("EEE, dd MMM yyy hh:mm:ss z").withLocale(Locale.US);
@@ -163,19 +174,43 @@ public class TaskAssetController {
 		}
 	}
 	
+	@RequestMapping(value = {"/newAssetFolder/{idLink}"} , method = RequestMethod.POST)
+	public String[] showNewAssetFolderTree(
+			@PathVariable String idLink,
+			@RequestParam("dir") String dir) {
+		
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName());
+		
+		final VirtualPaths vPaths = newAssetFolderVfs.virtualPaths();
+		final VPath subFolder = vPaths.of(service.getAssetTypeSubFolder());
+		return new FileTreeScript().html(vPaths.of(dir), vPaths.root(), Optional.of(subFolder));
+	}
+	
 	// TODO we need to show user the new asset root and allow him to navigate it / create new folder if necessary.
 	// User can select a folder, and then manually change the path string to create new folders.
-	// User should not be able to change asset type folder, but to see it.
+	// User should not be able to change asset type folder, but to see it. (DONE)
 	
 	/**
 	 * @param idLink
-	 * @param path - relative to asset type folder (if those are enabled)
+	 * @param path - relative to new asset folder
 	 */
 	@RequestMapping(value = "/createAssetFolder/{idLink}", method = RequestMethod.POST)
 	public void createAssetFolder(
 			@PathVariable final String idLink,
-			@RequestParam("path") final String path) {
+			@RequestParam("path") final Path path) {
 		// validate that idLink is an asset task
+		
+		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		if (task.getNewAssetFolderInfo() != null) {
+			throw new UncheckedIOException(new FileAlreadyExistsException(task.getNewAssetFolderInfo().getAssetFolderName().get()));
+		}
+		fileService.restrictAccess(null, null);
+		
+		final Path assetFolderPath = path.resolve(task.getAssetName().get());
+		newAssetFolderVfs.isValidNewAssetFolderLocation(assetFolderPath);
+		
+		// TODO validate that type folder is correct
 		
 		// TODO validate path, validate that it is not inside an existing asset folder,
 		// validate that the asset folder does not yet exist

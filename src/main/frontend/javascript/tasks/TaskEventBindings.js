@@ -13,6 +13,15 @@ import { allVars, contextUrl, htmlDecode } from "../shared/default";
  * Provides methods to bind all needed listeners to task header or body
  * 
  */
+
+let $folderDialogTemplate;
+let $folderDialogContainer;
+
+$(document).ready(function() {
+	$folderDialogTemplate = $("#folderDialog-template");
+    $folderDialogContainer = $("#folderDialog-container");
+});
+
 export default function(onedit, setIsPinned, isPinned) {
 	
 	const updateTaskLists = function() {
@@ -51,8 +60,8 @@ export default function(onedit, setIsPinned, isPinned) {
 	let selectedFileType;
 	let $selectedFile = $();
 	
-	const filePath = function() {
-		return $selectedFile.attr("rel");
+	const filePath = function($fileOrFolder) {
+		return $fileOrFolder.attr("rel");
 	};
 	const selectFile = function($file, fileType) {
 		selectedFileType = fileType;
@@ -278,7 +287,37 @@ export default function(onedit, setIsPinned, isPinned) {
 					$uploadNewestAsset.hide();// TODO
 					// create folder
 					const $createFolder = $assetButtons.filter(".task-asset-newest").find(".action-folder");
-					$createFolder.hide();// TODO
+					$createFolder.on("click", function() {
+
+						const $folderDialog = $folderDialogTemplate.clone();
+						const $fileTree = $folderDialog.find(".folderDialog-tree");
+						const $input = $folderDialog.find(".folderDialog-path-input input");
+						const onSelectFolder = function($folder) {
+							$input.val(filePath($folder));
+							console.log($folder);
+						};
+						$fileTree.fileTree({
+							url : contextUrl + "/tasks/newAssetFolder/" + id,
+							fileClickable : false,
+							multiFolder : false
+						}, onSelectFolder);
+
+						$folderDialogContainer.append($folderDialog);
+						const $dialog = Dialogs.showDialog($folderDialog);
+
+						const $confirmButton = $folderDialog.find(".folderDialog-ok");
+						AssetFileOperationsNotifier.registerNewAssetOperation($confirmButton, "click", function() {
+							Ajax.post(contextUrl + "/tasks/createAssetFolder/" + id, {path})
+								.then(function() {
+									Dialogs.hideDialog($dialog);
+								});
+						});
+						const $cancelButton = $folderDialog.find(".folderDialog-cancel");
+						$cancelButton.on("click", function() {
+							Dialogs.hideDialog($dialog);
+							$folderDialog.remove();
+						});
+					});
 					//delete
 					const $deleteNewAssetFile = $assetButtons.filter(".task-asset-newest").find(".action-delete");
 					AssetFileOperationsNotifier.registerNewAssetOperation($deleteNewAssetFile, "click", function() {
@@ -307,6 +346,7 @@ export default function(onedit, setIsPinned, isPinned) {
 					const $fileTreeOther = $files.find(".task-files-wip-tree");
 					$fileTreeOther.fileTree(fileTreeOptions(false), function($file) {
 						selectFile($file, "WIP");
+						// TODO put path into filetree container data instead of globally 
 					});
 					
 					const $fileOps = $files.find(".task-files-wip-operations");
@@ -333,7 +373,7 @@ export default function(onedit, setIsPinned, isPinned) {
 					//download
 					const $downloadWipFile = $fileOps.find(".task-file-button.action-download");
 					AssetFileOperationsNotifier.registerNewAssetOperation($downloadWipFile, "click", function() {
-						const dir = filePath();
+						const dir = filePath($selectedFile);
 						if (dir === undefined || dir === "") return;
 						downloadOtherFile(id, dir);
 					});
@@ -341,7 +381,7 @@ export default function(onedit, setIsPinned, isPinned) {
 					//delete
 					const $deleteWipFile = $fileOps.find(".task-file-button.action-delete");
 					AssetFileOperationsNotifier.registerNewAssetOperation($deleteWipFile, "click", function() {
-						const dir = filePath();
+						const dir = filePath($selectedFile);
 						if (dir === undefined || dir === "") {
 							return;
 						}
@@ -351,7 +391,7 @@ export default function(onedit, setIsPinned, isPinned) {
 								.then(function() {
 									Dialogs.hideDialog($dialog);
 								});
-						}, "Delete wip file at '" + filePath() + "' ?");
+						}, "Delete wip file at '" + filePath($selectedFile) + "' ?");
 					});
 				}
 			}
