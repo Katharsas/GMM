@@ -289,12 +289,11 @@ export default function(onedit, setIsPinned, isPinned) {
 					const $createFolder = $assetButtons.filter(".task-asset-newest").find(".action-folder");
 					$createFolder.on("click", function() {
 
-						const $folderDialog = $folderDialogTemplate.clone();
-						const $fileTree = $folderDialog.find(".folderDialog-tree");
-						const $input = $folderDialog.find(".folderDialog-path-input input");
+						const { $dialog, actionCancel } = Dialogs.createDialog($folderDialogTemplate, $folderDialogContainer);
+						const $fileTree = $dialog.find(".folderDialog-tree");
+						const $input = $dialog.find(".folderDialog-path-input");
 						const onSelectFolder = function($folder) {
 							$input.val(filePath($folder));
-							console.log($folder);
 						};
 						$fileTree.fileTree({
 							url : contextUrl + "/tasks/newAssetFolder/" + id,
@@ -302,21 +301,16 @@ export default function(onedit, setIsPinned, isPinned) {
 							multiFolder : false
 						}, onSelectFolder);
 
-						$folderDialogContainer.append($folderDialog);
-						const $dialog = Dialogs.showDialog($folderDialog);
+						Dialogs.showDialog($dialog);
 
-						const $confirmButton = $folderDialog.find(".folderDialog-ok");
+						const $confirmButton = $dialog.find(".folderDialog-ok");
 						AssetFileOperationsNotifier.registerNewAssetOperation($confirmButton, "click", function() {
+							const path = $input.val();
 							Ajax.post(contextUrl + "/tasks/createAssetFolder/" + id, {path})
-								.then(function() {
-									Dialogs.hideDialog($dialog);
-								});
+								.then(actionCancel);
 						});
-						const $cancelButton = $folderDialog.find(".folderDialog-cancel");
-						$cancelButton.on("click", function() {
-							Dialogs.hideDialog($dialog);
-							$folderDialog.remove();
-						});
+						const $cancelButton = $dialog.find(".folderDialog-cancel");
+						$cancelButton.on("click", actionCancel);
 					});
 					//delete
 					const $deleteNewAssetFile = $assetButtons.filter(".task-asset-newest").find(".action-delete");

@@ -2,6 +2,7 @@ package gmm.web.controller;
 
 import java.io.UncheckedIOException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Optional;
@@ -184,7 +185,7 @@ public class TaskAssetController {
 		
 		final VirtualPaths vPaths = newAssetFolderVfs.virtualPaths();
 		final VPath subFolder = vPaths.of(service.getAssetTypeSubFolder());
-		return new FileTreeScript().html(vPaths.of(dir), vPaths.root(), Optional.of(subFolder));
+		return new FileTreeScript().html(vPaths.of(dir), vPaths.root, Optional.of(subFolder));
 	}
 	
 	// TODO we need to show user the new asset root and allow him to navigate it / create new folder if necessary.
@@ -196,27 +197,36 @@ public class TaskAssetController {
 	 * @param path - relative to new asset folder
 	 */
 	@RequestMapping(value = "/createAssetFolder/{idLink}", method = RequestMethod.POST)
-	public void createAssetFolder(
+	public ResponseEntity<Void> createAssetFolder(
 			@PathVariable final String idLink,
 			@RequestParam("path") final Path path) {
-		// validate that idLink is an asset task
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		if (task == null) {
+			throw new IllegalArgumentException("IdLink must correspond to an asset task!");
+		}
 		if (task.getNewAssetFolderInfo() != null) {
 			throw new UncheckedIOException(new FileAlreadyExistsException(task.getNewAssetFolderInfo().getAssetFolderName().get()));
 		}
-		fileService.restrictAccess(null, null);
+		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName());
+		final Path insideTypeFolder = fileService.restrictAccess(path, service.getAssetTypeSubFolder());
 		
-		final Path assetFolderPath = path.resolve(task.getAssetName().get());
-		newAssetFolderVfs.isValidNewAssetFolderLocation(assetFolderPath);
+		final Path assetFolderPath = service.getAssetTypeSubFolder().resolve(insideTypeFolder).resolve(task.getAssetName().get());
 		
-		// TODO validate that type folder is correct
-		
-		// TODO validate path, validate that it is not inside an existing asset folder,
-		// validate that the asset folder does not yet exist
-		
-		// TODO lock any user actions while sn svn update is running (or in general make sure that assets can only be changed by atomic operations)
-		// commit asset folder to svn
+		return tryAquireNewAssetLock(() -> {
+			if (!newAssetFolderVfs.isValidAssetFolderLocation(assetFolderPath)) {
+				throw new IllegalArgumentException("Path is not a valid new asset folder location!");
+			}
+			final Path absolute = config.assetsNew().resolve(assetFolderPath);
+			if (Files.exists(absolute)) {
+				throw new IllegalArgumentException("Path is not a valid new asset folder location!");
+			}
+			fileService.createDirectory(absolute);
+			// TODO make sure / test that all problematic cases are properly handled
+			// TODO commit
+			// TODO make sure change registered and VFS is up t date
+			return new ResponseEntity<>(HttpStatus.OK);
+		});
 	}
 	
 	/**

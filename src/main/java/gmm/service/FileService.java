@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 import gmm.collections.Collection;
@@ -137,7 +137,7 @@ public class FileService {
 	 */
 	public synchronized void delete(Path path) {
 		try {
-			FileUtils.forceDelete(path.toFile());
+			forceDelete(path);
 		} catch (final IOException e) {
 			throw new UncheckedIOException("Could not recursivly delete file or directory " + path, e);
 		}
@@ -148,7 +148,7 @@ public class FileService {
 	 */
 	public synchronized void createDirectory(Path path) {
 		try {
-			FileUtils.forceMkdir(path.toFile());
+			Files.createDirectories(path);
 		} catch (final IOException e) {
 			throw new UncheckedIOException("Could not create directory " + path, e);
 		}
@@ -203,11 +203,32 @@ public class FileService {
 			// delete remembered parent folders & file
 			try {
 				if (topLevelCreatedParent != null) {
-					FileUtils.forceDelete(topLevelCreatedParent.toFile());
+					forceDelete(topLevelCreatedParent);
 				}
 			} catch (final IOException e) {
 				throw new UncheckedIOException("Could not clean up after file test-creation at '" + path.toString() + "'", e);
 			}
+		}
+	}
+	
+	private void forceDelete(Path path) throws IOException {
+		try {
+			if (Files.isRegularFile(path)) {
+				Files.delete(path);
+			}
+			else {
+				Files.walk(path)
+			    .sorted(Comparator.reverseOrder())
+			    .forEach(filePath -> {
+			    	try {
+						Files.delete(filePath);
+					} catch (final IOException e) {
+						throw new UncheckedIOException(e);
+					}
+			    });
+			}
+		} catch (final UncheckedIOException e) {
+			throw e.getCause();
 		}
 	}
 	

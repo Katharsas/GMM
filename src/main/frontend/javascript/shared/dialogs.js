@@ -72,10 +72,7 @@ var Dialogs = (function() {
 	 */
 	var createConfirmDialog = function(onConfirm) {
 		// copy template
-		var $dialog = $confirmDialogTemplate.clone();
-		$dialog.removeAttr("id");
-		HtmlPreProcessor.applyOnlyDataAndEvents($dialog);
-		$confirmDialogContainer.append($dialog);
+		const { $dialog, actionCancel } = createDialog($confirmDialogTemplate, $confirmDialogContainer);
 		// set callbacks
 		var $input = $dialog.find(".confirmDialog-input");
 		var $textarea = $dialog.find(".confirmDialog-textarea");
@@ -83,12 +80,31 @@ var Dialogs = (function() {
 		$ok.on("click", function() {
 			onConfirm($input.val(), $textarea.val());
 		});
-		$dialog.find(".confirmDialog-cancel").on("click", function() {
-			$dialog.remove();
-			hideOverlay();
-		});
+		$dialog.find(".confirmDialog-cancel").on("click", actionCancel);
 		return $dialog;
 	};
+
+	/**
+	 * Create dialog from arbitrary template. To close call actionCancel.
+	 * @param {JQuery} $template 
+	 * @param {JQuery} $container 
+	 */
+	const createDialog = function($template, $container) {
+		// copy template
+		const $dialog = $template.clone();
+		$dialog.removeAttr("id");
+		HtmlPreProcessor.applyOnlyDataAndEvents($dialog);
+		$container.append($dialog);
+		// 	const $ok = $dialog.find(".dialog-ok");
+		const actionCancel = function() {
+			$dialog.remove();
+			hideOverlay();
+		}
+		return { 
+			$dialog,
+			actionCancel
+		};
+	}
 	
 	/**
 	 * Show a confirmation dialog to the user.
@@ -176,6 +192,8 @@ var Dialogs = (function() {
 		
 		showOverlay: showOverlay,
 		hideOverlay: hideOverlay,
+
+		createDialog: createDialog,
 		
 		/**
 		 * Show a confirmation dialog to the user.

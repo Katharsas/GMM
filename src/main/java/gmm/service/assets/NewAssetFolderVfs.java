@@ -64,34 +64,16 @@ public class NewAssetFolderVfs {
 		public VPath of(String relativePath) {
 			return new VirtualPath(relativePath);
 		}
-		public VPath root() {
-			return new VirtualPath("/");
-		}
-//		public Path root() {
-//			return fileSystem.getPath("/");
-//		}
-//		public Path get(Path path) {
-//			return fileSystem.getPath(path.toString());
-//		}
-//		public Path get(String path) {
-//			return fileSystem.getPath(path);
-//		}
-//		public Path getAsAbsolute(Path path) {
-//			return fileSystem.getPath("/", path.toString());
-//		}
-//		public Path getAsAbsolute(String path) {
-//			return fileSystem.getPath("/", path);
-//		}
 	}
 	
 	private final FileSystem fileSystem;
 	private final VirtualPaths vPaths;
 	
-	private FileService fileService;
+	private final FileService fileService;
 	
 	@Autowired
-	public NewAssetFolderVfs(AssetService assetService) {
-		
+	public NewAssetFolderVfs(AssetService assetService, FileService fileService) {
+		this.fileService = fileService;
 		fileSystem = Jimfs.newFileSystem(UnixCompatible.config());
 		vPaths = new VirtualPaths();
 		
@@ -114,10 +96,9 @@ public class NewAssetFolderVfs {
 	}
 	
 	/**
-	 * Checks if an asset folder could be created at given path. Makes sure that the folder does
-	 * not exist already and that it is not inside another asset folder.
+	 * Makes sure that the folder does not exist already and that it is not inside another asset folder.
 	 */
-	public boolean isValidNewAssetFolderLocation(Path relative) {
+	public boolean isValidAssetFolderLocation(Path relative) {
 		final Path vfsPath = vPaths.root.resolve(relative).get();
 		if (Files.exists(vfsPath)) return false;
 		try {
@@ -163,7 +144,7 @@ public class NewAssetFolderVfs {
 		Path current = path;
 		Files.delete(current);
 		current = current.getParent();
-		while (isDirectoryEmpty(current) && !current.equals(vPaths.root)) {
+		while (isDirectoryEmpty(current) && !current.equals(vPaths.root.get())) {
 			Files.delete(current);
 			current = current.getParent();
 		}

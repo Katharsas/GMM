@@ -61,7 +61,6 @@ public class FileTreeScript {
 	    	final List<Path> paths;
 	    	if (isInPrivateSection) {
 	    		// get child of relDir as specified in relFull
-//	    		final Path childName = relDir.relativize(relFull.get()).getName(0);
 	    		final int childIndex = dirPath.getNameCount();
 	    		final Path childName = absFull.get().getName(childIndex);
 	    		paths = new ArrayList<>(Path.class, dirPath.resolve(childName));
