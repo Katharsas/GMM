@@ -37,9 +37,7 @@ const registerNewAssetOperation = function($button, inputEventType, eventHandler
         if (isNewAssetFileOperationsEnabled) {
             eventHandler();
         } else {
-            const $dialog = Dialogs.alert(function() {
-                Dialogs.hideDialog($dialog);
-            }, "This action is not available while asset operations are running on server.")
+            Dialogs.alert(null, "This action is not available while asset operations are running on server.")
         }
     });
 }

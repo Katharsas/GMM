@@ -285,8 +285,7 @@ var UserManager = function() {
 			Ajax.post(contextUrl + "/admin/users/reset/" + idLink)
 				.then(function(data) {
 					Dialogs.hideDialog($confirm);
-					var $alert = Dialogs.alert(function() {
-						Dialogs.hideDialog($alert);
+					Dialogs.alert(function() {
 						window.location.reload();
 						}, "New Password:", data[0]);
 				});

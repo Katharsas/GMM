@@ -119,7 +119,7 @@ public class AssetScanner {
 		return foundNewAssetFolders;
 	}
 	
-	public Optional<NewAssetFolderInfo> onSingleNewAssetRemoved(Path assetFolderPath) {
+	public Optional<NewAssetFolderInfo> onSingleAssetFolderChanged(Path assetFolderPath) {
 		final NewAssetFolderInfo[] foundNewAssetFolder = new NewAssetFolderInfo[1];
 		AssetTaskService<?> service = null;
 		final Path absoluteFolderPath = config.assetsNew().resolve(assetFolderPath);
@@ -127,7 +127,7 @@ public class AssetScanner {
 			for (final Entry<Path, AssetTaskService<?>> entry : getNewAssetTypeFolders().entrySet()) {
 				if (absoluteFolderPath.startsWith(entry.getKey())) service = entry.getValue();
 			}
-			if (service == null) throw new IllegalArgumentException("Removed asset can not have been outside an assetTypeFolder!");
+			if (service == null) throw new IllegalArgumentException("Asset folder must be inside corresponding assetTypeFolder!");
 		}
 		scanForNewAssets(absoluteFolderPath, (folderName, folderInfo) -> {
 			foundNewAssetFolder[0] = folderInfo;

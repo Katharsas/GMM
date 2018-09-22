@@ -73,9 +73,9 @@ public abstract class VcsPlugin {
 	 */
 	public abstract void notifyRepoChange();
 	
-	public abstract void commitAddedFile(Path file);
+	public abstract void commitAddedFile(Path file, String message);
 	
-	public abstract void commitChangedFile(Path file);
+	public abstract void commitChangedFile(Path file, String message);
 	
-	public abstract void commitRemovedFile(Path file);
+	public abstract void commitRemovedFile(Path file, String message);
 }

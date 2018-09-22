@@ -2,7 +2,6 @@ package gmm.web.controller;
 
 import java.io.UncheckedIOException;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Optional;
@@ -13,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -52,6 +53,7 @@ import gmm.service.tasks.AssetTaskService;
 import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
+import gmm.service.users.CurrentUser;
 import gmm.web.FileTreeScript;
 
 
@@ -61,6 +63,9 @@ import gmm.web.FileTreeScript;
 @ResponseBody
 public class TaskAssetController {
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired private CurrentUser user;
 	@Autowired private DataAccess data;
 	@Autowired private TextureTaskService textureService;
 	@Autowired private ModelTaskService modelService;
@@ -175,6 +180,10 @@ public class TaskAssetController {
 		}
 	}
 	
+	/**
+	 * Asset folder creation
+	 * -----------------------------------------------------------------
+	 */
 	@RequestMapping(value = {"/newAssetFolder/{idLink}"} , method = RequestMethod.POST)
 	public String[] showNewAssetFolderTree(
 			@PathVariable String idLink,
@@ -188,12 +197,7 @@ public class TaskAssetController {
 		return new FileTreeScript().html(vPaths.of(dir), vPaths.root, Optional.of(subFolder));
 	}
 	
-	// TODO we need to show user the new asset root and allow him to navigate it / create new folder if necessary.
-	// User can select a folder, and then manually change the path string to create new folders.
-	// User should not be able to change asset type folder, but to see it. (DONE)
-	
 	/**
-	 * @param idLink
 	 * @param path - relative to new asset folder
 	 */
 	@RequestMapping(value = "/createAssetFolder/{idLink}", method = RequestMethod.POST)
@@ -203,28 +207,20 @@ public class TaskAssetController {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		if (task == null) {
-			throw new IllegalArgumentException("IdLink must correspond to an asset task!");
+			throw new IllegalArgumentException("IdLink '" + idLink + "' must correspond to an asset task!");
 		}
 		if (task.getNewAssetFolderInfo() != null) {
 			throw new UncheckedIOException(new FileAlreadyExistsException(task.getNewAssetFolderInfo().getAssetFolderName().get()));
 		}
 		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName());
 		final Path insideTypeFolder = fileService.restrictAccess(path, service.getAssetTypeSubFolder());
-		
 		final Path assetFolderPath = service.getAssetTypeSubFolder().resolve(insideTypeFolder).resolve(task.getAssetName().get());
 		
 		return tryAquireNewAssetLock(() -> {
 			if (!newAssetFolderVfs.isValidAssetFolderLocation(assetFolderPath)) {
-				throw new IllegalArgumentException("Path is not a valid new asset folder location!");
+				throw new IllegalArgumentException("Path '" + path + "' is not a valid new asset folder location!");
 			}
-			final Path absolute = config.assetsNew().resolve(assetFolderPath);
-			if (Files.exists(absolute)) {
-				throw new IllegalArgumentException("Path is not a valid new asset folder location!");
-			}
-			fileService.createDirectory(absolute);
-			// TODO make sure / test that all problematic cases are properly handled
-			// TODO commit
-			// TODO make sure change registered and VFS is up t date
+			assetService.createNewAssetFolder(task.getAssetName(), assetFolderPath, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
 	}
@@ -350,25 +346,24 @@ public class TaskAssetController {
 		
 		return tryAquireNewAssetLock(() -> {
 			if (isAsset) {
-				assetService.deleteAssetFile(task.getAssetName());
+				assetService.deleteAssetFile(task.getAssetName(), user.get());
 			} else {
-				assetService.deleteFile(task.getAssetName(), fileType, relativeFile);
+				assetService.deleteFile(task.getAssetName(), fileType, relativeFile, user.get());
 			}
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
 	}
 	
 	private <T> ResponseEntity<T> tryAquireNewAssetLock(Supplier<ResponseEntity<T>> runIfAquired) {
-		System.out.println("Controller trying to aquire lock...");
 		if(lockService.tryLock()) {
-			System.out.println("Controller succeeded");
+			logger.debug("Successfully aquired new asset lock.");
 			try {
 				return runIfAquired.get();
 			} finally {
 				lockService.unlock();
 			}
 		} else {
-			System.out.println("Controller failed");
+			logger.info("Failed to aquire new asset lock!");
 			return new ResponseEntity<>(HttpStatus.LOCKED);
 		}
 	}

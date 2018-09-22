@@ -15,7 +15,6 @@
 	
 	background-color: #FFF;
     opacity: 0.3;
-    z-index: 200;
 }
 
 .dialog {
@@ -24,7 +23,6 @@
 	min-width:250px;
 	min-height:40px;
 	
-  	z-index: 250;
   	position: fixed;
   	border-width: 5px;
 	border-style: solid;
@@ -62,7 +60,6 @@
 	width:90%;
 	height:90%;
 	padding:20px;
-	z-index: 999;
 }
 #exceptionDialog-heading {
 	color: $fgc-exceptionDialog-heading;

@@ -300,8 +300,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 	const promptSelectedChangedDialog = function(taskIds =r, edited =r) {
 		const actionString = edited ? "edited" : "deleted";
 		return new Promise((resolve, reject) => {
-			const $confirm = Dialogs.alert(function() {
-				Dialogs.hideDialog($confirm);
+			Dialogs.alert(function() {
 				resolve();
 			}, "One or more tasks you had selected have been " + actionString + " by another user!");
 		});

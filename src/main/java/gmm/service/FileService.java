@@ -169,11 +169,15 @@ public class FileService {
 	/**
 	 * Tests if a file and any necessary parent directories can be created (by creating them).
 	 * Deletes directories that were created during test afterwards. Fails if the given file
-	 * exists already.
+	 * exists already. Also works with dir instead of file.
 	 */
 	public synchronized void testCreateDeleteFile(Path path) {
 		if (!path.isAbsolute()) {
 			throw new IllegalArgumentException("Path must be absolute!");
+		}
+		final boolean exists = Files.exists(path);
+		if (exists && Files.isDirectory(path)) {
+			return;
 		}
 		Path topLevelCreatedParent = null;
 		try {
@@ -204,6 +208,8 @@ public class FileService {
 			try {
 				if (topLevelCreatedParent != null) {
 					forceDelete(topLevelCreatedParent);
+				} else if (!exists) {
+					Files.delete(path);
 				}
 			} catch (final IOException e) {
 				throw new UncheckedIOException("Could not clean up after file test-creation at '" + path.toString() + "'", e);
@@ -211,6 +217,9 @@ public class FileService {
 		}
 	}
 	
+	/**
+	 * @param path - Can be either a normal file, a directory or even a directory tree.
+	 */
 	private void forceDelete(Path path) throws IOException {
 		try {
 			if (Files.isRegularFile(path)) {

@@ -351,34 +351,35 @@ public class SvnPlugin extends VcsPlugin {
 	
 
 	@Override
-	public void commitAddedFile(Path file) {
+	public void commitAddedFile(Path file, String message) {
 		final SvnScheduleForAddition ops = svnOperationFactory.createScheduleForAddition();
 		final Path abs = workingCopyDir.resolve(file);
 		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
 		ops.setAddParents(true);
 		tryRun(ops);
 
-		commit("GMM: Added file.");
+		commit("GMM: " + message);
 	}
 
 	@Override
-	public void commitChangedFile(Path file) {
+	public void commitChangedFile(Path file, String message) {
 		// TODO check if change is committed
 		
-		commit("GMM: Replaced file.");
+		commit("GMM: " + message);
 	}
 
 	@Override
-	public void commitRemovedFile(Path file) {
+	public void commitRemovedFile(Path file, String message) {
 		final SvnScheduleForRemoval ops = svnOperationFactory.createScheduleForRemoval();
 		final Path abs = workingCopyDir.resolve(file);
 		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
 		tryRun(ops);
 		
-		commit("GMM: Deleted file.");
+		commit("GMM: " + message);
 	}
 
 	private void commit(String message) {
+		logger.info("Creating commit with message '" + message + "'");
 		final SvnCommit ops = svnOperationFactory.createCommit();
 	    ops.setSingleTarget(workingCopy);// only changes below this path will be committed
 	    ops.setDepth(SVNDepth.INFINITY);// TODO needed or default?

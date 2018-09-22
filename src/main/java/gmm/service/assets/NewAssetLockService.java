@@ -25,10 +25,16 @@ public class NewAssetLockService {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired private WebSocketEventSender eventSender;
+	private final WebSocketEventSender eventSender;
 	
 	private final ReentrantLock newAssetOperationsLock = new ReentrantLock(true); // lock
 	private volatile boolean isClosed = false; // flag
+	
+	@Autowired
+	public NewAssetLockService(WebSocketEventSender eventSender) {
+		this.eventSender = eventSender;
+//		testBlock();
+	}
 	
 	/**
 	 * Will block calling thread until lock is both open and has been acquired.
@@ -105,11 +111,22 @@ public class NewAssetLockService {
 		return !isClosed && !newAssetOperationsLock.isLocked();
 	}
 	
-	
-//	@Scheduled(fixedRate=5000)
-//	private synchronized void triggerAssetImportRunningEvent() {
-////		if (isAssetImportRunning()) {
-//			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
-////		}
-//	}
+	@SuppressWarnings("unused")
+	private void testBlock() {
+		new Thread(() -> {
+			try {
+				Thread.sleep(10000);
+			} catch (final InterruptedException e) {}
+			while(true) {
+				lock();
+				try {
+					Thread.sleep(5000);
+				} catch (final InterruptedException e) {}
+				unlock();
+				try {
+					Thread.sleep(500);
+				} catch (final InterruptedException e) {}
+			}
+		}).start();;
+	}
 }

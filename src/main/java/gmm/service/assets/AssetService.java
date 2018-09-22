@@ -1,5 +1,6 @@
 package gmm.service.assets;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -418,12 +419,12 @@ public class AssetService {
 	final PathConfig config;
 	final FileService fileService;
 	
-	public void deleteAssetFile(AssetName assetFolderName) {
-		deleteFile(assetFolderName, FileType.ASSET, null);
+	public void deleteAssetFile(AssetName assetFolderName, User currentUser) {
+		deleteFile(assetFolderName, FileType.ASSET, null, currentUser);
 	}
 	
 		
-	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile, User currentUser) {
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		if (!folderInfo.getStatus().isValid()) {
 			throw new IllegalArgumentException("Asset folder for given asset deletion is in invalid state!");
@@ -443,13 +444,13 @@ public class AssetService {
 		}
 		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
 		fileService.delete(absoluteFile);
-		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile));
+		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile), "[" + currentUser.getName() +"] deleted a file.");
 		
 		final AssetTask<?> task = assetTasks.get(assetFolderName);
 		Objects.requireNonNull(task);
 		
 		if (fileType.isAsset()) {
-			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleNewAssetRemoved(folderInfo.getAssetFolder());
+			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(folderInfo.getAssetFolder());
 			if (newInfo.isPresent()) {
 				newAssetFolders.put(assetFolderName, newInfo.get());
 			} else {
@@ -461,6 +462,32 @@ public class AssetService {
 			}).removePropsAndSetInfo(task, newInfo);
 		} else {
 			data.edit(task);
+		}
+	}
+	
+	public void createNewAssetFolder(AssetName assetFolderName, Path relativeFolder, User currentUser) {
+		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
+		if (folderInfo != null) {
+			throw new IllegalArgumentException("Asset is already associated with an existing asset folder!");
+		}
+		final Path absoluteFolder = config.assetsNew().resolve(relativeFolder);
+		if (Files.exists(absoluteFolder)) {
+			throw new IllegalArgumentException("Path at '" + relativeFolder + "' already exists!");
+		}
+		logger.info("Creating new asset folder at '" + absoluteFolder + "'");
+		fileService.createDirectory(absoluteFolder);
+		vcs.commitAddedFile(relativeFolder, "[" + currentUser.getName() +"] created asset folder.");
+		
+		final AssetTask<?> task = assetTasks.get(assetFolderName);
+		Objects.requireNonNull(task);
+		
+		final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(relativeFolder);
+		if (newInfo.isPresent()) {
+			newAssetFolders.put(assetFolderName, newInfo.get());
+			task.setNewAssetFolderInfo(newInfo.get());
+			data.edit(task);
+		} else {
+			throw new IllegalStateException("Scan failed to find newly created asset folder!");
 		}
 	}
 	

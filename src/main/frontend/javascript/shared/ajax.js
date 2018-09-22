@@ -43,18 +43,35 @@ const Ajax = (function() {
 	
 	const failHandler = function(responseData) {
 		const httpStatus = responseData.status;
-		if(httpStatus === 403) {
-			Dialogs.alert(function(){
-				location.reload();
-			}, "Server answer: 403 Forbidden or Timeout.<br> Confirm to reload page.");
-		} else if (httpStatus === 404) {
-			Dialogs.alert(function(){
-				location.reload();
-			}, "Server answer: 404 Not Found.<br> Confirm to reload page.");
-		} else {
+		console.warn("Request failed with status code " + httpStatus);
+		if(responseData.responseJSON !== undefined) {
 			Dialogs.showException(responseData);
+		} else if (httpStatus === 423) {
+			Dialogs.alert(null, getHttpFailDesc(httpStatus));
+		} else {
+			Dialogs.alert(function() {
+				location.reload();
+			}, getHttpFailDesc(httpStatus) + "<br> Confirm to reload page.");
 		}
 	};
+
+	const getHttpFailDesc = function(httpStatus) {
+		let result = "Server answer: "
+		switch(httpStatus) {
+			case 403:
+				result += "403 Forbidden or Timeout.";
+				break;
+			case 404:
+				result += "404 Not Found.";
+				break;
+			case 423:
+				result += "423 Server resources currently in use (locked).";
+				break;
+			default:
+				result += httpStatus;
+		}
+		return result;
+	}
 
 	const onSend = function() {
 		for (const onSendCb of onSendCallbacks) {
