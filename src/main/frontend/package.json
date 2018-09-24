@@ -10,6 +10,7 @@
 		"bluebird": "3.5.1"
 	},
 	"devDependencies": {
+		"@types/jquery": "^3.3.9",
 		"babel-core": "6.26.0",
 		"babel-plugin-transform-es2015-modules-commonjs": "6.26.0",
 		"babelify": "8.0.0",

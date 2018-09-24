@@ -333,7 +333,6 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
 
 		cache.subscribePinnedEvent(function(idLink, isPinned) {
-			console.log(idLink);
 			const $task = findTask(idLink);
 			if ($task != null) {
 				switchPinOperation($task, isPinned);

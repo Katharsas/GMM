@@ -28,7 +28,7 @@
 				</sec:authorize>
 			</script>
 			<script src="<c:url value="/res/javascript/lib/bluebird.core.min.js"/>" type="text/javascript"></script>
-			<script src="<c:url value="/res/javascript/lib/jquery.js"/>" type="text/javascript"></script>
+			<script src="<c:url value="/res/javascript/lib/jquery.min.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery.form.min.js"/>" type="text/javascript"></script>
 			<script src="<c:url value="/res/javascript/lib/jquery-ui.min.js"/>" type="text/javascript"></script>
 			<jsp:invoke fragment="js"/>

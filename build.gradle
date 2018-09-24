@@ -22,18 +22,20 @@ buildscript {
         maven {
 	    	url "https://plugins.gradle.org/m2/"
 	    }
-	    // gretty
+	    // gretty, cargo
 	    jcenter()
     }
     dependencies {
     	classpath 'org.gretty:gretty:2.2.0'
         classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+        classpath 'com.bmuschko:gradle-cargo-plugin:2.4'
     }
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'org.gretty'
+apply plugin: 'com.bmuschko.cargo'
 apply plugin: 'com.moowork.node'
 apply plugin: "com.moowork.gulp"
 
@@ -140,6 +142,32 @@ gretty {
 	// gretty container log (has nothing to to with GMM's log)
 	logDir = "${project.projectDir}/build"
 	logFileName = "gretty"
+}
+
+// deploy to local/staging/prod
+
+war {
+    ext.workspaceConfig = "local"
+    //ext.workspaceConfig = "staging"
+    //ext.workspaceConfig = "prod"
+    
+    if (workspaceConfig != "local") {
+        rootSpec.exclude("**/META-INF/context.xml") 
+        metaInf { from "ops/" + workspaceConfig + "/context.xml" }
+    }
+}
+
+cargo {
+    containerId = 'tomcat9x'
+    port = 8080
+    deployable {
+        context = '/GMM'
+    }
+    remote {
+        hostname = 'localhost'
+        username = 'tomcat'
+        password = 'tomcat'
+    }
 }
 
 
