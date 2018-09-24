@@ -336,12 +336,8 @@ public class DataBase implements DataAccess {
 	
 	@Override
 	public <T extends Linkable> void editBy(T data, User cause) {
-		if (cause == User.UNKNOWN) {
-			if (executingUser.get().isNormalUser()) {
-				throw new IllegalStateException("Source user can be identified!");
-			}
-		} else if (cause != User.SYSTEM && cause != User.NULL) {
-			throw new IllegalArgumentException("Cannot change source to arbitrary normal user!");
+		if (!cause.isNormalUser() && executingUser.get().isNormalUser()) {
+			throw new IllegalStateException("Source user can be identified!");
 		}
 		edit(data, cause);
 	}

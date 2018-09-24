@@ -1,5 +1,7 @@
 package gmm.service.assets;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -12,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
 
 import gmm.collections.Collection;
 import gmm.collections.EventMap;
@@ -23,6 +25,7 @@ import gmm.collections.Set;
 import gmm.collections.UnmodifiableCollection;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
@@ -72,22 +75,24 @@ public class AssetService {
 	private final DataAccess data;
 	private final NewAssetLockService lockService;
 	
+
+	
 	// TODO currently, there is a small preview leak, because new assets are scanned for the first
 	// time AFTER VcsPlugin updated the WC. This means that any new assets that were deleted during
 	// offline GMM will still have previews left and cannot be found because AssetInfo is missing in
 	// new scan. This could be fixed by scanning once more before initializing VcsPlugin. AssetInfo
 	// would then be removed together with previews when scanning updated WC.
 	
-	private final EventMap<AssetName, AssetTask<?>> assetTasks;
+	private final EventMap<AssetKey, AssetTask<?>> assetTasks;
 	
-	private final EventMap<AssetName, NewAssetFolderInfo> newAssetFolders;
-	private final Map<AssetName, NewAssetFolderInfo> newAssetFoldersWithoutTasks;
+	private final EventMap<AssetKey, NewAssetFolderInfo> newAssetFolders;
+	private final Map<AssetKey, NewAssetFolderInfo> newAssetFoldersWithoutTasks;
 	
-	private final Map<AssetName, OriginalAssetFileInfo> originalAssetFiles;
+	private final Map<AssetKey, OriginalAssetFileInfo> originalAssetFiles;
 	
 	private final DataChangeCallback<AssetTask<?>> reference;
 	
-	public NewAssetFolderInfo getNewAssetFolderInfo(AssetName assetName) {
+	public NewAssetFolderInfo getNewAssetFolderInfo(AssetKey assetName) {
 		return newAssetFolders.get(assetName);
 	}
 	
@@ -98,15 +103,15 @@ public class AssetService {
 		return new UnmodifiableCollection<>(NewAssetFolderInfo.class, newAssetFoldersWithoutTasks.values());
 	}
 	
-	public OriginalAssetFileInfo getOriginalAssetFileInfo(AssetName assetName) {
+	public OriginalAssetFileInfo getOriginalAssetFileInfo(AssetKey assetName) {
 		return originalAssetFiles.get(assetName);
 	}
 	
-	public EventMapSource<AssetName, NewAssetFolderInfo> getNewAssetFoldersEvents() {
+	public EventMapSource<AssetKey, NewAssetFolderInfo> getNewAssetFoldersEvents() {
 		return newAssetFolders;
 	}
 	
-	public EventMapSource<AssetName, AssetTask<?>> getNewAssetFoldersTaskEvents() {
+	public EventMapSource<AssetKey, AssetTask<?>> getNewAssetFoldersTaskEvents() {
 		return assetTasks;
 	}
 	
@@ -140,7 +145,7 @@ public class AssetService {
 	
 	private DataChangeCallback<AssetTask<?>> initTasksAndGetPostProcessor(DataAccess data) {
 		for (final AssetTask<?> assetTask : data.getList(AssetTask.class)) {
-			assetTasks.put(assetTask.getAssetName(), assetTask);
+			assetTasks.put(assetTask.getAssetName().getKey(), assetTask);
 		}
 		return event -> onDataChangeEvent(event);
 	}
@@ -173,7 +178,7 @@ public class AssetService {
 	 * Synchronize an asset task and its property information with existing assets.
 	 */
 	private <A extends AssetProperties> void onAssetTaskCreation(AssetTask<A> task) {
-		final AssetName name = task.getAssetName();
+		final AssetKey name = task.getAssetName().getKey();
 		assetTasks.put(name, task);
 		
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
@@ -243,7 +248,7 @@ public class AssetService {
 	}
 	
 	private <A extends AssetProperties> void onAssetTaskDeletion(AssetTask<A> task) {
-		final AssetName name = task.getAssetName();
+		final AssetKey name = task.getAssetName().getKey();
 		assetTasks.remove(name);
 		
 		final NewAssetFolderInfo newFolderInfo = newAssetFolders.get(name);
@@ -262,10 +267,10 @@ public class AssetService {
 		applyFoundOriginal(scanner.onOriginalAssetFilesChanged());
 	}
 	
-	private void applyFoundOriginal(Map<AssetName, OriginalAssetFileInfo> foundOriginalAssetFiles) {
+	private void applyFoundOriginal(Map<AssetKey, OriginalAssetFileInfo> foundOriginalAssetFiles) {
 		
 		final AssetGroupType type = AssetGroupType.ORIGINAL;
-		final Set<AssetName> oldFiles = new HashSet<>(AssetName.class, originalAssetFiles.keySet());
+		final Set<AssetKey> oldFiles = new HashSet<>(AssetKey.class, originalAssetFiles.keySet());
 		
 		foundOriginalAssetFiles.forEach((fileName, currentInfo) -> {
 			
@@ -293,7 +298,7 @@ public class AssetService {
 		});
 		
 		// removed assets
-		for (final AssetName notFound : oldFiles) {
+		for (final AssetKey notFound : oldFiles) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
 				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
@@ -320,14 +325,14 @@ public class AssetService {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void applyFoundNew(Map<AssetName, NewAssetFolderInfo> foundNewAssetFolders, List<Path> changedPaths) {
+	private void applyFoundNew(Map<AssetKey, NewAssetFolderInfo> foundNewAssetFolders, List<Path> changedPaths) {
 		
 		scanner.filterForNewAssets(changedPaths);
 		
 		final AssetGroupType type = AssetGroupType.NEW;
-		final Set<AssetName> oldFolders = new HashSet<>(AssetName.class, newAssetFolders.keySet());
+		final Set<AssetKey> oldFolders = new HashSet<>(AssetKey.class, newAssetFolders.keySet());
 		
-		final BiConsumer<AssetName, NewAssetFolderInfo> applyEntry = (folderName, currentInfo) -> {
+		final BiConsumer<AssetKey, NewAssetFolderInfo> applyEntry = (folderName, currentInfo) -> {
 			
 			final NewAssetFolderInfo oldInfo = newAssetFolders.get(folderName);
 			final AssetFolderStatus hasAsset = AssetFolderStatus.VALID_WITH_ASSET;
@@ -391,7 +396,7 @@ public class AssetService {
 		foundNewAssetFolders.forEach(applyEntry);
 		
 		// removed assets
-		for (final AssetName notFound : oldFolders) {
+		for (final AssetKey notFound : oldFolders) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null && task.getAssetProperties(type) != null) {
 				taskUpdater.new OnNewAssetUpdate(() -> {
@@ -412,19 +417,19 @@ public class AssetService {
 		}
 	}
 	
-	private void deleteNewAssetPreview(AssetName name) {
+	private void deleteNewAssetPreview(AssetKey name) {
 		serviceFinder.getAssetService(name).deleteNewAssetPreview(name);
 	}
 	
 	final PathConfig config;
 	final FileService fileService;
 	
-	public void deleteAssetFile(AssetName assetFolderName, User currentUser) {
+	public void deleteAssetFile(AssetKey assetFolderName, User currentUser) {
 		deleteFile(assetFolderName, FileType.ASSET, null, currentUser);
 	}
 	
 		
-	public void deleteFile(AssetName assetFolderName, FileType fileType, Path relativeFile, User currentUser) {
+	public void deleteFile(AssetKey assetFolderName, FileType fileType, Path relativeFile, User currentUser) {
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		if (!folderInfo.getStatus().isValid()) {
 			throw new IllegalArgumentException("Asset folder for given asset deletion is in invalid state!");
@@ -444,7 +449,8 @@ public class AssetService {
 		}
 		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
 		fileService.delete(absoluteFile);
-		vcs.commitRemovedFile(config.assetsNew().relativize(absoluteFile), "[" + currentUser.getName() +"] deleted a file.");
+		vcs.removeFile(config.assetsNew().relativize(absoluteFile));
+		vcs.commit("GMM: [" + currentUser.getName() +"] deleted " + (fileType.isAsset() ? "an asset." : "a wip file."));
 		
 		final AssetTask<?> task = assetTasks.get(assetFolderName);
 		Objects.requireNonNull(task);
@@ -458,14 +464,14 @@ public class AssetService {
 				deleteNewAssetPreview(assetFolderName);
 			}
 			taskUpdater.new OnNewAssetUpdate(() -> {
-				data.edit(task);
+				data.editBy(task, currentUser);
 			}).removePropsAndSetInfo(task, newInfo);
 		} else {
 			data.edit(task);
 		}
 	}
 	
-	public void createNewAssetFolder(AssetName assetFolderName, Path relativeFolder, User currentUser) {
+	public void createNewAssetFolder(AssetKey assetFolderName, Path relativeFolder, User currentUser) {
 		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
 		if (folderInfo != null) {
 			throw new IllegalArgumentException("Asset is already associated with an existing asset folder!");
@@ -476,7 +482,8 @@ public class AssetService {
 		}
 		logger.info("Creating new asset folder at '" + absoluteFolder + "'");
 		fileService.createDirectory(absoluteFolder);
-		vcs.commitAddedFile(relativeFolder, "[" + currentUser.getName() +"] created asset folder.");
+		vcs.addFile(relativeFolder);
+		vcs.commit("GMM: [" + currentUser.getName() +"] created asset folder.");
 		
 		final AssetTask<?> task = assetTasks.get(assetFolderName);
 		Objects.requireNonNull(task);
@@ -485,30 +492,60 @@ public class AssetService {
 		if (newInfo.isPresent()) {
 			newAssetFolders.put(assetFolderName, newInfo.get());
 			task.setNewAssetFolderInfo(newInfo.get());
-			data.edit(task);
+			data.editBy(task, currentUser);
 		} else {
 			throw new IllegalStateException("Scan failed to find newly created asset folder!");
 		}
 	}
 	
-	private void addFile(AssetName assetFolderName, FileType fileType, Path relativeFile) {
+	public void addFile(AssetKey assetName, MultipartFile fileData, User currentUser) {
 		
-		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		Assert.isTrue(folderInfo.getStatus().isValid(), "");
+		// validate
+		final NewAssetFolderInfo oldFolderInfo = getNewAssetFolderInfo(assetName);
+		if (oldFolderInfo == null) {
+			throw new IllegalArgumentException("Asset folder could not be found.");
+		}
+		if (!oldFolderInfo.getStatus().isValid()) {
+			throw new IllegalArgumentException("Asset folder must be in valid state, but is '" + oldFolderInfo.getStatus().name() + "'.");
+		}
+		final String fileName = fileData.getOriginalFilename();
+		final AssetName newAssetName = new AssetName(fileName);
+		newAssetName.assertPathMatch(oldFolderInfo.getAssetFolder());
 		
-		final Path absoluteFile;
-		
-		if (fileType.isAsset()) {
-			if (folderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
-				// TODO delete old asset (otherwise 2 assets with same name case-insensitive could exist)
-				absoluteFile = folderInfo.getAssetFilePathAbsolute(config);
+		// remove old asset
+		if (oldFolderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
+			final Path oldAsset = oldFolderInfo.getAssetFilePath(config);
+			final Path oldAssetAbsolute = config.assetsNew().resolve(oldAsset);
+			logger.info("Replacing new asset at '" + oldAssetAbsolute + "'");
+			fileService.delete(oldAssetAbsolute);
+			vcs.removeFile(oldAsset);
+		}
+		// add new asset
+		{
+			final Path newAsset = oldFolderInfo.getAssetFolder().resolve(newAssetName.get());
+			final Path newAssetAbsolute = config.assetsNew().resolve(newAsset);
+			logger.info("Creating new asset at '" + newAssetAbsolute + "'");
+			try {
+				fileService.createFile(newAssetAbsolute, fileData.getBytes());
+			} catch (final IOException e) {
+				throw new UncheckedIOException(e);
 			}
-		} else {
-			final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
-			final Path visible = assetFolder.resolve(fileType.getSubPath(config));
-			absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
+			vcs.addFile(newAsset);
 		}
 		
-		// TODO decide where to implement this, since its already half-implemented in AssetTaskService, same goes for deleteFile
+		vcs.commit("GMM: [" + currentUser.getName() +"] uploaded new asset.");
+		
+		// rescan to get updated folder info
+		final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(oldFolderInfo.getAssetFolder());
+		if (newInfo.isPresent()) {
+			newAssetFolders.put(assetName, newInfo.get());
+			final AssetTask<?> task = assetTasks.get(assetName);
+			Objects.requireNonNull(task);
+			taskUpdater.new OnNewAssetUpdate(() -> {
+				data.editBy(task, currentUser);
+			}).recreatePropsAndSetInfo(task, newInfo.get());
+		} else {
+			throw new IllegalStateException("Scan failed to relocate asset folder!");
+		}
 	}
 }

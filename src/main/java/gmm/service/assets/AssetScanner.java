@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.ArrayList;
 import gmm.collections.List;
-import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetKey;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
@@ -43,18 +43,18 @@ public class AssetScanner {
 	/**
 	 * Traverses original asset base folder and finds all original assets.
 	 */
-	public Map<AssetName, OriginalAssetFileInfo> onOriginalAssetFilesChanged() {
-		final Map<AssetName, OriginalAssetFileInfo> foundOriginalAssetFiles = new HashMap<>();
+	public Map<AssetKey, OriginalAssetFileInfo> onOriginalAssetFilesChanged() {
+		final Map<AssetKey, OriginalAssetFileInfo> foundOriginalAssetFiles = new HashMap<>();
 		
-		final BiConsumer<AssetName, OriginalAssetFileInfo> onHit = (fileName, fileInfo) -> {
-			foundOriginalAssetFiles.put(fileName, fileInfo);
+		final BiConsumer<AssetKey, OriginalAssetFileInfo> onHit = (assetKey, fileInfo) -> {
+			foundOriginalAssetFiles.put(assetKey, fileInfo);
 			logger.debug("Found original asset file at path '" + fileInfo.getAssetFile() + "'.");
 		};
 		scanForOriginalAssets(config.assetsOriginal(), onHit);
 		return foundOriginalAssetFiles;
 	}
 	
-	private void scanForOriginalAssets(Path originalAssets, BiConsumer<AssetName, OriginalAssetFileInfo> onHit) {
+	private void scanForOriginalAssets(Path originalAssets, BiConsumer<AssetKey, OriginalAssetFileInfo> onHit) {
 		logger.info("Scanning for original assets at path '" + originalAssets + "'.");
 		try {
 			Files.walkFileTree(originalAssets, new SimpleFileVisitor<Path>() {
@@ -66,7 +66,7 @@ public class AssetScanner {
 					if (service != null) {
 						final Path relative =  config.assetsOriginal().relativize(file);
 						final OriginalAssetFileInfo info = new OriginalAssetFileInfo(service, relative);
-						onHit.accept(info.getAssetFileName(), info);
+						onHit.accept(info.getAssetFileName().getKey(), info);
 					}
 					return FileVisitResult.CONTINUE;
 				}
@@ -89,18 +89,18 @@ public class AssetScanner {
 	 * Traverses all asset type folders if enabled (otherwise new asset base folder) and finds all
 	 * new asset folders.
 	 */
-	public Map<AssetName, NewAssetFolderInfo> onNewAssetFilesChanged() {
-		final Map<AssetName, NewAssetFolderInfo> foundNewAssetFolders = new HashMap<>();
+	public Map<AssetKey, NewAssetFolderInfo> onNewAssetFilesChanged() {
+		final Map<AssetKey, NewAssetFolderInfo> foundNewAssetFolders = new HashMap<>();
 		
-		final BiConsumer<AssetName, NewAssetFolderInfo> duplicateCheck = (folderName, folderInfo) -> {
-			final NewAssetFolderInfo duplicate = foundNewAssetFolders.get(folderName);
+		final BiConsumer<AssetKey, NewAssetFolderInfo> duplicateCheck = (assetKey, folderInfo) -> {
+			final NewAssetFolderInfo duplicate = foundNewAssetFolders.get(assetKey);
 			final NewAssetFolderInfo result;
 			if (duplicate != null) {
 				result = NewAssetFolderInfo.createInvalidNotUnique(duplicate, folderInfo);
 			} else {
 				result = folderInfo;
 			}
-			foundNewAssetFolders.put(folderName, result);
+			foundNewAssetFolders.put(assetKey, result);
 			logger.debug("Found new asset folder at path '" + folderInfo.getAssetFolder() + "'. "
 					+ "Status: '" + result.getStatus().name() + "'");
 		};
@@ -155,7 +155,7 @@ public class AssetScanner {
 		return result;
 	}
 	
-	private void scanForNewAssets(Path rootScanFolder, BiConsumer<AssetName, NewAssetFolderInfo> onHit,
+	private void scanForNewAssets(Path rootScanFolder, BiConsumer<AssetKey, NewAssetFolderInfo> onHit,
 			AssetTaskService<?> assetTypeEnabledService) {
 
 		if (!rootScanFolder.toFile().isDirectory()) {
@@ -187,7 +187,7 @@ public class AssetScanner {
 								folderInfo = new NewAssetFolderInfo(service, relative, base);
 							}
 						}
-						onHit.accept(folderInfo.getAssetFolderName(), folderInfo);
+						onHit.accept(folderInfo.getAssetFolderName().getKey(), folderInfo);
 						return FileVisitResult.SKIP_SUBTREE;
 					}
 					return FileVisitResult.CONTINUE;

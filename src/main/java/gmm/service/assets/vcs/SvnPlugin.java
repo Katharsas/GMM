@@ -351,34 +351,29 @@ public class SvnPlugin extends VcsPlugin {
 	
 
 	@Override
-	public void commitAddedFile(Path file, String message) {
+	public void addFile(Path file) {
 		final SvnScheduleForAddition ops = svnOperationFactory.createScheduleForAddition();
 		final Path abs = workingCopyDir.resolve(file);
 		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
 		ops.setAddParents(true);
 		tryRun(ops);
-
-		commit("GMM: " + message);
 	}
 
 	@Override
-	public void commitChangedFile(Path file, String message) {
+	public void editFile(Path file) {
 		// TODO check if change is committed
-		
-		commit("GMM: " + message);
 	}
 
 	@Override
-	public void commitRemovedFile(Path file, String message) {
+	public void removeFile(Path file) {
 		final SvnScheduleForRemoval ops = svnOperationFactory.createScheduleForRemoval();
 		final Path abs = workingCopyDir.resolve(file);
 		ops.setSingleTarget(SvnTarget.fromFile(abs.toFile()));
 		tryRun(ops);
-		
-		commit("GMM: " + message);
 	}
 
-	private void commit(String message) {
+	@Override
+	public void commit(String message) {
 		logger.info("Creating commit with message '" + message + "'");
 		final SvnCommit ops = svnOperationFactory.createCommit();
 	    ops.setSingleTarget(workingCopy);// only changes below this path will be committed

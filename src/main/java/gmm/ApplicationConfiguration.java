@@ -159,11 +159,15 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 	@Bean
 	public FreeMarkerConfigurer freemarkerConfig() throws IOException, TemplateException {
 		final FreeMarkerConfigurer result = new FreeMarkerConfigurer();
-
+		
 		// template path
 		result.setTemplateLoaderPath("/WEB-INF/ftl/");
 		result.setDefaultEncoding("UTF-8");
-
+		
+		final java.util.Properties props = new java.util.Properties();
+		props.setProperty("number_format", "computer");
+		result.setFreemarkerSettings(props);
+		
 		// static access
 		final Version version = freemarker.template.Configuration.getVersion();
 		final BeansWrapper wrapper = new BeansWrapper(version);

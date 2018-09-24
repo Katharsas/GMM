@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService.FileExtensionFilter;
@@ -91,11 +91,11 @@ public class TaskServiceFinder {
 	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
 	 * filter that will accept the given assetName.
 	 */
-	public AssetTaskService<?> getAssetService(AssetName assetName) {
+	public AssetTaskService<?> getAssetService(AssetKey assetName) {
 		Objects.requireNonNull(assetName);
-		final String extension = FileExtensionFilter.getExtension(assetName.get());
+		final String extension = FileExtensionFilter.getExtension(assetName.toString());
 		if (extension == null) {
-			throw new IllegalArgumentException("Asset name '" + assetName.get() + "' does not have an extension!");
+			throw new IllegalArgumentException("Asset name '" + assetName + "' does not have an extension!");
 		}
 		final AssetTaskService<?> service = getAssetService(extension);
 		if (service == null) {

@@ -120,7 +120,7 @@ public class AdminSession extends TaskBackupLoader {
 		
 		final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
 			form.setAssetName(assetName.get());
-			final AssetTaskService<?> service = taskService.getAssetService(assetName);
+			final AssetTaskService<?> service = taskService.getAssetService(assetName.getKey());
 			form.setType(service.getTaskType());
 			importedTasks.add(service.create(form, loggedInUser));
 		};

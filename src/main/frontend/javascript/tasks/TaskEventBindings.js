@@ -271,22 +271,34 @@ export default function(onedit, setIsPinned, isPinned) {
 					 * -------------------------------------------------------
 					 */
 					const $assetInfo = $assets.find(".task-asset-info");
-					const $assetButtons = $assets.find(".task-asset-buttons");
+					const $assetButtonsOriginal = $assets.find(".task-asset-buttons").filter(".task-asset-original");
+					const $assetButtonsNewest = $assets.find(".task-asset-buttons").filter(".task-asset-newest");
 					
 					// download
-					const $downloadOriginalAsset = $assetButtons.filter(".task-asset-original").find(".action-download");
+					const $downloadOriginalAsset = $assetButtonsOriginal.find(".action-download");
 					$downloadOriginalAsset.click(function () {
 						downloadAssetFile(id, 'ORIGINAL');
 					})
-					const $downloadNewestAsset = $assetButtons.filter(".task-asset-newest").find(".action-download");
+					const $downloadNewestAsset = $assetButtonsNewest.find(".action-download");
 					AssetFileOperationsNotifier.registerNewAssetOperation($downloadNewestAsset, "click", function() {
 						downloadAssetFile(id, 'NEW');
 					});
 					// upload
-					const $uploadNewestAsset = $assetButtons.filter(".task-asset-newest").find(".action-upload");
-					$uploadNewestAsset.hide();// TODO
+					const $uploadNewestAssetInput = $assetButtonsNewest.find(".action-upload-input");
+					AssetFileOperationsNotifier.registerNewAssetOperation($uploadNewestAssetInput, "change", function() {
+						Dialogs.showOverlay();
+						const file = $uploadNewestAssetInput[0].files[0];
+						Ajax.upload(contextUrl + "/tasks/uploadAsset/" + id, file)
+							.then(function() {
+								Dialogs.hideOverlay();
+							});
+					});
+					const $uploadNewestAsset = $assetButtonsNewest.find(".action-upload");
+					$uploadNewestAsset.click(function() {
+						$uploadNewestAssetInput.click();
+					});
 					// create folder
-					const $createFolder = $assetButtons.filter(".task-asset-newest").find(".action-folder");
+					const $createFolder = $assetButtonsNewest.find(".action-folder");
 					$createFolder.on("click", function() {
 
 						const { $dialog, actionCancel } = Dialogs.createDialog($folderDialogTemplate, $folderDialogContainer);
@@ -313,7 +325,7 @@ export default function(onedit, setIsPinned, isPinned) {
 						$cancelButton.on("click", actionCancel);
 					});
 					//delete
-					const $deleteNewAssetFile = $assetButtons.filter(".task-asset-newest").find(".action-delete");
+					const $deleteNewAssetFile = $assetButtonsNewest.find(".action-delete");
 					AssetFileOperationsNotifier.registerNewAssetOperation($deleteNewAssetFile, "click", function() {
 						const filename = $assetInfo.filter(".task-asset-newest").data("filename");
 						const $dialog = Dialogs.confirm(function() {
@@ -346,23 +358,20 @@ export default function(onedit, setIsPinned, isPinned) {
 					const $fileOps = $files.find(".task-files-wip-operations");
 					
 					//upload
-					const $inputFile = $fileOps.find(".task-files-uploadInput");
-					//upload when a file is chosen (on hidden input tag)
-					AssetFileOperationsNotifier.registerNewAssetOperation($inputFile, "change", function() {
+					const $uploadWipInput = $fileOps.find(".action-upload-input");
+					AssetFileOperationsNotifier.registerNewAssetOperation($uploadWipInput, "change", function() {
 						Dialogs.showOverlay();
-						const file = $inputFile[0].files[0];
-						Ajax.upload(contextUrl + "/tasks/upload/" + id, file)
+						const file = $uploadWipInput[0].files[0];
+						Ajax.upload(contextUrl + "/tasks/uploadWip/" + id, file)
 							.then(function() {
 								Dialogs.hideOverlay();
 							});
 					});
-					//bind triggering of filechooser to button
-					const $uploadWipFile = $fileOps.find(".task-file-button.action-upload");
-					// TODO: upload needs to be redone anyway
-					$uploadWipFile.hide();
-					// $uploadWipFile.click(function() {
-					// 	$inputFile.click();
-					// });
+					const $uploadWip = $fileOps.find(".task-file-button.action-upload");
+					$uploadWip.hide();// TODO remove when done
+					$uploadWip.click(function() {
+						$uploadWipInput.click();
+					});
 					
 					//download
 					const $downloadWipFile = $fileOps.find(".task-file-button.action-download");

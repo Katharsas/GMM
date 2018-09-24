@@ -12,17 +12,18 @@ import java.util.Map.Entry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.jimfs.GothicCompatible;
 import com.google.common.jimfs.Jimfs;
-import com.google.common.jimfs.UnixCompatible;
 import com.google.common.jimfs.VPath;
 
 import gmm.collections.EventMapSource;
-import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetKey;
 import gmm.service.FileService;
 
 /**
  * Virtual file system that mirrors actual new asset directory (and updates on changes).
- * Asset folders are represented as empty files. Folders not containing asset folders are not included.
+ * Asset folders are represented as empty files. Folders not containing asset folders
+ * are not included. All path & file equality checks are case-insensitive.
  * 
  * @author Jan Mothes
  */
@@ -74,7 +75,7 @@ public class NewAssetFolderVfs {
 	@Autowired
 	public NewAssetFolderVfs(AssetService assetService, FileService fileService) {
 		this.fileService = fileService;
-		fileSystem = Jimfs.newFileSystem(UnixCompatible.config());
+		fileSystem = Jimfs.newFileSystem(GothicCompatible.config());
 		vPaths = new VirtualPaths();
 		
 		try {
@@ -83,10 +84,10 @@ public class NewAssetFolderVfs {
 			throw new UncheckedIOException(e);
 		}
 		
-		final EventMapSource<AssetName, NewAssetFolderInfo> eventSource = assetService.getNewAssetFoldersEvents();
-		final Map<AssetName, NewAssetFolderInfo> current = eventSource.getLiveView();
+		final EventMapSource<AssetKey, NewAssetFolderInfo> eventSource = assetService.getNewAssetFoldersEvents();
+		final Map<AssetKey, NewAssetFolderInfo> current = eventSource.getLiveView();
 		eventSource.register(this::onPut, this::onRemove);
-		for (final Entry<AssetName, NewAssetFolderInfo> entry : current.entrySet()) {
+		for (final Entry<AssetKey, NewAssetFolderInfo> entry : current.entrySet()) {
 			onPut(entry.getKey(), entry.getValue());
 		}
 	}
@@ -109,11 +110,17 @@ public class NewAssetFolderVfs {
 		}
 	}
 	
-	private void onPut(AssetName name, NewAssetFolderInfo info) {
+	/**
+	 * Inserts asset folder represented as file into VFS.
+	 */
+	private void onPut(AssetKey __, NewAssetFolderInfo info) {
 		final Path localPath = info.getAssetFolder();
 		if (localPath != null) {
 			final Path vfsPath = vPaths.root.resolve(localPath).get();
 			try {
+				if (Files.isRegularFile(vfsPath)) {
+					Files.delete(vfsPath);
+				}
 				createFileAndParentFolders(vfsPath);
 			} catch (final IOException e) {
 				throw new UncheckedIOException(e);
@@ -121,7 +128,10 @@ public class NewAssetFolderVfs {
 		}
 	}
 	
-	private void onRemove(AssetName name, NewAssetFolderInfo info) {
+	/**
+	 * Removed asset folder (which is represented as file) from VFS.
+	 */
+	private void onRemove(AssetKey __, NewAssetFolderInfo info) {
 		final Path localPath = info.getAssetFolder();
 		if (localPath != null) {
 			final Path vfsPath = vPaths.root.resolve(localPath).get();

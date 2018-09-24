@@ -153,7 +153,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	public void writePreview(TextureTask task, boolean small, String version, OutputStream target) {
 		final String imageName = version + (small ? "_small" : "_full") + ".png";		
 		final Path path = config.assetPreviews()
-				.resolve(task.getAssetName().getKey())
+				.resolve(task.getAssetName().getKey().toString())
 				.resolve(imageName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);

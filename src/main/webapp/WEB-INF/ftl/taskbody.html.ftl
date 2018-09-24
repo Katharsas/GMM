@@ -144,6 +144,7 @@
 			    		<div class="action-download task-file-button task-button button left">
 			    			Download
 			    		</div>
+						<input class="action-upload-input" type="file" style="display:none;"/>
 			    		<div class="action-upload task-file-button task-button button left">
 			    			Upload
 			    		</div>
@@ -157,6 +158,7 @@
 			    			<#assign info = task.newAssetFolderInfo/>
 			    			<#if info.status.isValid()>
 			    				<td class="task-asset-buttons task-asset-newest center">
+									<input class="action-upload-input" type="file" style="display:none;"/>
 						    		<div class="action-upload task-file-button task-button button">
 						    			Upload
 						    		</div>
@@ -316,7 +318,7 @@
 										<div class="action-download task-file-button task-button button left">
 											Download
 										</div>
-										<input class="task-files-uploadInput" type="file" style="display:none;"/>
+										<input class="action-upload-input" type="file" style="display:none;"/>
 										<div class="action-upload task-file-button task-button button left">
 											Upload
 										</div>

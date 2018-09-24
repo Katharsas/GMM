@@ -27,13 +27,20 @@ public class NonePlugin extends VcsPlugin {
 	@Override
 	public void notifyRepoChange() {
 	}
+
 	@Override
-	public void commitAddedFile(Path file, String message) {
+	public void addFile(Path file) {
 	}
+
 	@Override
-	public void commitChangedFile(Path file, String message) {
+	public void editFile(Path file) {
 	}
+
 	@Override
-	public void commitRemovedFile(Path file, String message) {
+	public void removeFile(Path file) {
+	}
+
+	@Override
+	public void commit(String message) {
 	}
 }

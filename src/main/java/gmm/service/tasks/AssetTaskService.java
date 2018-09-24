@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
+import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
@@ -119,7 +120,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		}
 		// TODO hashcode
 		
-		if (!hasPreview(getPreviewFolder(info.getAssetFileName()), info.getType())) {
+		if (!hasPreview(getPreviewFolder(info.getAssetFileName().getKey()), info.getType())) {
 			return false;
 		}
 		return true;
@@ -142,7 +143,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		
 //		final Optional<A> assetProps = Optional.ofNullable(task.getAssetProperties(type));
 		
-		final Path previewFolder = getPreviewFolder(info.getAssetFileName());
+		final Path previewFolder = getPreviewFolder(info.getAssetFileName().getKey());
 		final CompletableFuture<A> future = recreatePreview(assetPathAbs, previewFolder, type);
 		
 		return future.thenAccept(completedAssetProps -> {
@@ -169,7 +170,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		logger.debug("Removed properties & changed storage info of new asset file '" + task.getAssetName() + "' from task '" + task + "'.");
 	}
 	
-	public void deleteNewAssetPreview(AssetName assetName) {
+	public void deleteNewAssetPreview(AssetKey assetName) {
 		deletePreview(getPreviewFolder(assetName), AssetGroupType.NEW);
 	}
 	
@@ -192,8 +193,8 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		return assetPathAbs;
 	}
 	
-	private Path getPreviewFolder(AssetName assetName) {
-		return config.assetPreviews().resolve(assetName.getKey());
+	private Path getPreviewFolder(AssetKey assetName) {
+		return config.assetPreviews().resolve(assetName.toString());
 	}
 	
 	public void changeNewAssetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
@@ -206,7 +207,6 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		logger.debug("Changed storage info of original asset file '" + task.getAssetName() + "' for task '" + task + "'.");
 	}
 	
-	// TODO caller must check if the linked task has a new asset folder, otherwise it must ask the user to specify asset folder path
 	// TODO if saving asset, caller must delete the old asset first because this func does not know the name
 	// of the old asset, every letter may be in different case than new asset filename.
 	public void addFile(MultipartFile file, AssetTask<A> task, NewAssetFolderInfo folderInfo) {

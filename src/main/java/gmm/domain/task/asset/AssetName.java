@@ -6,9 +6,10 @@ import java.util.Objects;
 import gmm.util.StringUtil;
 
 /**
- * Simple immutable asset filename wrapper which also knows about the corresponding case-insensitive (lower case) but
- * otherwise equivalent String that serves as unique key for asset names (used to hide case-insensitivity from classes
- * that need to handle asset name as key, allows them to use usual case-sensitive compare operations).
+ * Simple immutable asset filename wrapper which also knows about the corresponding case-insensitive
+ * (lower case) but otherwise equivalent AssetKey string that serves as unique key for asset names
+ * (used to hide case-insensitivity from classes that need to handle asset name as key, allows them
+ * to use usual case-sensitive compare operations).
  * 
  * Ensures that the asset name string is not a "hidden" path (no slashes allowed etc.).
  */
@@ -17,13 +18,13 @@ public class AssetName implements Comparable<AssetName> {
 	private static final char[] ILLEGAL_CHARACTERS =
 		{ '/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':' };
 	
-	private final String assetNameLowered;
+	private final AssetKey assetNameLowered;
 	private final String assetNameOriginal;
 	
 	public AssetName(String assetName) {
 		Objects.requireNonNull(assetName);
 		assertValidAssetName(assetName);
-		this.assetNameLowered = assetName.toLowerCase();
+		assetNameLowered = new AssetKey(assetName.toLowerCase());
 		assetNameOriginal = assetName;
 	}
 	
@@ -31,7 +32,7 @@ public class AssetName implements Comparable<AssetName> {
 		Objects.requireNonNull(path);
 		final String assetName = path.getFileName().toString();
 		assertValidAssetName(assetName);
-		this.assetNameLowered = assetName.toLowerCase();
+		assetNameLowered = new AssetKey(assetName.toLowerCase());
 		assetNameOriginal = assetName;
 	}
 	
@@ -88,10 +89,7 @@ public class AssetName implements Comparable<AssetName> {
 		return assetNameOriginal;
 	}
 	
-	/**
-	 * @return - The unique asset name key (same letters as actual name but normalized case).
-	 */
-	public String getKey() {
+	public AssetKey getKey() {
 		return assetNameLowered;
 	}
 }

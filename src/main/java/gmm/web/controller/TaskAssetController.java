@@ -1,12 +1,11 @@
 package gmm.web.controller;
 
-import java.io.UncheckedIOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.joda.time.DateTime;
@@ -24,17 +23,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.google.common.jimfs.VPath;
 
 import gmm.domain.UniqueObject;
 import gmm.domain.task.asset.AssetGroupType;
-import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.FileType;
 import gmm.domain.task.asset.ModelTask;
@@ -166,7 +168,7 @@ public class TaskAssetController {
 
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		
-		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
+		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName().getKey());
 		if (info == null) return new String[] {};
 		else {
 			if (!info.getStatus().isValid()) return new String[] {};
@@ -190,7 +192,7 @@ public class TaskAssetController {
 			@RequestParam("dir") String dir) {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName());
+		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName().getKey());
 		
 		final VirtualPaths vPaths = newAssetFolderVfs.virtualPaths();
 		final VPath subFolder = vPaths.of(service.getAssetTypeSubFolder());
@@ -206,13 +208,8 @@ public class TaskAssetController {
 			@RequestParam("path") final Path path) {
 		
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		if (task == null) {
-			throw new IllegalArgumentException("IdLink '" + idLink + "' must correspond to an asset task!");
-		}
-		if (task.getNewAssetFolderInfo() != null) {
-			throw new UncheckedIOException(new FileAlreadyExistsException(task.getNewAssetFolderInfo().getAssetFolderName().get()));
-		}
-		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName());
+		final AssetKey assetKey = task.getAssetName().getKey();
+		final AssetTaskService<?> service = serviceFinder.getAssetService(assetKey);
 		final Path insideTypeFolder = fileService.restrictAccess(path, service.getAssetTypeSubFolder());
 		final Path assetFolderPath = service.getAssetTypeSubFolder().resolve(insideTypeFolder).resolve(task.getAssetName().get());
 		
@@ -220,7 +217,7 @@ public class TaskAssetController {
 			if (!newAssetFolderVfs.isValidAssetFolderLocation(assetFolderPath)) {
 				throw new IllegalArgumentException("Path '" + path + "' is not a valid new asset folder location!");
 			}
-			assetService.createNewAssetFolder(task.getAssetName(), assetFolderPath, user.get());
+			assetService.createNewAssetFolder(assetKey, assetFolderPath, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
 	}
@@ -259,6 +256,30 @@ public class TaskAssetController {
 //	}
 	
 	/**
+	 * Upload an asset.
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 */
+	@RequestMapping(value = {"/uploadAsset/{idLink}"} , method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<Void> handleAssetUpload(
+			HttpServletRequest request,
+			@PathVariable String idLink) throws Exception {
+		
+		final MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		final MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+		final MultipartFile file = map.getFirst("file");
+		if (file.isEmpty()) {
+			throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
+		}
+		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
+		return tryAquireNewAssetLock(() -> {
+			assetService.addFile(assetKey, file, user.get());
+			return new ResponseEntity<>(HttpStatus.OK);
+		});
+	}
+	
+	/**
 	 * Download an asset.
 	 */
 	@RequestMapping(value = {"/download/{idLink}/{groupType}/ASSET/"},
@@ -267,15 +288,14 @@ public class TaskAssetController {
 			@PathVariable final String idLink,
 			@PathVariable final AssetGroupType groupType) {
 		
-		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final AssetName name = task.getAssetName();
+		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final Path absolute;
 		if (groupType.isOriginal()) {
-			final OriginalAssetFileInfo info = assetService.getOriginalAssetFileInfo(name);
+			final OriginalAssetFileInfo info = assetService.getOriginalAssetFileInfo(assetKey);
 			Assert.notNull(info, "");
 			absolute = info.getAssetFilePathAbsolute(config);
 		} else {
-			final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(name);
+			final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(assetKey);
 			Assert.notNull(info, "");
 			Assert.isTrue(info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET, "");
 			absolute = info.getAssetFilePathAbsolute(config);
@@ -308,8 +328,8 @@ public class TaskAssetController {
 			@PathVariable final FileType fileType,
 			@PathVariable final Path relativeFile) {
 		
-		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName());
+		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(assetKey);
 		Assert.notNull(info, "");
 		Assert.isTrue(info.getStatus().isValid(), "");
 		final Path assetFolder = config.assetsNew().resolve(info.getAssetFolder());
@@ -338,7 +358,7 @@ public class TaskAssetController {
 			@RequestParam("asset") Boolean isAsset,
 			@RequestParam(value="dir", required=false) Path relativeFile) {
 		
-		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
+		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final FileType fileType = isAsset ? FileType.ASSET : FileType.WIP;
 		if (!isAsset && relativeFile == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -346,9 +366,9 @@ public class TaskAssetController {
 		
 		return tryAquireNewAssetLock(() -> {
 			if (isAsset) {
-				assetService.deleteAssetFile(task.getAssetName(), user.get());
+				assetService.deleteAssetFile(assetKey, user.get());
 			} else {
-				assetService.deleteFile(task.getAssetName(), fileType, relativeFile, user.get());
+				assetService.deleteFile(assetKey, fileType, relativeFile, user.get());
 			}
 			return new ResponseEntity<>(HttpStatus.OK);
 		});

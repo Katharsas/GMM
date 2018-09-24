@@ -9,11 +9,12 @@ import java.nio.file.InvalidPathException;
 
 /**
  * Very similar to normal Configuration.unix(), but is able to parse windows separators in
- * addition to unix separator.
+ * addition to unix separator and is case-insensitive which allows to check for conflicts
+ * due to case-insensitivity.
  * 
  * @author Jan Mothes
  */
-public class UnixCompatible {
+public class GothicCompatible {
 	
 	public static Configuration config() {
 		return Configuration.builder(new CompatiblePathType())
@@ -21,6 +22,7 @@ public class UnixCompatible {
 	            .setWorkingDirectory("/work")
 	            .setAttributeViews("basic")
 	            .setSupportedFeatures(LINKS, SYMBOLIC_LINKS, SECURE_DIRECTORY_STREAM, FILE_CHANNEL)
+	            .setNameCanonicalNormalization(PathNormalization.CASE_FOLD_ASCII)
 	            .build();
 	}
 	

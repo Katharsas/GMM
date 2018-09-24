@@ -250,11 +250,12 @@ const Dialogs = {
 	 * @see showConfirmMessage
 	 */
 	alert: function(onConfirm, message, textInputDefault, textAreaDefault) {
-		return showConfirmDialog(
+		var $dialog = showConfirmDialog(
 			function() {
 				hideDialog($dialog);
 				if (onConfirm !== null) onConfirm();
 			}, message, false, textInputDefault, textAreaDefault);
+		return $dialog;
 	},
 	
 	/**

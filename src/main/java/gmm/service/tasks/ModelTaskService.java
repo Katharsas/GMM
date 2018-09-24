@@ -117,7 +117,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 	public void writePreview(ModelTask task, String version, OutputStream target) {
 		final String modelName = version + ".json";		
 		final Path path = config.assetPreviews()
-				.resolve(task.getAssetName().getKey())
+				.resolve(task.getAssetName().getKey().toString())
 				.resolve(modelName);
 		try(FileInputStream fis = new FileInputStream(path.toFile())) {
 			IOUtils.copy(fis, target);
