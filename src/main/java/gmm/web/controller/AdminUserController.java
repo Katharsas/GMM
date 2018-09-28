@@ -58,6 +58,9 @@ public class AdminUserController {
 				user.setName(name);
 			}
 			if(role != null) user.setRole(role);
+			// TODO edit event?!
+			// any changes to a user should always synchronize on user!
+			// if users were immutable, this would not be a problem, and all tasks would have to be updated.
 		}
 	}
 	
@@ -71,6 +74,7 @@ public class AdminUserController {
 		final User user = users.getByIdLink(idLink);
 		user.setRole(user.getRole().equals(User.ROLE_ADMIN) ? 
 				User.ROLE_USER : User.ROLE_ADMIN);
+		// TODO edit event?!
 	}
 	
 	/**
@@ -85,6 +89,7 @@ public class AdminUserController {
 		final String password = users.generatePassword();
 		user.setPasswordHash(users.encodePassword(password));
 		return new String[] {password};
+		// TODO edit event?!
 	}
 	
 	/**
@@ -105,5 +110,6 @@ public class AdminUserController {
 		
 		final User user = users.getByIdLink(idLink);
 		user.enable(!user.isEnabled());
+		// TODO edit event?!
 	}
 }

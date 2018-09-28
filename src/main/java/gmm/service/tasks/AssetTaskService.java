@@ -118,8 +118,6 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		if (assetFile.length() != props.getSizeInBytes()) {
 			return false;
 		}
-		// TODO hashcode
-		
 		if (!hasPreview(getPreviewFolder(info.getAssetFileName().getKey()), info.getType())) {
 			return false;
 		}
@@ -150,6 +148,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 			logger.debug("Set properties & storage info of asset file '" + task.getAssetName() + "' on task '" + task + "'. Type: '" + type.name() + "'");
 			completedAssetProps.setSizeInBytes(assetPathAbs.toFile().length());
 			completedAssetProps.setLastModified(assetPathAbs.toFile().lastModified());
+			completedAssetProps.setSha1(fileService.sha1(assetPathAbs));
 			if (type.isOriginal()) {
 				task.setOriginalAsset(completedAssetProps, (OriginalAssetFileInfo) info);
 			} else {

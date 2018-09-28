@@ -1,8 +1,5 @@
 package gmm.service.assets;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -14,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import gmm.collections.Collection;
 import gmm.collections.EventMap;
@@ -26,10 +22,8 @@ import gmm.collections.UnmodifiableCollection;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetKey;
-import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
-import gmm.domain.task.asset.FileType;
 import gmm.service.FileService;
 import gmm.service.assets.AssetTaskUpdater.OnNewAssetUpdate;
 import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
@@ -66,9 +60,10 @@ import gmm.util.Util;
 @Service
 public class AssetService {
 	
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private final VcsPlugin vcs;
+	private final PathConfig config;
 	private final AssetScanner scanner;
 	private final TaskServiceFinder serviceFinder;
 	private final AssetTaskUpdater taskUpdater;
@@ -94,6 +89,20 @@ public class AssetService {
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetKey assetName) {
 		return newAssetFolders.get(assetName);
+	}
+	
+	/** @see {@link #getNewAssetFolderInfo(AssetKey)}
+	 */
+	public NewAssetFolderInfo getValidNewAssetFolderInfo(AssetKey assetName) {
+		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetName);
+		if (folderInfo == null) {
+			throw new IllegalArgumentException("Asset folder could not be found.");
+		}
+		final AssetFolderStatus status = folderInfo.getStatus();
+		if (!status.isValid()) {
+			throw new IllegalArgumentException("Asset folder must be in valid state, but is '" + status.name() + "'.");
+		}
+		return folderInfo;
 	}
 	
 	/**
@@ -122,11 +131,8 @@ public class AssetService {
 		this.serviceFinder = serviceFinder;
 		this.taskUpdater = taskUpdater;
 		this.data = data;
-		this.vcs = vcs;
 		this.lockService = lockService;
-		
 		this.config = config;
-		this.fileService = fileService;
 		
 		assetTasks = new EventMap<>(new ConcurrentHashMap<>());
 		newAssetFolders = new EventMap<>(new ConcurrentHashMap<>());
@@ -324,7 +330,6 @@ public class AssetService {
 		applyFoundNew(scanner.onNewAssetFilesChanged(), changedPaths);
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void applyFoundNew(Map<AssetKey, NewAssetFolderInfo> foundNewAssetFolders, List<Path> changedPaths) {
 		
 		scanner.filterForNewAssets(changedPaths);
@@ -344,7 +349,9 @@ public class AssetService {
 			if (task == null) {
 				newAssetFoldersWithoutTasks.put(folderName, currentInfo);
 			} else {
-				final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
+				final boolean forceUpdate = changedPaths.contains(currentInfo.getAssetFilePath(config).normalize());
+				// TODO call remove instead of contains?
+				
 				
 				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
 					data.editBy(task, User.UNKNOWN);
@@ -352,36 +359,7 @@ public class AssetService {
 					// (the old info would be available through tasks), same goes for original tasks
 				});
 				
-				// asset was removed
-				if (oldHasAsset && !currentHasAsset) {
-					assertTaskHasAssetProperties(task, type);
-					updater.removePropsAndSetInfo(task, Optional.of(currentInfo));
-				// asset was added
-				} else if (!oldHasAsset && currentHasAsset) {
-					updater.recreatePropsAndSetInfo(task, currentInfo);
-				// asset still exists
-				} else if (oldHasAsset && currentHasAsset) {
-					assertTaskHasAssetProperties(task, type);
-					final AssetProperties props = task.getAssetProperties(type);
-					// file path hasn't changed, content has changed
-					if (changedPaths.contains(currentInfo.getAssetFilePath(config).normalize())) {
-						updater.recreatePropsAndSetInfo(task, currentInfo);
-					}
-					// file path may have changed, content may have changed
-					else if (!service.isValidAssetProperties(props, currentInfo)) {
-						updater.recreatePropsAndSetInfo(task, currentInfo);
-					// file path may have changed, content hasn't changed
-					} else {
-						if (!Objects.equals(oldInfo, currentInfo)) {
-							updater.setInfo(task, Optional.of(currentInfo));
-						}
-					}
-				// asset still does not exist, but folder status may have changed
-				} else {
-					if (!Objects.equals(oldInfo, currentInfo)) {
-						updater.setInfo(task, Optional.of(currentInfo));
-					}
-				}
+				updateChangedInfo(oldInfo, currentInfo, updater, task, forceUpdate);
 			}
 			// delete previews
 			if (oldHasAsset && !currentHasAsset) {
@@ -417,135 +395,135 @@ public class AssetService {
 		}
 	}
 	
+	/** Deletes if exists.
+	 */
 	private void deleteNewAssetPreview(AssetKey name) {
 		serviceFinder.getAssetService(name).deleteNewAssetPreview(name);
 	}
 	
-	final PathConfig config;
-	final FileService fileService;
-	
-	public void deleteAssetFile(AssetKey assetFolderName, User currentUser) {
-		deleteFile(assetFolderName, FileType.ASSET, null, currentUser);
+	/**
+	 * Updates AssetService about changes to wip folder of an asset.
+	 */
+	public void onNewAssetWipChange(AssetKey asset, User user) {
+		getValidNewAssetFolderInfo(asset);
+		final AssetTask<?> task = assetTasks.get(asset);
+		Objects.requireNonNull(task);
+		data.editBy(task, user);
 	}
 	
+	/**
+	 * Updates AssetService about single changes to new assets or asset folders.
+	 * Can handle any changes that may occur to an asset folder.
+	 */
+	public void onNewAssetFolderChanged(
+			AssetKey asset, 
+			Optional<NewAssetFolderInfo> oldInfo,
+			Optional<NewAssetFolderInfo> newInfo,
+			User user) {
 		
-	public void deleteFile(AssetKey assetFolderName, FileType fileType, Path relativeFile, User currentUser) {
-		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		if (!folderInfo.getStatus().isValid()) {
-			throw new IllegalArgumentException("Asset folder for given asset deletion is in invalid state!");
-		}
-		
-		final Path absoluteFile;
-		
-		if (fileType.isAsset()) {
-			if (folderInfo.getStatus() != AssetFolderStatus.VALID_WITH_ASSET) {
-				throw new IllegalArgumentException("Asset to delete does not exist!");
-			}
-			absoluteFile = folderInfo.getAssetFilePathAbsolute(config);
-		} else {
-			final Path assetFolder = config.assetsNew().resolve(folderInfo.getAssetFolder());
-			final Path visible = assetFolder.resolve(fileType.getSubPath(config));
-			absoluteFile = visible.resolve(fileService.restrictAccess(relativeFile, visible));
-		}
-		logger.info("Deleting file from new asset folder at '" + absoluteFile + "'");
-		fileService.delete(absoluteFile);
-		vcs.removeFile(config.assetsNew().relativize(absoluteFile));
-		vcs.commit("GMM: [" + currentUser.getName() +"] deleted " + (fileType.isAsset() ? "an asset." : "a wip file."));
-		
-		final AssetTask<?> task = assetTasks.get(assetFolderName);
-		Objects.requireNonNull(task);
-		
-		if (fileType.isAsset()) {
-			final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(folderInfo.getAssetFolder());
-			if (newInfo.isPresent()) {
-				newAssetFolders.put(assetFolderName, newInfo.get());
+		if (!newInfo.isPresent()) {
+			if (!oldInfo.isPresent()) {
+				throw new IllegalStateException("Asset folder change could not be detected!");
 			} else {
-				newAssetFolders.remove(assetFolderName);
-				deleteNewAssetPreview(assetFolderName);
+				newAssetFolders.remove(asset);
 			}
-			taskUpdater.new OnNewAssetUpdate(() -> {
-				data.editBy(task, currentUser);
-			}).removePropsAndSetInfo(task, newInfo);
 		} else {
-			data.edit(task);
+			newAssetFolders.put(asset, newInfo.get());
 		}
-	}
-	
-	public void createNewAssetFolder(AssetKey assetFolderName, Path relativeFolder, User currentUser) {
-		final NewAssetFolderInfo folderInfo = getNewAssetFolderInfo(assetFolderName);
-		if (folderInfo != null) {
-			throw new IllegalArgumentException("Asset is already associated with an existing asset folder!");
-		}
-		final Path absoluteFolder = config.assetsNew().resolve(relativeFolder);
-		if (Files.exists(absoluteFolder)) {
-			throw new IllegalArgumentException("Path at '" + relativeFolder + "' already exists!");
-		}
-		logger.info("Creating new asset folder at '" + absoluteFolder + "'");
-		fileService.createDirectory(absoluteFolder);
-		vcs.addFile(relativeFolder);
-		vcs.commit("GMM: [" + currentUser.getName() +"] created asset folder.");
-		
-		final AssetTask<?> task = assetTasks.get(assetFolderName);
-		Objects.requireNonNull(task);
-		
-		final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(relativeFolder);
-		if (newInfo.isPresent()) {
-			newAssetFolders.put(assetFolderName, newInfo.get());
-			task.setNewAssetFolderInfo(newInfo.get());
-			data.editBy(task, currentUser);
-		} else {
-			throw new IllegalStateException("Scan failed to find newly created asset folder!");
-		}
-	}
-	
-	public void addFile(AssetKey assetName, MultipartFile fileData, User currentUser) {
-		
-		// validate
-		final NewAssetFolderInfo oldFolderInfo = getNewAssetFolderInfo(assetName);
-		if (oldFolderInfo == null) {
-			throw new IllegalArgumentException("Asset folder could not be found.");
-		}
-		if (!oldFolderInfo.getStatus().isValid()) {
-			throw new IllegalArgumentException("Asset folder must be in valid state, but is '" + oldFolderInfo.getStatus().name() + "'.");
-		}
-		final String fileName = fileData.getOriginalFilename();
-		final AssetName newAssetName = new AssetName(fileName);
-		newAssetName.assertPathMatch(oldFolderInfo.getAssetFolder());
-		
-		// remove old asset
-		if (oldFolderInfo.getStatus() == AssetFolderStatus.VALID_WITH_ASSET) {
-			final Path oldAsset = oldFolderInfo.getAssetFilePath(config);
-			final Path oldAssetAbsolute = config.assetsNew().resolve(oldAsset);
-			logger.info("Replacing new asset at '" + oldAssetAbsolute + "'");
-			fileService.delete(oldAssetAbsolute);
-			vcs.removeFile(oldAsset);
-		}
-		// add new asset
 		{
-			final Path newAsset = oldFolderInfo.getAssetFolder().resolve(newAssetName.get());
-			final Path newAssetAbsolute = config.assetsNew().resolve(newAsset);
-			logger.info("Creating new asset at '" + newAssetAbsolute + "'");
-			try {
-				fileService.createFile(newAssetAbsolute, fileData.getBytes());
-			} catch (final IOException e) {
-				throw new UncheckedIOException(e);
-			}
-			vcs.addFile(newAsset);
-		}
-		
-		vcs.commit("GMM: [" + currentUser.getName() +"] uploaded new asset.");
-		
-		// rescan to get updated folder info
-		final Optional<NewAssetFolderInfo> newInfo = scanner.onSingleAssetFolderChanged(oldFolderInfo.getAssetFolder());
-		if (newInfo.isPresent()) {
-			newAssetFolders.put(assetName, newInfo.get());
-			final AssetTask<?> task = assetTasks.get(assetName);
+			final AssetTask<?> task = assetTasks.get(asset);
 			Objects.requireNonNull(task);
-			taskUpdater.new OnNewAssetUpdate(() -> {
-				data.editBy(task, currentUser);
-			}).recreatePropsAndSetInfo(task, newInfo.get());
+			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
+				data.editBy(task, user);
+			});
+			
+			if (oldInfo.isPresent()) {
+				if (newInfo.isPresent()) {
+					// deal with asset file changes or folder relocation only
+					updateChangedInfo(oldInfo.get(), newInfo.get(), updater, task, true);
+				} else {
+					// asset folder and any assets were deleted
+					if (oldInfo.get().getStatus().hasAsset()) {
+						updater.removePropsAndSetInfo(task, newInfo);
+					} else {
+						updater.setInfo(task, newInfo);
+					}
+				}
+			} else {
+				if (newInfo.isPresent()) {
+					// folder was created, maybe asset was as well
+					if (newInfo.get().getStatus().hasAsset()) {
+						updater.recreatePropsAndSetInfo(task, newInfo.get());
+					} else {
+						updater.setInfo(task, newInfo);
+					}
+				}
+			}
+		}
+		if (isPreviewDeletionNeeded(oldInfo, newInfo)) {
+			deleteNewAssetPreview(asset);
+		}
+	}
+	
+	private void updateChangedInfo(
+			NewAssetFolderInfo oldInfo,
+			NewAssetFolderInfo newInfo,
+			OnNewAssetUpdate updater,
+			AssetTask<?> task,
+			boolean forceUpdate) {
+		
+		final boolean oldHasAsset = oldInfo.getStatus().hasAsset();
+		final boolean currentHasAsset = newInfo.getStatus().hasAsset();
+		final AssetGroupType type = AssetGroupType.NEW;
+		
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		final AssetTaskService<?> service = serviceFinder.getAssetService((Class)Util.getClass(task));
+		
+		// asset was removed
+		if (oldHasAsset && !currentHasAsset) {
+			assertTaskHasAssetProperties(task, type);
+			updater.removePropsAndSetInfo(task, Optional.of(newInfo));
+		// asset was added
+		} else if (!oldHasAsset && currentHasAsset) {
+			updater.recreatePropsAndSetInfo(task, newInfo);
+		// asset still exists
+		} else if (oldHasAsset && currentHasAsset) {
+			assertTaskHasAssetProperties(task, type);
+			final AssetProperties props = task.getAssetProperties(type);
+			// content has changed
+			if (forceUpdate) {
+				updater.recreatePropsAndSetInfo(task, newInfo);
+			}
+			// content may have changed
+			else if (!service.isValidAssetProperties(props, newInfo)) {
+				updater.recreatePropsAndSetInfo(task, newInfo);
+			// file path may have changed, content hasn't changed
+			} else {
+				if (!Objects.equals(oldInfo, newInfo)) {
+					updater.setInfo(task, Optional.of(newInfo));
+				}
+			}
+		// asset still does not exist, but folder status may have changed
 		} else {
-			throw new IllegalStateException("Scan failed to relocate asset folder!");
+			if (!Objects.equals(oldInfo, newInfo)) {
+				updater.setInfo(task, Optional.of(newInfo));
+			}
+		}
+	}
+	
+	private boolean isPreviewDeletionNeeded(
+			Optional<NewAssetFolderInfo> oldInfo,
+			Optional<NewAssetFolderInfo> newInfo) {
+		
+		final boolean oldHasAsset = oldInfo.isPresent() && oldInfo.get().getStatus().hasAsset();
+		if (oldHasAsset) {
+			if (newInfo.isPresent()) {
+				return !newInfo.get().getStatus().hasAsset();
+			} else {
+				return true;
+			}
+		} else {
+			return false;
 		}
 	}
 }

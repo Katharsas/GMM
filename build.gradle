@@ -88,6 +88,10 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'joda-time', name: 'joda-time', version:'2.8.1'
     compile group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
+    //compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.2'
+    compile group: 'org.bytedeco', name: 'javacv', version: '1.4.2'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv-platform', version: '3.4.2-1.4.2'
+    // the jar that gets pulled by this should be provided manually since its too big to upload everytime
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.4'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.3.2'

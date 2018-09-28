@@ -43,6 +43,7 @@ import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.FileService;
 import gmm.service.assets.AssetService;
+import gmm.service.assets.NewAssetFileService;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.NewAssetFolderVfs;
@@ -74,6 +75,7 @@ public class TaskAssetController {
 	@Autowired private PathConfig config;
 	@Autowired private FileService fileService;
 	@Autowired private AssetService assetService;
+	@Autowired private NewAssetFileService newAssetService;
 	@Autowired private NewAssetLockService lockService;
 	@Autowired private NewAssetFolderVfs newAssetFolderVfs;
 	@Autowired private TaskServiceFinder serviceFinder;
@@ -168,18 +170,12 @@ public class TaskAssetController {
 
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		
-		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(task.getAssetName().getKey());
-		if (info == null) return new String[] {};
-		else {
-			if (!info.getStatus().isValid()) return new String[] {};
-			else {
-				final Path visible = config.assetsNew()
-						.resolve(info.getAssetFolder())
-						.resolve(isAssets ? config.subAssets() : config.subOther());
-				final Path dirRelative = fileService.restrictAccess(dir, visible);
-				return new FileTreeScript().html(dirRelative, visible);
-			}
-		}
+		final NewAssetFolderInfo info = assetService.getValidNewAssetFolderInfo(task.getAssetName().getKey());
+		final Path visible = config.assetsNew()
+				.resolve(info.getAssetFolder())
+				.resolve(isAssets ? config.subAssets() : config.subOther());
+		final Path dirRelative = fileService.restrictAccess(dir, visible);
+		return new FileTreeScript().html(dirRelative, visible);
 	}
 	
 	/**
@@ -217,7 +213,7 @@ public class TaskAssetController {
 			if (!newAssetFolderVfs.isValidAssetFolderLocation(assetFolderPath)) {
 				throw new IllegalArgumentException("Path '" + path + "' is not a valid new asset folder location!");
 			}
-			assetService.createNewAssetFolder(assetKey, assetFolderPath, user.get());
+			newAssetService.createNewAssetFolder(assetKey, assetFolderPath, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
 	}
@@ -235,36 +231,17 @@ public class TaskAssetController {
 		// commit, rescan to to relink, edit event
 	}
 	
-//	/**
-//	 * Upload File
-//	 * -----------------------------------------------------------------
-//	 * @param idLink - identifies the corresponding task
-//	 */
-//	@RequestMapping(value = {"/upload/{idLink}"} , method = RequestMethod.POST)
-//	@ResponseBody
-//	public void handleUpload(
-//			HttpServletRequest request,
-//			@PathVariable String idLink) throws Exception {
-//		
-//		final MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-//		final MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
-//		final MultipartFile file = map.getFirst("file");
-//		if (file.isEmpty()) throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
-//		
-//		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
-//		taskService.addFile(task, file);
-//	}
-	
+	// TODO FileType "WIP" should not be hardcoded string?
 	/**
-	 * Upload an asset.
+	 * Upload a wip file.
 	 * -----------------------------------------------------------------
 	 * @param idLink - identifies the corresponding task
 	 */
-	@RequestMapping(value = {"/uploadAsset/{idLink}"} , method = RequestMethod.POST)
+	@RequestMapping(value = {"/upload/WIP/{idLink}"} , method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<Void> handleAssetUpload(
+	public ResponseEntity<Void> handleWipFileUpload(
 			HttpServletRequest request,
-			@PathVariable String idLink) throws Exception {
+			@PathVariable String idLink) {
 		
 		final MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		final MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
@@ -274,7 +251,32 @@ public class TaskAssetController {
 		}
 		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
 		return tryAquireNewAssetLock(() -> {
-			assetService.addFile(assetKey, file, user.get());
+			newAssetService.addWipFile(assetKey, file, user.get());
+			return new ResponseEntity<>(HttpStatus.OK);
+		});
+	}
+	
+	// TODO FileType "ASSET" should not be hardcoded string?
+	/**
+	 * Upload an asset.
+	 * -----------------------------------------------------------------
+	 * @param idLink - identifies the corresponding task
+	 */
+	@RequestMapping(value = {"/upload/ASSET/{idLink}"} , method = RequestMethod.POST)
+	@ResponseBody
+	public ResponseEntity<Void> handleAssetUpload(
+			HttpServletRequest request,
+			@PathVariable String idLink) {
+		
+		final MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		final MultiValueMap<String, MultipartFile> map = multipartRequest.getMultiFileMap();
+		final MultipartFile file = map.getFirst("file");
+		if (file.isEmpty()) {
+			throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
+		}
+		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
+		return tryAquireNewAssetLock(() -> {
+			newAssetService.addAssetFile(assetKey, file, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
 	}
@@ -329,9 +331,7 @@ public class TaskAssetController {
 			@PathVariable final Path relativeFile) {
 		
 		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final NewAssetFolderInfo info = assetService.getNewAssetFolderInfo(assetKey);
-		Assert.notNull(info, "");
-		Assert.isTrue(info.getStatus().isValid(), "");
+		final NewAssetFolderInfo info = assetService.getValidNewAssetFolderInfo(assetKey);
 		final Path assetFolder = config.assetsNew().resolve(info.getAssetFolder());
 		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
 		final Path absolute = visible.resolve(fileService.restrictAccess(relativeFile, visible));
@@ -359,16 +359,15 @@ public class TaskAssetController {
 			@RequestParam(value="dir", required=false) Path relativeFile) {
 		
 		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
-		final FileType fileType = isAsset ? FileType.ASSET : FileType.WIP;
 		if (!isAsset && relativeFile == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		
 		return tryAquireNewAssetLock(() -> {
 			if (isAsset) {
-				assetService.deleteAssetFile(assetKey, user.get());
+				newAssetService.deleteAssetFile(assetKey, user.get());
 			} else {
-				assetService.deleteFile(assetKey, fileType, relativeFile, user.get());
+				newAssetService.deleteWipFile(assetKey, relativeFile, user.get());
 			}
 			return new ResponseEntity<>(HttpStatus.OK);
 		});

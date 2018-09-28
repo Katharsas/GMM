@@ -288,7 +288,7 @@ export default function(onedit, setIsPinned, isPinned) {
 					AssetFileOperationsNotifier.registerNewAssetOperation($uploadNewestAssetInput, "change", function() {
 						Dialogs.showOverlay();
 						const file = $uploadNewestAssetInput[0].files[0];
-						Ajax.upload(contextUrl + "/tasks/uploadAsset/" + id, file)
+						Ajax.upload(contextUrl + "/tasks/upload/ASSET/" + id, file)
 							.then(function() {
 								Dialogs.hideOverlay();
 							});
@@ -362,13 +362,12 @@ export default function(onedit, setIsPinned, isPinned) {
 					AssetFileOperationsNotifier.registerNewAssetOperation($uploadWipInput, "change", function() {
 						Dialogs.showOverlay();
 						const file = $uploadWipInput[0].files[0];
-						Ajax.upload(contextUrl + "/tasks/uploadWip/" + id, file)
+						Ajax.upload(contextUrl + "/tasks/upload/WIP/" + id, file)
 							.then(function() {
 								Dialogs.hideOverlay();
 							});
 					});
 					const $uploadWip = $fileOps.find(".task-file-button.action-upload");
-					$uploadWip.hide();// TODO remove when done
 					$uploadWip.click(function() {
 						$uploadWipInput.click();
 					});

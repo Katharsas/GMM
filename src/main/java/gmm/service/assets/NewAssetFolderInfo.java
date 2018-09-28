@@ -51,6 +51,9 @@ public class NewAssetFolderInfo implements AssetInfo {
 		public boolean isValid() {
 			return isValid;
 		}
+		public boolean hasAsset() {
+			return this == VALID_WITH_ASSET;
+		}
 	}
 	
 	public static NewAssetFolderInfo createInvalidNotUnique(NewAssetFolderInfo duplicate, NewAssetFolderInfo current) {

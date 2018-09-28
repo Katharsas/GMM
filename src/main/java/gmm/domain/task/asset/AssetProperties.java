@@ -1,6 +1,7 @@
 package gmm.domain.task.asset;
 
 import java.text.DecimalFormat;
+import java.util.Optional;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
@@ -16,6 +17,8 @@ public abstract class AssetProperties {
 	private long sizeInBytes = -1;
 	@XStreamAsAttribute
 	private long lastModified = -1;
+	@XStreamAsAttribute
+	private byte[] sha1;
 	
 	protected final static String assertAttributesException =
 			"This asset's attributes are not fully populated!";
@@ -50,5 +53,16 @@ public abstract class AssetProperties {
 	
 	public long getLastModified() {
 		return lastModified;
+	}
+
+	/**
+	 * Optional because GMM versions < 0.6.3 did not save sha1 on preview creation
+	 */
+	public Optional<byte[]> getSha1() {
+		return Optional.ofNullable(sha1);
+	}
+	
+	public void setSha1(byte[] sha1) {
+		this.sha1 = sha1;
 	}
 }

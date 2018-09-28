@@ -3,8 +3,12 @@ package gmm.service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -261,6 +265,28 @@ public class FileService {
 		}
 		else {
 			return path.normalize();
+		}
+	}
+	
+	public byte[] sha1(Path path) {		
+		try {
+			final MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
+
+			try (final FileInputStream fis = new FileInputStream(path.toFile())) {
+				final FileChannel fileChannel = fis.getChannel();
+				final ByteBuffer buffer = ByteBuffer.allocate(8192 * 2 * 2 * 2);
+
+				while (fileChannel.read(buffer) != -1) {
+					buffer.flip();
+					messageDigest.update(buffer);
+					buffer.clear();
+				}
+			}
+			return messageDigest.digest();
+		} catch (final IOException e) {
+			throw new UncheckedIOException(e);
+		} catch (final NoSuchAlgorithmException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
