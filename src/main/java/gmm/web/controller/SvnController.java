@@ -36,10 +36,10 @@ public class SvnController {
 			@RequestParam(value="token", required=false) String token) {
 		
 		if (token == null || token.equals("") || !token.equals(configToken)) {
-			logger.debug("Invalid commit notification received (no or wrong token).");
+			logger.warn("Invalid commit notification received (no or wrong token).");
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} else {
-			logger.debug("Valid commit notification received.");
+			logger.info("Valid commit notification received.");
 			svn.notifyRepoChange();
 			return new ResponseEntity<>(HttpStatus.OK);
 		}

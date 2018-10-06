@@ -123,6 +123,10 @@ dependencies {
 
 // Resource Filtering
 processResources {
+    outputs.upToDateWhen {
+        File metaPropertiesFile = file("${sourceSets.main.output.resourcesDir}/meta.properties")
+        return metaPropertiesFile.exists() && metaPropertiesFile.text.contains(project.version);
+    }
     filesMatching('**/meta.properties') {
         expand(
             'gmm_version': "${project.version}",

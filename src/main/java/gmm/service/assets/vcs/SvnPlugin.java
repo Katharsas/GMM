@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PreDestroy;
 
@@ -20,6 +22,7 @@ import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNStatusType;
 import org.tmatesoft.svn.core.wc2.SvnCheckout;
+import org.tmatesoft.svn.core.wc2.SvnCleanup;
 import org.tmatesoft.svn.core.wc2.SvnCommit;
 import org.tmatesoft.svn.core.wc2.SvnDiffStatus;
 import org.tmatesoft.svn.core.wc2.SvnDiffSummarize;
@@ -29,6 +32,7 @@ import org.tmatesoft.svn.core.wc2.SvnInfo;
 import org.tmatesoft.svn.core.wc2.SvnOperation;
 import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
 import org.tmatesoft.svn.core.wc2.SvnReceivingOperation;
+import org.tmatesoft.svn.core.wc2.SvnRevert;
 import org.tmatesoft.svn.core.wc2.SvnScheduleForAddition;
 import org.tmatesoft.svn.core.wc2.SvnScheduleForRemoval;
 import org.tmatesoft.svn.core.wc2.SvnStatus;
@@ -85,8 +89,7 @@ public class SvnPlugin extends VcsPlugin {
 	private final FileService fileService;
 	private final NewAssetLockService lockService;
 	
-	private Thread repoChangeThread1 = null;
-	private Thread repoChangeThread2 = null;
+	ExecutorService executorService = Executors.newFixedThreadPool(1);
 	
 	private final Path workingCopyDir;
 	
@@ -187,7 +190,19 @@ public class SvnPlugin extends VcsPlugin {
 				} catch (final SVNException e) {}
 				if (info != null) {
 					logger.info("Located existing working copy at path '" + workingCopyString + "'.");
-					verifyExistingWorkingCopy();
+					final boolean isOk = verifyExistingWorkingCopy();
+					if (!isOk) {
+						logger.info("Trying to bring existing working copy to valid state.");
+						cleanupWorkingCopy();
+						revertWorkingCopy();
+						cleanupWorkingCopy();
+						final boolean isOk2 = verifyExistingWorkingCopy();
+						if (!isOk2) {
+							throw new ConfigurationException(
+									"Existing working copy is in an invalid state and could not be reverted to valid state! "
+									+ "Pls fix manually or delete working copy at '" + workingCopy + "'.");
+						}
+					}
 				} else {
 					logger.warn("Could not locate working copy at path '" + workingCopyString + "'! Creating new one.");
 					if(workingCopyFile.list().length > 0) {
@@ -205,7 +220,7 @@ public class SvnPlugin extends VcsPlugin {
 		}
 	}
 	
-	private void verifyExistingWorkingCopy() {
+	private boolean verifyExistingWorkingCopy() {
 		final SvnGetStatus ops = svnOperationFactory.createGetStatus();
 		ops.setSingleTarget(workingCopy);
 		ops.setReportAll(logger.isDebugEnabled());
@@ -217,13 +232,31 @@ public class SvnPlugin extends VcsPlugin {
 			final String filePath = entry.getPath().getPath();
 			
 			if (type != SVNStatusType.STATUS_NORMAL) {
-				logger.error("Existing working copy is in an invalid state (maybe modified)! "
-						+ "Pls fix manually or delete working copy at '" + workingCopy + "'.");
-				throw new ConfigurationException(
-						"Found entry with invalid status in working copy! "
+				logger.warn("Found entry with invalid status in working copy! "
 						+ "Relative path: '" + filePath +"'. Status: '" + type + "'.");
+				return false;
 			}
 		}
+		return true;
+	}
+	
+	public void revertWorkingCopy() {
+		final SvnRevert ops = new SvnOperationFactory().createRevert();
+		ops.setSingleTarget(workingCopy);
+		ops.setDepth(SVNDepth.INFINITY);
+		ops.setRevertMissingDirectories(true);
+		ops.setClearChangelists(true);
+		
+		tryRun(ops);
+	}
+	
+	public void cleanupWorkingCopy() {
+		final SvnCleanup ops = new SvnOperationFactory().createCleanup();
+		ops.setSingleTarget(workingCopy);
+		ops.setDepth(SVNDepth.INFINITY);
+		ops.setRemoveUnversionedItems(true);
+		
+		tryRun(ops);
 	}
 	
 	private long createNewWorkingCopy() {
@@ -321,16 +354,7 @@ public class SvnPlugin extends VcsPlugin {
 
 	@Override
 	public synchronized void notifyRepoChange() {
-		if (!repoChangeThread1.isAlive()) {
-			repoChangeThread1 = new Thread(this::onNotifyRepoChange);
-			repoChangeThread1.start();
-			return;
-		}
-		if (!repoChangeThread2.isAlive()) {
-			repoChangeThread2 = new Thread(this::onNotifyRepoChange);
-			repoChangeThread2.start();
-			return;
-		}
+		executorService.submit(this::onNotifyRepoChange);
 	}
 	
 	private void onNotifyRepoChange() {
