@@ -63,6 +63,8 @@ dependencies {
 	ext.springVersion = '5.0.4.RELEASE'
 	ext.springSecVersion = '5.0.3.RELEASE'
 	
+	compile group: "com.realityinteractive.imageio.tga", name: "undefined"
+	
 	compile group: 'org.springframework', name: 'spring-context', version: springVersion
     compile group: 'org.springframework', name: 'spring-core', version: springVersion
     compile group: 'org.springframework', name: 'spring-context-support', version: springVersion
@@ -152,6 +154,7 @@ gretty {
 
 war {
     ext.workspaceConfig = "local"
+    //ext.workspaceConfig = "test"
     //ext.workspaceConfig = "staging"
     //ext.workspaceConfig = "prod"
     

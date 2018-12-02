@@ -1,0 +1,3 @@
+[submodule "TgaReader"]
+	path = TgaReader
+	url = https://github.com/Katharsas/com.realityinteractive.imageio.tga
