@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.jimfs.GothicCompatible;
 import com.google.common.jimfs.Jimfs;
-import com.google.common.jimfs.VPath;
+import com.google.common.jimfs.VPath.VPaths;
 
 import gmm.collections.EventMapSource;
 import gmm.domain.task.asset.AssetKey;
@@ -30,53 +30,14 @@ import gmm.service.FileService;
 @Service
 public class NewAssetFolderVfs {
 
-	private class VirtualPath extends VPath {
-		public VirtualPath(String relativePath) {
-			super(relativePath);
-		}
-		public VirtualPath(Path relativePath) {
-			super(relativePath);
-		}
-		
-		protected VirtualPath(Path path, boolean internal) {
-			super(path, internal);
-		}
-		@Override
-		protected Path convert(String relativePath) {
-			return fileSystem.getPath(relativePath);
-		}
-		@Override
-		protected VPath create(Path vPath) {
-			return new VirtualPath(vPath, true);
-		}
-	}
-	
-	/**
-	 * Converts paths to virtual paths with correct underlying fs.
-	 */
-	public class VirtualPaths {
-		public final VPath root;
-		private VirtualPaths() {
-			this.root = new VirtualPath("/");
-		}
-		public VPath of(Path relativePath) {
-			return new VirtualPath(relativePath);
-		}
-		public VPath of(String relativePath) {
-			return new VirtualPath(relativePath);
-		}
-	}
-	
-	private final FileSystem fileSystem;
-	private final VirtualPaths vPaths;
-	
+	private final VPaths vPaths;	
 	private final FileService fileService;
 	
 	@Autowired
 	public NewAssetFolderVfs(AssetService assetService, FileService fileService) {
 		this.fileService = fileService;
-		fileSystem = Jimfs.newFileSystem(GothicCompatible.config());
-		vPaths = new VirtualPaths();
+		final FileSystem fs = Jimfs.newFileSystem(GothicCompatible.config());
+		vPaths = new VPaths(fs, "/");
 		
 		try {
 			Files.deleteIfExists(vPaths.root.resolve("work").get());
@@ -92,7 +53,7 @@ public class NewAssetFolderVfs {
 		}
 	}
 	
-	public VirtualPaths virtualPaths() {
+	public VPaths virtualPaths() {
 		return vPaths;
 	}
 	

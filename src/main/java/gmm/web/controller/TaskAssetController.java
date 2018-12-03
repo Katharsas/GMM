@@ -33,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.google.common.jimfs.VPath;
+import com.google.common.jimfs.VPath.VPaths;
 
 import gmm.domain.UniqueObject;
 import gmm.domain.task.asset.AssetGroupType;
@@ -47,7 +48,6 @@ import gmm.service.assets.NewAssetFileService;
 import gmm.service.assets.NewAssetFolderInfo;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.NewAssetFolderVfs;
-import gmm.service.assets.NewAssetFolderVfs.VirtualPaths;
 import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.OriginalAssetFileInfo;
 import gmm.service.data.DataAccess;
@@ -190,7 +190,7 @@ public class TaskAssetController {
 		final AssetTask<?> task = UniqueObject.getFromIdLink(data.getList(AssetTask.class), idLink);
 		final AssetTaskService<?> service = serviceFinder.getAssetService(task.getAssetName().getKey());
 		
-		final VirtualPaths vPaths = newAssetFolderVfs.virtualPaths();
+		final VPaths vPaths = newAssetFolderVfs.virtualPaths();
 		final VPath subFolder = vPaths.of(service.getAssetTypeSubFolder());
 		return new FileTreeScript().html(vPaths.of(dir), vPaths.root, Optional.of(subFolder));
 	}

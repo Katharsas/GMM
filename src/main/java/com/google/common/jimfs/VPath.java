@@ -6,6 +6,7 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchEvent.Modifier;
 import java.nio.file.WatchKey;
@@ -18,6 +19,48 @@ import java.util.Iterator;
  * This obviously only works for relative paths.
  */
 public abstract class VPath {
+	
+	/**
+	 * Factory & convenience class for "virtual" {@link VPath} similar to {@link Paths}.
+	 */
+	public static class VPaths {
+		
+		private class VirtualPath extends VPath {
+			public VirtualPath(String relativePath) {
+				super(relativePath);
+			}
+			public VirtualPath(Path relativePath) {
+				super(relativePath);
+			}
+			protected VirtualPath(Path path, boolean internal) {
+				super(path, internal);
+			}
+			@Override
+			protected Path convert(String relativePath) {
+				return fs.getPath(relativePath);
+			}
+			@Override
+			protected VPath create(Path vPath) {
+				return new VirtualPath(vPath, true);
+			}
+		}
+		
+		private final FileSystem fs;
+		public final VPath root;
+		
+		public VPaths(FileSystem fs, String root) {
+			this.fs = fs;
+			this.root = new VirtualPath("/");
+		}
+		
+		public VPath of(Path relativePath) {
+			return new VirtualPath(relativePath);
+		}
+		public VPath of(String relativePath) {
+			return new VirtualPath(relativePath);
+		}
+	}
+	
 	
 	private boolean equalsFS(Path other) {
 		return path.getFileSystem().equals(other.getFileSystem());

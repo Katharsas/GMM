@@ -81,18 +81,13 @@ dependencies {
 
 	// Libs
     compile group: 'com.google.jimfs', name: 'jimfs', version:'1.1'
-    compile group: 'org.tmatesoft.svnkit', name: 'svnkit', version:'1.9.0'
+    compile group: 'org.tmatesoft.svnkit', name: 'svnkit', version:'1.9.3'
     /* compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.5.3') {
 		exclude(module: 'activation')
     } */
     compile group: 'com.google.guava', name: 'guava', version:'18.0'
     compile group: 'joda-time', name: 'joda-time', version:'2.8.1'
-    compile group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
-    //compile group: 'org.bytedeco', name: 'javacv-platform', version: '1.4.2'
-    compile group: 'org.bytedeco', name: 'javacv', version: '1.4.2'
-    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv-platform', version: '3.4.2-1.4.2'
-    // the jar that gets pulled by this should be provided manually since its too big to upload everytime
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.4'
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.4'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.3.2'
     compile group: 'org.apache.commons', name: 'commons-collections4', version:'4.1'
@@ -101,6 +96,13 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
     compile group: 'commons-fileupload', name: 'commons-fileupload', version:'1.3.1'
     // think about replacing commons file-upload with servelt 3.0 upload support
+    
+    compile group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
+    compile group: 'org.bytedeco', name: 'javacpp', version: '1.4.2'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2', classifier: 'windows-x86_64'
+    //compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2', classifier: 'linux-x86_64'
+    
     // JavaEE
     compile group: 'javax.servlet', name: 'jstl', version:'1.2'
     
