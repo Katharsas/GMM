@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 /**
  * HOW TO BUILD
  * 
@@ -15,6 +17,7 @@
  * Default configuration file can be found at 'src/main/resources/default.properties'.
  * Use configuration file at 'config/config.properties' to override defaults.
  */
+
 
 buildscript {
     repositories {
@@ -38,6 +41,75 @@ apply plugin: 'org.gretty'
 apply plugin: 'com.bmuschko.cargo'
 apply plugin: 'com.moowork.node'
 apply plugin: "com.moowork.gulp"
+
+//apply from: "profiles.gradle"
+
+class Profile {
+
+	String name
+	String type
+	String warName
+	String workspaceLocation
+	String provideNativeLibs
+	
+	Profile(String name) {
+	    this.name = name
+	}
+}
+
+class ProfilesPlugin implements Plugin<Project> {
+    void apply(final Project project) {
+        NamedDomainObjectContainer<Profile> profileContainer = project.container(Profile)
+        project.extensions.add('profiles', profileContainer)
+ 
+        // Simple task to show the Product objects
+        // that are created by Gradle using
+        // the DSL syntax in our build file.
+        project.task('printProfiles') << {
+            def profiles = project.extensions.getByName('profiles')
+            profiles.all {
+                println "$workspaceLocation"
+            }
+        }
+    }
+}
+
+apply plugin: ProfilesPlugin
+
+profiles {
+
+   	local {
+   		type = "dev"
+   		// use default war name
+   		workspaceLocation = "$projectDir/gmm-workspace"
+   		provideNativeLibs = 'windows-x86_64'
+   	}
+   	
+	testvm {
+   		type = "dev"
+   		warName = "GMM.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace'
+   		provideNativeLibs = "linux-x86_64"
+   	}
+   	
+   	staging {
+   		type = "dev"
+   		warName = "staging.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace-staging'
+   		// native libs are provided
+   	}
+   	
+   	prod {
+   		type = "dev"
+   		warName = "ROOT.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace'
+   		// native libs are provided
+   	}
+   	
+   	ext {
+   	    active = local
+   	}
+}
 
 group = 'de.gothic-reloaded-mod'
 version = '0.6.2-SNAPSHOT'
@@ -100,8 +172,10 @@ dependencies {
     compile group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
     compile group: 'org.bytedeco', name: 'javacpp', version: '1.4.2'
     compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2'
-    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2', classifier: 'windows-x86_64'
-    //compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2', classifier: 'linux-x86_64'
+    def profile = project.profiles.ext.active;
+    if (profile.hasProperty('provideNativeLibs')) {
+    	compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.4.2-1.4.2', classifier: profile.provideNativeLibs
+    }
     
     // JavaEE
     compile group: 'javax.servlet', name: 'jstl', version:'1.2'
@@ -129,19 +203,54 @@ dependencies {
 //  Backend Build
 // #####################
 
+task printInfo {
+	println 'Build Profile: ' + project.profiles.ext.active.name
+	println 'Build Version: ' + project.version
+}
+
+// context.xml Filtering
+task copyMetaInf(type: Copy) {
+	// up-to-date for same profile workspace path
+	inputs.property('profile', project.profiles.ext.active.workspaceLocation)
+	
+	from ("$projectDir/src/main/webapp/META-INF-src") {
+    	exclude 'context.xml'
+    }
+    from ("$projectDir/src/main/webapp/META-INF-src") {
+    	include 'context.xml'
+	    filter(ReplaceTokens, tokens: [
+	    	workspaceLocation: project.profiles.ext.active.workspaceLocation
+		])
+    }
+    filteringCharset = 'UTF-8'
+	into "$projectDir/src/main/webapp/META-INF"
+}
+
 // Resource Filtering
 processResources {
-    outputs.upToDateWhen {
-        File metaPropertiesFile = file("${sourceSets.main.output.resourcesDir}/meta.properties")
-        return metaPropertiesFile.exists() && metaPropertiesFile.text.contains(project.version);
-    }
-    filesMatching('**/meta.properties') {
-        expand(
-            'gmm_version': "${project.version}",
-            'gmm_name': "${project.description}",
-        )
+	dependsOn copyMetaInf
+	// up-to-date for same version & profile
+	inputs.property('version', project.version)
+	inputs.property('profile', project.profiles.ext.active.type)
+	
+    with copySpec {
+    	from "$projectDir/src/main/resources/meta.properties"
+    	expand(
+			'gmm_version': project.version,
+			'gmm_name': project.description,
+			'gmm_profile_type': project.profiles.ext.active.type
+		)
     }
 }
+
+war {
+	exclude '**/META-INF-src'
+	def profile = project.profiles.ext.active;
+	if (profile.hasProperty('warName')){
+		archiveName = profile.warName
+	}
+}
+
 
 // Embedded Tomcat/Jetty Configuration
 gretty {
@@ -152,22 +261,21 @@ gretty {
 	enableNaming = true // enable JNDI in context.xml for embedded tomcat
 	
 	// gretty container log (has nothing to to with GMM's log)
-	logDir = "${project.projectDir}/build"
+	logDir = "$projectDir/build"
 	logFileName = "gretty"
 }
 
-// deploy to local/staging/prod
-
-war {
-    ext.workspaceConfig = "local"
-    //ext.workspaceConfig = "test"
-    //ext.workspaceConfig = "staging"
-    //ext.workspaceConfig = "prod"
-    
-    if (workspaceConfig != "local") {
-        rootSpec.exclude("**/META-INF/context.xml") 
-        metaInf { from "ops/" + workspaceConfig + "/context.xml" }
-    }
+// disallow non-local profiles for appRun
+tasks.whenTaskAdded { task ->
+		if (task.name == 'appRun') {
+		task.doFirst {
+			def profile = project.profiles.ext.active.name
+			if (profile != 'local') {
+				throw new InvalidUserDataException(
+					"Expected profile to be set to 'local' for jetty task, but was '" + profile + "'!")
+			}
+		}
+	}
 }
 
 cargo {
@@ -203,8 +311,8 @@ gulp_build.dependsOn 'gulp_three'
 
 node {
 	download = false
-	nodeModulesDir = file("${project.projectDir}/src/main/frontend")
+	nodeModulesDir = file("$projectDir/src/main/frontend")
 }
 gulp {
-	workDir = file("${project.projectDir}/src/main/frontend")
+	workDir = file("$projectDir/src/main/frontend")
 }

@@ -246,6 +246,7 @@ pip-log.txt
 /builds/
 /src/main/webapp/resources/css/compiled
 /src/main/webapp/resources/javascript/compiled
+/src/main/webapp/META-INF
 
 blender/
 gmm-workspace/
