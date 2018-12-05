@@ -1,4 +1,4 @@
-package gmm.web;
+package gmm.web.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -11,6 +11,7 @@ public class LoginController {
 	
 	@RequestMapping(value="/", method = RequestMethod.GET)
 	public String defaultPage() {
+//		return new RedirectView("/tasks", true, false);
 		return "redirect:/tasks";
 	}
 	

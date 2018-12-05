@@ -23,7 +23,7 @@ public class WebSocketConfiguration implements WebSocketConfigurer {
 	
 	@Override
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-		registry.addHandler(getWebsocketHandler(), "/notifier");
+		registry.addHandler(getWebsocketHandler(), "/websocket/notifier");
 	}
 	
 	@Bean 

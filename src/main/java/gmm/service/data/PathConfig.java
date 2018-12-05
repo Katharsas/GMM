@@ -24,6 +24,9 @@ public class PathConfig {
 	
 	private final FileService fileService;
 	
+	private final Path contextDir;
+	
+	// only use when GMM was started locally
 	private final Path userDir;
 	
 	/**
@@ -74,6 +77,7 @@ public class PathConfig {
 	public PathConfig(FileService fileService, ServletContext context) {
 		this.fileService = fileService;
 		userDir = Paths.get(System.getProperty("user.dir"));
+		contextDir = Paths.get(context.getRealPath(""));
 	}
 	
 	@PostConstruct
@@ -140,7 +144,7 @@ public class PathConfig {
 		return BLENDER;
 	}
 	public Path blenderPythonScript() {
-		return userDir.resolve("WEB-INF/python/gothic3dsToThree.py");
+		return contextDir.resolve("WEB-INF/python/gothic3dsToThree.py");
 	}
 	
 	public Path subNewTextures() {

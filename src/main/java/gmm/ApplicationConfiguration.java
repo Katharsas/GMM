@@ -142,6 +142,7 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 		resolver.setViewClass(JstlView.class);
 		resolver.setPrefix("/WEB-INF/jsp/");
 		resolver.setSuffix(".jsp");
+//		resolver.setRedirectHttp10Compatible(false);
 		return resolver;
 	}
 	@Bean

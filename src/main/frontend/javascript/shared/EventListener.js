@@ -27,7 +27,8 @@ const EventListener = function() {
 	}
 
 	const urlBase = location.hostname + (location.port ? ":" + location.port : "")
-	const webSocket = new WebSocket("ws://" + urlBase + contextUrl + "/notifier");
+	const protocol = location.protocol === "https:" ? "wss://" : "ws://";
+	const webSocket = new WebSocket(protocol + urlBase + contextUrl + "/websocket/notifier");
 
 	webSocket.onerror = function(event) {
 		console.error("Websocket connection error!");
