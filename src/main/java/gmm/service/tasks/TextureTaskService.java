@@ -79,7 +79,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		
 		return CompletableFuture.supplyAsync(() -> {
 			fileService.testReadFile(sourceFile);
-			return createPreviewsJavaCv(sourceFile, fullPreview, smallPreview);
+			return createPreviewsImgScalr(sourceFile, fullPreview, smallPreview);
 		}, threadPool);
 	}
 	

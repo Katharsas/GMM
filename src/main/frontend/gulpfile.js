@@ -18,10 +18,10 @@ var buffer = require('vinyl-buffer');
 var rename = require("gulp-rename");
 var eventStream = require("event-stream");
 
-var rollup = require('rollup');
-var uglifyjs = require("uglify-js");
+var rollup = require('rollup-stream');
+//var uglifyjs = require("uglify-js");
 
-var threeConfig = require("./three-rollup.config");
+var closureCompiler = require('google-closure-compiler').gulp();
 
 //var path = require("path");
 
@@ -73,7 +73,7 @@ function buildScript(files) {
 				debug: jsSourceMaps
 			};
 		var configBabelify = {
-				plugins: ["transform-es2015-modules-commonjs"],
+				plugins: ["@babel/plugin-transform-modules-commonjs"],
 			};
 		return browserify(configBrowserify)
 			.transform(babelify, configBabelify)
@@ -81,7 +81,7 @@ function buildScript(files) {
 			.on("error", handleErrors)
 			.pipe(source(file))
 			.pipe(gulpif(jsMinify, buffer()))
-			.pipe(gulpif(jsMinify, uglify()))
+			.pipe(gulpif(jsMinify, uglify()))// TODO if jsMinify, babel ES5 instead o ES6
 			.on("error", handleErrors)
 			.pipe(rename({
 				extname: ".bundle.js"
@@ -92,23 +92,38 @@ function buildScript(files) {
 }
 
 gulp.task("three", function () {
-	var minify = true;
-	var outputFile = jsDest + "three.bundle.js";
+	const minify = true;
+	const outputFileName = "three.bundle.js";
+	const configPath = "./three_build_config/";
+	const rollupConfig = require(configPath + "rollup.config");
 
-	return rollup.rollup(threeConfig.input("javascript/lib/threeSmall.js"))
-		.then(function(bundle) {
-			return bundle.generate(threeConfig.output());
-		}).then(function(rollupResult) {
-			var result = uglifyjs.minify(rollupResult.code, {
-				compress : minify,
-				mangle: minify,
-				output: {
-					beautify: !minify,
-					preamble: "// threejs.org/license"
-				}
-			});
-			fs.writeFileSync(outputFile, result.code);
-		});
+	const rollupStreamConfig = {
+		// use newest rollup version instead of rollup-stream's dependency
+		rollup: require('rollup'),
+		// will be passed as arg to rollup.rollup(..)
+		...rollupConfig.input("javascript/lib/threeSmall.js"),
+		// will be passed as arg to bundle.generate(..)
+		output : rollupConfig.output()
+	};
+	
+	return rollup(rollupStreamConfig)
+		.pipe(source(outputFileName))
+		.pipe(buffer())
+		.on("error", handleErrors)
+		.pipe(closureCompiler({
+			// copied from command line options of three.js build
+			warning_level: 'VERBOSE',
+			jscomp_off: ['globalThis', 'checkTypes'],
+			language_in: 'ECMASCRIPT6_STRICT',
+			language_out: 'ECMASCRIPT6_STRICT',
+			externs: configPath + 'externs.js',
+			output_wrapper: '// threejs.org/license\n%output%\n',
+		},{
+			platform: ['java']
+		}))
+		.on("error", handleErrors)
+		.pipe(rename(outputFileName))
+		.pipe(gulp.dest(jsDest));
 });
 
 gulp.task("build_js", function () {

@@ -22,7 +22,7 @@ export { DirectionalLight } from 'three/src/lights/DirectionalLight.js';
 export { PointLight } from 'three/src/lights/PointLight.js';
 export { DirectionalLightHelper } from 'three/src/helpers/DirectionalLightHelper.js';
 export { WebGLRenderer } from 'three/src/renderers/WebGLRenderer.js';
-export { JSONLoader } from 'three/src/loaders/JSONLoader.js';
+export { JSONLoader } from './JSONLoader.js';// TODO deprecated
 export { Mesh } from 'three/src/objects/Mesh.js';
 export { PerspectiveCamera } from 'three/src/cameras/PerspectiveCamera.js';
 export { EdgesGeometry } from 'three/src/geometries/EdgesGeometry.js';

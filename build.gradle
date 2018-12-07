@@ -42,11 +42,9 @@ apply plugin: 'com.bmuschko.cargo'
 apply plugin: 'com.moowork.node'
 apply plugin: "com.moowork.gulp"
 
-//apply from: "profiles.gradle"
-
 class Profile {
-
 	String name
+	
 	String type
 	String warName
 	String workspaceLocation
@@ -56,25 +54,25 @@ class Profile {
 	    this.name = name
 	}
 }
-
 class ProfilesPlugin implements Plugin<Project> {
     void apply(final Project project) {
         NamedDomainObjectContainer<Profile> profileContainer = project.container(Profile)
         project.extensions.add('profiles', profileContainer)
- 
-        // Simple task to show the Product objects
-        // that are created by Gradle using
-        // the DSL syntax in our build file.
-        project.task('printProfiles') << {
-            def profiles = project.extensions.getByName('profiles')
-            profiles.all {
-                println "$workspaceLocation"
-            }
-        }
     }
 }
-
 apply plugin: ProfilesPlugin
+
+group = 'de.gothic-reloaded-mod'
+version = '0.6.2-SNAPSHOT'
+
+description = "Gothic Mod Manager"
+
+sourceCompatibility = 10
+targetCompatibility = 10
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
 
 profiles {
 
@@ -109,18 +107,6 @@ profiles {
    	ext {
    	    active = local
    	}
-}
-
-group = 'de.gothic-reloaded-mod'
-version = '0.6.2-SNAPSHOT'
-
-description = "Gothic Mod Manager"
-
-sourceCompatibility = 10
-targetCompatibility = 10
-
-tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
 }
 
 repositories {

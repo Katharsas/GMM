@@ -164,6 +164,7 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	setDialogDimensions($dialog, width, height);
 	const numberOfExisting = $confirmDialogContainer.children().length;
 	centerDialog($dialog, numberOfExisting, width, height);
+	$dialog.css("z-index", zOverlayCurrent + (zIncrement / 2));
 	//show
 	$dialog.show();
 	if(inputDefault !== undefined) {
