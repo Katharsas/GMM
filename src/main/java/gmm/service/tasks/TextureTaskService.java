@@ -92,7 +92,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		writeImage(image, fullPreview);
 		//small preview
 		if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
-			image = Scalr.resize(image, Method.SPEED, SMALL_SIZE);
+			image = Scalr.resize(image, Method.QUALITY, SMALL_SIZE);
 		}
 		writeImage(image, smallPreview);
 		return assetProps;
@@ -117,9 +117,13 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 			
 			final Mat resizedImage = new Mat();
 			final Dimension dim = calculateResize(width, height, SMALL_SIZE);
-			opencv_imgproc.resize(imageMat, resizedImage, new Size(dim.width, dim.height));
+			final int interpolationMethod = opencv_imgproc.INTER_AREA;
+			opencv_imgproc.resize(imageMat, resizedImage, new Size(dim.width, dim.height),
+			        0, 0, interpolationMethod);
 			
 			opencv_imgcodecs.imwrite(smallPreview.toString(), resizedImage);
+			imageMat.release();
+			resizedImage.release();
 		} else {
 			writeImage(image, smallPreview);
 		}
