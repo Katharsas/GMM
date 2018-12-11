@@ -15,6 +15,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import gmm.service.assets.AssetTaskUpdater;
 import gmm.service.data.DataAccess;
+import gmm.service.data.DataBaseInitNotifier;
 
 @Service
 @WebListener
@@ -25,15 +26,18 @@ public class BackupExecutorService implements ServletContextListener {
 	@Autowired private AssetTaskUpdater assetTaskUpdater;
 	@Autowired private BackupAccessService backups;
 	@Autowired private DataAccess data;
+	@Autowired private DataBaseInitNotifier initNotifier;
 	
 	/**
 	 * fixedRate should not influence backup rate
 	 */
-	@Scheduled(fixedRate=600000)
+	@Scheduled(fixedRate = 600000, initialDelay = 600000)
 	private void callback() {
-		backups.monthlyBackup.execute(true, true, data);
-		backups.hourlyBackup.execute(true, true, data);
-		backups.daylyBackup.execute(false, true, data);
+		if (initNotifier.isInitDone()) {
+			backups.monthlyBackup.execute(true, true, data);
+			backups.hourlyBackup.execute(true, true, data);
+			backups.daylyBackup.execute(false, true, data);
+		}
 	}
 	
 	@Override

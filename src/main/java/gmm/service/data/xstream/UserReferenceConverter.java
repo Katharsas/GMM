@@ -17,7 +17,6 @@ public class UserReferenceConverter extends IdReferenceConverter {
 		this.users = users;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean canConvert(Class clazz) {
 		return clazz.equals(User.class);

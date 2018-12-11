@@ -40,13 +40,13 @@ public class NewAssetLockService {
 	 * Will block calling thread until lock is both open and has been acquired.
 	 * @see {@link ReentrantLock#lock()}
 	 */
-	public synchronized void lock() {
+	public synchronized void lock(String actor) {
 		while (isClosed || !newAssetOperationsLock.tryLock()) {
 			try {
 				wait();
 			} catch (final InterruptedException e) {}
 		}
-		logger.info("Lock acquired.");
+		logger.info("Lock acquired. (by '" + actor + "')");
 		eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 	}
 	
@@ -54,11 +54,11 @@ public class NewAssetLockService {
 	 * @return True if lock is both open and calling thread could acquire lock.
 	 * @see {@link ReentrantLock#tryLock()}
 	 */
-	public synchronized boolean tryLock() {
+	public synchronized boolean tryLock(String actor) {
 		if (isClosed) return false;
 		final boolean acquired = newAssetOperationsLock.tryLock();
 		if (acquired) {
-			logger.info("Lock acquired.");
+			logger.info("Lock acquired. (by '" + actor + "')");
 			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 		}
 		return acquired;
@@ -68,9 +68,9 @@ public class NewAssetLockService {
 	 * Release held lock.
 	 * @see {@link ReentrantLock#unlock()}
 	 */
-	public synchronized void unlock() {
+	public synchronized void unlock(String actor) {
 		newAssetOperationsLock.unlock();
-		logger.info("Lock released.");
+		logger.info("Lock released. (by '" + actor + "')");
 		if (!isClosed) {
 			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 		}
@@ -80,12 +80,12 @@ public class NewAssetLockService {
 	 * Make it impossible for other threads to acquire the lock until opened. Calling thread must own lock.
 	 * When calling this, it must be guaranteed that {@link NewAssetLockService#attemptOpenLock()} is called eventually!
 	 */
-	public synchronized void closeLock() {
+	public synchronized void closeLock(String actor) {
 		if (!isClosed) {
 			if (!newAssetOperationsLock.isHeldByCurrentThread()) {
 				throw new IllegalStateException("Calling thread must still hold lock to close!");
 			}
-			logger.info("Lock closed.");
+			logger.info("Lock closed. (by '" + actor + "')");
 			isClosed = true;
 		}
 	}
@@ -93,10 +93,10 @@ public class NewAssetLockService {
 	/**
 	 * Make it possible for any thread to acquire lock again. Does nothing if lock is still held.
 	 */
-	public synchronized void attemptOpenLock() {
+	public synchronized void attemptOpenLock(String actor) {
 		if (!newAssetOperationsLock.isLocked()) {
 			if (isClosed) {
-				logger.info("Lock opened.");
+				logger.info("Lock opened. (by '" + actor + "')");
 				isClosed = false;
 				notifyAll();
 				eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
@@ -118,11 +118,11 @@ public class NewAssetLockService {
 				Thread.sleep(10000);
 			} catch (final InterruptedException e) {}
 			while(true) {
-				lock();
+				lock("");
 				try {
 					Thread.sleep(5000);
 				} catch (final InterruptedException e) {}
-				unlock();
+				unlock("");
 				try {
 					Thread.sleep(500);
 				} catch (final InterruptedException e) {}

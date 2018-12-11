@@ -42,6 +42,10 @@ public class XMLService implements PersistenceService {
 				gmm.domain.task.asset.AssetProperties.class,
 				gmm.domain.task.asset.TextureProperties.class,
 				gmm.domain.task.asset.ModelProperties.class,
+				// asset info
+				gmm.service.assets.AssetInfo.class,
+				gmm.service.assets.OriginalAssetFileInfo.class,
+				gmm.service.assets.NewAssetFolderInfo.class,
 				// Other
 				gmm.domain.Comment.class,
 				gmm.domain.User.class,
@@ -55,10 +59,14 @@ public class XMLService implements PersistenceService {
 		xstream.registerConverter(new PathConverter());
 		xstream.registerConverter(new AssetNameConverter());
 		final UserReferenceConverter userConverter = new UserReferenceConverter(getUsers);
+		final InstantConverter instantConverter = new InstantConverter();
 		// the following fields will reference user by id:
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "author", userConverter);
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "assigned", userConverter);
 		xstream.registerLocalConverter(gmm.domain.Comment.class, "author", userConverter);
+		xstream.registerLocalConverter(gmm.domain.UniqueObject.class, "created", instantConverter);
+		xstream.registerLocalConverter(
+				gmm.domain.task.asset.AssetTask.class, "newestAssetLastUpdate", instantConverter);
 	}
 	
 	@Override

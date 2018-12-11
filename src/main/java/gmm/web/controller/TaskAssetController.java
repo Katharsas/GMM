@@ -1,6 +1,9 @@
 package gmm.web.controller;
 
 import java.nio.file.Path;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -8,9 +11,6 @@ import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +81,7 @@ public class TaskAssetController {
 	@Autowired private TaskServiceFinder serviceFinder;
 	
 	private final DateTimeFormatter expiresFormatter = 
-			DateTimeFormat.forPattern("EEE, dd MMM yyy hh:mm:ss z").withLocale(Locale.US);
+			DateTimeFormatter.ofPattern("EEE, dd MMM yyy hh:mm:ss z").withLocale(Locale.US);
 	
 	/**
 	 * Sets caching settings for AssetTask preview images.
@@ -92,7 +92,7 @@ public class TaskAssetController {
 	private void setPreviewCaching(HttpServletResponse response) {
 		response.setHeader("Cache-Control", "Public");
 		response.setHeader("Max-Age", "2419200");//cache 4 weeks
-		response.setHeader("Expires", DateTime.now().plusYears(2).toString(expiresFormatter));
+		response.setHeader("Expires", expiresFormatter.format(ZonedDateTime.now(ZoneOffset.UTC).plusYears(2)));
 		response.setHeader("Pragma", "");
 		
 		// disable caching for testing purposes:
@@ -374,12 +374,12 @@ public class TaskAssetController {
 	}
 	
 	private <T> ResponseEntity<T> tryAquireNewAssetLock(Supplier<ResponseEntity<T>> runIfAquired) {
-		if(lockService.tryLock()) {
+		if(lockService.tryLock("TaskAssetController::tryAquireNewAssetLock")) {
 			logger.debug("Successfully aquired new asset lock.");
 			try {
 				return runIfAquired.get();
 			} finally {
-				lockService.unlock();
+				lockService.unlock("TaskAssetController::tryAquireNewAssetLock");
 			}
 		} else {
 			logger.info("Failed to aquire new asset lock!");

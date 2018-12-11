@@ -6,7 +6,6 @@ import gmm.domain.task.asset.AssetName;
 
 public class AssetNameConverter extends AbstractSingleValueConverter {
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean canConvert(Class clazz) {
 		return AssetName.class.isAssignableFrom(clazz);

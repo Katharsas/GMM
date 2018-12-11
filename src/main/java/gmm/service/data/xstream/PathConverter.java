@@ -6,7 +6,6 @@ import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 
 public class PathConverter extends AbstractSingleValueConverter {
 	
-	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean canConvert(Class clazz) {
 		return Path.class.isAssignableFrom(clazz);

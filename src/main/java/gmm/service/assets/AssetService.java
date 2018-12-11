@@ -160,13 +160,13 @@ public class AssetService {
 		switch(event.type) {
 		case ADDED:
 			try {
-				lockService.lock();
+				lockService.lock("AssetService::onDataChangeEvent");
 				for (final AssetTask<?> task : event.changed) {
 					onAssetTaskCreation((AssetTask<?>) task);
 				}
 				break;
 			} finally {
-				lockService.unlock();
+				lockService.unlock("AssetService::onDataChangeEvent");
 			}
 		case EDITED:
 			// TODO AssetService needs to get notified manually on AssetName change,
@@ -349,9 +349,9 @@ public class AssetService {
 			if (task == null) {
 				newAssetFoldersWithoutTasks.put(folderName, currentInfo);
 			} else {
-				final boolean forceUpdate = changedPaths.contains(currentInfo.getAssetFilePath(config).normalize());
+				final boolean forceUpdate = oldHasAsset && currentHasAsset
+						&& changedPaths.contains(currentInfo.getAssetFilePath(config).normalize());
 				// TODO call remove instead of contains?
-				
 				
 				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
 					data.editBy(task, User.UNKNOWN);

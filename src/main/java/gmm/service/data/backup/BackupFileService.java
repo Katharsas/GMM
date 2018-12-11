@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.TreeSet;
@@ -12,9 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class BackupFileService {
 	private final PersistenceService serializer;
 	
 	private final FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
-	private final DateTimeFormatter formatter =  DateTimeFormat.forPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
+	private final DateTimeFormatter formatter =  DateTimeFormatter.ofPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
 			.withLocale(Locale.ENGLISH);
 	
 	@Autowired
@@ -70,7 +69,7 @@ public class BackupFileService {
 			fileNameType = toSave.getClass();
 		}
 		//add backup file
-		final DateTime timeStamp = new DateTime();
+		final LocalDateTime timeStamp = LocalDateTime.now();
 		final Path path = directory.resolve(getFileName(fileNameType.getSimpleName(), timeStamp));
 		try {
 			logger.info("Creating backup for type '" + fileNameType.getSimpleName() + "' at " + path);
@@ -156,13 +155,13 @@ public class BackupFileService {
 		}
 		@Override
 		public int compare(Path o1, Path o2) {
-			final DateTime d1 = getDate(o1.getFileName().toString(), customNamePart);
-			final DateTime d2 = getDate(o2.getFileName().toString(), customNamePart);
+			final LocalDateTime d1 = getDate(o1.getFileName().toString(), customNamePart);
+			final LocalDateTime d2 = getDate(o2.getFileName().toString(), customNamePart);
 			return d1.compareTo(d2);
 		}
 	}
 	
-	protected DateTime getDate(String filename, String type) {
+	protected LocalDateTime getDate(String filename, String type) {
 		final Pattern regex = Pattern.compile("backup_"+type+"_([0-9]{4}-[a-zA-Z]{3}-[0-9]{1,2}_at_[0-9]{1,2}-[0-9]{2}-[0-9]{2})\\.xml");
 		final Matcher matcher = regex.matcher(filename);
 		if(!matcher.matches()) {
@@ -170,11 +169,11 @@ public class BackupFileService {
 					+ "backup_type_yyyy-mmm-dd_at_hh-mm-ss.xml, but is " + filename
 					+", type must be "+type);
 		}
-		return formatter.parseDateTime(matcher.group(1));
+		return LocalDateTime.parse(matcher.group(1), formatter);
 	}
 	
-	private Path getFileName(String type, DateTime date) {
-		return Paths.get("backup_"+type+"_"+formatter.print(date)+".xml");
+	private Path getFileName(String type, LocalDateTime date) {
+		return Paths.get("backup_" + type + "_" + formatter.format(date) + ".xml");
 	}
 	
 	protected static class BackupServiceException extends RuntimeException {

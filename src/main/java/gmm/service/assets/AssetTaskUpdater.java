@@ -100,7 +100,7 @@ public class AssetTaskUpdater {
 	private synchronized <A extends AssetProperties> void recreateAssetPropertiesAndInfo(
 			AssetTask<A> task, AssetInfo info, Optional<Runnable> onCompletion) {
 		
-		lockService.closeLock();
+		lockService.closeLock("AssetTaskUpdater::recreateAssetPropertiesAndInfo");
 		CompletableFuture<Void> future = getService(task).recreateAssetProperties(task, info);
 		if (onCompletion.isPresent()) {
 			future = future.thenRun(onCompletion.get());
@@ -152,7 +152,7 @@ public class AssetTaskUpdater {
 	@Scheduled(fixedRate=1000)
 	private synchronized void attemptOpenNewAssetLock() {
 		if (!isAssetImportRunning()) {
-			lockService.attemptOpenLock();
+			lockService.attemptOpenLock("AssetTaskUpdater::attemptOpenNewAssetLock");
 		}
 	}
 	

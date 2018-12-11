@@ -2,11 +2,9 @@ package gmm.service.data.backup;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
-import org.joda.time.DateTime;
-import org.joda.time.Days;
-import org.joda.time.Hours;
-import org.joda.time.Months;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +40,7 @@ public class BackupAccessService {
 	 * Custom boolean supplier functional interface.
 	 */
 	@FunctionalInterface
-	private interface TimeCondition {public boolean get(DateTime now, DateTime last);}
+	private interface TimeCondition {public boolean get(LocalDateTime now, LocalDateTime last);}
 	
 	/**
 	 * Creates backups in a certain subfolder when executed.
@@ -52,12 +50,12 @@ public class BackupAccessService {
 		
 		private final Path subDir;
 		private final int maxBackups;
-		private DateTime last;
+		private LocalDateTime last;
 		
 		public BackupExecutor(String subDir, int maxBackups) {
 			this.subDir = Paths.get(subDir);
 			this.maxBackups = maxBackups;
-			this.last = DateTime.now();
+			this.last = LocalDateTime.now();
 		}
 		/**
 		 * @param now - provide current DateTime to reduce unnecessary instancing
@@ -65,7 +63,7 @@ public class BackupAccessService {
 		 * @param saveUsers - true if this executor should backup all users
 		 */
 		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
-			last = new DateTime();
+			last = LocalDateTime.now();
 			if (saveTasks) {
 				
 				final Path directory = config.dbTasks().resolve(backupPath).resolve(subDir);
@@ -79,7 +77,7 @@ public class BackupAccessService {
 			}
 		}
 		public Path getSubDir() {return subDir;}
-		public DateTime last() {return last;}
+		public LocalDateTime last() {return last;}
 	}
 	
 	/**
@@ -95,7 +93,7 @@ public class BackupAccessService {
 		}
 		@Override
 		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
-			final DateTime now = new DateTime();
+			final LocalDateTime now = LocalDateTime.now();
 			if(condition.get(now, last())) super.execute(saveTasks, saveUsers, data);
 		}
 	}
@@ -125,21 +123,15 @@ public class BackupAccessService {
 		this.fileService = service;
 		
 		// timed backups
-		monthlyBackup = new ConditionalBackupExecutor("monthly", 6, (now, last) -> {
-				final Months duration = Months.monthsBetween(last, now);
-				return duration.getMonths() >= 1;
-			}
-		);
-		daylyBackup = new ConditionalBackupExecutor("dayly", 7, (now, last) -> {
-				final Days duration = Days.daysBetween(last, now);
-				return duration.getDays() >= 1;
-			}
-		);
-		hourlyBackup = new ConditionalBackupExecutor("hourly", 24, (now, last) -> {
-				final Hours duration = Hours.hoursBetween(last, now);
-				return duration.getHours() >= 1;
-			}
-		);
+		monthlyBackup = new ConditionalBackupExecutor(
+				"monthly", 6, (now, last) -> ChronoUnit.MONTHS.between(now, last) >= 1);
+		
+		daylyBackup = new ConditionalBackupExecutor(
+				"dayly", 7, (now, last) -> ChronoUnit.DAYS.between(now, last) >= 1);
+		
+		hourlyBackup = new ConditionalBackupExecutor(
+				"hourly", 24, (now, last) -> ChronoUnit.HOURS.between(now, last) <= 1);
+		
 		// triggered backups
 		triggeredBackup = new BackupExecutor("triggered", 100);
 	}

@@ -1,8 +1,12 @@
 package gmm.domain;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Collection;
-import java.util.Date;
+import java.util.Locale;
 
 import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
@@ -12,12 +16,12 @@ public abstract class UniqueObject implements Linkable {
 	private static long idCount = 0;
 	@XStreamAsAttribute
 	private long id;
-	private final Date created;
+	private final Instant created;
 	
 	//Methods---------------------------------------------------
 	public UniqueObject() {
 		id = ++idCount;
-		this.created = new Date();
+		this.created = Instant.now();
 	}
 	
 	@Override
@@ -79,12 +83,15 @@ public abstract class UniqueObject implements Linkable {
 	
 
 	//Setters, Getters----------------------------------------------
-	public Date getCreationDate() {
+	public Instant getCreationDate() {
 		return created;
 	}
 	
-	public String getFormattedCreationDate() {
-		final SimpleDateFormat formattter = new SimpleDateFormat("dd.MM.yyyy");
-		return formattter.format(created);
+	public String getFormattedCreationDate(Locale locale) {
+		final DateTimeFormatter  formatter = DateTimeFormatter
+				.ofLocalizedDate(FormatStyle.MEDIUM)
+				.withLocale(locale);
+		final LocalDate localDate = created.atZone(ZoneOffset.UTC).toLocalDate();
+		return formatter.format(localDate);
 	}
 }

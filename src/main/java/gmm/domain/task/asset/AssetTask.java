@@ -1,11 +1,7 @@
 package gmm.domain.task.asset;
 
-import java.util.Locale;
+import java.time.Instant;
 import java.util.Objects;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 import gmm.domain.User;
 import gmm.domain.task.Task;
@@ -34,9 +30,7 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	private NewAssetFolderInfo newAssetFolderInfo = null;
 	
 	//used for caching of newest preview
-	private DateTime newestAssetLastUpdate = null;
-	private final static DateTimeFormatter formatter = 
-			DateTimeFormat.forPattern("MM-dd-HH-mm-ss").withLocale(Locale.ENGLISH);
+	private Instant newestAssetLastUpdate = null;
 	
 	//Methods--------------------------------------------
 	public AssetTask(User author, AssetName assetName) {
@@ -94,7 +88,7 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 			assetProperties.assertAttributes();
 		}
 		setNewAssetFolderInfo(assetProperties, newFolderInfo);
-		this.newestAssetLastUpdate = DateTime.now();
+		this.newestAssetLastUpdate = Instant.now();
 	}
 	
 	public void setNewAssetFolderInfo(NewAssetFolderInfo newFolderInfo) {
@@ -130,6 +124,6 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	
 	public String getNewestAssetCacheKey() {
 		if (newestAssetLastUpdate == null) return "";
-		else return newestAssetLastUpdate.toString(formatter);
+		else return "" + newestAssetLastUpdate.toEpochMilli();
 	}
 }

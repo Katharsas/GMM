@@ -180,7 +180,7 @@
 		    	<tr class="task-previews center">
 		    		<#if task.originalAssetProperties?has_content>
 			    		<td class="task-preview-visual clickable">
-			    			<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+			    			<a target="_blank" href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 			    				<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    		</a>
 				    	</td>
@@ -189,7 +189,7 @@
 			    	<td></td>
 			    	<#if task.newAssetProperties?has_content>
 				    	<td class="task-preview-visual clickable">
-				    		<a href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+				    		<a target="_blank" href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    			<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    		</a>
 				    	</td>
@@ -372,7 +372,7 @@
 		    <div class="task-authorDate right">
 	    		<div class="right">
 	    			${task.getAuthor().getName()?html}<br/>
-		    		${task.getFormattedCreationDate()?html}
+		    		${task.getFormattedCreationDate(request.locale)?html}
 	    		</div>
 	    		<div class="right">
 	    			<@s.message "author"/>:&#160;&#160;<br/>

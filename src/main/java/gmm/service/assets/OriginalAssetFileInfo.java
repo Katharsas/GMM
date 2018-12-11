@@ -2,6 +2,8 @@ package gmm.service.assets;
 
 import java.nio.file.Path;
 
+import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
+
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
 import gmm.service.data.PathConfig;
@@ -14,7 +16,10 @@ import gmm.service.tasks.AssetTaskService;
  */
 public class OriginalAssetFileInfo implements AssetInfo {
 
+	@XStreamAsAttribute
 	private final Path assetFile;
+	
+	@XStreamAsAttribute
 	private final AssetName assetFileName;
 	
 	public OriginalAssetFileInfo(AssetTaskService<?> service, Path relative) {
