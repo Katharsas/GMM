@@ -72,8 +72,13 @@ function buildScript(files) {
 				entries: [jsDir + file],
 				debug: jsSourceMaps
 			};
+		var presets = [];
+		if (jsMinify) {
+			presets.push("@babel/preset-env")
+		}
 		var configBabelify = {
 				plugins: ["@babel/plugin-transform-modules-commonjs"],
+				presets: presets
 			};
 		return browserify(configBrowserify)
 			.transform(babelify, configBabelify)

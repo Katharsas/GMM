@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,20 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final ForkJoinWorkerThreadFactory factory = new PriorityWorkerThreadFactory(Thread.MIN_PRIORITY);
 		// Note: UncaughtExceptionHandler does not work with Futures
 		threadPool = new ForkJoinPool(config.getPreviewThreadCount(), factory, null, true);
+	}
+	
+	protected void shutdown() {
+		synchronized (threadPool) {
+			if (!threadPool.isShutdown()) {
+				threadPool.shutdown();
+				try {
+					threadPool.awaitTermination(10, TimeUnit.SECONDS);
+				} catch (final InterruptedException e) {
+					e.printStackTrace();
+				}
+				threadPool.shutdownNow();
+			}
+		}
 	}
 	
 	@Override

@@ -1,8 +1,6 @@
 package gmm.service.tasks;
 
-import java.awt.Dimension;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,14 +11,10 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 import org.apache.commons.io.IOUtils;
-import org.bytedeco.javacpp.BytePointer;
-import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_core.Mat;
-import org.bytedeco.javacpp.opencv_core.Size;
-import org.bytedeco.javacpp.opencv_imgcodecs;
-import org.bytedeco.javacpp.opencv_imgproc;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +36,8 @@ import gmm.service.data.DataAccess;
  * @author Jan
  */
 @Service
-public class TextureTaskService extends AssetTaskService<TextureProperties> {
+public class TextureTaskService extends AssetTaskService<TextureProperties>
+		implements ServletContextListener {
 	
 	private static final String[] extensions = new String[] {"tga"};
 	
@@ -64,6 +59,11 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		//register TGA loader plugin
 		final IIORegistry registry = IIORegistry.getDefaultInstance();
 		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
+	}
+	
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		super.shutdown();
 	}
 	
 	/**
@@ -96,52 +96,6 @@ public class TextureTaskService extends AssetTaskService<TextureProperties> {
 		}
 		writeImage(image, smallPreview);
 		return assetProps;
-	}
-	
-	protected TextureProperties createPreviewsJavaCv(Path sourceFile, Path fullPreview, Path smallPreview) {
-		final BufferedImage image = readImage(sourceFile);
-		final TextureProperties assetProps = newPropertyInstance();
-		assetProps.setDimensions(image.getHeight(), image.getWidth());
-		
-		// full preview
-		writeImage(image, fullPreview);
-		//small preview
-		if (image.getHeight() > SMALL_SIZE || image.getWidth() > SMALL_SIZE) {
-			final int height = image.getHeight();
-			final int width = image.getWidth();
-			final boolean hasAlpha = image.getColorModel().hasAlpha();
-			final int imgType = hasAlpha ? opencv_core.CV_8UC4 : opencv_core.CV_8UC3;
-			
-			final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
-			final Mat imageMat = new Mat(height, width, imgType, new BytePointer(pixels));
-			
-			final Mat resizedImage = new Mat();
-			final Dimension dim = calculateResize(width, height, SMALL_SIZE);
-			final int interpolationMethod = opencv_imgproc.INTER_AREA;
-			opencv_imgproc.resize(imageMat, resizedImage, new Size(dim.width, dim.height),
-			        0, 0, interpolationMethod);
-			
-			opencv_imgcodecs.imwrite(smallPreview.toString(), resizedImage);
-			imageMat.release();
-			resizedImage.release();
-		} else {
-			writeImage(image, smallPreview);
-		}
-		return assetProps;
-	}
-	
-	private Dimension calculateResize(int width, int height, int targetSize) {
-		int targetWidth = targetSize;
-		int targetHeight = targetSize;
-		if (width != height) {
-			final boolean isWide = width >= height;
-			if (isWide) {
-				targetHeight = Math.round(((float)targetWidth / (float)width) * height);
-			} else {
-				targetWidth = Math.round(((float)targetHeight / (float)height) * width);
-			}
-		}
-		return new Dimension(targetWidth, targetHeight);
 	}
 	
 	private BufferedImage readImage(Path file) {

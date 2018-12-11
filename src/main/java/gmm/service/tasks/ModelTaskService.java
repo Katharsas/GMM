@@ -8,6 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +29,8 @@ import gmm.service.data.DataAccess;
 import gmm.service.tasks.PythonTCPSocket.MeshData;
 
 @Service
-public class ModelTaskService extends AssetTaskService<ModelProperties> {
+public class ModelTaskService extends AssetTaskService<ModelProperties>
+		implements ServletContextListener {
 
 	private final PythonTCPSocket python;
 	
@@ -71,6 +75,11 @@ public class ModelTaskService extends AssetTaskService<ModelProperties> {
 			asset.setPolyCount(meshData.getPolygonCount());
 			return asset;
 		}, threadPool);
+	}
+	
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+		super.shutdown();
 	}
 	
 	@Override
