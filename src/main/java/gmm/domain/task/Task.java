@@ -17,7 +17,7 @@ public abstract class Task extends NamedObject {
 	//Static--------------------------------------------------
 	
 	private static SecureRandom random = new SecureRandom();
-	public static String getRandomKey() {
+	private static String getRandomKey() {
 		//toString(32) encodes 5 bits/char, so BigInteger range bits should be a multiple of 5
 		return new BigInteger(70, random).toString(32);
 	}
@@ -25,7 +25,7 @@ public abstract class Task extends NamedObject {
 	//Variables--------------------------------------------------
 	/** XStream depends on "author" variable name {@link gmm.service.data.xstream.XMLService}
 	 */
-	final private User author;
+	private final User author;
 	/** XStream depends on "assigned" variable name {@link gmm.service.data.xstream.XMLService}
 	 */
 	private User assigned = null;
@@ -36,18 +36,21 @@ public abstract class Task extends NamedObject {
 	@XStreamAsAttribute
 	private TaskStatus taskStatus = TaskStatus.TODO;
 	
-	final private String linkKey = Task.getRandomKey();
+	private final String linkKey = Task.getRandomKey();
 	
-	final private List<Comment> comments = new LinkedList<Comment>();
-	final private List<Task> dependsOn = new LinkedList<Task>();
-	final private List<Task> dependencyFor = new LinkedList<Task>();
+	private final List<Comment> comments = new LinkedList<Comment>();
+	private final List<Task> dependsOn = new LinkedList<Task>();
+	private final List<Task> dependencyFor = new LinkedList<Task>();
 	
 	//Methods--------------------------------------------------------
+	protected Task() {
+		this.author = null;
+	}
+	
 	public Task(User author) {
 		super();
 		Objects.requireNonNull(author);
 		this.author = author;
-		onLoad();
 	}
 	
 	@Override
@@ -107,6 +110,7 @@ public abstract class Task extends NamedObject {
 		return dependencyFor;
 	}
 
+	@Deprecated
 	public void onLoad(){
 	}
 	public abstract TaskType getType();

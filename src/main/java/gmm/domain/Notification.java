@@ -7,7 +7,11 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 public class Notification extends UniqueObject {
 
 	@XStreamAsAttribute
-	private String text;
+	private final String text;
+	
+	Notification() {
+		text = null;
+	}
 	
 	public Notification(String text) {
 		super();

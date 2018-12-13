@@ -25,6 +25,7 @@ import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.FileService;
+import gmm.service.assets.AssetTaskBatchUpdater.OnAssetUpdateProvider;
 import gmm.service.assets.AssetTaskUpdater.OnNewAssetUpdate;
 import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
@@ -67,9 +68,9 @@ public class AssetService {
 	private final AssetScanner scanner;
 	private final TaskServiceFinder serviceFinder;
 	private final AssetTaskUpdater taskUpdater;
+	@Autowired private AssetTaskBatchUpdater taskBatchUpdater;
 	private final DataAccess data;
 	private final NewAssetLockService lockService;
-	
 
 	
 	// TODO currently, there is a small preview leak, because new assets are scanned for the first
@@ -160,13 +161,53 @@ public class AssetService {
 		switch(event.type) {
 		case ADDED:
 			try {
-				lockService.lock("AssetService::onDataChangeEvent");
-				for (final AssetTask<?> task : event.changed) {
-					onAssetTaskCreation((AssetTask<?>) task);
-				}
+				// TODO
+				// This is the second of a batch of events from DB on init thread. DB locks
+				// are held by init thread until all events are through.
+				// The first event spawned a threadpool worker which holds newasset-lock and is
+				// deadlocked trying to call db because we still lock db while trying to get
+				// newasset-lock anew.
+				//
+				// Solution A:
+				// DB lock must be free while any events are fired. but ALSO db must fire
+				// each event per type before processing next type (to not break Texture model linking)
+				// Solution B:
+				// DB must be lock free using concurrent hashmaps
+				// Solution C:
+				// new asset lock should be shared by threadpools doing read only, so that
+				// calling multiple preview generation batches does not require lock stealing.
+				// In other words, use ReadWriteLock instead of simple lock.
+				// Also, does OScfile locking cause IOException? if it just blocks we can just
+				// make any reads not require locks, otherwise all ALL (event preview send in
+				// controller) should hold read lock
+				//
+				// Preferred solution:
+				// DB locks for postprocessing make kind of sense. we want to have the preprocessing
+				// done before we allow others to call into db. So solution A is not so good.
+				// (For normal change handlers on the other hand, it may sometimes and sometines not)
+				//
+				// => make change handling not require holding db lock
+				// 
+				// Solution C preferred for this problem though
+				// 
+				// Anyway:
+				// Data transactions must be better defined. Which things in DB must be done
+				// atomically? For example TextureModelLinking can edit a texture when model has
+				// changed, not implemented as postprocessing, but should be atomic really. If not,
+				// any thread can change model or texture while texture is being updated.
+				//
+				// Also, while previews are generated, we really wan to make sure we either
+				// - block write access to tasks for which previews are generated
+				// - or allow cancel/restart preview generation (??)
+				// For this, more finegrained task blocking is necessary
+				
+				lockService.readLock("AssetService::onDataChangeEvent");
+				taskBatchUpdater.updateTasks(event.changed, this::onAssetTaskCreation, updatedTasks -> {
+					data.editAllBy(updatedTasks, User.SYSTEM);
+				});
 				break;
 			} finally {
-				lockService.unlock("AssetService::onDataChangeEvent");
+				lockService.readUnlock("AssetService::onDataChangeEvent");
 			}
 		case EDITED:
 			// TODO AssetService needs to get notified manually on AssetName change,
@@ -183,20 +224,17 @@ public class AssetService {
 	/**
 	 * Synchronize an asset task and its property information with existing assets.
 	 */
-	private <A extends AssetProperties> void onAssetTaskCreation(AssetTask<A> task) {
+	private <A extends AssetProperties> void onAssetTaskCreation(AssetTask<A> task, OnAssetUpdateProvider updaterProvider) {
 		final AssetKey name = task.getAssetName().getKey();
 		assetTasks.put(name, task);
 		
 		final AssetTaskService<A> service = serviceFinder.getAssetService(Util.classOf(task));
-		
 		{
 			final AssetGroupType type = AssetGroupType.ORIGINAL;
 			final OriginalAssetFileInfo info = getOriginalAssetFileInfo(name);
 			final AssetProperties props = task.getAssetProperties(type);
 			
-			final OnOriginalAssetUpdate updater = taskUpdater.new OnOriginalAssetUpdate(()->{
-				data.editBy(task, User.SYSTEM);
-			});
+			final OnOriginalAssetUpdate updater = updaterProvider.createOnOriginalAssetUpdate();
 			
 			if (info != null && props == null) {
 				updater.recreatePropsAndSetInfo(task, info);
@@ -218,9 +256,7 @@ public class AssetService {
 			final boolean existsAndValid =
 					(info != null) && (info.getStatus() == AssetFolderStatus.VALID_WITH_ASSET);
 			
-			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
-				data.editBy(task, User.SYSTEM);
-			});
+			final OnNewAssetUpdate updater = updaterProvider.createOnNewAssetUpdate();
 			
 			if (props == null) {
 				// old props don't exist, valid asset exists => recreate properties
@@ -284,8 +320,9 @@ public class AssetService {
 			if (task != null) {
 				final OriginalAssetFileInfo oldInfo = originalAssetFiles.get(fileName);
 				final AssetTaskService<?> service = serviceFinder.getAssetService(Util.classOf(task));
-				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
-					data.edit(task);
+				// TODO use batch updater
+				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(result -> {
+					data.edit(result);
 				});
 				if (oldInfo == null) {
 					// new assets
@@ -307,8 +344,9 @@ public class AssetService {
 		for (final AssetKey notFound : oldFiles) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null) {
-				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(()->{
-					data.edit(task);
+				// TODO use batch updater
+				final OnOriginalAssetUpdate update = taskUpdater.new OnOriginalAssetUpdate(result -> {
+					data.edit(result);
 				});
 				if (task.getAssetProperties(type) != null) {
 					update.removePropsAndInfo(task);
@@ -353,8 +391,9 @@ public class AssetService {
 						&& changedPaths.contains(currentInfo.getAssetFilePath(config).normalize());
 				// TODO call remove instead of contains?
 				
-				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
-					data.editBy(task, User.UNKNOWN);
+				// TODO use batch updater
+				final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(result -> {
+					data.editBy(result, User.UNKNOWN);
 					// TODO calling edit causes the onDataChangeEvent above to be called, so we could just do everything in there
 					// (the old info would be available through tasks), same goes for original tasks
 				});
@@ -377,8 +416,9 @@ public class AssetService {
 		for (final AssetKey notFound : oldFolders) {
 			final AssetTask<?> task = assetTasks.get(notFound);
 			if (task != null && task.getAssetProperties(type) != null) {
-				taskUpdater.new OnNewAssetUpdate(() -> {
-					data.editBy(task, User.UNKNOWN);
+				// TODO use batch updater
+				taskUpdater.new OnNewAssetUpdate(result -> {
+					data.editBy(result, User.UNKNOWN);
 				}).removePropsAndSetInfo(task, Optional.empty());
 			}
 			newAssetFolders.remove(notFound);
@@ -433,8 +473,9 @@ public class AssetService {
 		{
 			final AssetTask<?> task = assetTasks.get(asset);
 			Objects.requireNonNull(task);
-			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(() -> {
-				data.editBy(task, user);
+			// TODO use batch updater
+			final OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(result -> {
+				data.editBy(result, user);
 			});
 			
 			if (oldInfo.isPresent()) {

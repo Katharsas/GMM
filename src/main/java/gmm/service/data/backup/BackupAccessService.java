@@ -130,7 +130,7 @@ public class BackupAccessService {
 				"dayly", 7, (now, last) -> ChronoUnit.DAYS.between(now, last) >= 1);
 		
 		hourlyBackup = new ConditionalBackupExecutor(
-				"hourly", 24, (now, last) -> ChronoUnit.HOURS.between(now, last) <= 1);
+				"hourly", 24, (now, last) -> ChronoUnit.HOURS.between(now, last) >= 1);
 		
 		// triggered backups
 		triggeredBackup = new BackupExecutor("triggered", 100);

@@ -278,7 +278,12 @@
 					    		<td class="task-asset-model-textures">
 					    			<ul>
 					    				<#list task.originalAssetProperties.textureNames as textureName>
-							    			<li>${textureName?html}</li>
+							    			<li>${textureName.get()?html}</li>
+										</#list>
+									</ul>
+									<ul>
+										<#list task.originalAssetProperties.textureTasks as textureTask>
+							    			<li>${textureTask.getIdLink()?html}</li>
 										</#list>
 					    			</ul>
 							    </td>
@@ -289,7 +294,12 @@
 					    		<td class="task-asset-model-textures">
 					    			<ul>
 								    	<#list task.newAssetProperties.textureNames as textureName>
-								    		<li>${textureName?html}</li>
+								    		<li>${textureName.get()?html}</li>
+										</#list>
+									</ul>
+									<ul>
+										<#list task.newAssetProperties.textureTasks as textureTask>
+							    			<li>${textureTask.getIdLink()?html}</li>
 										</#list>
 									</ul>
 							    </td>

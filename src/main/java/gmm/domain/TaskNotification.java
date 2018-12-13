@@ -16,6 +16,13 @@ public class TaskNotification extends Notification {
 	@XStreamAsAttribute
 	private final String userName;
 	
+	TaskNotification() {
+		taskIdLink = null;
+		taskName = null;
+		changeType = null;
+		userName = null;
+	}
+	
 	public TaskNotification(Task task, DataChangeType changeType, User source) {
 		this(task.getIdLink(), task.getName(), changeType, source.getName());
 	}

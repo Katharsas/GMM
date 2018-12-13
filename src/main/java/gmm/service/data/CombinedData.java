@@ -1,12 +1,13 @@
 package gmm.service.data;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gmm.collections.Set;
 
 /**
+ * Anything that is not task/users is in here.
  * @author Jan Mothes
  */
 public class CombinedData {
@@ -14,8 +15,10 @@ public class CombinedData {
 	private boolean isCustomAdminBannerActive = true;
 	private String customAdminBanner = "";
 	
-	// TODO make thread-safe
-	final private Map<Set<Long>, String> tasksToLinkKeys = new HashMap<>();
+	final private Map<Set<Long>, String> tasksToLinkKeys = new ConcurrentHashMap<>();
+	
+	public CombinedData() {
+	}
 
 	public synchronized String getCustomAdminBanner() {
 		return customAdminBanner;

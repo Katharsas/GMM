@@ -129,21 +129,21 @@ public class SvnPlugin extends VcsPlugin {
 		workingCopy = SvnTarget.fromFile(workingCopyDir.toFile(), SVNRevision.WORKING);
 		
 		try {
-			lockService.lock("SvnPlugin::SvnPlugin");
+			lockService.writeLock("SvnPlugin::SvnPlugin");
 			initializeWorkingCopy(workingCopyDir.toFile());
 		} finally {
-			lockService.unlock("SvnPlugin::SvnPlugin");
+			lockService.writeUnlock("SvnPlugin::SvnPlugin");
 		}
 	}
 
 	@Override
 	public void init() {
 		try {
-			lockService.lock("SvnPlugin::init");
+			lockService.writeLock("SvnPlugin::init");
 			final List<Path> changedPaths = diffAndUpdate();
 			onFilesChanged(changedPaths);
 		} finally {
-			lockService.unlock("SvnPlugin::init");
+			lockService.writeUnlock("SvnPlugin::init");
 		}
 	}
 	
@@ -365,11 +365,11 @@ public class SvnPlugin extends VcsPlugin {
 	
 	private void onNotifyRepoChange() {
 		try {
-			lockService.lock("SvnPlugin::onNotifyRepoChange");
+			lockService.writeLock("SvnPlugin::onNotifyRepoChange");
 			final List<Path> changedPaths = diffAndUpdate();
 			onFilesChanged(changedPaths);
 		} finally {
-			lockService.unlock("SvnPlugin::onNotifyRepoChange");
+			lockService.writeUnlock("SvnPlugin::onNotifyRepoChange");
 		}
 	}
 

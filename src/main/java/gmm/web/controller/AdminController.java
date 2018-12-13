@@ -153,8 +153,13 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/save", method = RequestMethod.POST)
 	@ResponseBody
-	public void saveTasks(@RequestParam("name") String pathString) {
-		manualBackups.saveTasksToXml(data.getList(Task.class), pathString);
+	public void saveTasks(
+			@RequestParam(value = "name", required = false) String pathString) {
+		if (pathString != null) {
+			manualBackups.saveTasksToXml(data.getList(Task.class), pathString);
+		} else {
+			backups.triggerTaskBackup(true);
+		}
 	}
 	
 	/**

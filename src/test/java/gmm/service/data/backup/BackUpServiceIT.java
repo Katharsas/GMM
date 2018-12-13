@@ -27,7 +27,7 @@ import gmm.service.data.xstream.XMLService;
 @ContextConfiguration(classes={
 		gmm.ApplicationConfiguration.class,
 		gmm.SecurityConfiguration.class})
-public class BackUpServiceIT {
+public class BackupServiceIT {
 	
 	private static PathConfig config;
 	
@@ -44,17 +44,10 @@ public class BackUpServiceIT {
 	}
 	
 	@Test
-	public void backupTest() {
-		//deserialize tasks/users from test directory
-		
+	public void backupTestTasks() {
 		final Path tasksFile = config.dbTasks().resolve("someGeneralTasks.xml");
 		final Collection<Task> tasks = xmlService.deserializeAll(tasksFile, Task.class);
-		final Path usersFile = config.dbUsers().resolve("someUsers.xml");
-		final Collection<User> users = xmlService.deserializeAll(usersFile, User.class);
 		
-		//load tasks/users into DataAccess
-		
-		//trigger task/user save
 		backupExecutor.triggerUserBackup();
 		backupExecutor.triggerTaskBackup(true);
 		
@@ -62,6 +55,16 @@ public class BackUpServiceIT {
 		final Collection<Task> backupedTasks = backupAccess.getLatestTaskBackup();
 		final Collection<Task> expectedTasks = data.getList(Task.class);
 		assertEquals(expectedTasks, backupedTasks);
+	}
+	
+	@Test
+	public void backupTestusers() {
+		final Path usersFile = config.dbUsers().resolve("someUsers.xml");
+		final Collection<User> users = xmlService.deserializeAll(usersFile, User.class);
+		
+		backupExecutor.triggerUserBackup();
+		backupExecutor.triggerTaskBackup(true);
+		
 		//assert correct users backup
 		final Collection<User> backupedUsers = backupAccess.getLatestUserBackup();
 		final Collection<User> expectedUsers = data.getList(User.class);

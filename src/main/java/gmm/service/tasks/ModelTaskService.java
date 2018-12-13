@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.ServletContextEvent;
@@ -47,11 +46,6 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 	protected String[] getExtensions() {
 		return extensions;
 	}
-	
-	@Override
-	protected ModelProperties newPropertyInstance() {
-		return new ModelProperties();
-	}
 
 	@Override
 	public CompletableFuture<ModelProperties> recreatePreview(
@@ -64,15 +58,14 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 			fileService.testReadFile(sourceFile);
 			
 			deletePreview(target);
-			final ModelProperties asset = newPropertyInstance();
 			final MeshData meshData = python.createPreview(sourceFile, target);
-			final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
-			final Set<String> textureNames = new HashSet<>(String.class);
-			for(final String path : texturePaths) {
-				textureNames.add(Paths.get(path).getFileName().toString());
+			final Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
+			final Set<AssetName> textureNames = new HashSet<>(AssetName.class);
+			for(final String name : textures) {
+				textureNames.add(new AssetName(name));
 			}
-			asset.setTextureNames(textureNames);
-			asset.setPolyCount(meshData.getPolygonCount());
+			final ModelProperties asset = new ModelProperties(
+					meshData.getPolygonCount(), textureNames);
 			return asset;
 		}, threadPool);
 	}

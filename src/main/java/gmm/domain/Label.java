@@ -17,15 +17,12 @@ public class Label implements Linkable{
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (obj instanceof Label) {
-			return this.label.equals(((Label) obj).get());
+			return this.label.equals(((Label) obj).label);
 		}
 		if (obj instanceof String) {
 			return this.label.equals((String) obj);
 		}
 		return false;
-	}
-	private String get() {
-		return label;
 	}
 	@Override
 	public String toString() {

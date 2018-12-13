@@ -1,0 +1,28 @@
+profiles {
+
+   	local {
+   		type = "dev"
+   		// use default war name
+   		workspaceLocation = "$projectDir/gmm-workspace"
+   	}
+   	
+	testvm {
+   		type = "dev"
+   		warName = "GMM.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace'
+   	}
+   	
+   	staging {
+   		type = "dev"
+   		warName = "staging.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace-staging'
+   	}
+   	
+   	prod {
+   		type = "dev"
+   		warName = "ROOT.war"
+   		workspaceLocation = '${catalina.base}/gmm-workspace'
+   	}
+   	
+   	ext.active = local
+}

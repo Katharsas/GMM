@@ -11,6 +11,13 @@ public class MockDataConfigService extends PathConfig {
 	
 	public MockDataConfigService() {
 		super(new FileService(), new MockServletContext());
-		updateWorkspace(Paths.get("WEB-INF/TestWorkspace"));
+		assetPreviews = Paths.get("previews");
+		assetPreviews = Paths.get("assetsNew");
+		assetsOriginal = Paths.get("assetsOriginal");
+		dbTasks = Paths.get("db/tasks");
+		dbUsers = Paths.get("db/users");
+		dbOther = Paths.get("db/other");
+		updateWorkspace(Paths.get("WEB-INF/dataTesting"));
+		
 	}
 }

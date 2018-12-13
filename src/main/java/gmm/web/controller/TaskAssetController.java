@@ -209,7 +209,7 @@ public class TaskAssetController {
 		final Path insideTypeFolder = fileService.restrictAccess(path, service.getAssetTypeSubFolder());
 		final Path assetFolderPath = service.getAssetTypeSubFolder().resolve(insideTypeFolder).resolve(task.getAssetName().get());
 		
-		return tryAquireNewAssetLock(() -> {
+		return tryAquireNewAssetWriteLock(() -> {
 			if (!newAssetFolderVfs.isValidAssetFolderLocation(assetFolderPath)) {
 				throw new IllegalArgumentException("Path '" + path + "' is not a valid new asset folder location!");
 			}
@@ -250,7 +250,7 @@ public class TaskAssetController {
 			throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
 		}
 		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
-		return tryAquireNewAssetLock(() -> {
+		return tryAquireNewAssetWriteLock(() -> {
 			newAssetService.addWipFile(assetKey, file, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
@@ -275,7 +275,7 @@ public class TaskAssetController {
 			throw new IllegalArgumentException("Uploaded file is empty. Upload not successful!");
 		}
 		final AssetKey assetKey = AssetKey.getFromIdLink(data.getList(AssetTask.class), idLink);
-		return tryAquireNewAssetLock(() -> {
+		return tryAquireNewAssetWriteLock(() -> {
 			newAssetService.addAssetFile(assetKey, file, user.get());
 			return new ResponseEntity<>(HttpStatus.OK);
 		});
@@ -312,7 +312,7 @@ public class TaskAssetController {
 		if (groupType.isOriginal()) {
 			return getReturnFile.get();
 		} else {
-			return tryAquireNewAssetLock(getReturnFile);
+			return tryAquireNewAssetReadLock(getReturnFile);
 		}
 	}
 	
@@ -336,7 +336,7 @@ public class TaskAssetController {
 		final Path visible = assetFolder.resolve(fileType.getSubPath(config));
 		final Path absolute = visible.resolve(fileService.restrictAccess(relativeFile, visible));
 		
-		return tryAquireNewAssetLock(() -> {
+		return tryAquireNewAssetReadLock(() -> {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.add("Content-Disposition", "attachment; filename=\"" + absolute.getFileName() + "\"");
 			final Resource file = new FileSystemResource(absolute.toFile());
@@ -363,7 +363,7 @@ public class TaskAssetController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		
-		return tryAquireNewAssetLock(() -> {
+		return tryAquireNewAssetWriteLock(() -> {
 			if (isAsset) {
 				newAssetService.deleteAssetFile(assetKey, user.get());
 			} else {
@@ -373,22 +373,33 @@ public class TaskAssetController {
 		});
 	}
 	
-	private <T> ResponseEntity<T> tryAquireNewAssetLock(Supplier<ResponseEntity<T>> runIfAquired) {
-		if(lockService.tryLock("TaskAssetController::tryAquireNewAssetLock")) {
-			logger.debug("Successfully aquired new asset lock.");
+	private <T> ResponseEntity<T> tryAquireNewAssetReadLock(Supplier<ResponseEntity<T>> runIfAquired) {
+		if (lockService.tryReadLock("TaskAssetController::tryAquireNewAssetReadLock")) {
 			try {
 				return runIfAquired.get();
 			} finally {
-				lockService.unlock("TaskAssetController::tryAquireNewAssetLock");
+				lockService.readUnlock("TaskAssetController::tryAquireNewAssetReadLock");
 			}
 		} else {
-			logger.info("Failed to aquire new asset lock!");
+			return new ResponseEntity<>(HttpStatus.LOCKED);
+		}
+	}
+	
+	private <T> ResponseEntity<T> tryAquireNewAssetWriteLock(Supplier<ResponseEntity<T>> runIfAquired) {
+		if (lockService.tryWriteLock("TaskAssetController::tryAquireNewAssetWriteLock")) {
+			try {
+				return runIfAquired.get();
+			} finally {
+				lockService.writeUnlock("TaskAssetController::tryAquireNewAssetWriteLock");
+			}
+		} else {
 			return new ResponseEntity<>(HttpStatus.LOCKED);
 		}
 	}
 	
 	@RequestMapping(value = {"/newAssetFileOperationsEnabled"} , method = RequestMethod.GET)
 	public boolean isNewAssetFileOperationsEnabled() {
-		return lockService.isAvailable();
+		// TODO client should ask about both read and write availability
+		return lockService.isWriteAvailable();
 	}
 }
