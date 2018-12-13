@@ -48,10 +48,14 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 		if (!initStarted) {
 			new Thread(() -> {
-				initUsers();
-				initTasks();
-				initCombinedData(data.getCombinedData());
-				notifier.setInitDone();
+				try {
+					initUsers();
+					initTasks();
+					initCombinedData(data.getCombinedData());
+					notifier.setInitDone();
+				} catch (final Exception e) {
+					logger.error(e.getMessage(), e);
+				}
 			}).start();
 		}
 		initStarted = true;
