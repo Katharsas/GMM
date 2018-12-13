@@ -58,15 +58,21 @@ public class XMLService implements PersistenceService {
 		}
 		xstream.registerConverter(new PathConverter());
 		xstream.registerConverter(new AssetNameConverter());
+//		xstream.registerConverter(new AssetNameObjectConverter());
 		final UserReferenceConverter userConverter = new UserReferenceConverter(getUsers);
 		final InstantConverter instantConverter = new InstantConverter();
 		// the following fields will reference user by id:
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "author", userConverter);
 		xstream.registerLocalConverter(gmm.domain.task.Task.class, "assigned", userConverter);
 		xstream.registerLocalConverter(gmm.domain.Comment.class, "author", userConverter);
+		// compatibility for old backups
 		xstream.registerLocalConverter(gmm.domain.UniqueObject.class, "created", instantConverter);
 		xstream.registerLocalConverter(
 				gmm.domain.task.asset.AssetTask.class, "newestAssetLastUpdate", instantConverter);
+//		xstream.registerLocalConverter(gmm.domain.task.asset.ModelProperties.class, "textureNames",
+//				new TextureTasksSetConverter(xstream.getMapper(), java.util.HashSet.class));
+		xstream.omitField(gmm.domain.task.asset.TextureTask.class, "models");
+		xstream.omitField(gmm.domain.task.asset.ModelTask.class, "textures");
 	}
 	
 	@Override

@@ -12,6 +12,8 @@ import org.junit.Test;
 
 import gmm.TestConfig;
 import gmm.service.FileService;
+import gmm.service.data.DataBaseInitNotifier;
+import gmm.service.data.MockDataBaseInitNotifier;
 import gmm.service.data.MockPersistanceService;
 import gmm.service.data.PersistenceService;
 
@@ -21,6 +23,7 @@ public class BackUpFileServiceTest {
 	
 	private static PersistenceService xmlService;
 	private static BackupFileService backupFileService;
+	private static DataBaseInitNotifier initNotifier;
 	
 	@BeforeClass
 	public static void init() {
@@ -29,7 +32,8 @@ public class BackUpFileServiceTest {
 		
 		final FileService fileService = new FileService();
 		xmlService = new MockPersistanceService(true);
-		backupFileService = new BackupFileService(fileService, xmlService);
+		initNotifier = new MockDataBaseInitNotifier();
+		backupFileService = new BackupFileService(fileService, xmlService, initNotifier);
 	}
 	
 	@AfterClass

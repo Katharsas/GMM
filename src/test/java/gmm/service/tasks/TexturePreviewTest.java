@@ -88,8 +88,8 @@ public class TexturePreviewTest {
                 .ifPresent(tga -> {
                     final String name = tga.getFileName().toString();
                     System.out.println("Reading " + name);
-//                    consume(read.apply(tga));
-                    service.createPreviewsImgScalr(tga, dest.resolve("f_" + name + ".png"), dest.resolve("s_" + name + ".png"));
+                    consume(read.apply(tga));
+//                    service.createPreviewsImgScalr(tga, dest.resolve("f_" + name + ".png"), dest.resolve("s_" + name + ".png"));
                 });
         }
 	}

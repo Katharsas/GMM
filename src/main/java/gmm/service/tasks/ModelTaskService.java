@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 
 import javax.servlet.ServletContextEvent;
@@ -14,6 +13,8 @@ import javax.servlet.ServletContextListener;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableSet;
 
 import gmm.collections.HashSet;
 import gmm.collections.Set;
@@ -48,9 +49,10 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 		return extensions;
 	}
 	
+	@Deprecated
 	@Override
 	protected ModelProperties newPropertyInstance() {
-		return new ModelProperties();
+		return new ModelProperties(-1, null);
 	}
 
 	@Override
@@ -64,15 +66,14 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 			fileService.testReadFile(sourceFile);
 			
 			deletePreview(target);
-			final ModelProperties asset = newPropertyInstance();
 			final MeshData meshData = python.createPreview(sourceFile, target);
-			final Set<String> texturePaths = new HashSet<>(String.class, meshData.getTextures());
-			final Set<String> textureNames = new HashSet<>(String.class);
-			for(final String path : texturePaths) {
-				textureNames.add(Paths.get(path).getFileName().toString());
+			final Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
+			final Set<AssetName> textureNames = new HashSet<>(AssetName.class);
+			for(final String name : textures) {
+				textureNames.add(new AssetName(name));
 			}
-			asset.setTextureNames(textureNames);
-			asset.setPolyCount(meshData.getPolygonCount());
+			final ModelProperties asset = new ModelProperties(
+					meshData.getPolygonCount(),  ImmutableSet.copyOf(textureNames));
 			return asset;
 		}, threadPool);
 	}

@@ -85,7 +85,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties>
 	
 	protected TextureProperties createPreviewsImgScalr(Path sourceFile, Path fullPreview, Path smallPreview) {
 		BufferedImage image = readImage(sourceFile);
-		final TextureProperties assetProps = newPropertyInstance();
+		final TextureProperties assetProps = new TextureProperties();
 		assetProps.setDimensions(image.getHeight(), image.getWidth());
 		
 		// full preview
@@ -137,6 +137,7 @@ public class TextureTaskService extends AssetTaskService<TextureProperties>
 		return previewFolder.resolve(isOriginalString + (isSmall ? "_small.png" : "_full.png"));
 	}
 
+	@Deprecated
 	@Override
 	protected TextureProperties newPropertyInstance() {
 		return new TextureProperties();

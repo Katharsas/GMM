@@ -13,15 +13,15 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
  */
 public abstract class AssetProperties {
 	
+	protected final static String assertAttributesException =
+			"This asset's attributes are not fully populated!";
+	
 	@XStreamAsAttribute
 	private long sizeInBytes = -1;
 	@XStreamAsAttribute
 	private long lastModified = -1;
 	@XStreamAsAttribute
 	private byte[] sha1;
-	
-	protected final static String assertAttributesException =
-			"This asset's attributes are not fully populated!";
 	
 	public void assertAttributes() {
 		if(sizeInBytes < 0 || lastModified < 0) {

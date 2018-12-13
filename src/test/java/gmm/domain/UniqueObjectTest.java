@@ -1,12 +1,12 @@
 package gmm.domain;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedList;
-
-import gmm.domain.UniqueObject;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,10 +39,10 @@ public class UniqueObjectTest {
 
 	@Test
 	public void testUniqueness() {
-		LinkedList<String> results = new LinkedList<String>();
+		final LinkedList<String> results = new LinkedList<String>();
 		for(int i = 0; i<10; i++) {
-			String id1 = new TestClass2().getIdLink();
-			String id2 = new TestClass3().getIdLink();
+			final String id1 = new TestClass2().getIdLink();
+			final String id2 = new TestClass3().getIdLink();
 			assertFalse(id1.equals(id2));
 			assertFalse(results.contains(id1)||results.contains(id2));
 			Collections.addAll(results, id1, id2);
@@ -51,8 +51,8 @@ public class UniqueObjectTest {
 	
 	@Test
 	public void testGetFromId() {
-		int idNow = Integer.parseInt(new TestClass1().getIdLink());
-		LinkedList<TestClass1> l = new LinkedList<TestClass1>();
+		final int idNow = Integer.parseInt(new TestClass1().getIdLink());
+		final LinkedList<TestClass1> l = new LinkedList<TestClass1>();
 		for(int i = 0; i<10; i++) {
 			l.add(new TestClass1("numero"+i));
 		}
@@ -63,11 +63,11 @@ public class UniqueObjectTest {
 	
 	@Test
 	public void testGetCreationDate() {
-		Date date = new Date();
-		TestClass1 u = new TestClass1();
+		final Instant date = Instant.now();
+		final TestClass1 u = new TestClass1();
 		
-		Date uDate = u.getCreationDate();
-		long diff = uDate.getTime() - date.getTime();
+		final Instant uDate = u.getCreationDate();
+		final long diff = uDate.toEpochMilli() - date.toEpochMilli();
 		assertTrue(diff<=1000);
 	}
 }
