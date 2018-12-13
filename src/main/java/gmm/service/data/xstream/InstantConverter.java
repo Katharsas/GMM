@@ -30,7 +30,7 @@ public class InstantConverter implements Converter {
 	private static final String maxVersion = "2";
 	
 	private static DateTimeFormatter utilDateFormatter =
-			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS z");
+			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S z");
 	
 	@Override
 	public boolean canConvert(Class type) {

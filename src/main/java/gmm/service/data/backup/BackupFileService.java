@@ -23,6 +23,7 @@ import gmm.collections.Collection;
 import gmm.domain.Linkable;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
+import gmm.service.data.DataBaseInitNotifier;
 import gmm.service.data.PersistenceService;
 
 /**
@@ -38,15 +39,17 @@ public class BackupFileService {
 	
 	private final FileService fileService;
 	private final PersistenceService serializer;
+	private final DataBaseInitNotifier initNotifier;
 	
 	private final FileExtensionFilter xmlFilter = new FileExtensionFilter(new String[]{"xml"});
 	private final DateTimeFormatter formatter =  DateTimeFormatter.ofPattern("yyyy-MMM-dd'_at_'HH-mm-ss")
 			.withLocale(Locale.ENGLISH);
 	
 	@Autowired
-	public BackupFileService(FileService fileService, PersistenceService serializer) {
+	public BackupFileService(FileService fileService, PersistenceService serializer, DataBaseInitNotifier initNotifier) {
 		this.fileService = fileService;
 		this.serializer = serializer;
+		this.initNotifier = initNotifier;
 	}
 	
 	/**
@@ -62,22 +65,24 @@ public class BackupFileService {
 	 * 		expected to be valid backup files with expected file name pattern!
 	 */
 	protected synchronized void createBackup(Path directory, Object toSave, int maxSaveFiles) {
-		final Class<?> fileNameType;
-		if (toSave instanceof Collection) {
-			fileNameType = ((Collection<?>)toSave).getGenericType();
-		} else {
-			fileNameType = toSave.getClass();
-		}
-		//add backup file
-		final LocalDateTime timeStamp = LocalDateTime.now();
-		final Path path = directory.resolve(getFileName(fileNameType.getSimpleName(), timeStamp));
-		try {
-			logger.info("Creating backup for type '" + fileNameType.getSimpleName() + "' at " + path);
-			serializer.serialize(toSave, path);
-			removeOldestBackup(fileNameType, directory, maxSaveFiles);
-		} catch (final Exception e) {
-			throw new BackupServiceException("Failed to create backup for type '"
-					+ fileNameType.getSimpleName() + "' at " + path + "'!", e);
+		if (initNotifier.isInitDone()) {
+			final Class<?> fileNameType;
+			if (toSave instanceof Collection) {
+				fileNameType = ((Collection<?>)toSave).getGenericType();
+			} else {
+				fileNameType = toSave.getClass();
+			}
+			//add backup file
+			final LocalDateTime timeStamp = LocalDateTime.now();
+			final Path path = directory.resolve(getFileName(fileNameType.getSimpleName(), timeStamp));
+			try {
+				logger.info("Creating backup for type '" + fileNameType.getSimpleName() + "' at " + path);
+				serializer.serialize(toSave, path);
+				removeOldestBackup(fileNameType, directory, maxSaveFiles);
+			} catch (final Exception e) {
+				throw new BackupServiceException("Failed to create backup for type '"
+						+ fileNameType.getSimpleName() + "' at " + path + "'!", e);
+			}
 		}
 	}
 	
