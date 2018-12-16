@@ -17,7 +17,7 @@ import gmm.service.data.MockDataBaseInitNotifier;
 import gmm.service.data.MockPersistanceService;
 import gmm.service.data.PersistenceService;
 
-public class BackUpFileServiceTest {
+public class BackupFileServiceTest {
 	
 	private static Path testPath;
 	
@@ -27,7 +27,7 @@ public class BackUpFileServiceTest {
 	
 	@BeforeClass
 	public static void init() {
-		testPath = TestConfig.getTestFolderPath(BackUpFileServiceTest.class);
+		testPath = TestConfig.getTestFolderPath(BackupFileServiceTest.class);
 		TestConfig.createTestFolder(testPath);
 		
 		final FileService fileService = new FileService();

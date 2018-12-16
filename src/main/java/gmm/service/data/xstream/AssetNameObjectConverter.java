@@ -13,7 +13,7 @@ public class AssetNameObjectConverter implements Converter {
 
 	@Override
 	public boolean canConvert(Class type) {
-		return AssetName.class.isAssignableFrom(type);
+		return String.class.isAssignableFrom(type);
 	}
 
 	@Override
@@ -24,22 +24,23 @@ public class AssetNameObjectConverter implements Converter {
 
 	@Override
 	public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+		System.out.println("Reading");
 		final String assetnameString = reader.getValue();
 		if (!(assetnameString == null || assetnameString.trim().isEmpty())) {
+			System.out.println(assetnameString);
 			return new AssetName(assetnameString);
 		} else {
-//			while (reader.hasMoreChildren()) {
-//				reader.moveDown();
+			while (reader.hasMoreChildren()) {
+				reader.moveDown();
 				final String nodeName = reader.getNodeName();
 				if (nodeName.equals("assetNameOriginal") || nodeName.equals("string")) {
 					System.out.println(nodeName);
 					System.out.println("\n" + reader.getValue() + "\n");
 					return new AssetName(reader.getValue());
 				}
-//				reader.moveUp();
-//			}
+				reader.moveUp();
+			}
 			throw new XmlFormatException("Could not parse AssetName from xml!");
 		}
 	}
-
 }

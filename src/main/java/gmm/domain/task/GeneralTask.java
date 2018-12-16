@@ -5,6 +5,10 @@ import gmm.domain.User;
 
 public class GeneralTask extends Task {
 
+	GeneralTask() {
+		super();
+	}
+	
 	public GeneralTask(User author) {
 		super(author);
 	}

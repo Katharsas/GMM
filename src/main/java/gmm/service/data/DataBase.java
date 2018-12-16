@@ -334,10 +334,15 @@ public class DataBase implements DataAccess {
 		edit(data, executingUser.get());
 	}
 	
+	/**
+	 * Allows to pass user even when calling from non-request (for example async) thread
+	 * or use with User.SYSTEM to make operational/programmatic edits (no notifications)
+	 * or use with User.UNKNOWN if cause for major edit is unknown (no notifications).
+	 */
 	@Override
 	public <T extends Linkable> void editBy(T data, User cause) {
-		if (!cause.isNormalUser() && executingUser.get().isNormalUser()) {
-			throw new IllegalStateException("Source user can be identified!");
+		if (cause == User.NULL) {
+			throw new IllegalStateException("Empty user cannot cause an edit!");
 		}
 		edit(data, cause);
 	}

@@ -30,7 +30,7 @@ public class PathConfig {
 	private final Path userDir;
 	
 	/**
-	 * Absolute or relative to base.
+	 * Absolute or relative to userDir (Only use relative when started locally).
 	 */
 	@Value("${gmm/workspace}") private Path workspace;
 	
@@ -38,15 +38,15 @@ public class PathConfig {
 	 * Absolute or relative to workspace:
 	 */
 	
-	@Value("${path.blender}") private Path blender;
+	@Value("${path.blender}") protected Path blender;
 	
-	@Value("${path.assets.original}") private Path assetsOriginal;
-	@Value("${path.assets.new}") private Path assetsNew;
-	@Value("${path.assets.previews}") private Path assetPreviews;
+	@Value("${path.assets.original}") protected Path assetsOriginal;
+	@Value("${path.assets.new}") protected Path assetsNew;
+	@Value("${path.assets.previews}") protected Path assetPreviews;
 	
-	@Value("${path.users}") private Path dbUsers;
-	@Value("${path.tasks}") private Path dbTasks;
-	@Value("${path.other}") private Path dbOther;
+	@Value("${path.users}") protected Path dbUsers;
+	@Value("${path.tasks}") protected Path dbTasks;
+	@Value("${path.other}") protected Path dbOther;
 	
 	/*
 	 * Absolute paths, updated on workspace change:

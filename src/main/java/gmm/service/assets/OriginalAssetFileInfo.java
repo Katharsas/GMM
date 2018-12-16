@@ -22,6 +22,11 @@ public class OriginalAssetFileInfo implements AssetInfo {
 	@XStreamAsAttribute
 	private final AssetName assetFileName;
 	
+	OriginalAssetFileInfo() {
+		assetFile = null;
+		assetFileName = null;
+	}
+	
 	public OriginalAssetFileInfo(AssetTaskService<?> service, Path relative) {
 		this.assetFile = relative;
 		assetFileName = new AssetName(assetFile);

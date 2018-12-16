@@ -46,8 +46,8 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	protected final ForkJoinPool threadPool;
 	
-	@Deprecated
-	protected abstract A newPropertyInstance();
+//	@Deprecated
+//	protected abstract A newPropertyInstance();
 	
 	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, AssetGroupType type);
 	protected abstract void deletePreview(Path previewFolder, AssetGroupType isOriginal);

@@ -72,6 +72,14 @@ public class NewAssetFolderInfo implements AssetInfo {
 	
 	private final HashSet<Path> nonUniqueDuplicates;
 	
+	NewAssetFolderInfo() {
+		nonUniqueDuplicates = null;
+		assetFolder = null;
+		assetFolderName = null;
+		assetFileName = null;
+		status = null;
+	}
+	
 	private NewAssetFolderInfo(NewAssetFolderInfo duplicate, NewAssetFolderInfo current) {
 		this.assetFolder = null;
 		this.assetFileName = null;

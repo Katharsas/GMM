@@ -90,6 +90,8 @@ public class User extends NamedObject {
 	private LoadForm loadForm = new LoadForm();
 	
 	//Methods--------------------------------------------
+	User() {}
+	
 	/**
 	 * @param idName - Identifier (name) of the user.
 	 * @param passwordHash - The users password hash.

@@ -10,7 +10,9 @@ import gmm.domain.task.TaskType;
 public class TextureTask extends AssetTask<TextureProperties> {
 	
 	@XStreamOmitField
-	final public Set<ModelTask> modelTasks = new HashSet<>(ModelTask.class);
+	private final Set<ModelTask> modelTasks = new HashSet<>(ModelTask.class);
+	
+	TextureTask() {}
 	
 	public TextureTask(User author, AssetName assetName) {
 		super(author, assetName);

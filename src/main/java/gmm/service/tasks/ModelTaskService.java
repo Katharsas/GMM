@@ -14,8 +14,6 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableSet;
-
 import gmm.collections.HashSet;
 import gmm.collections.Set;
 import gmm.domain.User;
@@ -49,11 +47,11 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 		return extensions;
 	}
 	
-	@Deprecated
-	@Override
-	protected ModelProperties newPropertyInstance() {
-		return new ModelProperties(-1, null);
-	}
+//	@Deprecated
+//	@Override
+//	protected ModelProperties newPropertyInstance() {
+//		return new ModelProperties(-1, null);
+//	}
 
 	@Override
 	public CompletableFuture<ModelProperties> recreatePreview(
@@ -73,7 +71,7 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 				textureNames.add(new AssetName(name));
 			}
 			final ModelProperties asset = new ModelProperties(
-					meshData.getPolygonCount(),  ImmutableSet.copyOf(textureNames));
+					meshData.getPolygonCount(), textureNames);
 			return asset;
 		}, threadPool);
 	}

@@ -33,6 +33,10 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	private Instant newestAssetLastUpdate = null;
 	
 	//Methods--------------------------------------------
+	AssetTask() {
+		assetName = null;
+	}
+	
 	public AssetTask(User author, AssetName assetName) {
 		super(author);
 		this.assetName = assetName;

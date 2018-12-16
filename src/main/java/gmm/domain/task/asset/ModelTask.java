@@ -5,6 +5,8 @@ import gmm.domain.task.TaskType;
 
 public class ModelTask extends AssetTask<ModelProperties> {
 	
+	ModelTask() {}
+	
 	public ModelTask(User author, AssetName assetName) {
 		super(author, assetName);
 	}
