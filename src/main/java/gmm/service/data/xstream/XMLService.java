@@ -42,6 +42,7 @@ public class XMLService implements PersistenceService {
 				gmm.domain.task.asset.AssetProperties.class,
 				gmm.domain.task.asset.TextureProperties.class,
 				gmm.domain.task.asset.ModelProperties.class,
+				gmm.domain.task.asset.AssetName.class,
 				// asset info
 				gmm.service.assets.AssetInfo.class,
 				gmm.service.assets.OriginalAssetFileInfo.class,
@@ -76,7 +77,6 @@ public class XMLService implements PersistenceService {
 //				xstream.getReflectionProvider(),
 //				(mapper, clazz) -> new TextureNamesConverter(mapper, clazz));
 //		xstream.registerLocalConverter(gmm.domain.task.asset.ModelProperties.class, "textureNames", textureNamesConverter);
-				
 	}
 
 	@Override

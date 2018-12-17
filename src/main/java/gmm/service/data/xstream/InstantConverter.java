@@ -4,6 +4,7 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
@@ -40,7 +41,7 @@ public class InstantConverter implements Converter {
 	@Override
 	public void marshal(Object source, HierarchicalStreamWriter writer, MarshallingContext context) {
 		final Instant obj = (Instant) source;
-		writer.addAttribute("iso-8601", obj.toString());
+		writer.addAttribute("iso-8601", obj.truncatedTo(ChronoUnit.SECONDS).toString());
 		writer.addAttribute("version", maxVersion);
 	}
 

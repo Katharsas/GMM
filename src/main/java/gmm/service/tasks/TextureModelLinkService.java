@@ -1,6 +1,5 @@
 package gmm.service.tasks;
 
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,6 +12,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import gmm.collections.ArrayList;
+import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
@@ -73,19 +74,21 @@ public class TextureModelLinkService {
 
 	private void onTextureChange(DataChangeEvent<TextureTask> event) {
 		logger.debug("Updating texture-model linking due to potential texture change.");
-		
+		final Collection<ModelTask> changedModelTasks = new ArrayList<>(ModelTask.class);
 		for (final TextureTask textureTask : event.changed) {
 			if (textureNamesToModels.containsKey(textureTask.getAssetName())) {
-				onTextureChange(textureTask, event.type);
+				changedModelTasks.addAll(onTextureChange(textureTask, event.type));
 			}
 		}
+		data.editAllBy(changedModelTasks, User.SYSTEM);
 	}
 	
-	private void onTextureChange(TextureTask textureTask, DataChangeType eventType) {
+	private Collection<ModelTask> onTextureChange(TextureTask textureTask, DataChangeType eventType) {
 		final AssetName textureName = textureTask.getAssetName();
-		final Collection<ModelTask> changedModelTasks = textureNamesToModels.get(textureName);
+		final java.util.Collection<ModelTask> dependentModelTasks = textureNamesToModels.get(textureName);
+		final Collection<ModelTask> changedModelTasks = new ArrayList<>(ModelTask.class);
 		
-		for (final ModelTask modelTask : changedModelTasks) {
+		for (final ModelTask modelTask : dependentModelTasks) {
 			boolean changed = false;
 			if (eventType == DataChangeType.REMOVED) {
 				changed = getAllExistingModelProps(modelTask, props -> {
@@ -100,9 +103,10 @@ public class TextureModelLinkService {
 				});
 			}
 			if (changed) {
-				data.editBy(modelTask, User.SYSTEM);
+				changedModelTasks.add(modelTask);
 			}
 		}
+		return changedModelTasks;
 	}
 	
 	/**

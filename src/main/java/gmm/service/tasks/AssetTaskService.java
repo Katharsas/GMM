@@ -143,7 +143,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	/**
 	 * Asynchronously create new preview, create properties from preview, set them on task, set asset info on task.
 	 */
-	public CompletableFuture<Void> recreateAssetProperties(AssetTask<A> task, AssetInfo info) {
+	public CompletableFuture<AssetTask<?>> recreateAssetProperties(AssetTask<A> task, AssetInfo info) {
 		Objects.requireNonNull(task);
 		Objects.requireNonNull(info);
 		if (!info.getType().isOriginal()) {
@@ -160,7 +160,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		final Path previewFolder = getPreviewFolder(info.getAssetFileName().getKey());
 		final CompletableFuture<A> future = recreatePreview(assetPathAbs, previewFolder, type);
 		
-		return future.thenAccept(completedAssetProps -> {
+		return future.thenApply(completedAssetProps -> {
 			logger.debug("Set properties & storage info of asset file '" + task.getAssetName() + "' on task '" + task + "'. Type: '" + type.name() + "'");
 			completedAssetProps.setSizeInBytes(assetPathAbs.toFile().length());
 			completedAssetProps.setLastModified(assetPathAbs.toFile().lastModified());
@@ -170,19 +170,22 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 			} else {
 				task.setNewAsset(completedAssetProps, (NewAssetFolderInfo) info);
 			}
+			return task;
+			// TODO return task to we can batch_edit and also check if exists in db still
 		});
 	}
 	
 	/**
 	 * Remove existing properties from task, set null/invalid info, delete preview if specified.
 	 */
-	public void removeNewAssetProperties(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
+	public AssetTask<A> removeNewAssetProperties(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
 		final AssetGroupType type = AssetGroupType.NEW;
 		if (task.getAssetProperties(type) == null) {
 			throw new IllegalArgumentException("Cannot remove properties that don't exist!");
 		}
 		task.setNewAsset(null, info.orElse(null));
 		logger.debug("Removed properties & changed storage info of new asset file '" + task.getAssetName() + "' from task '" + task + "'.");
+		return task;
 	}
 	
 	public void deleteNewAssetPreview(AssetKey assetName) {
@@ -192,13 +195,14 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	/**
 	 * Remove existing properties & info from task.
 	 */
-	public void removeOriginalAssetProperties(AssetTask<A> task) {
+	public AssetTask<A> removeOriginalAssetProperties(AssetTask<A> task) {
 		final AssetGroupType type = AssetGroupType.ORIGINAL;
 		if (task.getAssetProperties(type) == null) {
 			throw new IllegalArgumentException("Cannot remove properties that don't exist!");
 		}
 		task.setOriginalAsset(null, null);
 		logger.debug("Removed properties & storage info of original asset file '" + task.getAssetName() + "' from task '" + task + "'.");
+		return task;
 	}
 	
 	private Path getRestrictedAssetPathAbsolute(AssetGroupType type, AssetInfo info) {
@@ -212,14 +216,16 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		return config.assetPreviews().resolve(assetName.toString());
 	}
 	
-	public void changeNewAssetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
+	public AssetTask<A> changeNewAssetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
 		task.setNewAssetFolderInfo(info.orElse(null));
 		logger.debug("Changed storage info of new asset file '" + task.getAssetName() + "' for task '" + task + "'.");
+		return task;
 	}
 	
-	public void changeOriginalAssetInfo(AssetTask<A> task, OriginalAssetFileInfo info) {
+	public AssetTask<A> changeOriginalAssetInfo(AssetTask<A> task, OriginalAssetFileInfo info) {
 		task.setOriginalAssetFileInfo(info);
 		logger.debug("Changed storage info of original asset file '" + task.getAssetName() + "' for task '" + task + "'.");
+		return task;
 	}
 	
 	// TODO if saving asset, caller must delete the old asset first because this func does not know the name

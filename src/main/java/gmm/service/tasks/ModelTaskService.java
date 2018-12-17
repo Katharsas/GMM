@@ -46,12 +46,6 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 	protected String[] getExtensions() {
 		return extensions;
 	}
-	
-//	@Deprecated
-//	@Override
-//	protected ModelProperties newPropertyInstance() {
-//		return new ModelProperties(-1, null);
-//	}
 
 	@Override
 	public CompletableFuture<ModelProperties> recreatePreview(

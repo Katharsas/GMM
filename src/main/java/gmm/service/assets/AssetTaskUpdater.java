@@ -5,8 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,50 +95,60 @@ public class AssetTaskUpdater {
 	}
 	
 	/**
-	 * Create asset task properties asynchronously and save the future to a map so we can later check if we need to
-	 * wait for that future to finish. A finished future will delete itself from the list.
+	 * Create asset task properties asynchronously and save the future to a map so we can later
+	 * check if we need to wait for that future to finish. A finished future will delete itself
+	 * from the list.
 	 */
 	private synchronized <A extends AssetProperties> void recreateAssetPropertiesAndInfo(
-			AssetTask<A> task, AssetInfo info, Optional<Runnable> onCompletion) {
+			AssetTask<A> task, AssetInfo info, Optional<Consumer<AssetTask<?>>> onCompletion) {
 		
-		lockService.closeLock("AssetTaskUpdater::recreateAssetPropertiesAndInfo");
-		CompletableFuture<Void> future = getService(task).recreateAssetProperties(task, info);
+		lockService.fixReadLock("AssetTaskUpdater::recreateAssetPropertiesAndInfo");
+		CompletableFuture<AssetTask<?>> future = getService(task).recreateAssetProperties(task, info);
+		future = future.exceptionally(e -> {
+			logger.error("Asset task preview creation threw exception.", e);
+			return task;
+		});
+		CompletableFuture<Void> complete;
 		if (onCompletion.isPresent()) {
-			future = future.thenRun(onCompletion.get());
+			complete = future.thenAccept(onCompletion.get());
+		} else {
+			complete = future.thenAccept(result -> {});
 		}
-		future = future.handle((__, e) -> {
-			if (e != null) {
-				if (e instanceof CompletionException) {
-					e = e.getCause();
-				}
-				logger.error("Asset task preview creation threw exception.", e);
-			}
+		complete = complete.exceptionally(e -> {
+			logger.error("Asset task preview completion callback threw exception.", e);
 			return null;
 		});
 		if (!future.isDone()) {
-			processingAssetTasks.put(task, future);
-			future = future.thenRun(() -> {
+			processingAssetTasks.put(task, complete);
+			complete = complete.thenRun(() -> {
 				synchronized(this) {
 					processingAssetTasks.remove(task);
 				}
+			}).exceptionally(e -> {
+				logger.error(null, e);
+				return null;
 			});
 		}
 	}
 	
-	private <A extends AssetProperties> void removeNewAssetPropertiesAndSetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
-		getService(task).removeNewAssetProperties(task, info);
+	private <A extends AssetProperties> AssetTask<A> removeNewAssetPropertiesAndSetInfo(
+			AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
+		return getService(task).removeNewAssetProperties(task, info);
 	}
 	
-	private <A extends AssetProperties> void removeOriginalAssetProperties(AssetTask<A> task) {
-		getService(task).removeOriginalAssetProperties(task);
+	private <A extends AssetProperties> AssetTask<A> removeOriginalAssetProperties(
+			AssetTask<A> task) {
+		return getService(task).removeOriginalAssetProperties(task);
 	}
 	
-	private <A extends AssetProperties> void changeNewAssetInfo(AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
-		getService(task).changeNewAssetInfo(task, info);
+	private <A extends AssetProperties> AssetTask<A> changeNewAssetInfo(
+			AssetTask<A> task, Optional<NewAssetFolderInfo> info) {
+		return getService(task).changeNewAssetInfo(task, info);
 	}
 	
-	private <A extends AssetProperties> void changeOriginalAssetInfo(AssetTask<A> task, OriginalAssetFileInfo info) {
-		getService(task).changeOriginalAssetInfo(task, info);
+	private <A extends AssetProperties> AssetTask<A> changeOriginalAssetInfo(
+			AssetTask<A> task, OriginalAssetFileInfo info) {
+		return getService(task).changeOriginalAssetInfo(task, info);
 	}
 	
 	public synchronized CompletableFuture<Void> allAyncTaskProcessing() {
@@ -152,7 +163,7 @@ public class AssetTaskUpdater {
 	@Scheduled(fixedRate=1000)
 	private synchronized void attemptOpenNewAssetLock() {
 		if (!isAssetImportRunning()) {
-			lockService.attemptOpenLock("AssetTaskUpdater::attemptOpenNewAssetLock");
+			lockService.attemptUnfixReadLock("AssetTaskUpdater::attemptOpenNewAssetLock");
 		}
 	}
 	
@@ -166,9 +177,9 @@ public class AssetTaskUpdater {
 	public abstract class OnUpdate {
 		
 		private boolean usedUp = false;
-		protected final Optional<Runnable> onCompletion;
+		protected final Optional<Consumer<AssetTask<?>>> onCompletion;
 		
-		public OnUpdate(Optional<Runnable> onCompletion) {
+		public OnUpdate(Optional<Consumer<AssetTask<?>>> onCompletion) {
 			this.onCompletion = onCompletion;
 		}
 		
@@ -178,8 +189,11 @@ public class AssetTaskUpdater {
 			usedUp = true;
 		}
 		
-		protected void onCompletion() {
-			if (onCompletion.isPresent()) onCompletion.get().run();
+		protected synchronized void doUpdateAndComplete(Supplier<AssetTask<?>> updateMethod) {
+			if (usedUp) throw new IllegalStateException("Updater can only used for one update operation!");
+			final AssetTask<?> result = updateMethod.get();
+			usedUp = true;
+			if (onCompletion.isPresent()) onCompletion.get().accept(result);
 		}
 	}
 	
@@ -199,7 +213,7 @@ public class AssetTaskUpdater {
 		 * After an operation has been completed, the given Runnable will be executed (can be used to
 		 * call data.edit(task) to broadcast task change for example).
 		 */
-		public OnNewAssetUpdate(Runnable onCompletion) {
+		public OnNewAssetUpdate(Consumer<AssetTask<?>> onCompletion) {
 			super(Optional.ofNullable(onCompletion));
 		}
 		
@@ -223,12 +237,11 @@ public class AssetTaskUpdater {
 		 * @param noAssetOrNullInfo - if not empty, status of info must NOT be {@link AssetFolderStatus#VALID_WITH_ASSET}
 		 */
 		public void removePropsAndSetInfo(AssetTask<?> task, Optional<NewAssetFolderInfo> noAssetOrNullInfo) {
-			doUpdate(() -> {
+			doUpdateAndComplete(() -> {
 				TaskStateCondition.checkAny(type, task,
 					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
-				removeNewAssetPropertiesAndSetInfo(task, noAssetOrNullInfo);
-				onCompletion();
+				return removeNewAssetPropertiesAndSetInfo(task, noAssetOrNullInfo);
 			});
 		}
 		
@@ -237,14 +250,13 @@ public class AssetTaskUpdater {
 		 * exist currently on that task, otherwise properties must currently be null.
 		 */
 		public void setInfo(AssetTask<?> task, Optional<NewAssetFolderInfo> anyInfo) {
-			doUpdate(() -> {
+			doUpdateAndComplete(() -> {
 				TaskStateCondition.checkAny(type, task,
 					new TaskStateCondition(Properties.NULL, Asset.NO_ASSET),
 					new TaskStateCondition(Properties.NULL, Asset.NULL),
 					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
-				changeNewAssetInfo(task, anyInfo);
-				onCompletion();
+				return changeNewAssetInfo(task, anyInfo);
 			});
 		}
 	}
@@ -266,7 +278,7 @@ public class AssetTaskUpdater {
 		 * After the async operation has been completed, the given Runnable will be executed (can be
 		 * used to call data.edit(task) to broadcast task change for example).
 		 */
-		public OnOriginalAssetUpdate(Runnable onCompletion) {
+		public OnOriginalAssetUpdate(Consumer<AssetTask<?>> onCompletion) {
 			super(Optional.ofNullable(onCompletion));
 		}
 		
@@ -281,22 +293,20 @@ public class AssetTaskUpdater {
 		}
 		
 		public void removePropsAndInfo(AssetTask<?> task) {
-			doUpdate(() -> {
+			doUpdateAndComplete(() -> {
 				TaskStateCondition.checkAny(type, task,
 					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
-				removeOriginalAssetProperties(task);
-				onCompletion();
+				return removeOriginalAssetProperties(task);
 			});
 		}
 		
 		public void setInfo(AssetTask<?> task, OriginalAssetFileInfo info) {
-			doUpdate(() -> {
+			doUpdateAndComplete(() -> {
 				TaskStateCondition.checkAny(type, task,
 					new TaskStateCondition(Properties.EXISTS, Asset.VALID_ASSET)
 				);
-				changeOriginalAssetInfo(task, info);
-				onCompletion();
+				return changeOriginalAssetInfo(task, info);
 			});
 		}
 	}

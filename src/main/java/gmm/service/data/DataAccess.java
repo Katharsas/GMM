@@ -27,6 +27,7 @@ public interface DataAccess {
 	public <T extends Linkable> void removeAll(Class<T> clazz);
 	public <T extends Linkable> void edit(T data);
 	public <T extends Linkable> void editBy(T data, User source);
+	public <T extends Linkable> void editAllBy(Collection<T> data, User source);
 	@Deprecated public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
 	

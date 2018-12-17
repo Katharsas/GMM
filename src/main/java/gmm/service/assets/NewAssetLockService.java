@@ -1,6 +1,9 @@
 package gmm.service.assets;
 
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +16,10 @@ import gmm.web.WebSocketEventSender.WebSocketEvent;
 /**
  * Manages ownership of code over new asset folder. Combines two locking mechanisms:
  * <br>
- * <br> - Lock: Used to synchronize normal (non-async), short-lived threads
- * <br> - Flag: Used by those threads before unlocking to "extend" the "lock" beyond their own lifetime
- * 			when they activate worker threads to do preview processing, so that other threads cannot 
- * 			acquire the lock until workers are done with async tasks.
+ * <br> - R/W Lock:		Used to synchronize normal (non-async), short-lived threads
+ * <br> - Fixed Flag:	Used by threads that have read lock before unlocking to "extend" the "lock"
+ * 			beyond their own lifetime when they activate worker threads to do preview processing, so
+ * 			that other threads cannot acquire the write lock until workers are done with async tasks.
  * 
  * @author Jan Mothes
  */
@@ -27,38 +30,69 @@ public class NewAssetLockService {
 	
 	private final WebSocketEventSender eventSender;
 	
-	private final ReentrantLock newAssetOperationsLock = new ReentrantLock(true); // lock
-	private volatile boolean isClosed = false; // flag
+	private final ReentrantReadWriteLock newAssetOperationsLock = new ReentrantReadWriteLock(true);
+	private volatile boolean isReadLockFixed = false; // flag, basically simulates an additional read lock when true
 	
 	@Autowired
 	public NewAssetLockService(WebSocketEventSender eventSender) {
 		this.eventSender = eventSender;
-//		testBlock();
+//		testWriteLock();
 	}
 	
 	/**
-	 * Will block calling thread until lock is both open and has been acquired.
-	 * @see {@link ReentrantLock#lock()}
+	 * Will block calling until lock is both open and has been acquired.
+	 * @see {@link ReadLock#lock()}
 	 */
-	public synchronized void lock(String actor) {
-		while (isClosed || !newAssetOperationsLock.tryLock()) {
+	public synchronized void readLock(String actor) {
+		while (!newAssetOperationsLock.readLock().tryLock()) {
 			try {
 				wait();
 			} catch (final InterruptedException e) {}
 		}
-		logger.info("Lock acquired. (by '" + actor + "')");
+		logger.debug("Read Lock acquired. (by '" + actor + "')");
+		if (newAssetOperationsLock.getReadLockCount() <= 1) {
+			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
+		}
+	}
+	
+	/**
+	 * Will block calling thread until lock is both open and has been acquired.
+	 * @see {@link WriteLock#lock()}
+	 */
+	public synchronized void writeLock(String actor) {
+		while (isReadLockFixed || !newAssetOperationsLock.writeLock().tryLock()) {
+			try {
+				wait();
+			} catch (final InterruptedException e) {}
+		}
+		logger.debug("Write Lock acquired. (by '" + actor + "')");
 		eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 	}
 	
 	/**
 	 * @return True if lock is both open and calling thread could acquire lock.
-	 * @see {@link ReentrantLock#tryLock()}
+	 * @see {@link ReadLock#tryLock()}
 	 */
-	public synchronized boolean tryLock(String actor) {
-		if (isClosed) return false;
-		final boolean acquired = newAssetOperationsLock.tryLock();
+	public synchronized boolean tryReadLock(String actor) {
+		final boolean acquired = newAssetOperationsLock.readLock().tryLock();
 		if (acquired) {
-			logger.info("Lock acquired. (by '" + actor + "')");
+			logger.info("Read Lock acquired. (by '" + actor + "')");
+			if (newAssetOperationsLock.getReadLockCount() <= 1) {
+				eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
+			}
+		}
+		return acquired;
+	}
+	
+	/**
+	 * @return True if lock is both open and calling thread could acquire lock.
+	 * @see {@link WriteLock#tryLock()}
+	 */
+	public synchronized boolean tryWriteLock(String actor) {
+		if (isReadLockFixed) return false;
+		final boolean acquired = newAssetOperationsLock.writeLock().tryLock();
+		if (acquired) {
+			logger.info("Write Lock acquired. (by '" + actor + "')");
 			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 		}
 		return acquired;
@@ -66,38 +100,50 @@ public class NewAssetLockService {
 	
 	/**
 	 * Release held lock.
-	 * @see {@link ReentrantLock#unlock()}
+	 * @see {@link ReadLock#unlock()}
 	 */
-	public synchronized void unlock(String actor) {
-		newAssetOperationsLock.unlock();
-		logger.info("Lock released. (by '" + actor + "')");
-		if (!isClosed) {
+	public synchronized void readUnlock(String actor) {
+		newAssetOperationsLock.readLock().unlock();
+		logger.info("Read Lock released. (by '" + actor + "')");
+		if (isWriteAvailable()) {
+			// only affects availability of write lock
 			eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 		}
 	}
 	
 	/**
-	 * Make it impossible for other threads to acquire the lock until opened. Calling thread must own lock.
-	 * When calling this, it must be guaranteed that {@link NewAssetLockService#attemptOpenLock()} is called eventually!
+	 * Release held lock.
+	 * @see {@link WriteLock#unlock()}
 	 */
-	public synchronized void closeLock(String actor) {
-		if (!isClosed) {
-			if (!newAssetOperationsLock.isHeldByCurrentThread()) {
-				throw new IllegalStateException("Calling thread must still hold lock to close!");
-			}
-			logger.info("Lock closed. (by '" + actor + "')");
-			isClosed = true;
-		}
+	public synchronized void writeUnlock(String actor) {
+		newAssetOperationsLock.writeLock().unlock();
+		logger.info("Write Lock released. (by '" + actor + "')");
+		// affects availability of both read and write locks
+		eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 	}
 	
 	/**
-	 * Make it possible for any thread to acquire lock again. Does nothing if lock is still held.
+	 * Make it impossible for other threads to acquire write lock until opened. Calling thread must own lock.
+	 * When calling this, it must be guaranteed that {@link NewAssetLockService#attemptOpenReadLock()} is called eventually!
 	 */
-	public synchronized void attemptOpenLock(String actor) {
-		if (!newAssetOperationsLock.isLocked()) {
-			if (isClosed) {
-				logger.info("Lock opened. (by '" + actor + "')");
-				isClosed = false;
+	public synchronized void fixReadLock(String actor) {
+		if (newAssetOperationsLock.getReadHoldCount() <= 0) {
+			throw new IllegalStateException("Calling thread must still hold read lock to close!");
+		}
+		if (!isReadLockFixed) {
+			logger.info("Flag CLOSED. (by '" + actor + "')");
+		}
+		isReadLockFixed = true;
+	}
+	
+	/**
+	 * Make it possible for any thread to acquire write lock again. Does nothing if read lock is still held by anybody.
+	 */
+	public synchronized void attemptUnfixReadLock(String actor) {
+		if (isReadLockFixed) {
+			if (newAssetOperationsLock.getReadLockCount() <= 0) {
+				logger.info("Flag OPENED. (by '" + actor + "')");
+				isReadLockFixed = false;
 				notifyAll();
 				eventSender.broadcastEvent(WebSocketEvent.AssetFileOperationsChangeEvent);
 			}
@@ -105,24 +151,31 @@ public class NewAssetLockService {
 	}
 	
 	/**
+	 * @see {@link ReentrantReadWriteLock#isWriteLocked()}
+	 */
+	public synchronized boolean isReadAvailable() {
+		return newAssetOperationsLock.isWriteLocked();
+	}
+	
+	/**
 	 * @see {@link ReentrantLock#isLocked()}
 	 */
-	public synchronized boolean isAvailable() {
-		return !isClosed && !newAssetOperationsLock.isLocked();
+	public synchronized boolean isWriteAvailable() {
+		return !isReadLockFixed && newAssetOperationsLock.getReadLockCount() <= 0;
 	}
 	
 	@SuppressWarnings("unused")
-	private void testBlock() {
+	private void testWriteLock() {
 		new Thread(() -> {
 			try {
 				Thread.sleep(10000);
 			} catch (final InterruptedException e) {}
 			while(true) {
-				lock("");
+				writeLock("");
 				try {
 					Thread.sleep(5000);
 				} catch (final InterruptedException e) {}
-				unlock("");
+				writeLock("");
 				try {
 					Thread.sleep(500);
 				} catch (final InterruptedException e) {}

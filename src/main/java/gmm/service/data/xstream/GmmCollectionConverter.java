@@ -76,22 +76,15 @@ public class GmmCollectionConverter implements Converter {
 		final Class<?> baseClass = baseClass(collection.getClass().getSimpleName());
 		
 		final Converter baseConverter = createCollectionConverter.create(mapper, baseClass);
-		context.convertAnother(buildBaseCollection(baseClass, collection), baseConverter);
-//		baseConverter.marshal(buildBaseCollection(baseClass, collection), writer, context);
-		
-		// TODO remove argument baseConverter
+		context.convertAnother(buildBaseCollection(baseClass, collection), baseConverter);		
+		// TODO remove argument baseConverter when not given so that globally registered converters work
+		// or instantiate Converter from mapper instead of hardcoding CollectionConverter
 	}
 	
 	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
 		final String version = reader.getAttribute("version");
-//		final String clazz = reader.getAttribute("class") != null ?
-//				reader.getAttribute("class") : reader.getNodeName();
-		
-		// TODO use HierarchicalStreams.readClassType
-//		final Class<?> collectionClass = forName(HierarchicalStreams.readClassAttribute(reader, mapper));
-//		final Class<?> collectionClass = forName(clazz);
 		final Class<?> collectionClass = HierarchicalStreams.readClassType(reader, mapper);
 		final Class<?> baseClass = baseClass(collectionClass.getSimpleName());
 		final java.util.Collection baseCollection;
@@ -102,21 +95,10 @@ public class GmmCollectionConverter implements Converter {
 			if (genericType == null) {
 				throw new ConversionException("Expected to find attribute 'genericType' in collection node!");
 			}
-//			reader.moveDown();
-			
-//			try {
-//				final Converter baseConverter = new CollectionConverter(mapper, baseClass);
-//				baseCollection = (java.util.Collection) baseConverter.unmarshal(reader, context);
-//				return buildGmmCollection(collectionClass, baseCollection, genericType);
-				// TODO use context.convertAnother
-				baseCollection = (java.util.Collection) context.convertAnother(newInstance(baseClass), baseClass);
-				return buildGmmCollection(collectionClass, baseCollection, genericType);
-				
-//			} finally {
-//				reader.moveUp();
-//			}
+			baseCollection = (java.util.Collection) context.convertAnother(newInstance(baseClass), baseClass);
+			return buildGmmCollection(collectionClass, baseCollection, genericType);
 		} else {
-			// TODO use convert another
+			// TODO use context.convertAnother if possible
 			final Converter converter = new SerializableConverter(mapper, reflectionProvider);
 			return converter.unmarshal(reader, context);
 		}
