@@ -1,5 +1,7 @@
 package gmm.collections;
 
+import gmm.util.GenericTyped;
+
 /**
  * Extends {@link java.util.Collection} by knowing its generic type at runtime.
  * <br>
@@ -16,7 +18,7 @@ package gmm.collections;
  * </ul>
  * @author Jan Mothes
  */
-public interface Collection<E> extends java.util.Collection<E>, Iterable<E> {
+public interface Collection<E> extends java.util.Collection<E>, Iterable<E>, GenericTyped<E> {
 	
 	/**
 	 * @return Shallow copy with the same collection type as this objects real collection type.
@@ -32,6 +34,7 @@ public interface Collection<E> extends java.util.Collection<E>, Iterable<E> {
 	/**
 	 * @return The generic type that was used to instantiate this collection object.
 	 */
+	@Override
 	public Class<E> getGenericType();
 	
 	@SuppressWarnings("unchecked")

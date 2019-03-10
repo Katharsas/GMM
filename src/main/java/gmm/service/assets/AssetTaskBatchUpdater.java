@@ -82,7 +82,7 @@ public class AssetTaskBatchUpdater {
 	private final Set<ResultCollector> remaining = ConcurrentHashMap.newKeySet();
 	
 	public void updateTasks(
-			Collection<AssetTask<?>> toUpdate,
+			Collection<? extends AssetTask<?>> toUpdate,
 			BiConsumer<AssetTask<?>, OnAssetUpdateProvider> updateFunction,
 			OnBatchComplete onComplete) {
 		

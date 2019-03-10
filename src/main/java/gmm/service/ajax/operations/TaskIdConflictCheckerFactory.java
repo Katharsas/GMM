@@ -79,7 +79,6 @@ public class TaskIdConflictCheckerFactory {
 		}
 		
 		@Override public Conflict<Task> onLoad(Task t) {
-			t.onLoad();
 			UniqueObject.updateCounter(t);
 			
 			if (UniqueObject.getFromId(data.getList(t.getClass()), t.getId()) != null) {

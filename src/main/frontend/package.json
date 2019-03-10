@@ -1,6 +1,8 @@
 {
 	"private": true,
 	"scripts": {
+		"gulp_build_js": "gulp build_js",
+		"gulp_build_sass": "gulp build_sass",
 		"build_js": "webpack --config webpack.config.js"
 	},
 	"dependencies": {
@@ -10,14 +12,14 @@
 		"bluebird": "3.5.3"
 	},
 	"devDependencies": {
-		"@types/jquery": "^3.3.22",
+		"@types/jquery": "3.3.22",
 		"@babel/core": "7.2.0",
 		"@babel/plugin-transform-modules-commonjs": "7.2.0",
 		"@babel/preset-env": "7.2.0",
 		"babelify": "10.0.0",
 		"browserify": "16.2.3",
 		"event-stream": "4.0.1",
-		"gulp": "^3.9.1",
+		"gulp": "3.9.1",
 		"gulp-if": "2.0.2",
 		"gulp-notify": "3.2.0",
 		"gulp-rename": "1.4.0",

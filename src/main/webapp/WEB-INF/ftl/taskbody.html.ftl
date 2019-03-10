@@ -277,13 +277,13 @@
 				    		<#if task.originalAssetProperties?has_content>
 					    		<td class="task-asset-model-textures">
 					    			<ul>
-					    				<#list task.originalAssetProperties.textureNames as textureName>
+					    				<#list task.originalAssetProperties.viewModel.texturesWithoutTasks as textureName>
 							    			<li>${textureName.get()?html}</li>
 										</#list>
 									</ul>
 									<ul>
-										<#list task.originalAssetProperties.textureTasks as textureTask>
-							    			<li>${textureTask.getIdLink()?html}</li>
+										<#list task.originalAssetProperties.viewModel.texturesWithTasks as textureTask>
+							    			<li data-idLink="${textureTask.getIdLink()}">${textureTask.assetName.get()?html}</li>
 										</#list>
 					    			</ul>
 							    </td>
@@ -298,9 +298,9 @@
 										</#list>
 									</ul>
 									<ul>
-										<#list task.newAssetProperties.textureTasks as textureTask>
+										<#--  <#list task.newAssetProperties.textureTasks as textureTask>
 							    			<li>${textureTask.getIdLink()?html}</li>
-										</#list>
+										</#list>  -->
 									</ul>
 							    </td>
 							<#else><td></td>

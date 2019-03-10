@@ -1,6 +1,8 @@
 package gmm.web.sessions.tasklist;
 
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -27,6 +29,7 @@ import gmm.service.users.UserService;
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
 public class PinnedSession extends TaskListState {
 	
+	private DataAccess data;
 	//user logged into this session
 	private final User user;
 	
@@ -34,6 +37,7 @@ public class PinnedSession extends TaskListState {
 	
 	@Autowired
 	public PinnedSession(DataAccess data, UserService users) {
+		this.data = data;
 		user = users.getLoggedInUser();
 		data.registerForUpdates(this, Task.class);
 		
@@ -46,6 +50,11 @@ public class PinnedSession extends TaskListState {
 				}
 			}
 		}
+	}
+	
+	@PreDestroy
+	private void destroy() {
+		data.unregister(this);
 	}
 
 	@Override

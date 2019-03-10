@@ -6,8 +6,6 @@ import static gmm.service.data.DataChangeType.REMOVED;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -36,23 +34,18 @@ import gmm.domain.task.asset.TextureTask;
 import gmm.service.users.UserProvider;
 import gmm.util.Util;
 
+/**
+ * Simple in-memory object "database" which uses an array lists per type to store objects.
+ * 
+ * @author Jan Mothes
+ */
 @Service
-public class DataBase implements DataAccess {
+public class DataBase extends DataBaseEventService implements DataAccess {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	final private Supplier<User> executingUser;
 	final private CombinedData combined;
-	
-	// ###################
-	// OBSERVER PATTERN
-	// ###################
-	
-	@SuppressWarnings("rawtypes")
-	final private Map<DataChangeCallback, Class> weakPostProcessorCallbacks = new WeakHashMap<>();
-	@SuppressWarnings("rawtypes")
-	final private Map<DataChangeCallback, Class> weakConsumerCallbacks = new WeakHashMap<>();
-	
 	
 	// ###################
 	// DATA TYPES
@@ -411,51 +404,5 @@ public class DataBase implements DataAccess {
 			}
 		}
 		return false;
-	}
-	
-	@Override
-	public <T extends Linkable> void registerPostProcessor(DataChangeCallback<T> onUpdate, Class<T> clazz) {
-		synchronized(weakPostProcessorCallbacks) {
-			weakPostProcessorCallbacks.put(onUpdate, clazz);
-		}
-	}
-	
-	@Override
-	public <T extends Linkable> void registerForUpdates(DataChangeCallback<T> onUpdate, Class<T> clazz) {
-		synchronized (weakConsumerCallbacks) {
-			weakConsumerCallbacks.put(onUpdate, clazz);
-		}
-	}
-
-	/**
-	 * All events are guaranteed to contain collections of concrete types only.
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void fireEvent(DataChangeEvent<?> event) {
-		final Class<? extends Linkable> concreteType = event.changed.getGenericType();
-		// we fire any callback that has registered on this type or a supertype
-
-		final int maxCallbacks = weakPostProcessorCallbacks.size() + weakConsumerCallbacks.size();
-		final Collection<DataChangeCallback> callbacks = new ArrayList<>(DataChangeCallback.class, maxCallbacks);
-		
-		synchronized(weakPostProcessorCallbacks) {
-			for (final Map.Entry<DataChangeCallback, Class> entry : weakPostProcessorCallbacks.entrySet()) {
-				if (entry.getValue().isAssignableFrom(concreteType)) {
-					callbacks.add(entry.getKey());
-				}
-			}
-		}
-		synchronized (weakConsumerCallbacks) {
-			for (final Map.Entry<DataChangeCallback, Class> entry : weakConsumerCallbacks.entrySet()) {
-				if (entry.getValue().isAssignableFrom(concreteType)) {
-					callbacks.add(entry.getKey());
-				}
-			}
-		}
-		
-		System.out.println("-----------EVENT FIRED");
-		for (final DataChangeCallback callback : callbacks) {
-			callback.onEvent(event);
-		}
 	}
 }

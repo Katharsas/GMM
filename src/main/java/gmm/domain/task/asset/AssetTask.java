@@ -65,7 +65,6 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 			Objects.requireNonNull(originalFileInfo);
 			if (!assetName.equals(originalFileInfo.getAssetFileName()))
 				throw new IllegalArgumentException("AssetName mismatch!");
-			assetProps.assertAttributes();
 		}
 		this.originalAssetProps = assetProps;
 		this.originalAssetFileInfo = originalFileInfo;
@@ -88,9 +87,6 @@ public abstract class AssetTask<A extends AssetProperties> extends Task {
 	}
 
 	public void setNewAsset(A assetProperties, NewAssetFolderInfo newFolderInfo) {
-		if(assetProperties != null) {
-			assetProperties.assertAttributes();
-		}
 		setNewAssetFolderInfo(assetProperties, newFolderInfo);
 		this.newestAssetLastUpdate = Instant.now();
 	}

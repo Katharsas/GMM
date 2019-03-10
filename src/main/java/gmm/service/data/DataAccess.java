@@ -41,23 +41,26 @@ public interface DataAccess {
 		 * Called when a data change occurs.
 		 * @param event - Event object which holds information about the changes.
 		 */
-		public void onEvent(DataChangeEvent<T> event);
+		public void onEvent(DataChangeEvent<? extends T> event);
 	}
 	
 	/**
-	 * Register to get method calls on task data changes. Unregistering is unnecessary. All
-	 * implementations of this interface must use weak references to reference the callbacks.<br>
-	 * <br>
-	 * Important: DOES NOT HOLD A (STRONG) REFERENCE to onUpdate object.<br>
-	 * => Caller must ensure there is a reference so that the object does not get GCed.
-	 * 
-	 * TODO always register only for a certain type
+	 * Register simple callback that gets called when data changes. Code inside callback is not allowed to
+	 * call any methods from {@link DataAccess}. Unregister with {@link #unregister(DataChangeCallback)}.
 	 */
 	public <T extends Linkable> void registerForUpdates(DataChangeCallback<T> onUpdate, Class<T> clazz);
 	
 	/**
-	 * Similar to {@link #registerForUpdates(DataChangeCallback)}, but allows to post process data
-	 * after a change before update listeners are notified.
+	 * When data changes, post processor callbacks are called before simple callbacks (see {@link #registerForUpdates(DataChangeCallback)}).
+	 * Code inside callback is allowed to make any additional data changes and the corresponding additional
+	 * change events will be seen by simple callbacks (but not by other post processor callbacks).
+	 * Unregister with {@link #unregister(DataChangeCallback)}.
 	 */
 	public <T extends Linkable> void registerPostProcessor(DataChangeCallback<T> onUpdate, Class<T> clazz);
+	
+	/**
+	 * Any registered {@link DataChangeCallback} should be unregistered when not needed anymore.
+	 * @see {@link #registerForUpdates(DataChangeCallback, Class)}<br>{@link #registerPostProcessor(DataChangeCallback, Class)}.
+	 */
+	public void unregister(DataChangeCallback<?> onUpdate);
 }

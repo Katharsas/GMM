@@ -11,6 +11,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import gmm.domain.User;
 import gmm.domain.task.TaskType;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetName;
+import gmm.domain.task.asset.AssetTypes;
 import gmm.domain.task.asset.ModelProperties;
 import gmm.domain.task.asset.ModelTask;
 import gmm.service.FileService;
@@ -31,20 +34,15 @@ import gmm.service.tasks.PythonTCPSocket.MeshData;
 public class ModelTaskService extends AssetTaskService<ModelProperties>
 		implements ServletContextListener {
 
-	private final PythonTCPSocket python;
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	private static final String[] extensions = new String[] {"3ds"};
+	private final PythonTCPSocket python;
 	
 	@Autowired
 	public ModelTaskService(DataAccess data, Config config, FileService fileService,
 			PythonTCPSocket python) {
 		super(data, config, fileService);
 		this.python = python;
-	}
-
-	@Override
-	protected String[] getExtensions() {
-		return extensions;
 	}
 
 	@Override
@@ -62,7 +60,13 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 			final Set<String> textures = new HashSet<>(String.class, meshData.getTextures());
 			final Set<AssetName> textureNames = new HashSet<>(AssetName.class);
 			for(final String name : textures) {
-				textureNames.add(new AssetName(name));
+				boolean validExtension = AssetTypes.get(TaskType.TEXTURE).extensionsFilter.test(name);
+				if (validExtension) {
+					textureNames.add(new AssetName(name));
+				} else {
+					logger.error("Invalid asset information for mesh '" + sourceFile.getFileName() + "':\n"
+							+ "Mesh information contains texture name '" +  name + "' which has an invalid file extension!");
+				}
 			}
 			final ModelProperties asset = new ModelProperties(
 					meshData.getPolygonCount(), textureNames);

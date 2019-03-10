@@ -8,34 +8,22 @@ public class TextureProperties extends AssetProperties {
 	private final int height, width;
 	
 	TextureProperties() {
-		this(-1, -1);
+		this.height = -1;
+		this.width = -1;
 	}
 	
 	public TextureProperties(int height, int width) {
+		if (height <= 0 || width <= 0) {
+			throw new IllegalArgumentException("Height and width must be positive!");
+		}
 		this.height = height;
 		this.width = width;
 	}
-
-	@Deprecated
-	@Override
-	public void assertAttributes() {
-		super.assertAttributes();
-		synchronized(this) {
-			if (height < 0 || width < 0) {
-				throw new IllegalStateException(assertAttributesException);
-			}
-		}
-	}
 	
-//	public synchronized void setDimensions(int height, int width) {
-//		this.height = height;
-//		this.width = width;
-//	}
-	
-	public synchronized int getHeight() {
+	public int getHeight() {
 		return height;
 	}
-	public synchronized int getWidth() {
+	public int getWidth() {
 		return width;
 	}
 }

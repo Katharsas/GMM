@@ -13,7 +13,6 @@ import gmm.WebSocketConfiguration.WebSocketHandlerImpl;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.util.ThrottlingExecutioner;
 
@@ -27,7 +26,7 @@ import gmm.util.ThrottlingExecutioner;
  * @author Jan Mothes
  */
 @Service
-public class WebSocketEventSender implements DataChangeCallback<Task> {
+public class WebSocketEventSender {
 
 	private final ThrottlingExecutioner executioner;
 	
@@ -45,14 +44,13 @@ public class WebSocketEventSender implements DataChangeCallback<Task> {
 	
 	@Autowired
 	public WebSocketEventSender(DataAccess data, WebSocketHandlerImpl handler) {
-		data.registerForUpdates(this, Task.class);
+		data.<Task>registerForUpdates(this::onEvent, Task.class);
 		this.handler = handler;
 		
 		executioner = new ThrottlingExecutioner(2000);
 	}
 
-	@Override
-	public void onEvent(DataChangeEvent<Task> event) {
+	private void onEvent(DataChangeEvent<? extends Task> event) {
 		broadcastEvent(WebSocketEvent.TaskDataChangeEvent);
 	}
 	

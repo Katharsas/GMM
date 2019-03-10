@@ -66,6 +66,7 @@ import gmm.web.FileTreeScript;
 @ResponseBody
 public class TaskAssetController {
 
+	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	@Autowired private CurrentUser user;

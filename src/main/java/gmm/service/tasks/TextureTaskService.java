@@ -39,8 +39,6 @@ import gmm.service.data.DataAccess;
 public class TextureTaskService extends AssetTaskService<TextureProperties>
 		implements ServletContextListener {
 	
-	private static final String[] extensions = new String[] {"tga"};
-	
 	@Autowired
 	public TextureTaskService(DataAccess data, Config config, FileService fileService) {
 		super(data, config, fileService);
@@ -48,11 +46,6 @@ public class TextureTaskService extends AssetTaskService<TextureProperties>
 
 	// changing the scaling size requires manual deletion of all generated previews
 	private static final int SMALL_SIZE = 256;
-	
-	@Override
-	protected String[] getExtensions() {
-		return extensions;
-	}
 	
 	@PostConstruct
 	protected void init() {
@@ -136,12 +129,6 @@ public class TextureTaskService extends AssetTaskService<TextureProperties>
 		final String isOriginalString = isOriginal.getPreviewFileName();
 		return previewFolder.resolve(isOriginalString + (isSmall ? "_small.png" : "_full.png"));
 	}
-
-//	@Deprecated
-//	@Override
-//	protected TextureProperties newPropertyInstance() {
-//		return new TextureProperties();
-//	}
 
 	@Override
 	public TaskType getTaskType() {

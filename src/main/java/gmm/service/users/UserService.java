@@ -14,13 +14,12 @@ import gmm.collections.Collection;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
 import gmm.util.StringUtil;
 
 @Service
-public class UserService extends UserProvider implements DataChangeCallback<Task> {
+public class UserService extends UserProvider {
 
 	private final DataAccess data;
 	private final SecureRandom random;
@@ -30,9 +29,28 @@ public class UserService extends UserProvider implements DataChangeCallback<Task
 	public UserService(DataAccess data, PasswordEncoder encoder) {
 		super(() -> data.<User>getList(User.class));
 		this.data = data;
-		data.registerForUpdates(this, Task.class);
 		this.encoder = encoder;
 		random = new SecureRandom();
+		data.<Task>registerForUpdates(this::onEvent, Task.class);
+	}
+	
+	/**
+	 * Clean up pinned tasks on task deletion.
+	 */
+	private void onEvent(DataChangeEvent<? extends Task> event) {
+		if (event.type == DataChangeType.REMOVED) {
+			final Multimap<Long, User> pinnedTasks = MultimapBuilder.hashKeys().arrayListValues().build();
+			for (final User user : get()) {
+				for (final long taskId : user.getPinnedTaskIds()) {
+					pinnedTasks.put(taskId, user);
+				}
+			}
+			for (final Task task : event.changed) {
+				for (final User user : pinnedTasks.get(task.getId())) {
+					user.getPinnedTaskIds().remove(task.getId());
+				}
+			}
+		}
 	}
 	
 	/**
@@ -51,26 +69,6 @@ public class UserService extends UserProvider implements DataChangeCallback<Task
 			}
 		}
 		return true;
-	}
-	
-	/**
-	 * Clean up pinned tasks on task deletion.
-	 */
-	@Override
-	public void onEvent(DataChangeEvent<Task> event) {
-		if (event.type == DataChangeType.REMOVED) {
-			final Multimap<Long, User> pinnedTasks = MultimapBuilder.hashKeys().arrayListValues().build();
-			for (final User user : get()) {
-				for (final long taskId : user.getPinnedTaskIds()) {
-					pinnedTasks.put(taskId, user);
-				}
-			}
-			for (final Task task : event.changed) {
-				for (final User user : pinnedTasks.get(task.getId())) {
-					user.getPinnedTaskIds().remove(task.getId());
-				}
-			}
-		}
 	}
 	
 	/**

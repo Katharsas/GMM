@@ -16,10 +16,11 @@ public class Util {
 	}
 	
 	/**
-	 * Allows you to change the upper bound of a collection if the actual generic type of the
-	 * collection is a subtype of the target bound.<br>
-	 * This is useful in particular if runtime checks can guarantee that the cast cannot fail by
-	 * checking the collections generic type instead of iterating through every element. <br>
+	 * Allows you to change the upper bound of a collection/wrapper if its actual generic type is a
+	 * subtype of the target bound.<br>
+	 * The collection/wrapper implementation is responsible for returning its generic type correctly.
+	 * (For example, a collection is responsible for making sure that all of its elements are of the
+	 * generic type returned by {@link GenericTyped#getGenericType()}).
 	 * <br>
 	 * Example:
 	 * <pre>{@code 
@@ -28,23 +29,24 @@ public class Util {
 	 * }</pre>
 	 * 
 	 * @param <T> - upper bound target type
-	 * @param data - collection with unknown generic type
+	 * @param data - object with unknown generic type
 	 * @param to - used to make runtime check
-	 * @exception ClassCastException If the generic type of data (at runtime) is not same or
+	 * @exception ClassCastException If the generic type of obj (at runtime) is not same or
 	 * subtype of target type T.
 	 */
-	public static <T> Collection<? extends T> castBound(Collection<?> data, Class<T> to) {
-		final Class<?> from = data.getGenericType();
+	public static <T, E extends GenericTyped<? extends T>> E castBound(GenericTyped<?> obj, Class<T> to) {
+		final Class<?> from = obj.getGenericType();
 		if(to.isAssignableFrom(from)) {
 			@SuppressWarnings("unchecked")
-			final Collection<? extends T> result = (Collection<T>) data;
+			final E result = (E) obj;
 			return result;
 		} else {
 			throw new ClassCastException(
-					"Cannot cast from Collection<"+from.getCanonicalName()
-					+"> to Collection<? extends "+to.getCanonicalName()+">!");
+					"Cannot cast from GenericTyped<"+from.getCanonicalName()
+					+"> to GenericTyped<? extends "+to.getCanonicalName()+">!");
 		}
 	}
+	
 	
 	/**
 	 * Allows you to change the generic type of a collection if the actual generic type of the

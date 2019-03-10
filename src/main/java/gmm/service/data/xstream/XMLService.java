@@ -58,7 +58,6 @@ public class XMLService implements PersistenceService {
 		}
 		xstream.registerConverter(new PathConverter());
 		xstream.registerConverter(new AssetNameConverter());
-//		xstream.registerConverter(new AssetNameObjectConverter());
 		xstream.registerConverter(new GmmCollectionConverter(xstream.getMapper(), xstream.getReflectionProvider()));
 		final UserReferenceConverter userConverter = new UserReferenceConverter(getUsers);
 		final InstantConverter instantConverter = new InstantConverter();
@@ -72,11 +71,6 @@ public class XMLService implements PersistenceService {
 				gmm.domain.task.asset.AssetTask.class, "newestAssetLastUpdate", instantConverter);
 		xstream.omitField(gmm.domain.task.asset.TextureTask.class, "models");
 		xstream.omitField(gmm.domain.task.asset.ModelTask.class, "textures");
-//		final Converter textureNamesConverter = new GmmCollectionConverter(
-//				xstream.getMapper(),
-//				xstream.getReflectionProvider(),
-//				(mapper, clazz) -> new TextureNamesConverter(mapper, clazz));
-//		xstream.registerLocalConverter(gmm.domain.task.asset.ModelProperties.class, "textureNames", textureNamesConverter);
 	}
 
 	@Override

@@ -5,11 +5,14 @@ import java.util.Objects;
 
 import gmm.collections.ArrayList;
 import gmm.collections.Collection;
+import gmm.collections.HashSet;
 import gmm.collections.List;
+import gmm.collections.Set;
 import gmm.domain.Linkable;
 import gmm.domain.User;
 import gmm.domain.User.UserId;
 import gmm.domain.task.Task;
+import gmm.util.GenericTyped;
 import gmm.util.Util;
 
 /**
@@ -19,14 +22,14 @@ import gmm.util.Util;
  * 
  * @author Jan Mothes
  */
-public class DataChangeEvent<T extends Linkable> {
+public class DataChangeEvent<T extends Linkable> implements GenericTyped<T> {
 
 	public final DataChangeType type;
 	public final Instant created;
 	public final User source;
 	
 	public final boolean isSingleItem;
-	public final Collection<T> changed;
+	public final Set<T> changed;
 	
 	/**
 	 * @param changed - The generic type of the collection must be one of:
@@ -47,13 +50,13 @@ public class DataChangeEvent<T extends Linkable> {
 		}
 		this.type = type;
 		this.source = source;
-		this.changed = changed;
+		this.changed = new HashSet<>(changed);
 		this.isSingleItem = changed.size() == 1;
 		created = Instant.now();
 	}
 	
 	public DataChangeEvent(DataChangeType type, User source, T changed) {
-		this(type, source, new ArrayList<T>(Util.classOf(changed), changed));
+		this(type, source, new HashSet<T>(Util.classOf(changed), changed));
 	}
 	
 	public T getChangedSingle() {
@@ -85,6 +88,12 @@ public class DataChangeEvent<T extends Linkable> {
 			this.eventType = eventType;
 			this.changedIds = changedIds;
 		}
+	}
+	
+	
+	@Override
+	public Class<T> getGenericType() {
+		return changed.getGenericType();
 	}
 	
 	@SuppressWarnings("unchecked")

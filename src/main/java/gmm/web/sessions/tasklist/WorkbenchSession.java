@@ -3,6 +3,8 @@ package gmm.web.sessions.tasklist;
 
 import java.util.Arrays;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +91,11 @@ public class WorkbenchSession extends TaskListState {
 		}
 		
 		data.registerForUpdates(this, Task.class);
+	}
+	
+	@PreDestroy
+	private void destroy() {
+		data.unregister(this);
 	}
 	
 	@Override

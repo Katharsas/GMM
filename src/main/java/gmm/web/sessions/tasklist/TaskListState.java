@@ -31,7 +31,7 @@ public abstract class TaskListState implements DataChangeCallback<Task> {
 	}
 	
 	@Override
-	public void onEvent(DataChangeEvent<Task> event) {		
+	public void onEvent(DataChangeEvent<? extends Task> event) {		
 		if(event.isSingleItem) {
 			switch(event.type) {
 			case ADDED:

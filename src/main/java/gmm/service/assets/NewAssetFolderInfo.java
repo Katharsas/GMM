@@ -229,8 +229,6 @@ public class NewAssetFolderInfo implements AssetInfo {
 	}
 
 	// TODO check if equals & hashcode are actually called?
-	// TODO
-	// TODO
 	
 	@Override
 	public int hashCode() {

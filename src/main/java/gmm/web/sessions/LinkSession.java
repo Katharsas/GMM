@@ -1,5 +1,7 @@
 package gmm.web.sessions;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -36,6 +38,11 @@ public class LinkSession extends StaticTaskListState {
 		
 		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
 		data.registerForUpdates(this, Task.class);
+	}
+	
+	@PreDestroy
+	private void destroy() {
+		data.unregister(this);
 	}
 	
 	/**
@@ -98,7 +105,7 @@ public class LinkSession extends StaticTaskListState {
 	
 	
 	@Override
-	public void onEvent(DataChangeEvent<Task> event) {
+	public void onEvent(DataChangeEvent<? extends Task> event) {
 		if (!event.type.equals(DataChangeType.ADDED)) {
 			taskDataEvents.add(event.toClientEvent());
 		}

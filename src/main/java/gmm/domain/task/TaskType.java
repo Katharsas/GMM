@@ -25,7 +25,7 @@ public enum TaskType {
 				else secondaryResult = type;
 			}
 		}
-		//this check is separate to not return super type instead if equal type.
+		//this check is separate to not return super type instead of equal type.
 		if (primaryResult == null) {
 			if (secondaryResult == null) {
 				throw new IllegalArgumentException("Invalid type value: "+clazz.getName());

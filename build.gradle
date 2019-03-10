@@ -7,7 +7,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
  *
  * FRONTEND BUILD:
  * Nodejs and npm must be globally installed (windows: must be on PATH).
- * Run 'gradle gulp_build' to build frontend (javascript abd sass).
+ * Run 'gradle gulp_build' to build frontend (javascript and sass).
  * 
  * BACKEND BUILD & RUN:
  * See 'https://github.com/gretty-gradle-plugin/gretty' for detailed instructions.
@@ -16,6 +16,9 @@ import org.apache.tools.ant.filters.ReplaceTokens
  * CONFIGURATION:
  * Default configuration file can be found at 'src/main/resources/default.properties'.
  * Use configuration file at 'config/config.properties' to override defaults.
+ * 
+ * DEBUG:
+ * Use Gradle task 'appRunDebug' to cause the webapp container to wait for debugger on port 5005.
  */
 
 
@@ -30,7 +33,7 @@ buildscript {
     }
     dependencies {
     	classpath 'org.gretty:gretty:2.2.0'
-        classpath "com.moowork.gradle:gradle-node-plugin:1.2.0"
+        classpath "com.github.node-gradle:gradle-node-plugin:1.3.0"
         classpath 'com.bmuschko:gradle-cargo-plugin:2.4'
     }
 }
@@ -39,8 +42,8 @@ apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'org.gretty'
 apply plugin: 'com.bmuschko.cargo'
-apply plugin: 'com.moowork.node'
-apply plugin: "com.moowork.gulp"
+apply plugin: 'com.github.node-gradle.node'
+apply plugin: "com.github.node-gradle.gulp"
 
 class Profile {
 	String name
@@ -60,6 +63,8 @@ class ProfilesPlugin implements Plugin<Project> {
     }
 }
 apply plugin: ProfilesPlugin
+
+// external profiles in profile.gradle override these profiles
 profiles {
    	local {
    		type = "dev"
@@ -250,17 +255,13 @@ cargo {
 //  Fontend Build
 // #####################
 
+// installGulp is unnecessary since it should be installed by npm
+
 gulp_three.dependsOn 'npmInstall'
-gulp_three.dependsOn 'installGulp'
-
 gulp_build_js.dependsOn 'npmInstall'
-gulp_build_js.dependsOn 'installGulp'
-
 gulp_build_sass.dependsOn 'npmInstall'
-gulp_build_sass.dependsOn 'installGulp'
 
 gulp_build.dependsOn 'npmInstall'
-gulp_build.dependsOn 'installGulp'
 gulp_build.dependsOn 'gulp_three'
 
 node {

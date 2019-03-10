@@ -31,7 +31,6 @@ import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
 import gmm.service.assets.NewAssetFolderInfo.AssetFolderStatus;
 import gmm.service.assets.vcs.VcsPlugin;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.PathConfig;
 import gmm.service.tasks.AssetTaskService;
@@ -68,7 +67,7 @@ public class AssetService {
 	private final AssetScanner scanner;
 	private final TaskServiceFinder serviceFinder;
 	private final AssetTaskUpdater taskUpdater;
-	@Autowired private AssetTaskBatchUpdater taskBatchUpdater;
+	private final AssetTaskBatchUpdater taskBatchUpdater;
 	private final DataAccess data;
 	private final NewAssetLockService lockService;
 
@@ -85,8 +84,6 @@ public class AssetService {
 	private final Map<AssetKey, NewAssetFolderInfo> newAssetFoldersWithoutTasks;
 	
 	private final Map<AssetKey, OriginalAssetFileInfo> originalAssetFiles;
-	
-	private final DataChangeCallback<AssetTask<?>> reference;
 	
 	public NewAssetFolderInfo getNewAssetFolderInfo(AssetKey assetName) {
 		return newAssetFolders.get(assetName);
@@ -127,12 +124,14 @@ public class AssetService {
 	
 	@Autowired
 	public AssetService(AssetScanner scanner, TaskServiceFinder serviceFinder, AssetTaskUpdater taskUpdater,
-			VcsPlugin vcs, PathConfig config, FileService fileService, DataAccess data, NewAssetLockService lockService) {
+			VcsPlugin vcs, PathConfig config, FileService fileService, DataAccess data, 
+			NewAssetLockService lockService, AssetTaskBatchUpdater taskBatchUpdater) {
 		this.scanner = scanner;
 		this.serviceFinder = serviceFinder;
 		this.taskUpdater = taskUpdater;
 		this.data = data;
 		this.lockService = lockService;
+		this.taskBatchUpdater = taskBatchUpdater;
 		this.config = config;
 		
 		assetTasks = new EventMap<>(new ConcurrentHashMap<>());
@@ -143,21 +142,20 @@ public class AssetService {
 		fileService.createDirectory(config.assetsNew());
 		fileService.createDirectory(config.assetsOriginal());
 		
-		reference = initTasksAndGetPostProcessor(data);
-		data.registerPostProcessor(reference, AssetTask.getGenericClass());
+		initTasks(data);
+		data.<AssetTask<?>>registerPostProcessor(this::onDataChangeEvent, AssetTask.getGenericClass());
 		
 		onOriginalAssetFilesChanged();
 		vcs.registerFilesChangedHandler(this);
 	}
 	
-	private DataChangeCallback<AssetTask<?>> initTasksAndGetPostProcessor(DataAccess data) {
+	private void initTasks(DataAccess data) {
 		for (final AssetTask<?> assetTask : data.getList(AssetTask.class)) {
 			assetTasks.put(assetTask.getAssetName().getKey(), assetTask);
 		}
-		return event -> onDataChangeEvent(event);
 	}
 	
-	private void onDataChangeEvent(DataChangeEvent<AssetTask<?>> event) {
+	private void onDataChangeEvent(DataChangeEvent<? extends AssetTask<?>> event) {
 		switch(event.type) {
 		case ADDED:
 			try {
@@ -214,11 +212,23 @@ public class AssetService {
 			// see AssetTaskService todo, AssetService needs old AssetName to cleanup
 			break;
 		case REMOVED:
+			// 
 			for (final AssetTask<?> task : event.changed) {
-				onAssetTaskDeletion((AssetTask<?>) task);
+				onAssetTaskDeletion(task);
 			}
 			break;
 		}
+	}
+	
+	/**
+	 * Deletes mapping from asset to given task (if any exists).
+	 */
+	private <A extends AssetProperties> void onAssetTaskDeletion(AssetTask<A> task) {
+		final AssetKey name = task.getAssetName().getKey();
+		assetTasks.remove(name);
+		
+		final NewAssetFolderInfo newFolderInfo = newAssetFolders.get(name);
+		if (newFolderInfo != null) newAssetFoldersWithoutTasks.put(name, newFolderInfo);
 	}
 	
 	/**
@@ -286,22 +296,6 @@ public class AssetService {
 					updater.removePropsAndSetInfo(task, Optional.ofNullable(info));
 				}
 			}
-		}
-	}
-	
-	private <A extends AssetProperties> void onAssetTaskDeletion(AssetTask<A> task) {
-		final AssetKey name = task.getAssetName().getKey();
-		assetTasks.remove(name);
-		
-		final NewAssetFolderInfo newFolderInfo = newAssetFolders.get(name);
-		if (newFolderInfo != null) newAssetFoldersWithoutTasks.put(name, newFolderInfo);
-		
-		if (task.getOriginalAssetProperties() != null) {
-			Objects.requireNonNull(task.getOriginalAssetFileInfo());
-			taskUpdater.new OnOriginalAssetUpdate().removePropsAndInfo(task);
-		}
-		if (task.getNewAssetProperties() != null) {
-			taskUpdater.new OnNewAssetUpdate().removePropsAndSetInfo(task, Optional.empty());
 		}
 	}
 	

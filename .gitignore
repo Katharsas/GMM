@@ -241,8 +241,8 @@ pip-log.txt
 /node
 /src/main/frontend/node_modules
 /src/main/webapp/WEB-INF/data
-/src/main/webapp/WEB-INF/dataTesting/tasks/autoBackups
-/src/main/webapp/WEB-INF/dataTesting/users/autoBackups
+/src/main/webapp/WEB-INF/dataTesting/db/tasks/autoBackups
+/src/main/webapp/WEB-INF/dataTesting/db/users/autoBackups
 /builds/
 /src/main/webapp/resources/css/compiled
 /src/main/webapp/resources/javascript/compiled

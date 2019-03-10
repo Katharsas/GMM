@@ -12,7 +12,6 @@ import gmm.domain.TaskNotification;
 import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.DataChangeCallback;
 import gmm.service.data.DataChangeEvent;
 import gmm.service.data.DataChangeType;
 import gmm.service.users.UserService;
@@ -20,7 +19,7 @@ import gmm.web.WebSocketEventSender;
 import gmm.web.WebSocketEventSender.WebSocketEvent;
 
 @Service
-public class NotificationService implements DataChangeCallback<Linkable> {
+public class NotificationService {
 
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -34,11 +33,10 @@ public class NotificationService implements DataChangeCallback<Linkable> {
 	public NotificationService(DataAccess data, UserService userService, WebSocketEventSender eventSender) {
 		this.userService = userService;
 		this.eventSender = eventSender;
-		data.registerForUpdates(this, Linkable.class);
+		data.registerForUpdates(this::onEvent, Linkable.class);
 	}
 	
-	@Override
-	public void onEvent(DataChangeEvent<Linkable> event) {
+	private void onEvent(DataChangeEvent<? extends Linkable> event) {
 		if (event.source.isNormalUser() || event.source == User.UNKNOWN) {
 			if (Task.class.isAssignableFrom(event.changed.getGenericType())) {
 				for (final Linkable linkable : event.changed) {

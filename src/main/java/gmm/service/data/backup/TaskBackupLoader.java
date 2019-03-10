@@ -111,7 +111,6 @@ public class TaskBackupLoader {
 		}
 		final Consumer<AssetName> onAssetNameChecked = (assetPath) -> {
 			final AssetTask<?> task = assetNameToTask.get(assetPath);
-			task.onLoad();
 			assetImportChecked.add(task);
 		};
 		final AssetNameConflictChecker ops =

@@ -15,12 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import gmm.ConfigurationException;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.AssetTypes;
+import gmm.domain.task.asset.AssetTypes.AssetType;
 import gmm.service.FileService;
 import gmm.service.FileService.FileExtensionFilter;
 import gmm.service.assets.AssetInfo;
@@ -46,17 +49,14 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	
 	protected final ForkJoinPool threadPool;
 	
-//	@Deprecated
-//	protected abstract A newPropertyInstance();
-	
 	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, AssetGroupType type);
 	protected abstract void deletePreview(Path previewFolder, AssetGroupType isOriginal);
 	protected abstract boolean hasPreview(Path previewFolder, AssetGroupType isOriginal);
 	
 	protected abstract AssetTask<A> newInstance(AssetName assetName, User user);
-	protected abstract String[] getExtensions();
 	public abstract Path getAssetTypeSubFolder();
 	
+	private final String[] extensions;
 	private final FileExtensionFilter extensionFilter;
 	
 	public AssetTaskService(DataAccess data, Config config, FileService fileService) {
@@ -64,10 +64,21 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		this.config = config.getPathConfig();
 		this.fileService = fileService;
 		
-		extensionFilter = new FileExtensionFilter(getExtensions());
+		System.out.println(getTaskType());
+		AssetType assetType = AssetTypes.get(getTaskType());
+		if (assetType == null) {
+			throw new ConfigurationException("The TaskType '" + getTaskType() + "' corresponding to the class"
+					+ " '" + getClass().getSimpleName() + "' is not registered as AssetType in AssetTypes.java.");
+		}
+		extensions = assetType.extensions;
+		extensionFilter = assetType.extensionsFilter;
 		final ForkJoinWorkerThreadFactory factory = new PriorityWorkerThreadFactory(Thread.MIN_PRIORITY);
 		// Note: UncaughtExceptionHandler does not work with Futures
 		threadPool = new ForkJoinPool(config.getPreviewThreadCount(), factory, null, true);
+	}
+	
+	protected String[] getExtensions() {
+		return extensions;
 	}
 	
 	protected void shutdown() {
@@ -165,6 +176,7 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 			completedAssetProps.setSizeInBytes(assetPathAbs.toFile().length());
 			completedAssetProps.setLastModified(assetPathAbs.toFile().lastModified());
 			completedAssetProps.setSha1(fileService.sha1(assetPathAbs));
+			completedAssetProps.build();
 			if (type.isOriginal()) {
 				task.setOriginalAsset(completedAssetProps, (OriginalAssetFileInfo) info);
 			} else {

@@ -3,6 +3,8 @@ package gmm.web.sessions;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -56,12 +58,17 @@ public class TaskSession implements DataChangeCallback<Task> {
 		data.registerForUpdates(this, Task.class);
 	}
 	
+	@PreDestroy
+	private void destroy() {
+		data.unregister(this);
+	}
+	
 	public void cleanUp() {
 		importer = null;
 	}
 	
 	@Override
-	public void onEvent(DataChangeEvent<Task> event) {		
+	public void onEvent(DataChangeEvent<? extends Task> event) {		
 		if (!event.type.equals(DataChangeType.ADDED)) {
 			taskDataEvents.add(event.toClientEvent());
 		}
