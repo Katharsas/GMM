@@ -111,6 +111,7 @@ var TaskForm = (function() {
 			.then(function() {
 				getAndInsertForm();
 				show();
+				$(window).scrollTop(0);
 			});
 		}
 		

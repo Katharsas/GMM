@@ -213,6 +213,13 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 				$searchForm = $tab.find("form#workbench-searchForm");
 				$searchType = $searchForm.find("select#workbench-search-type");
 				setSearchType(isEasySearch());
+
+				$searchForm.find("input").on('paste', function(e) {
+					const $that = $(this);
+					setTimeout(function () {
+						$that.val($that.val().trim());
+					}, 50);
+				});
 			};
 			
 			//get initial searchForm
