@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
+import javax.annotation.PreDestroy;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
@@ -48,6 +50,11 @@ public class WebSocketEventSender {
 		this.handler = handler;
 		
 		executioner = new ThrottlingExecutioner(2000);
+	}
+	
+	@PreDestroy
+	private void shutdown() {
+		executioner.close();
 	}
 
 	private void onEvent(DataChangeEvent<? extends Task> event) {

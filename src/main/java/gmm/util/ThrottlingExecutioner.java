@@ -7,6 +7,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utility class for throttling execution of small tasks down to a specified number of executions
  * per time. Useful for throttling sending of simple events, for example.
@@ -15,8 +18,10 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author Jan Mothes
  */
-public class ThrottlingExecutioner {
+public class ThrottlingExecutioner implements AutoCloseable {
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	private final long delayTimeMillis;
 	private final Map<String, ScheduledFuture<?>> delayedTasks;
 	private final ScheduledExecutorService executor;
@@ -28,6 +33,15 @@ public class ThrottlingExecutioner {
 		this.delayTimeMillis = delayTimeMillis;
 		delayedTasks = new HashMap<>();
 		executor = Executors.newSingleThreadScheduledExecutor();
+	}
+	
+	@Override
+	public void close() {
+		int waitTime = (int)((delayTimeMillis * 2) / 1000) + 1;
+		boolean isTerminated = ThreadUtil.shutdownThreadPool(executor, waitTime);
+		if (!isTerminated) {
+			logger.warn("Could not terminate thread pool!");
+		}
 	}
 	
 	/**

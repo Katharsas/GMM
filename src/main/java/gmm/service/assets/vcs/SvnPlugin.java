@@ -47,6 +47,7 @@ import gmm.service.FileService;
 import gmm.service.assets.NewAssetLockService;
 import gmm.service.assets.vcs.VcsPluginSelector.ConditionalOnConfigSelector;
 import gmm.service.data.PathConfig;
+import gmm.util.ThreadUtil;
 
 /**
  * SVN client implementation using SVNKit new high-level interface (org.tmatesoft.svn.core.wc2.*).
@@ -133,6 +134,14 @@ public class SvnPlugin extends VcsPlugin {
 			initializeWorkingCopy(workingCopyDir.toFile());
 		} finally {
 			lockService.writeUnlock("SvnPlugin::SvnPlugin");
+		}
+	}
+	
+	@PreDestroy
+	private void shutdown() {
+		boolean isTerminated = ThreadUtil.shutdownThreadPool(executorService, 10);
+		if (!isTerminated) {
+			logger.warn("Could not terminate thread pool!");
 		}
 	}
 

@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import gmm.service.data.Config;
 import gmm.service.data.DataAccess;
 import gmm.service.data.PathConfig;
 import gmm.util.PriorityWorkerThreadFactory;
+import gmm.util.ThreadUtil;
 import gmm.web.forms.TaskForm;
 
 /**
@@ -64,7 +64,6 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		this.config = config.getPathConfig();
 		this.fileService = fileService;
 		
-		System.out.println(getTaskType());
 		AssetType assetType = AssetTypes.get(getTaskType());
 		if (assetType == null) {
 			throw new ConfigurationException("The TaskType '" + getTaskType() + "' corresponding to the class"
@@ -84,13 +83,10 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 	protected void shutdown() {
 		synchronized (threadPool) {
 			if (!threadPool.isShutdown()) {
-				threadPool.shutdown();
-				try {
-					threadPool.awaitTermination(10, TimeUnit.SECONDS);
-				} catch (final InterruptedException e) {
-					e.printStackTrace();
+				boolean isTerminated = ThreadUtil.shutdownThreadPool(threadPool, 10);
+				if (!isTerminated) {
+					logger.warn("Could not terminate thread pool!");
 				}
-				threadPool.shutdownNow();
 			}
 		}
 	}
