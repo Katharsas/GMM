@@ -96,13 +96,10 @@
 
 <%-- Create Asset Folder Dialog --%>
 
-<div id="folderDialog-template" class="dialog draggable">
-	Select the folder that a new asset should go into.
-	<div class="folderDialog-tree-description">
-		New asset folders:
-	</div>
+<div id="folderDialog-template" class="folderDialog dialog draggable">
+	<fmt:message key="assets.new.createfolder.select"/>
 	<div class="folderDialog-tree"></div>
-	Alternativly, enter the folder path manually. Missing folders will be created:
+	<fmt:message key="assets.new.createfolder.input"/>&nbsp;&nbsp;
 	<div class="input">
 		<input class="folderDialog-path-input" type="text" name=path>
 	</div>

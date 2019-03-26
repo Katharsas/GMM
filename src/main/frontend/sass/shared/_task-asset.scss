@@ -12,16 +12,16 @@
 }
 
 /* //////////////////////////////////////////////////
- * Preview
+ * Assets table
  * //////////////////////////////////////////////////*/
+ .task-assets {
+	margin: 25px 1px 5px 10px;
+}
 .task-button.task-file-button {
 	margin: 1.3px;
 	min-width: 5.3em;
 	max-width: 10em;
 	padding: 2px 5px;
-}
-.task-assets {
-	margin: 25px 1px 5px 10px;
 }
 .task-assets > table {
 	width: 100%;

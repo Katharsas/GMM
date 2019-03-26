@@ -162,3 +162,34 @@
 		}
 	}
  }
+
+ /*
+ * Create Folder Dialog
+ * #####################################
+ */
+
+ .folderDialog {
+	padding: 5px;
+
+	.folderDialog-tree {
+		margin: 5px 0px 15px 10px;
+		max-height: 50vh;
+		resize: vertical;
+		overflow: auto;
+
+		li.file > a {
+			pointer-events:none;
+		}
+		.selected {
+			background-color:#A82709;
+		}
+	}
+
+	.input {
+		padding: 5px 0px 15px 0px;
+	}
+	input {
+		padding: 1px;
+		width: 100%;
+	}
+ }

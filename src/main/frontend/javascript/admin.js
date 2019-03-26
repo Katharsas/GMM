@@ -71,8 +71,8 @@ var Database = function() {
 		},"Delete file "+dir+"?");
 	});
 	
-	//save all tasks
-	$database.find("#database-saveAll").click(function() {
+	//save all tasks as
+	$database.find("#database-saveAllAs").click(function() {
 		Dialogs.showDialog($('#dialog-saveTasks'));
 	});
 	$("#dialog-saveTasks-saveButton").click(function() {
@@ -82,7 +82,15 @@ var Database = function() {
 				Dialogs.hideDialog($("#dialog-saveTasks"));
 			});
 	});
-	
+
+	//save all tasks
+	$database.find("#database-saveAll").click(function() {
+		Ajax.post(contextUrl + "/admin/save", {})
+			.then(function() {
+				refreshDatabaseFileTree();
+			});
+	});
+
 	//delete all tasks
 	$database.find("#database-deleteAll").click(function() {
 		var $confirm = Dialogs.confirm(function() {

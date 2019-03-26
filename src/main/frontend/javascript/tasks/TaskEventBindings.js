@@ -315,13 +315,27 @@ export default function(onedit, setIsPinned, isPinned) {
 					});
 					// create folder
 					const $createFolder = $assetButtonsNewest.find(".action-folder");
+					let $selectedFolder = null;
 					$createFolder.on("click", function() {
 
 						const { $dialog, actionCancel } = Dialogs.createDialog($folderDialogTemplate, $folderDialogContainer);
-						const $fileTree = $dialog.find(".folderDialog-tree");
+						
 						const $input = $dialog.find(".folderDialog-path-input");
+						$input.on("input", function() {
+							if ($selectedFolder !== null) {
+								const matchesTree = filePath($selectedFolder) === $input.val();
+								$selectedFolder.toggleClass("selected", matchesTree);
+							}
+						});
+
+						const $fileTree = $dialog.find(".folderDialog-tree");
 						const onSelectFolder = function($folder) {
 							$input.val(filePath($folder));
+							if ($selectedFolder !== null) {
+								$selectedFolder.removeClass("selected");
+							}
+							$selectedFolder = $folder;
+							$selectedFolder.addClass("selected");
 						};
 						$fileTree.fileTree({
 							url : contextUrl + "/tasks/newAssetFolder/" + id,

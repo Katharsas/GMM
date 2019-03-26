@@ -42,7 +42,10 @@
         		</div>
         		<div class="clear"></div>
         	</div>
-        	<div id="save" class="admin-inner left">
+			<div id="save" class="admin-inner left">
+				<div id="database-saveAllAs" class="button pageButton">
+        			<fmt:message key="admin.database.saveallas"/>
+        		</div>
         		<div id="database-saveAll" class="button pageButton">
         			<fmt:message key="admin.database.saveall"/>
         		</div>
