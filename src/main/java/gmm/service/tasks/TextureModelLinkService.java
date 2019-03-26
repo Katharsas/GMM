@@ -132,7 +132,12 @@ public class TextureModelLinkService {
 					return props.getViewModel().removeTextureTask(textureTask);
 				});
 			} else if (eventType == DataChangeType.EDITED) {
-				// does not handle texture name changes as edit event (must be remove + add)
+				// TODO: does not handle texture name changes as edit event (must be remove + add)
+				changed = forEachGroupType(modelTask, props -> {
+//					System.out.println("TEX_REM_ADD: for model '" + modelTask + "' texture '" + textureName + "'");
+					return props.getViewModel().removeTextureTask(textureTask)
+							| props.getViewModel().addTextureTask(textureTask);
+				});
 			} else if (eventType == DataChangeType.ADDED) {
 				changed = forEachGroupType(modelTask, props -> {
 					if (props.getTextureNames().contains(textureName)) {

@@ -2,6 +2,7 @@ import $ from "../lib/jquery";
 import Ajax from "../shared/ajax";
 import Dialogs from "../shared/dialogs";
 import { switchPinOperation } from "./Task";
+import TaskDialogs from "../shared//TaskDialog";
 import EventListener from "../shared/EventListener";
 import PreviewRenderer from "../shared/preview/PreviewRenderer";
 import { ShadingType } from "../shared/preview/CanvasRenderer";
@@ -262,9 +263,24 @@ export default function(onedit, setIsPinned, isPinned) {
 							draggableTransform = undefined;
 						}
 					});
+
+					/* -------------------------------------------------------
+					 * ASSET TASK - DEPENDENCIES
+					 * -------------------------------------------------------
+					 */
+
+					// linked texture tasks in model tasks
+					const $textures = $assets.find(".task-asset-model-textures-tasks li");
+					for (let listEntry of $textures) {
+						let $listEntry = $(listEntry);
+						const idLink = $listEntry.data("id");
+						$listEntry.on("click", function() {
+							TaskDialogs.openDialog(idLink);
+						});
+					}
 				}
 				
-				if (allVars.isUserLoggedIn) {
+				if ($assets.length > 0 && allVars.isUserLoggedIn) {
 					
 					/* -------------------------------------------------------
 					 * ASSET TASK - ASSET FILES

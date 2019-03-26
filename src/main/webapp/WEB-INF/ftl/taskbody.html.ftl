@@ -278,12 +278,16 @@
 					    		<td class="task-asset-model-textures">
 					    			<ul>
 					    				<#list task.originalAssetProperties.viewModel.texturesWithoutTasks as textureName>
-							    			<li>${textureName.get()?html}</li>
+							    			<li>
+												&bull;<span>${textureName.get()?html}</span>
+											</li>
 										</#list>
 									</ul>
-									<ul>
+									<ul class="task-asset-model-textures-tasks">
 										<#list task.originalAssetProperties.viewModel.texturesWithTasks as textureTask>
-							    			<li data-idLink="${textureTask.getIdLink()}">${textureTask.assetName.get()?html}</li>
+							    			<li data-id="${textureTask.getIdLink()}">
+												&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+											</li>
 										</#list>
 					    			</ul>
 							    </td>
@@ -293,14 +297,18 @@
 							<#if task.newAssetProperties?has_content>
 					    		<td class="task-asset-model-textures">
 					    			<ul>
-								    	<#list task.newAssetProperties.textureNames as textureName>
-								    		<li>${textureName.get()?html}</li>
+								    	<#list task.newAssetProperties.viewModel.texturesWithoutTasks as textureName>
+								    		<li>
+												&bull;<span>${textureName.get()?html}</span>
+											</li>
 										</#list>
 									</ul>
-									<ul>
-										<#--  <#list task.newAssetProperties.textureTasks as textureTask>
-							    			<li>${textureTask.getIdLink()?html}</li>
-										</#list>  -->
+									<ul class="task-asset-model-textures-tasks">
+											<#list task.newAssetProperties.viewModel.texturesWithTasks as textureTask>
+							    			<li data-id="${textureTask.getIdLink()}">
+												&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+											</li>
+										</#list>
 									</ul>
 							    </td>
 							<#else><td></td>

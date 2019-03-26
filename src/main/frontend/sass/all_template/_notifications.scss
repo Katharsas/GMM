@@ -69,7 +69,6 @@ $bgc-notific-list: setLightness($bgc-task-inner, 1.4);
             padding-right: 5px;
             border-radius: 3px;
 
-            background-color: #DDD;
             @include colorTheme-usertag;
             @include indented-shadow-for-bright($bgc-usertag);
         }

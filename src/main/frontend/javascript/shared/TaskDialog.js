@@ -45,13 +45,13 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
 
     const openDialog = function(idLink) {
         if (idLink in idLinkToDialog) {
-            // TODO bring existing to focus
-            return;
+            idLinkToDialog[idLink].bringToForeground();
+        } else {
+            const dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
+                delete idLinkToDialog[idLink];
+            });
+            idLinkToDialog[idLink] = dialog;
         }
-        const dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
-            delete idLinkToDialog[idLink];
-        });
-        idLinkToDialog[idLink] = dialog;
     };
 
     const update = function() {
@@ -103,6 +103,7 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
 
                 binders.bindHeader($header);
                 binders.bindBody(id, $body);
+                HtmlPreProcessor.lazyload($body);
 
                 $header.removeClass("list-element");
                 $header.removeClass("collapsed");
@@ -141,7 +142,8 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
         return {
             onRemoved : onRemoved,
             onEdited : onEdited,
-            onPinned : onPinned
+            onPinned : onPinned,
+            bringToForeground : bringToForeground,
         };
     };
 

@@ -180,9 +180,27 @@ td.task-preview-renderOptions {
 .task-asset-model-textures {
 	font-size: 0.8em;
 	padding: 5px;
-	
-	ul {
-		padding-left: 15px;
+	overflow: hidden;
+	white-space: nowrap;
+	li {
+		list-style: none;
+		display: block;
+		padding: 4px 0px;
+	}
+	li > span {
+		padding: 2px 4px;
+		margin-left: 5px;
+	}
+}
+.task-asset-model-textures-tasks {
+	$dependencyColor : $bgc-task-inner;
+	li > span {
+		border-radius: 3px;
+		background-color: $dependencyColor;
+		border: 0.7px solid #555;
+	}
+	li > span:hover {
+		background-color: setLightness($dependencyColor, 1.7);
 	}
 }
 
