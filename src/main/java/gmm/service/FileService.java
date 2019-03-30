@@ -3,6 +3,7 @@ package gmm.service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
@@ -277,9 +278,9 @@ public class FileService {
 				final ByteBuffer buffer = ByteBuffer.allocate(8192 * 2 * 2 * 2);
 
 				while (fileChannel.read(buffer) != -1) {
-					buffer.flip();
+					((Buffer)buffer).flip();
 					messageDigest.update(buffer);
-					buffer.clear();
+					((Buffer)buffer).clear();
 				}
 			}
 			return messageDigest.digest();

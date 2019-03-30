@@ -40,4 +40,7 @@
         		spring-security-taglibs-*.jar"/>
     </JarScanner>
     
+    <!-- Disable session persistence -->
+    <Manager pathname="" />
+    
 </Context>
