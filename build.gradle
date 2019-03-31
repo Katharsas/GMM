@@ -224,8 +224,12 @@ gretty {
 	logFileName = "gretty"
 }
 
-// disallow non-local profiles for appRun
 tasks.whenTaskAdded { task ->
+		// https://github.com/gretty-gradle-plugin/gretty/issues/117
+		if (task.name == 'prepareInplaceWebAppFolder') {
+			task.dependsOn(processResources)
+		}
+		// disallow non-local profiles for appRun
 		if (task.name == 'appRun') {
 		task.doFirst {
 			def profile = project.profiles.ext.active.name

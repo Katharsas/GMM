@@ -16,7 +16,7 @@
 	<!-- Console -->
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<Pattern>%d{HH:mm:ss.SSS} [%25thread] %-5level %logger{200} - %msg %n</Pattern>
+			<Pattern>%d{HH:mm:ss.SSS} [%10thread] %-5level %logger{200} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -40,7 +40,7 @@
 		</rollingPolicy>
 		
 		<encoder>
-			<Pattern>%d{HH:mm:ss.SSS} [%25thread] %-5level %logger{36} - %msg %n</Pattern>
+			<Pattern>%d{HH:mm:ss.SSS} [%10thread] %-5level %logger{36} - %msg %n</Pattern>
 		</encoder>
 		<filter class="gmm.web.LogAccessDeniedFilter"/>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">

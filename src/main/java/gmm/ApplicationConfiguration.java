@@ -2,14 +2,22 @@ package gmm;
 
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.PostConstruct;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
@@ -70,28 +78,40 @@ import gmm.web.binding.PathEditor;
 @PropertySource(value = "file:${gmm/workspace}/config.properties", ignoreResourceNotFound = true)
 public class ApplicationConfiguration implements WebMvcConfigurer {
 
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	@Autowired
     private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
     @PostConstruct
     public void init() {
         requestMappingHandlerAdapter.setIgnoreDefaultModelOnRedirect(true);
-        
-        // TODO:
-        // The default.properties must be copied to workspace as config.properties if it does not yet exist.
-        // TODO
-        // Use cargo plugin to deploy with specific workspace location for test/staging/prod.
-        
-//        Context initContext;
-//		try {
-//			initContext = new InitialContext();
-//			final Context envContext  = (Context) initContext.lookup("java:/comp/env");
-//			final String logLocation = (String) envContext.lookup("log-folder-location");
-//			System.out.println(logLocation);
-//			
-//		} catch (final NamingException e) {
-//			e.printStackTrace();
-//		}
+
+        // Copy default.properties file to workspace folder if config.properties does not exist.
+		try {
+			final Context initContext = new InitialContext();
+			final Context envContext  = (Context) initContext.lookup("java:/comp/env");
+			final String workspaceLocation = (String) envContext.lookup("gmm/workspace");
+			final Path workspace = Paths.get(workspaceLocation);
+			
+			final Path customConfig = workspace.resolve("config.properties");
+			try (final InputStream defaultConfig = new ClassPathResource("default.properties").getInputStream();) {
+				if (!Files.exists(customConfig)) {
+					Files.copy(defaultConfig, customConfig);
+					logger.info("\n"
+							+	"##########################################################" + "\n\n"
+							+	"  Created new configuration file in workspace folder. " + "\n"
+							+	"  If you have started the GMM for the first time, you" + "\n"
+							+	"  may want to enable the 'default.user' setting at:" + "\n\n"
+							+	"  " + customConfig + "\n\n"
+							+	"##########################################################");
+				}
+			} catch (final IOException e) {
+				logger.error("Failed to copy default.properties file to workspace folder.", e);
+			}
+		} catch (final NamingException e) {
+			logger.error("Failed to lookup workspace location for config file creation. Running with default config.", e);
+		}
     }
 	
 	/**

@@ -238,17 +238,16 @@ pip-log.txt
 ## Custom
 #############
 
-/node
 /src/main/frontend/node_modules
+/src/main/frontend/gmm.code-workspace
+
 /src/main/webapp/WEB-INF/data
 /src/main/webapp/WEB-INF/dataTesting/db/tasks/autoBackups
 /src/main/webapp/WEB-INF/dataTesting/db/users/autoBackups
-/builds/
 /src/main/webapp/resources/css/compiled
 /src/main/webapp/resources/javascript/compiled
 /src/main/webapp/META-INF
 
-blender/
-gmm-workspace/
-src/main/frontend/gmm.code-workspace
-temp_testing/
+/gmm-workspace
+/blender
+/temp_testing
