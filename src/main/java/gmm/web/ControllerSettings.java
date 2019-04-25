@@ -36,6 +36,13 @@ public class ControllerSettings {
 	@ResponseStatus(value = HttpStatus.NOT_FOUND)
 	public static class NotFoundException extends RuntimeException {
 		private static final long serialVersionUID = 8672281667419693687L;
+		
+		public NotFoundException() {
+			super();
+		}
+		public NotFoundException(String message) {
+			super(message);
+		}
 	}
 
 	@Value("${admin.email:}")

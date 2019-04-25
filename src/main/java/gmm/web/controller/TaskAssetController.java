@@ -57,6 +57,7 @@ import gmm.service.tasks.ModelTaskService;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.tasks.TextureTaskService;
 import gmm.service.users.CurrentUser;
+import gmm.web.ControllerSettings;
 import gmm.web.FileTreeScript;
 
 
@@ -102,13 +103,31 @@ public class TaskAssetController {
 //		response.setHeader("Expires", "0");
 	}
 	
+	
+	// TODO auto expand tasks if single
 	/**
 	 * Texture Preview Image
 	 * -----------------------------------------------------------------
 	 * @param small - true for small preview, false for full size
 	 * @param version - "original" for original texture preview, newest for the most current new texture
 	 * @param idLink - identifies the corresponding task
+	 * @param key - task link key required for public access to assets
 	 */
+	@PreAuthorize("permitAll()")
+	@RequestMapping(value="/preview/texture/{key}", method = RequestMethod.GET, produces="image/png")
+	public void sendTexturePreviewPublic(
+			HttpServletResponse response,
+			@PathVariable("key") String key,
+			@RequestParam(value="small", defaultValue="true") boolean small,
+			@RequestParam(value="ver") String version,
+			@RequestParam(value="id") String idLink) throws Exception {
+		
+		setPreviewCaching(response);
+		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
+		validatePreviewParams(task, Optional.of(key), version);
+		textureService.writePreview(task, small, version, response.getOutputStream());
+	}
+	
 	@RequestMapping(value="/preview/texture", method = RequestMethod.GET, produces="image/png")
 	public void sendTexturePreview(
 			HttpServletResponse response,
@@ -118,7 +137,7 @@ public class TaskAssetController {
 		
 		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
-		validatePreviewParams(task, version);
+		validatePreviewParams(task, Optional.empty(), version);
 		textureService.writePreview(task, small, version, response.getOutputStream());
 	}
 	
@@ -128,7 +147,22 @@ public class TaskAssetController {
 	 * @param small - true for small preview, false for full size
 	 * @param version - "original" for original texture preview, newest for the most current new texture
 	 * @param idLink - identifies the corresponding task
+	 * @param key - task link key required for public access to assets
 	 */
+	@PreAuthorize("permitAll()")
+	@RequestMapping(value="/preview/3Dmodel/{key}", method = RequestMethod.GET, produces="application/json")
+	public void sendModelPreviewPublic(
+			HttpServletResponse response,
+			@PathVariable("key") String key,
+			@RequestParam(value="ver") String version,
+			@RequestParam(value="id") String idLink) throws Exception {
+		
+		setPreviewCaching(response);
+		final ModelTask task = UniqueObject.getFromIdLink(data.getList(ModelTask.class), idLink);
+		validatePreviewParams(task, Optional.of(key), version);
+		modelService.writePreview(task, version, response.getOutputStream());
+	}
+	
 	@RequestMapping(value="/preview/3Dmodel", method = RequestMethod.GET, produces="application/json")
 	public void sendModelPreview(
 			HttpServletResponse response,
@@ -137,16 +171,22 @@ public class TaskAssetController {
 		
 		setPreviewCaching(response);
 		final ModelTask task = UniqueObject.getFromIdLink(data.getList(ModelTask.class), idLink);
-		validatePreviewParams(task, version);
+		validatePreviewParams(task, Optional.empty(), version);
 		modelService.writePreview(task, version, response.getOutputStream());
 	}
 	
-	public void validatePreviewParams(AssetTask<?> task, String previewFilename) {
-		if(task == null) throw new IllegalArgumentException("Invalid task id!");
+	public void validatePreviewParams(AssetTask<?> task, Optional<String> key, String previewFilename) {
+		if (key.isPresent()) {
+			if (task == null || !key.get().equals(task.getLinkKey())) {
+				throw new ControllerSettings.NotFoundException();
+			}
+		} else if (task == null) {
+		throw new ControllerSettings.NotFoundException("No task with this id found!");
+		}
 		try {
 			AssetGroupType.get(previewFilename);
-		} catch(final IllegalArgumentException e) {
-			throw new IllegalArgumentException("Invalid version!", e);
+		} catch (final IllegalArgumentException e) {
+			throw new ControllerSettings.NotFoundException("Invalid version parameter value!");
 		}
 	}
 	

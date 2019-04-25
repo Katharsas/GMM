@@ -4,9 +4,6 @@ package gmm.web.controller;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import gmm.collections.ArrayList;
-import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.domain.Comment;
 import gmm.domain.Label;
@@ -36,11 +32,11 @@ import gmm.service.data.DataAccess;
 import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
 import gmm.service.users.CurrentUser;
 import gmm.web.ControllerArgs;
-import gmm.web.FtlRenderer;
-import gmm.web.FtlRenderer.TaskRenderResult;
 import gmm.web.FtlTemplateService;
 import gmm.web.forms.CommentForm;
 import gmm.web.forms.TaskForm;
+import gmm.web.sessions.BasicSession;
+import gmm.web.sessions.BasicSession.TaskDataResult;
 import gmm.web.sessions.TaskSession;
 import gmm.web.sessions.tasklist.WorkbenchSession;
 
@@ -62,30 +58,30 @@ public class TaskController {
 	@SuppressWarnings("unused")
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	private final BasicSession session;
 	private final TaskSession taskSession;
 	private final WorkbenchSession workbench;// TODO remove
 	private final DataAccess data;
-	private final FtlRenderer ftlRenderer;
 	private final FtlTemplateService ftlTemplates;
 	private final CurrentUser user;
 	
 	@Autowired
-	public TaskController(TaskSession taskSession, WorkbenchSession workbench,
-			DataAccess data, FtlRenderer ftlRenderer, CurrentUser user, FtlTemplateService templates) {
+	public TaskController(BasicSession session, TaskSession taskSession, WorkbenchSession workbench,
+			DataAccess data, CurrentUser user, FtlTemplateService ftlTemplates) {
+		this.session = session;
 		this.taskSession = taskSession;
 		this.workbench = workbench;
 		this.data = data;
-		this.ftlRenderer = ftlRenderer;
-		this.ftlTemplates = templates;
+		this.ftlTemplates = ftlTemplates;
 		this.user = user;
 		
 		// taskForm template dependencies
-		templates.registerVariable("users", ()->data.getList(User.class));
-		templates.registerVariable("taskLabels", ()->data.getList(Label.class));
-		templates.registerVariable("taskForm", taskSession::getTaskForm);
-		templates.registerForm("taskForm", taskSession::getTaskForm);
+		ftlTemplates.registerVariable("users", ()->data.getList(User.class));
+		ftlTemplates.registerVariable("taskLabels", ()->data.getList(Label.class));
+		ftlTemplates.registerVariable("taskForm", taskSession::getTaskForm);
+		ftlTemplates.registerForm("taskForm", taskSession::getTaskForm);
 		
-		templates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
+		ftlTemplates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
 	}
 	
 	/**
@@ -248,12 +244,6 @@ public class TaskController {
 	 * -----------------------------------------------------------------
 	 */
 	
-	public static class TaskDataResult {
-		public String idLink;
-		public Boolean isPinned;
-		public TaskRenderResult render;
-	}
-	
 	/**
 	 * Get task data for specified ids.
 	 */
@@ -265,27 +255,12 @@ public class TaskController {
 			HttpServletRequest request,
 			HttpServletResponse response) {
 		
-		if(idLinks == null) return new ArrayList<>(TaskDataResult.class, 0);
-		final List<Task> tasks = new LinkedList<>(Task.class);
-		for(final Task task : data.getList(Task.class)) {
-			final boolean contains = idLinks.remove(task.getIdLink());
-			if (contains) {
-				tasks.add(task);
-			}
+		if(idLinks == null) {
+			return new ArrayList<>(TaskDataResult.class, 0);
+		} else {
+			ControllerArgs args = new ControllerArgs(model, request, response);
+			return session.renderTasks(idLinks, data.getList(Task.class), args);
 		}
-		final Map<Task, TaskRenderResult> renders = ftlRenderer.renderTasks(tasks,
-				new ControllerArgs(model, request, response));
-		
-		final List<TaskDataResult> results = new ArrayList<>(TaskDataResult.class, idLinks.size());
-		for (final Entry<Task, TaskRenderResult> entry : renders.entrySet()) {
-			final TaskDataResult data = new TaskDataResult();
-			final Task task = entry.getKey();
-			data.idLink = task.getIdLink();
-			data.isPinned = user.get().getPinnedTaskIds().contains(task.getId());
-			data.render = entry.getValue();
-			results.add(data);
-		}
-		return results;
 	}
 	
 	/**
@@ -294,7 +269,6 @@ public class TaskController {
 	@RequestMapping(value = "/taskDataEvents", method = GET)
 	@ResponseBody
 	public List<ClientDataChangeEvent> syncTaskData() {
-		return taskSession.retrieveTaskDataEvents();
+		return session.retrieveTaskDataEvents();
 	}
-	
 }

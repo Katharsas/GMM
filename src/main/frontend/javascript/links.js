@@ -15,8 +15,14 @@ $(document).ready(
 	function() {
 
 		DataChangeNotifierInit("/public/linkedTasks/taskDataEvents");
-
-		var taskCache = TaskCache("/public/linkedTasks/renderTaskData");
+		
+		var taskCache;
+		if (allVars.isUserLoggedIn) {
+			taskCache = TaskCache("/public/linkedTasks/renderTaskDataAny");
+		} else {
+			taskCache = TaskCache("/public/linkedTasks/renderTaskData");
+		}
+		
 		var taskSwitcher = TaskSwitcher();
 		var taskBinders = TaskEventBindings(
 			function(){}, taskCache.triggerIsPinned, taskCache.isPinned);
@@ -28,7 +34,8 @@ $(document).ready(
 			initUrl : null,
 			eventBinders : taskBinders,
 			onUpdateDone : null, // TODO add count for list
-			currentUser : allVars.currentUser
+			currentUser : allVars.currentUser,
+			expandSingleTask : true
 		};
 		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher, {});
 		taskList.update();

@@ -39,13 +39,15 @@ const TaskCache = function(renderUrl) {
 		
 		task.$header = $(task.header);
 		delete task.header;
-		HtmlPreProcessor.apply(task.$header);
+		const headerDone = HtmlPreProcessor.apply(task.$header);
 		
 		task.$body = $(task.body);
 		delete task.body;
-		HtmlPreProcessor.apply(task.$body);
+		const bodyDone = HtmlPreProcessor.apply(task.$body);
 		
 		task.$body.hide();
+
+		return Promise.all([headerDone, bodyDone]);
 	};
 	
 	/**
@@ -107,14 +109,21 @@ const TaskCache = function(renderUrl) {
 
 			return Ajax.post(contextUrl + renderUrl, data)
 			.then(function (taskRenders) {
+				const preprocessPromises = [];
 				taskRenders.forEach(function(taskData) {
-					preprocess(taskData.render);
-					const idLink = taskData.idLink;
-					idToTaskData[idLink] = taskData;
-					removeFirst(idLinksMissing, idLink);
-					removeFirst(currentlyLoadingIds, idLink);
-					console.debug("TaskCache: Loading done for id: " + idLink);
+					const preprocessDone = preprocess(taskData.render)
+					.then(function() {
+						const idLink = taskData.idLink;
+						idToTaskData[idLink] = taskData;
+						removeFirst(idLinksMissing, idLink);
+						removeFirst(currentlyLoadingIds, idLink);
+						console.debug("TaskCache: Loading done for id: " + idLink);
+					});
+					preprocessPromises.push(preprocessDone);
 				});
+				return Promise.all(preprocessPromises);
+			})
+			.then(function() {
 				for (const idLink of idLinksMissing) {
 					if (idLink !== undefined) {
 						idToTaskData[idLink] = getDummyTask(idLink);

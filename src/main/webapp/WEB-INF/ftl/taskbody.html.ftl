@@ -84,9 +84,12 @@
 					    	</#if>
 				    	</td>
 			    	<#else>
-				    	<td class="task-asset-info center">
-				    		<span><@s.message "asset.original.null"/></span>
-				    	</td>
+						<#if isUserLoggedIn>
+							<td class="task-asset-info center">
+								<span><@s.message "asset.original.null"/></span>
+							</td>
+						<#else><td></td>
+						</#if>
 			    	</#if>
 					<td></td>
 					<#if task.newAssetProperties?has_content>
@@ -113,75 +116,79 @@
 							</#if>
 				    	</td>
 			    	<#else>
-			    		<#if task.newAssetFolderInfo?has_content>
-			    			<#assign info = task.newAssetFolderInfo/>
-			    			<#if info.status.isValid()>
-			    				<td class="task-asset-info center">
-					    			<span><@s.message "${info.status.messageKey}"/></span>
-					    		</td>
-					    		<#else><td></td>
-			    			</#if>
-			    		<#else>
-			    			<td class="task-asset-info center">
-					    		<span><@s.message "asset.new.null"/></span>
-					    	</td>
-			    		</#if>
+						<#if isUserLoggedIn>
+							<#if task.newAssetFolderInfo?has_content>
+								<#assign info = task.newAssetFolderInfo/>
+								<#if info.status.isValid()>
+									<td class="task-asset-info center">
+										<span><@s.message "${info.status.messageKey}"/></span>
+									</td>
+								<#else><td></td>
+								</#if>
+							<#else>
+								<td class="task-asset-info center">
+									<span><@s.message "asset.new.null"/></span>
+								</td>
+							</#if>
+						<#else><td></td>
+						</#if>
 			    	</#if>
 			    </tr>
 <!-- Asset File Operations -->
-				<tr>
-			    	<#if task.originalAssetProperties?has_content>
-				    	<td class="task-asset-buttons task-asset-original center">
-				    		<div class="action-download task-file-button task-button button">
-				    			Download
-				    		</div>
-				    	</td>
-			    	<#else><td></td>
-			    	</#if>
-			    	<td></td>
-			    	<#if task.newAssetProperties?has_content>
-			    	<td class="task-asset-buttons task-asset-newest">
-			    		<div class="action-download task-file-button task-button button left">
-			    			Download
-			    		</div>
-						<input class="action-upload-input" type="file" style="display:none;"/>
-			    		<div class="action-upload task-file-button task-button button left">
-			    			Upload
-			    		</div>
-			    		<div class="action-delete task-file-button task-button button right">
-			    			Delete
-			    		</div>
-			    		<div class="clear"></div>
-			    	</td>
-			    	<#else>
-			    		<#if task.newAssetFolderInfo?has_content>
-			    			<#assign info = task.newAssetFolderInfo/>
-			    			<#if info.status.isValid()>
-			    				<td class="task-asset-buttons task-asset-newest center">
-									<input class="action-upload-input" type="file" style="display:none;"/>
-						    		<div class="action-upload task-file-button task-button button">
-						    			Upload
-						    		</div>
-						    	</td>
-			    			<#else>
-			    				<td></td>
-			    			</#if>
-			    		<#else>
-			    			<td class="task-asset-buttons task-asset-newest center">
-					    		<div class="action-folder task-file-button task-button button">
-					    			Create folder
-					    		</div>
-					    	</td>
-			    		</#if>
-			    	</#if>
-		    	</tr>
+				<#if isUserLoggedIn>
+					<tr>
+						<#if task.originalAssetProperties?has_content>
+							<td class="task-asset-buttons task-asset-original center">
+								<div class="action-download task-file-button task-button button">
+									Download
+								</div>
+							</td>
+						<#else><td></td>
+						</#if>
+						<td></td>
+						<#if task.newAssetProperties?has_content>
+							<td class="task-asset-buttons task-asset-newest">
+								<div class="action-download task-file-button task-button button left">
+									Download
+								</div>
+								<input class="action-upload-input" type="file" style="display:none;"/>
+								<div class="action-upload task-file-button task-button button left">
+									Upload
+								</div>
+								<div class="action-delete task-file-button task-button button right">
+									Delete
+								</div>
+								<div class="clear"></div>
+							</td>
+						<#else>
+							<#if task.newAssetFolderInfo?has_content>
+								<#assign info = task.newAssetFolderInfo/>
+								<#if info.status.isValid()>
+									<td class="task-asset-buttons task-asset-newest center">
+										<input class="action-upload-input" type="file" style="display:none;"/>
+										<div class="action-upload task-file-button task-button button">
+											Upload
+										</div>
+									</td>
+								<#else><td></td>
+								</#if>
+							<#else>
+								<td class="task-asset-buttons task-asset-newest center">
+									<div class="action-folder task-file-button task-button button">
+										Create folder
+									</div>
+								</td>
+							</#if>
+						</#if>
+					</tr>
+				</#if>
 <!-- 2D Texture Preview -->
 		    	<#if task.getType().name() == 'TEXTURE'>
 		    	<tr class="task-previews center">
 		    		<#if task.originalAssetProperties?has_content>
 			    		<td class="task-preview-visual clickable">
-			    			<a target="_blank" href="${request.contextPath}/tasks/preview/texture?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
-			    				<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+			    			<a target="_blank" href="${request.contextPath}/tasks/preview/texture/${task.getLinkKey()}?small=false&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+			    				<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture/${task.getLinkKey()}?small=true&ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    		</a>
 				    	</td>
 				    <#else><td></td>
@@ -189,8 +196,8 @@
 			    	<td></td>
 			    	<#if task.newAssetProperties?has_content>
 				    	<td class="task-preview-visual clickable">
-				    		<a target="_blank" href="${request.contextPath}/tasks/preview/texture?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
-				    			<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+				    		<a target="_blank" href="${request.contextPath}/tasks/preview/texture/${task.getLinkKey()}?small=false&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+				    			<img class="lazyload" data-src="${request.contextPath}/tasks/preview/texture/${task.getLinkKey()}?small=true&ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 				    		</a>
 				    	</td>
 				    <#else>
@@ -215,7 +222,7 @@
 					<tr class="task-previews task-preview-3D center">
 			    		<#if task.originalAssetProperties?has_content>
 				    		<td class="task-preview-visual clickable"
-				    			data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
+				    			data-url="${request.contextPath}/tasks/preview/3Dmodel/${task.getLinkKey()}?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">
 				    			<canvas></canvas>
 					    	</td>
 					    <#else><td></td>
@@ -232,7 +239,7 @@
 				    	</#if>
 				    	<#if task.newAssetProperties?has_content>
 					    	<td class="task-preview-visual clickable"
-					    		data-url="${request.contextPath}/tasks/preview/3Dmodel?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
+					    		data-url="${request.contextPath}/tasks/preview/3Dmodel/${task.getLinkKey()}?ver=newest&id=${task.getIdLink()}&nocache=${task.newestAssetCacheKey}">
 					    		<canvas></canvas>
 					    	</td>
 					    <#else>
@@ -276,40 +283,56 @@
 				    	<tr>
 				    		<#if task.originalAssetProperties?has_content>
 					    		<td class="task-asset-model-textures">
-					    			<ul>
-					    				<#list task.originalAssetProperties.viewModel.texturesWithoutTasks as textureName>
-							    			<li>
+									<#if isUserLoggedIn>
+										<ul>
+											<#list task.originalAssetProperties.viewModel.texturesWithoutTasks as textureName>
+												<li>
+													&bull;<span>${textureName.get()?html}</span>
+												</li>
+											</#list>
+										</ul>
+										<ul class="task-asset-model-textures-tasks">
+											<#list task.originalAssetProperties.viewModel.texturesWithTasks as textureTask>
+												<li data-id="${textureTask.getIdLink()}">
+													&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+												</li>
+											</#list>
+										</ul>
+									<#else>
+										<#list task.originalAssetProperties.textureNames as textureName>
+											<li>
 												&bull;<span>${textureName.get()?html}</span>
 											</li>
 										</#list>
-									</ul>
-									<ul class="task-asset-model-textures-tasks">
-										<#list task.originalAssetProperties.viewModel.texturesWithTasks as textureTask>
-							    			<li data-id="${textureTask.getIdLink()}">
-												&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
-											</li>
-										</#list>
-					    			</ul>
+									</#if>
 							    </td>
 							<#else><td></td>
 							</#if>
 							<td></td>
 							<#if task.newAssetProperties?has_content>
 					    		<td class="task-asset-model-textures">
-					    			<ul>
-								    	<#list task.newAssetProperties.viewModel.texturesWithoutTasks as textureName>
-								    		<li>
+									<#if isUserLoggedIn>
+										<ul>
+											<#list task.newAssetProperties.viewModel.texturesWithoutTasks as textureName>
+												<li>
+													&bull;<span>${textureName.get()?html}</span>
+												</li>
+											</#list>
+										</ul>
+										<ul class="task-asset-model-textures-tasks">
+												<#list task.newAssetProperties.viewModel.texturesWithTasks as textureTask>
+												<li data-id="${textureTask.getIdLink()}">
+													&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+												</li>
+											</#list>
+										</ul>
+									<#else>
+										<#list task.newAssetProperties.textureNames as textureName>
+											<li>
 												&bull;<span>${textureName.get()?html}</span>
 											</li>
 										</#list>
-									</ul>
-									<ul class="task-asset-model-textures-tasks">
-											<#list task.newAssetProperties.viewModel.texturesWithTasks as textureTask>
-							    			<li data-id="${textureTask.getIdLink()}">
-												&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
-											</li>
-										</#list>
-									</ul>
+									</#if>
 							    </td>
 							<#else><td></td>
 							</#if>

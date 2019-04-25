@@ -53,7 +53,8 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 		onUpdateDone : function(newSize) {
 			$count.text(newSize);
 		},
-		currentUser : allVars.currentUser
+		currentUser : allVars.currentUser,
+		expandSingleTask : true
 	};
 	var taskList = WorkbenchList(taskListSettings, taskCache, taskSwitcher);
 	

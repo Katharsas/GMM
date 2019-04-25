@@ -26,6 +26,8 @@ const r = function() {
  * 		Count of current tasks will be passed as parameter.
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
  * @property {UserId} currentUser - Current user or null if user is not logged in.
+ * @property {boolean} expandSingleTask - Optional: Wether the list should auto expand its task if there is only one.
+ * 		Defaults to false.
  * 
  * 
  * @callback TaskEventHandler
@@ -192,8 +194,22 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			if (settings.onUpdateDone != null) {
 				settings.onUpdateDone(current.length);
 			}
+			if (settings.expandSingleTask != null && settings.expandSingleTask) {
+				expandIfSingleTask();
+			}
 		});
 	};
+
+	const expandIfSingleTask = function() {
+		if (current.length === 1) {
+			console.log("expanding");
+			const id = current[0];
+			const $task = findTask(id);
+			if (!taskSwitcher.isTaskExpanded($task)) {
+				taskSwitcher.switchTask($task, id, taskListId);
+			}
+		}
+	}
 	
 	const resortTaskList = function(visibleIdsOrdered) {
 		resortElementsById(visibleIdsOrdered, settings.$list, taskSelector, getIdOfTask);

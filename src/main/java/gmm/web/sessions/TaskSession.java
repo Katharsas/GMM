@@ -3,8 +3,6 @@ package gmm.web.sessions;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import javax.annotation.PreDestroy;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -22,62 +20,27 @@ import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.data.DataAccess;
-import gmm.service.data.DataAccess.DataChangeCallback;
-import gmm.service.data.DataChangeEvent;
-import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
-import gmm.service.data.DataChangeType;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.users.UserService;
+import gmm.web.FtlRenderer;
 import gmm.web.forms.TaskForm;
 
 @Component
 @Scope(value="session", proxyMode=ScopedProxyMode.TARGET_CLASS)
-public class TaskSession implements DataChangeCallback<Task> {
+public class TaskSession {
 	
 	private final DataAccess data;
 	private final TaskServiceFinder taskCreator;
 	private final User loggedInUser;
 	private final AssetNameConflictCheckerFactory assetNameConflictCheckerFactory;
 	
-	/**
-	 * Events that affect the task cache and all task lists on the page.
-	 * On removal, task data must be removed from cache and list if visible.
-	 * On edit, task data must be updated and task if visible must be be reinserted.
-	 */
-	private final List<ClientDataChangeEvent> taskDataEvents;
-	
 	@Autowired
 	public TaskSession(DataAccess data, TaskServiceFinder taskCreator, UserService users,
-			AssetNameConflictCheckerFactory conflictCheckerFactory) {
+			AssetNameConflictCheckerFactory conflictCheckerFactory, FtlRenderer ftlRenderer) {
 		this.data = data;
 		this.taskCreator = taskCreator;
 		loggedInUser = users.getLoggedInUser();
 		this.assetNameConflictCheckerFactory = conflictCheckerFactory;
-		
-		taskDataEvents = new LinkedList<>(ClientDataChangeEvent.class);
-		data.registerForUpdates(this, Task.class);
-	}
-	
-	@PreDestroy
-	private void destroy() {
-		data.unregister(this);
-	}
-	
-	public void cleanUp() {
-		importer = null;
-	}
-	
-	@Override
-	public void onEvent(DataChangeEvent<? extends Task> event) {		
-		if (!event.type.equals(DataChangeType.ADDED)) {
-			taskDataEvents.add(event.toClientEvent());
-		}
-	}
-	
-	public List<ClientDataChangeEvent> retrieveTaskDataEvents() {
-		final List<ClientDataChangeEvent> result = taskDataEvents.copy();
-		taskDataEvents.clear();
-		return result;
 	}
 	
 	/*--------------------------------------------------
@@ -136,6 +99,10 @@ public class TaskSession implements DataChangeCallback<Task> {
 	 * ---------------------------------------------------*/
 	
 	private BundledMessageResponses<AssetName> importer;
+	
+	public void cleanUp() {
+		importer = null;
+	}
 	
 	public List<MessageResponse> firstTaskCheck(TaskForm form) {
 		importer = null;

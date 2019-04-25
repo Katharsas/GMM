@@ -51,7 +51,7 @@
 					###############################################
 				-->
     			<div id="pinned" class="list">
-	    			<div class="list-header">Pinned</div>
+	    			<div class="list-header"><fmt:message key="tasks.pinned"/></div>
 	    			<div class="list-body">
 	    			</div>
 	    		</div>
@@ -65,7 +65,7 @@
 	    		</div> -->
 	    		
     			<div id="workbench" class="list">
-	    			<div class="list-header">Workbench</div>
+	    			<div class="list-header"><fmt:message key="tasks.workbench"/></div>
 	    			
 	    			<!-- 
 						workbench tabs

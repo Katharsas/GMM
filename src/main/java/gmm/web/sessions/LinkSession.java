@@ -48,6 +48,7 @@ public class LinkSession extends StaticTaskListState {
 	/**
 	 * @param ids - String of task id/ids separated by comma.
 	 * @param key - linkKey of given task or key from taskToLinkKeyMapping for multiple tasks.
+	 * @throws IllegalArgumentException if given ids are missing, not found or keys are wrong
 	 */
 	public void setTaskLinks(String ids, String key) {
 		final String[] idArray = ids.split(",");
