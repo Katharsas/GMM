@@ -185,8 +185,10 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 		result.setTemplateLoaderPath("/WEB-INF/ftl/");
 		result.setDefaultEncoding("UTF-8");
 		
+		// escaping & formatting
 		final java.util.Properties props = new java.util.Properties();
 		props.setProperty("number_format", "computer");
+		props.setProperty("output_format", "HTMLOutputFormat");
 		result.setFreemarkerSettings(props);
 		
 		// static access

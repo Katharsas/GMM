@@ -125,16 +125,25 @@ var PreviewRenderer = (function() {
 			/**@type {CanvasRenderer}*/
 			var view = new CanvasRenderer($canvas);
 			var meshPromise = view.loadMesh(jsonUrl);
-			meshLoadPromises.push(meshPromise.then(mesh => ({ $canvas, view, mesh })));
+			meshLoadPromises.push(meshPromise.then(
+				mesh => ({ $canvas, view, mesh }),
+				function() {
+					console.error("Loading preview mesh from '" + jsonUrl + "' failed!");
+					return null;
+			}));
 		});
-		Promise.all(meshLoadPromises).then(function(loadResult) {
+		Promise.all(meshLoadPromises).then(function(loadResults) {
+			loadResults = loadResults.filter(result => result);
+			if (loadResults.length <= 0) {
+				return;
+			}
 
 			// camera, controls
 			var cameraDistances = [];
 			var cameraTargets = [];
 
-			for(let { $canvas, view, mesh } of loadResult) {
-
+			for(let { $canvas, view, mesh } of loadResults) {
+				
 				let bounds = mesh.geometry.boundingBox;
 				let center = multiplyScalar(add(bounds.min, bounds.max), 0.5);
 				let meshPos = mesh.position;
@@ -161,7 +170,7 @@ var PreviewRenderer = (function() {
 			}
 
 			// scene, renderer
-			for(let { $canvas, view, mesh } of loadResult) {
+			for(let { $canvas, view, mesh } of loadResults) {
 
 				let wire = view.createWireframe(mesh);
 				let sceneChildren = [mesh, wire];

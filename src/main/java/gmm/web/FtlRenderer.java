@@ -15,7 +15,9 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.servlet.support.RequestContext;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 
+import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Configuration;
+import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import gmm.collections.List;
 import gmm.domain.task.Task;
@@ -114,7 +116,11 @@ public class FtlRenderer {
 	private void renderTemplate(String fileName, ModelMap model, StringWriter target) {
 		try {
 			final String fileExtension = ".html.ftl";
-			config.getTemplate(fileName + fileExtension).process(model, target);
+			Template template = config.getTemplate(fileName + fileExtension);
+			if (!template.getOutputFormat().equals(HTMLOutputFormat.INSTANCE)) {
+				throw new IllegalStateException("Wrong template output format!");
+			}
+			template.process(model, target);
 		} catch (final TemplateException e) {
 			throw new RuntimeException(e);
 		} catch (final IOException e) {

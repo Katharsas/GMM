@@ -1,5 +1,7 @@
 package gmm.web.controller;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -125,7 +127,7 @@ public class TaskAssetController {
 		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
 		validatePreviewParams(task, Optional.of(key), version);
-		textureService.writePreview(task, small, version, response.getOutputStream());
+		checkPreviewIOException(() -> textureService.writePreview(task, small, version, response.getOutputStream()));
 	}
 	
 	@RequestMapping(value="/preview/texture", method = RequestMethod.GET, produces="image/png")
@@ -138,11 +140,11 @@ public class TaskAssetController {
 		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
 		validatePreviewParams(task, Optional.empty(), version);
-		textureService.writePreview(task, small, version, response.getOutputStream());
+		checkPreviewIOException(() -> textureService.writePreview(task, small, version, response.getOutputStream()));
 	}
 	
 	/**
-	 * Texture Preview Image
+	 * Model Preview Image
 	 * -----------------------------------------------------------------
 	 * @param small - true for small preview, false for full size
 	 * @param version - "original" for original texture preview, newest for the most current new texture
@@ -160,7 +162,7 @@ public class TaskAssetController {
 		setPreviewCaching(response);
 		final ModelTask task = UniqueObject.getFromIdLink(data.getList(ModelTask.class), idLink);
 		validatePreviewParams(task, Optional.of(key), version);
-		modelService.writePreview(task, version, response.getOutputStream());
+		checkPreviewIOException(() -> modelService.writePreview(task, version, response.getOutputStream()));
 	}
 	
 	@RequestMapping(value="/preview/3Dmodel", method = RequestMethod.GET, produces="application/json")
@@ -172,21 +174,37 @@ public class TaskAssetController {
 		setPreviewCaching(response);
 		final ModelTask task = UniqueObject.getFromIdLink(data.getList(ModelTask.class), idLink);
 		validatePreviewParams(task, Optional.empty(), version);
-		modelService.writePreview(task, version, response.getOutputStream());
+		checkPreviewIOException(() -> modelService.writePreview(task, version, response.getOutputStream()));
 	}
 	
-	public void validatePreviewParams(AssetTask<?> task, Optional<String> key, String previewFilename) {
+	private void validatePreviewParams(AssetTask<?> task, Optional<String> key, String previewFilename) {
 		if (key.isPresent()) {
 			if (task == null || !key.get().equals(task.getLinkKey())) {
 				throw new ControllerSettings.NotFoundException();
 			}
 		} else if (task == null) {
-		throw new ControllerSettings.NotFoundException("No task with this id found!");
+			throw new ControllerSettings.NotFoundException("No task with this id found!");
 		}
 		try {
 			AssetGroupType.get(previewFilename);
 		} catch (final IllegalArgumentException e) {
 			throw new ControllerSettings.NotFoundException("Invalid version parameter value!");
+		}
+	}
+	
+	@FunctionalInterface
+	private interface PreviewRetriever
+	{
+	    void run() throws IOException;
+	}
+	private void checkPreviewIOException(PreviewRetriever runnable) {
+		try {
+			runnable.run();
+		} catch (UncheckedIOException e) {
+			logger.error("", e);
+			throw new ControllerSettings.InternalServerError("Could not retrieve preview file!");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 	

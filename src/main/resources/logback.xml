@@ -35,8 +35,7 @@
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<!-- daily rollover -->
             <FileNamePattern>${workspace}/logs/gmm_%d{yyyy-MM-dd}.log</FileNamePattern>
-			<!-- keep 60 days' worth of history -->
-			<maxHistory>60</maxHistory>
+			<totalSizeCap>40MB</totalSizeCap>
 		</rollingPolicy>
 		
 		<encoder>
@@ -51,6 +50,7 @@
   	
   	<!-- Log Levels -->
   	<!-- Suppress Spring logging -->
+  	<logger name="org.springframework.web.servlet.PageNotFound" level="ERROR"/>
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
 	<logger name="org.springframework" level="WARN"/>
 	<!-- Suppress template stuff -->

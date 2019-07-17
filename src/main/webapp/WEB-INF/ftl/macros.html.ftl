@@ -22,7 +22,7 @@
 	<input type="hidden" name="_${s.status.expression}" value="false"/>
 	<input type="checkbox"
 		<#list attributes?keys as attr>
-    		${attr}="${attributes[attr]?html}"
+    		${attr}="${attributes[attr]}"
   		</#list>
 	 	name="${s.status.expression}"
 		<#if s.status.value?? && s.status.value?string=="true">checked="checked"</#if>
@@ -37,7 +37,7 @@
 <#macro formInput path attributes...>
 	<#assign attrString="">
 	<#list attributes?keys as attr>
-   		<#assign attrString = attrString+attr+"="+attributes[attr]?html+" " >
+   		<#assign attrString = attrString+attr+"="+attributes[attr]+" " >
  	</#list>
 	<@s.formInput path=path attributes="${attrString}"/>
 </#macro>
@@ -50,7 +50,7 @@
 <#macro formTextarea path attributes...>
 	<#assign attrString="">
 	<#list attributes?keys as attr>
-   		<#assign attrString = attrString+attr+"="+attributes[attr]?html+" " >
+   		<#assign attrString = attrString+attr+"="+attributes[attr]+" " >
  	</#list>
 	<@s.formTextarea path=path attributes="${attrString}"/>
 </#macro>
@@ -66,7 +66,7 @@
 	<@s.bind path />
 	<select name="${s.status.expression}"
 		<#list attributes?keys as attr>
-			${attr}="${attributes[attr]?html}"
+			${attr}="${attributes[attr]}"
 		</#list>
 	>
 	<#list enum.values() as currentEnum>
@@ -88,7 +88,7 @@
 	<@s.bind path />
 	<select name="${s.status.expression}"
 		<#list attributes?keys as attr>
-			${attr}="${attributes[attr]?html}"
+			${attr}="${attributes[attr]}"
 		</#list>
 	>
 		<#nested>
@@ -104,7 +104,7 @@
 <#macro formOption value label attributes...>
 	<option value="${value}"
 		<#list attributes?keys as attr>
-			${attr}="${attributes[attr]?html}"
+			${attr}="${attributes[attr]}"
 		</#list>
 		<@s.checkSelected value/>
 	>

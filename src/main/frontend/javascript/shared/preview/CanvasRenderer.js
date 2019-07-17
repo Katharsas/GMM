@@ -154,19 +154,18 @@ var loadMesh= function($canvas, jsonPath) {
     };
 
     return new Promise(function(resolve, reject) {
-
-        loader.load(jsonPath, function(geometry, materials) {
+        var onLoad = function(geometry, materials) {
             geometry.computeBoundingBox();
             var mesh = new THREE.Mesh(geometry);
-            //geometry.uvsNeedUpdate = true;
-            
-            //var boundingBox = geometry.boundingBox.clone();
-            
             $canvas.on("renderOptionsChange", function(event) {
                 setOptions(event.detail, mesh);
             });
             resolve(mesh);
-        });
+        };
+        var onError = function() {
+            reject();
+        }
+        loader.load(jsonPath, onLoad, null, onError);
     });
    
 };

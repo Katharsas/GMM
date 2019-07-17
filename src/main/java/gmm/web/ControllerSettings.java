@@ -33,14 +33,31 @@ public class ControllerSettings {
 	
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	public static class NotFoundException extends RuntimeException {
-		private static final long serialVersionUID = 8672281667419693687L;
-		
-		public NotFoundException() {
-			super();
+	/**
+	 * HTTP Exceptions will not be logged as thoroughly as usual exceptions when thrown.
+	 */
+	private static abstract class HttpException extends RuntimeException {
+		private static final long serialVersionUID = 8252605336944237356L;
+		public HttpException() {}
+		public HttpException(String message) {
+			super(message);
 		}
+	}
+	
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public static class NotFoundException extends HttpException {
+		private static final long serialVersionUID = 8672281667419693687L;
+		public NotFoundException() {}
 		public NotFoundException(String message) {
+			super(message);
+		}
+	}
+	
+	@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+	public static class InternalServerError extends HttpException {
+		private static final long serialVersionUID = 4262187988791948941L;
+		public InternalServerError() {}
+		public InternalServerError(String message) {
 			super(message);
 		}
 	}
@@ -105,7 +122,11 @@ public class ControllerSettings {
 		} else if (ex instanceof NotFoundException) {
 			throw ex; // Spring will return 404
 		}
-		logger.error("Controller threw exception:", ex);
+		if (ex instanceof HttpException) {
+			logger.warn("Controller returned '" + ex.getClass().getSimpleName() + "': " + ex.getMessage());
+		} else {
+			logger.error("Controller threw exception:", ex);
+		}
 //		if(!emailAddress.isEmpty()) {
 //			SimpleMailMessage msg = new SimpleMailMessage();
 //			msg.setTo(emailAddress);

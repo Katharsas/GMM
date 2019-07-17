@@ -6,13 +6,13 @@
 		<!-- AssetPath -->
 	    <#if !(task.getType().name() == "GENERAL")>
 	    	<div class="task-assetPath">
-	    		<@s.message "tasks.asset_name"/>: ${task.getAssetName().get()?html}
+	    		<@s.message "tasks.asset_name"/>: ${task.getAssetName().get()}
     		</div>
 	    </#if>
 		<!-- Details -->
 		<#if task.getDetails()?has_content>
 			<div class="task-details">
-				${task.getDetails()?html?replace(newLine,'<br>')}
+				${task.getDetails()?replace(newLine,'<br>')}
 				<#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
 			</div>
 		</#if>
@@ -22,7 +22,7 @@
 				<div id="${comment.getIdLink()}" class="task-comment">
 			    	<div class="task-comment-author left">
 			    		<div class="userTag left">
-			    			${comment.getAuthor().getName()?html}
+			    			${comment.getAuthor().getName()}
 		    			</div>
 			    	</div>
 					<#if isUserLoggedIn && comment.getAuthor().getIdLink() == principal.getIdLink()>
@@ -32,7 +32,7 @@
 						</div>
 					</#if>
 			    	<div class="task-comment-text left">
-			    		${comment.getText()?html?replace(newLine,'<br>')}
+			    		${comment.getText()?replace(newLine,'<br>')}
 			    	</div>
 			    	<div class="clear"></div>
 			    </div>
@@ -64,14 +64,14 @@
 			    		<#assign asset = task.originalAssetProperties/>
 			    		<#assign info = task.originalAssetFileInfo/>
 			    		<td class="task-asset-info task-asset-original" 
-			    				data-filename="${info.assetFileName?html}" title="${info.displayPath}">
+			    				data-filename="${info.assetFileName}" title="${info.displayPath}">
 				    		<span class="left" style="font-weight:bold">Original:</span>
 				    		<#if task.getType().name() == 'TEXTURE'>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${info.assetFileName?html}</span>
+					    		<span class="left">${info.assetFileName}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 				    		</#if>
 							<#if task.getType().name() == 'MESH'>
@@ -79,7 +79,7 @@
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${info.assetFileName?html}</span>
+					    		<span class="left">${info.assetFileName}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 					    	</#if>
 				    	</td>
@@ -96,14 +96,14 @@
 			    		<#assign asset = task.newAssetProperties/>
 			    		<#assign info = task.newAssetFolderInfo/>
 			    		<td class="task-asset-info task-asset-newest" 
-			    				data-filename="${info.assetFileName?html}" title="${info.displayPath}">
+			    				data-filename="${info.assetFileName}" title="${info.displayPath}">
 				    		<span class="left" style="font-weight:bold">Newest:</span>
 				    		<#if task.getType().name() == 'TEXTURE'>
 					    		<span class="right">
 					    			${asset.width} x ${asset.height}
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${info.assetFileName?html}</span>
+					    		<span class="left">${info.assetFileName}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 					    	</#if>
 							<#if task.getType().name() == 'MESH'>
@@ -111,7 +111,7 @@
 					    			${asset.polyCount} &#x25E3;
 					    		</span>
 					    		<div class="clear"></div>
-					    		<span class="left">${info.assetFileName?html}</span>
+					    		<span class="left">${info.assetFileName}</span>
 					    		<span class="right">${asset.sizeInKB} KB</span>
 							</#if>
 				    	</td>
@@ -207,7 +207,7 @@
 				    			<td class="task-asset-info center task-asset-invalid">
 			    				<span class="error"><@s.message "${info.status.messageKey}"/></span><br>
 			    				<#list info.errorPaths as error>
-			    					<div class="path">>&nbsp;&nbsp;${error?html}</div>
+			    					<div class="path">>&nbsp;&nbsp;${error}</div>
 			    				</#list>
 					    	</td>
 					    	<#else><td></td>
@@ -249,7 +249,7 @@
 					    			<td class="task-asset-info center task-asset-invalid">
 				    				<span class="error"><@s.message "${info.status.messageKey}"/></span><br>
 				    				<#list info.errorPaths as error>
-				    					<div class="path">>&nbsp;&nbsp;${error?html}</div>
+				    					<div class="path">>&nbsp;&nbsp;${error}</div>
 				    				</#list>
 						    	</td>
 						    	<#else><td></td>
@@ -287,21 +287,21 @@
 										<ul>
 											<#list task.originalAssetProperties.viewModel.texturesWithoutTasks as textureName>
 												<li>
-													&bull;<span>${textureName.get()?html}</span>
+													&bull;<span>${textureName.get()}</span>
 												</li>
 											</#list>
 										</ul>
 										<ul class="task-asset-model-textures-tasks">
 											<#list task.originalAssetProperties.viewModel.texturesWithTasks as textureTask>
 												<li data-id="${textureTask.getIdLink()}">
-													&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+													&bull;<span class="clickable">${textureTask.assetName.get()}</span>
 												</li>
 											</#list>
 										</ul>
 									<#else>
 										<#list task.originalAssetProperties.textureNames as textureName>
 											<li>
-												&bull;<span>${textureName.get()?html}</span>
+												&bull;<span>${textureName.get()}</span>
 											</li>
 										</#list>
 									</#if>
@@ -315,21 +315,21 @@
 										<ul>
 											<#list task.newAssetProperties.viewModel.texturesWithoutTasks as textureName>
 												<li>
-													&bull;<span>${textureName.get()?html}</span>
+													&bull;<span>${textureName.get()}</span>
 												</li>
 											</#list>
 										</ul>
 										<ul class="task-asset-model-textures-tasks">
 												<#list task.newAssetProperties.viewModel.texturesWithTasks as textureTask>
 												<li data-id="${textureTask.getIdLink()}">
-													&bull;<span class="clickable">${textureTask.assetName.get()?html}</span>
+													&bull;<span class="clickable">${textureTask.assetName.get()}</span>
 												</li>
 											</#list>
 										</ul>
 									<#else>
 										<#list task.newAssetProperties.textureNames as textureName>
 											<li>
-												&bull;<span>${textureName.get()?html}</span>
+												&bull;<span>${textureName.get()}</span>
 											</li>
 										</#list>
 									</#if>
@@ -412,8 +412,8 @@
 		    </#if>
 		    <div class="task-authorDate right">
 	    		<div class="right">
-	    			${task.getAuthor().getName()?html}<br/>
-		    		${task.getFormattedCreationDate(request.locale)?html}
+	    			${task.getAuthor().getName()}<br/>
+		    		${task.getFormattedCreationDate(request.locale)}
 	    		</div>
 	    		<div class="right">
 	    			<@s.message "author"/>:&#160;&#160;<br/>

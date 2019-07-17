@@ -178,6 +178,11 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 			$tab.on("click", ".workbench-search-submit", function(){
 				submitSearchForm(false);
 			});
+			$tab.on("keypress", "input.form-element", function(event) {
+				if (event.which === 13) {
+					submitSearchForm(false);
+				}
+			})
 			$tab.on("click", "#workbench-search-switch", function(){
 				setSearchType(!isEasySearch());
 			});
