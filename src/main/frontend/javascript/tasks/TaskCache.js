@@ -25,7 +25,7 @@ const TaskCache = function(renderUrl) {
 	
 	const idToTaskData = {};
 
-	let currentlyLoadingIds = [];
+	let currentlyLoadingIds = new Set();
 	let currentlyLoadingPromise = Promise.resolve();
 
 	const pinnedSubscribers = [];
@@ -84,26 +84,18 @@ const TaskCache = function(renderUrl) {
 			return loadTasks(event.changedIds);
 		}
 	};
-
-	const removeFirst = function(array, element) {
-		const index = array.indexOf(element);
-		if (index !== -1) {
-			delete array[index];
-		}
-		return index !== -1;
-	}
 	
 	/**
 	 * @param {string[]} idLinks 
 	 */
 	const loadTasks = function(idLinks) {
 		if (idLinks.length <= 0) {
-			return currentlyLoadingPromise
-			.then(() => []);
+			return currentlyLoadingPromise;
 		}
-		currentlyLoadingIds.push(...idLinks);
+		idLinks.forEach(idLink => currentlyLoadingIds.add(idLink));
 		currentlyLoadingPromise = currentlyLoadingPromise.then(function() {
-			let idLinksMissing = idLinks.slice();
+
+			let idLinksMissing = new Set(idLinks);
 			console.debug("TaskCache: Loading task data for ids: " + idLinks);
 			const data = { "idLinks[]" : idLinks };
 
@@ -115,8 +107,8 @@ const TaskCache = function(renderUrl) {
 					.then(function() {
 						const idLink = taskData.idLink;
 						idToTaskData[idLink] = taskData;
-						removeFirst(idLinksMissing, idLink);
-						removeFirst(currentlyLoadingIds, idLink);
+						idLinksMissing.delete(idLink);
+						currentlyLoadingIds.delete(idLink);
 						console.debug("TaskCache: Loading done for id: " + idLink);
 					});
 					preprocessPromises.push(preprocessDone);
@@ -125,15 +117,10 @@ const TaskCache = function(renderUrl) {
 			})
 			.then(function() {
 				for (const idLink of idLinksMissing) {
-					if (idLink !== undefined) {
-						idToTaskData[idLink] = getDummyTask(idLink);
-						removeFirst(currentlyLoadingIds, idLink);
-						console.debug("TaskCache: Loading done for id: " + idLink);
-					}
+					idToTaskData[idLink] = getDummyTask(idLink);
+					currentlyLoadingIds.delete(idLink);
+					console.warn("TaskCache: Loading failed for id: " + idLink);
 				}
-				currentlyLoadingIds = currentlyLoadingIds.filter(__ => true);
-				idLinksMissing = idLinksMissing.filter(__ => true);
-				return idLinksMissing;
 			});
 		});
 		return currentlyLoadingPromise;
@@ -174,13 +161,12 @@ const TaskCache = function(renderUrl) {
 		 * Before getting a task header or task body, the task must be loaded into the cache.
 		 * This function ensures that all given tasks are present in the cache. Since calling
 		 * this function may cause a request, try to call it seldom.
-		 * @returns {string[]} idLinks that could not be resolved by the server
 		 */
 		makeAvailable : function(idLinks) {
 			const toLoad = [];
 			idLinks.forEach(function(id) {
 				const isMissing = !idToTaskData.hasOwnProperty(id);
-				const isLoading = currentlyLoadingIds.includes(id);
+				const isLoading = currentlyLoadingIds.has(id);
 				if (isMissing && !isLoading) {
 					toLoad.push(id);
 				}

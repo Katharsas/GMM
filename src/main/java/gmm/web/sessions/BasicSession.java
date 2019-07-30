@@ -12,8 +12,10 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
 import gmm.collections.ArrayList;
+import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
+import gmm.collections.Set;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataAccess.DataChangeCallback;
@@ -84,8 +86,8 @@ public class BasicSession implements DataChangeCallback<Task> {
 	
 	public List<TaskDataResult> renderTasks(Collection<String> idLinksToRender, Iterable<Task> dataSource, ControllerArgs args) {
 		
-		ArrayList<String> idLinks = new ArrayList<>(String.class, idLinksToRender);
-		final List<Task> tasks = new LinkedList<>(Task.class);
+		final Set<String> idLinks = new HashSet<>(String.class, idLinksToRender);
+		final List<Task> tasks = new ArrayList<>(Task.class);
 		for(final Task task : dataSource) {
 			final boolean contains = idLinks.remove(task.getIdLink());
 			if (contains) {

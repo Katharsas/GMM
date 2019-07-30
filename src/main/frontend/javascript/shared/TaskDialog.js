@@ -97,7 +97,7 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
 
         const attachTask = function() {
             return cache.makeAvailable([id])
-            .then(function(idLinksMissing){
+            .then(function(){
                 const $header = cache.getTaskHeader(id);
                 const $body = cache.getTaskBody(id);
 

@@ -19,7 +19,7 @@ import freemarker.core.HTMLOutputFormat;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import gmm.collections.List;
+import gmm.collections.Collection;
 import gmm.domain.task.Task;
 import gmm.service.Spring;
 import gmm.web.forms.CommentForm;
@@ -73,7 +73,7 @@ public class FtlRenderer {
 	 * Renders tasks to a list with task html for JSON auto-convertion.
 	 * @see {@link #renderTask(Task, ModelMap, HttpServletRequest, HttpServletResponse)}
 	 */
-	public Map<Task, TaskRenderResult> renderTasks(List<? extends Task> tasks, ControllerArgs requestData) {
+	public Map<Task, TaskRenderResult> renderTasks(Collection<? extends Task> tasks, ControllerArgs requestData) {
 		
 		requestData.request.setAttribute("commentForm", new CommentForm());
 		populateModel(requestData);

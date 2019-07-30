@@ -156,7 +156,7 @@ public class PythonTCPSocket {
 		
 		private static final int port = 8090;
 		private static final int tryReconnectCount = 10;
-		private static final int tryReconnectSleep = 100;
+		private static final int tryReconnectSleep = 500;
 		private static final int threadTimeout = 10000;
 		
 		private static final String conversionStart = "CONVERSION_START";
@@ -170,7 +170,7 @@ public class PythonTCPSocket {
 			synchronized(PythonTCPSocket.this) {
 				logger.info("Internal thread: starting execution...");
 				try (ScriptRessources process = startPythonScript()) {
-					final int waitUntilStartedMillis = 700;
+					final int waitUntilStartedMillis = tryReconnectSleep;
 					try {
 						Thread.sleep(waitUntilStartedMillis);
 					} catch (final InterruptedException e) {logger.debug("", e);}
