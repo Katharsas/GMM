@@ -1,6 +1,6 @@
 <#import "/spring.ftl" as s/>
 
-<div id="${task.getIdLink()}" class="list-element task collapsed">
+<div id="${task.getIdLink()}" class="list-element task collapsed" tabindex="-1">
 	<div class="task-header clickable">
 		<div class="task-header-left">
 			<div class="task-id">

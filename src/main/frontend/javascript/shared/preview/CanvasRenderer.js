@@ -187,7 +187,7 @@ var createWireframe = function($canvas, mesh) {
     $canvas.on("renderOptionsChange", function(event) {
         /** @type {RenderOptions} */
         var options = event.detail;
-        wireframe.visible = options.wireframe;
+        wireframe.visible = options.wireframe || options.shading === ShadingType.None;
     });
     return wireframe;
 }

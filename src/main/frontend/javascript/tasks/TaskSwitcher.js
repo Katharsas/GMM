@@ -13,6 +13,10 @@ import Errors from "../shared/Errors";
  * @type {Object} TaskBodyCallbacks
  * @property {function} createBody($task) : $body - Returns a body ready to be inserted into dom.
  * @property {function} destroyBody($body) : void - Removes body from dom, may perform cleanup.
+ * 
+ * @type {Object} TaskListData
+ * @property {TaskBodyCallbacks} bodyCallbacks @see TaskBodyCallbacks
+ * @property {function} returnFocus() : void - Optional: When a task looses focus, this function is called.
  */
 var TaskSwitcher = function() {
 	
@@ -24,7 +28,7 @@ var TaskSwitcher = function() {
 		return taskId1 === taskId2;
 	});
 	
-	// {string} taskListId -> {TaskBodyCallbacks}
+	// {string} taskListId -> {TaskListData}
 	var listIdToCallbacks = {};
 	
 	// animation settings
@@ -58,7 +62,7 @@ var TaskSwitcher = function() {
         	
         	var $body = getBody($task);
         	var onComplete = function() {
-        		listIdToCallbacks[taskListId].destroyBody($body);
+        		listIdToCallbacks[taskListId].bodyCallbacks.destroyBody($body);
     	        $task.removeClass("collapsing");
             	$task.addClass("collapsed");
             	resolve();
@@ -90,7 +94,7 @@ var TaskSwitcher = function() {
     		
     		var $body;
     		if(!$task.hasClass("collapsing")) {
-    			$body = listIdToCallbacks[taskListId].createBody($task);
+    			$body = listIdToCallbacks[taskListId].bodyCallbacks.createBody($task);
     			$task.append($body);
     		} else {
     			$body = getBody($task);
@@ -130,11 +134,11 @@ var TaskSwitcher = function() {
     	
     	/**
     	 * Allow tasks of the given taskListId to expand/collapse.
-    	 * @param {TaskBodyCallbacks} taskBodyCallbacks - Callbacks used to create/destroy bodies
+    	 * @param {TaskListData} taskBodyCallbacks - Callbacks used to create/destroy bodies and return focus
     	 * 		of tasks of the given taskList.
     	 */
-    	registerTaskList : function(taskListId, taskBodyCallbacks) {
-    		listIdToCallbacks[taskListId] = taskBodyCallbacks;
+    	registerTaskList : function(taskListId, taskListData) {
+    		listIdToCallbacks[taskListId] = taskListData;
     	},
     	
     	unregisterTaskList : function(taskListId) {
@@ -149,7 +153,7 @@ var TaskSwitcher = function() {
          */
         isTaskExpanded : function($task) {
         	return expanded.contains($task);
-        },
+		},
     	
         /**
          * Called when user clicks on a task header. Adds/removes this task's body an may
@@ -162,11 +166,17 @@ var TaskSwitcher = function() {
     			throw new Errors.IllegalArgumentException("Given taskListId is not registered / invalid!");
     		}
             if(this.isTaskExpanded($task)) {
-            	// collape
+				// collape
+				$task.blur();
+				const returnFocus = listIdToCallbacks[taskListId].returnFocus;
+				if (returnFocus !== undefined) {
+					returnFocus();
+				}
             	expanded.remove($task);
             	return collapse($task, taskId, taskListId);
             } else {
-            	// expand: if queue was full, collapse element that got removed from queue
+				// expand: if queue was full, collapse element that got removed from queue
+				$task.focus();
             	var $oldest = expanded.add($task);
             	if($oldest !== null) {
             		 return Promise.all([
@@ -177,7 +187,17 @@ var TaskSwitcher = function() {
             		return expand($task, taskId, taskListId);
             	}
             }
-        },
+		},
+		
+		getAllExpandedTasks : function(filterTask) {
+			const result = [];
+			for (const $task of expanded.get()) {
+				if (filterTask($task)) {
+					result.push($task);
+				}
+			}
+			return result;
+		},
         
         /**
          * Collapses the task if it is expanded.

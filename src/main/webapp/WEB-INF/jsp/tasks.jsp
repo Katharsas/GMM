@@ -52,7 +52,7 @@
 				-->
     			<div id="pinned" class="list">
 	    			<div class="list-header"><fmt:message key="tasks.pinned"/></div>
-	    			<div class="list-body">
+	    			<div class="list-body" tabindex="-1">
 	    			</div>
 	    		</div>
     			<!-- <div id="currentOperation" class="list">
@@ -115,7 +115,7 @@
 						###############################################
 					-->
 	    			
-	    			<div class="list-body">
+	    			<div class="list-body" tabindex="-1">
 	    				<div class="list-count center">
 							<span></span> <fmt:message key="elements"/> 
 						</div>

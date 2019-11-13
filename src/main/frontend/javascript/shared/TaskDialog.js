@@ -43,10 +43,15 @@ let TaskDialogs = {};
 
 const TaskDialogsInit = function(taskCache, taskBinders) {
 
-    const openDialog = function(idLink) {
+    const openDialog = function(idLink, closeOthers) {
         if (idLink in idLinkToDialog) {
             idLinkToDialog[idLink].bringToForeground();
         } else {
+            if (closeOthers) {
+                for (const idLink in idLinkToDialog) {
+                    idLinkToDialog[idLink].onRemoved();
+                }
+            }
             const dialog = TaskDialog(taskCache, taskBinders, idLink, function(idLink) {
                 delete idLinkToDialog[idLink];
             });
@@ -74,6 +79,7 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
     const TaskDialog = function(cache, binders, id, closeCallback) {
         
         const $dialog = $taskDialogTemplate.clone();
+        let $task = null;
         $dialog.removeAttr("id");
         $dialog.resizable({ handles: 'e, w,', minWidth: 500 });
 
@@ -98,20 +104,27 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
         const attachTask = function() {
             return cache.makeAvailable([id])
             .then(function(){
-                const $header = cache.getTaskHeader(id);
+                $task = cache.getTaskHeader(id);
                 const $body = cache.getTaskBody(id);
 
-                binders.bindHeader($header);
-                binders.bindBody(id, $body);
+                binders.bindHeader($task);
+                binders.bindBody(id, $body, () => $task.focus());
                 HtmlPreProcessor.lazyload($body);
 
-                $header.removeClass("list-element");
-                $header.removeClass("collapsed");
-                $header.findSelf(".task-header").removeClass("clickable");
-                $header.addClass("expanded");
-                $taskContainer.append($header);
-                $header.append($body)
+                $task.removeClass("list-element");
+                $task.removeClass("collapsed");
+                $task.findSelf(".task-header").removeClass("clickable");
+                $task.addClass("expanded");
+                $taskContainer.append($task);
+                $task.append($body);
                 $body.show();
+
+                $task.on("keyup", function (event) {
+                    if (event.key === "Escape") {
+                        onRemoved();
+                        event.stopPropagation();
+                    }
+                });
             });
         };
 
@@ -124,6 +137,7 @@ const TaskDialogsInit = function(taskCache, taskBinders) {
         const bringToForeground = function() {
             $taskDialogContainer.find(".taskDialog").css('z-index', 150);
             $dialog.css('z-index', 151);
+            $task.focus();
         }
 
         bindEvents();

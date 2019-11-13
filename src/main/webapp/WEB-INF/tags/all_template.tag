@@ -123,10 +123,12 @@
 			Custom Admin Banner
 			###############################################################
 		-->
-		<c:if test="${isCustomAdminBannerActive}">
-			<div id="customAdminBanner" class="center">
-			</div>
-		</c:if>
+		<sec:authorize access="hasRole('ROLE_USER')">
+			<c:if test="${isCustomAdminBannerActive}">
+				<div id="customAdminBanner" class="center">
+				</div>
+			</c:if>
+		</sec:authorize>
 	
 		<!-- 
 			###############################################################

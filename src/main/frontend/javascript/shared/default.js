@@ -81,17 +81,16 @@ function htmlDecode(input){
 	var result = "";
 	for (var i = 0; i < e.childNodes.length; i++) {
 		//if type = text, add text
-		if (e.childNodes[i].nodeType === 3) {
-			result += e.childNodes[i].nodeValue;
+		if (e.childNodes[i].nodeType === Node.TEXT_NODE) {
+			result += e.childNodes[i].nodeValue.trim();
 		//if type = node, check for <br> node
-		} else if (e.childNodes[i].nodeType === 1) {
+		} else if (e.childNodes[i].nodeType === Node.ELEMENT_NODE) {
 			if (e.childNodes[i].tagName === "BR") {
 				result += "\n";
 			}
 		}
 	}
-	result = result.replace(/\s\s+/g, ' ');
-	return result.trim();
+	return result;
 }
 
 /*

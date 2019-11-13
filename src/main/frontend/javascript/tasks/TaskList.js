@@ -21,14 +21,13 @@ const r = function() {
  * @property {JQuery} $list - The container element which holds all task elements as children.
  * @property {string} eventUrl - The url path providing taskList events for synchronization.
  * @property {string} initUrl - Optional: The url path to call to init the list state on the server side.
- * @property {Callback} onUpdateStart - Optional: Executed whenever the tasklist starts updating/changing itself.
- * @property {Callback} onUpdateDone - Optional: Executed whenever the taskList has updated/changed itself.
+ * @property {Callback} onUpdateStart - Optional: Executed when the taskList starts updating/changing itself.
+ * @property {Callback} onUpdateDone - Optional: Executed when the taskList has updated/changed itself.
  * 		Count of current tasks will be passed as parameter.
  * @property {TaskEventBindings} eventBinders - Contains all functions for event binding.
  * @property {UserId} currentUser - Current user or null if user is not logged in.
  * @property {boolean} expandSingleTask - Optional: Wether the list should auto expand its task if there is only one.
  * 		Defaults to false.
- * 
  * 
  * @callback TaskEventHandler
  * @param {TaskListEvent} event - The event information depending on event type, see Java class.
@@ -328,25 +327,48 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 			Promise.resolve() : Ajax.post(contextUrl + settings.initUrl);
 
 		taskSwitcher.registerTaskList(taskListId, {
-			
-			createBody : function($task) {
-				const idLink = $task.attr('id');
-				const $body = cache.getTaskBody(idLink);
-				settings.eventBinders.bindBody(idLink, $body);
-				HtmlPreProcessor.lazyload($body);
-				return $body;
+			returnFocus : function() {
+				settings.$list.focus();
 			},
-			
-			destroyBody : function($body) {
-				settings.eventBinders.unbindBody($body);
-				$body.remove();
+			bodyCallbacks : {
+				createBody : function($task) {
+					const idLink = $task.attr('id');
+					const $body = cache.getTaskBody(idLink);
+					settings.eventBinders.bindBody(idLink, $body, () => $task.focus());
+					HtmlPreProcessor.lazyload($body);
+					return $body;
+				},
+				destroyBody : function($body) {
+					settings.eventBinders.unbindBody($body);
+					$body.remove();
+				}
 			}
 		});
+		settings.$list.on("keyup", function (event) {
+			if (event.key === "Escape") {
+				const expandedTasks = taskSwitcher.getAllExpandedTasks($task => $task.parent().is(settings.$list));
+				for (let $task of expandedTasks) {
+					taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
+				}
+				event.stopPropagation();
+			}
+		})
 		
 		const onswitch = function($task) {
 			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
 		};
-		settings.eventBinders.bindList(settings.$list, onswitch, updateTaskList);
+		settings.$list.on("click", ".task-header", function() {
+			onswitch($(this).parent(".task"));
+		});
+		settings.$list.on("keyup", ".task", function (event) {
+			if (event.key === "Escape") {
+				const $task = $(this);
+				if (taskSwitcher.isTaskExpanded($task)) {
+					onswitch($task);
+					event.stopPropagation();
+				}
+			}
+		});
 
 		cache.subscribePinnedEvent(function(idLink, isPinned) {
 			const $task = findTask(idLink);
