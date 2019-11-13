@@ -12,8 +12,7 @@
 		<!-- Details -->
 		<#if task.getDetails()?has_content>
 			<div class="task-details">
-				${task.getDetails()?replace(newLine,'<br>')}
-				<#-- Add 'r' argument for regex replace, use ?json_string or ?js_string or ?js_script to escape JS stuff -->
+				${task.getDetails()?esc?markup_string?replace(newLine,'<br>')?no_esc}
 			</div>
 		</#if>
 <!-- Comments & Comment Form-->
@@ -32,7 +31,7 @@
 						</div>
 					</#if>
 			    	<div class="task-comment-text left">
-			    		${comment.getText()?replace(newLine,'<br>')}
+			    		${comment.getText()?esc?markup_string?replace(newLine,'<br>')?no_esc}
 			    	</div>
 			    	<div class="clear"></div>
 			    </div>
@@ -219,7 +218,7 @@
 		    	</#if>
 <!-- 3D Mesh Preview -->
 				<#if task.getType().name() == 'MESH'>
-					<tr class="task-previews task-preview-3D center">
+					<tr class="task-previews task-preview-3D center" tabindex="-1">
 			    		<#if task.originalAssetProperties?has_content>
 				    		<td class="task-preview-visual clickable"
 				    			data-url="${request.contextPath}/tasks/preview/3Dmodel/${task.getLinkKey()}?ver=original&id=${task.getIdLink()}&nocache=${task.assetName}">

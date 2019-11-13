@@ -49,6 +49,13 @@
 	position:fixed;
 	
 	> * {margin:10px;}
+
+	.confirmDialog-ok {
+		border-left: 2.5px solid $c-green;
+	}
+	.confirmDialog-cancel {
+		border-right: 2.5px solid $c-red;
+	}
 }
 
 /*

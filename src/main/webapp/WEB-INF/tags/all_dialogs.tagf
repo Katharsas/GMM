@@ -2,7 +2,7 @@
 
 <%-- Confirm Dialog --%>
 
-<div id="confirmDialog-template" class="confirmDialog dialog draggable">
+<div id="confirmDialog-template" class="confirmDialog dialog draggable" tabindex="-1">
 	<p class="confirmDialog-message center"></p>
 	<div>
 		<input class="confirmDialog-input dialog-input center"/>

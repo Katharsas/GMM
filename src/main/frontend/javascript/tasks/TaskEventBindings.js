@@ -33,6 +33,10 @@ export default function(onedit, setIsPinned, isPinned) {
 	};
 	
 	//comments
+	const isCommentFormShown = function($commentForm) {
+		return $commentForm.is(":visible");
+	}
+
 	const hideCommentForm = function($commentForm) {
 		const $elementComments = $commentForm.parent();
 		if ($elementComments.is(":visible:blank")) {
@@ -73,21 +77,16 @@ export default function(onedit, setIsPinned, isPinned) {
 	
 	
 	return {
-		
-		bindList : function($list, onswitch) {
-			$list.on("click", ".task-header", function() {
-				onswitch($(this).parent(".task"));
-			});
-		},
-		
+
 		bindHeader : function($header) {},
 		
 		/**
 		 * @param {JQuery} $body - Complete body part of a task, bind functions to this (or its children).
-		 * @param {callback} updateTaskList - Function which returns a promise to finish updating.
+		 * @param {Function} returnFocus - Call to return focus from nested elements back to the task itself (optional).
 		 */
-		bindBody : function(id, $body) {
-			
+		bindBody : function(id, $body, returnFocus) {
+			if (returnFocus === undefined) returnFocus = function() {};
+
 			/* -------------------------------------------------------
 			 * GENERAL TASK
 			 * -------------------------------------------------------
@@ -141,6 +140,16 @@ export default function(onedit, setIsPinned, isPinned) {
 				//comments
 				const $comments = $body.find(".task-comments");
 				const $form = $comments.children("form.task-comments-form");
+				const $formTextarea = $form.find("textarea.task-comments-form-textArea");
+				const $commentsSwitch = $operations.find(".task-operations-switchComment");
+				$form.on("keyup", function (event) {
+					if (event.key === "Escape") {
+						if (isCommentFormShown($form)) {
+							event.stopPropagation();
+							$commentsSwitch.click();
+						}
+					}
+				});
 				//show comment edit dialog
 				$comments.on("click", ".task-comment-editButton", function() {
 					const $comment = $(this).parent(".task-comment");
@@ -154,12 +163,18 @@ export default function(onedit, setIsPinned, isPinned) {
 									Dialogs.hideDialog($confirm);
 									updateTaskLists();
 								});
-						}, "Change your comment below:", undefined, comment, 700);
+						}, "Change your comment below:", undefined, comment, 500, 150);
 				});
 				//show/hide new comment form
-				$operations.find(".task-operations-switchComment").click(function() {
-					if ($form.is(":visible")) hideCommentForm($form);
-					else showCommentForm($form);
+				$commentsSwitch.click(function() {
+					if (isCommentFormShown($form)) {
+						hideCommentForm($form);
+						returnFocus();
+					}
+					else {
+						showCommentForm($form);
+						$formTextarea.focus();
+					}
 				});
 				//submit new comment
 				$form.find(".task-comment-form-submitButton").click(function() {
@@ -246,6 +261,14 @@ export default function(onedit, setIsPinned, isPinned) {
 					// maximized view
 					const $maximize = $canvasContainer.find(".task-preview-maximize .button");
 					let isMaximized = false;
+					$canvasContainer.on("keyup", function (event) {
+						if (event.key === "Escape") {
+							if (isMaximized) {
+								event.stopPropagation();
+								$maximize.click();
+							}
+						}
+					});
 					let draggableTransform;
 					$maximize.on("click", function() {
 						isMaximized = !isMaximized;
@@ -258,9 +281,11 @@ export default function(onedit, setIsPinned, isPinned) {
 						if (isMaximized) {
 							draggableTransform = $draggable.css("transform");
 							$draggable.css("transform", "");
+							$canvasContainer.focus();
 						} else {
 							$draggable.css("transform", draggableTransform);
 							draggableTransform = undefined;
+							returnFocus();
 						}
 					});
 

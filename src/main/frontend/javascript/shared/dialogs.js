@@ -47,27 +47,26 @@ const centerDialog = function($dialog, offsetIndex, width, height) {
 	if (height === undefined) height = $dialog.innerHeight();
 	let left = $(window).innerWidth()/2 - width/2;
 	let top = ($(window).innerHeight()/2 - height/2) * 0.7;
-	if ($dialog.hasClass("confirmDialog")) {
-		left += offsetIndex * 5;
-		top += offsetIndex * 5;
-	}
+	left += offsetIndex * 7;
+	top += offsetIndex * 7;
 	$dialog.css("left", left + "px");
 	$dialog.css("top", top + "px");
 };
 
 /**
  * @param {JQuery} $dialog
- * @param {number} [width]  Width of the dialog (default is min-width from css).
- * @param {number} [height]  Height of the dialog (default is min-width from css).
+ * @param {number} [width]  Width of the dialog or textarea (default is min-width from css).
+ * @param {number} [height]  Height of the dialog or textarea (default is min-width from css).
  */
-const setDialogDimensions = function($dialog, width, height) {
-	if (width === undefined)  width = $dialog.outerWidth();
-	$dialog.css("min-width", width+"px");
-	if (height === undefined) height = $dialog.innerHeight();
-	$dialog.css("min-height", height+"px");
+const setDialogDimensions = function($dialogOrTextarea, width, height) {
+	if (width === undefined) width = $dialogOrTextarea.outerWidth();
+	$dialogOrTextarea.css("min-width", width+"px");
+	if (height === undefined) height = $dialogOrTextarea.innerHeight();
+	$dialogOrTextarea.css("min-height", height+"px");
 };
 
 const showOverlay = function() {
+	$(document.activeElement).blur();
 	overlayCount++;
 	const zNew = zOverlayDefault + (zIncrement * overlayCount);
 	$overlay.css("z-index", zNew);
@@ -133,8 +132,8 @@ const createDialog = function($template, $container) {
  * @param {boolean} hasCancel If true, a cancel button will be shown, which closes the dialog.
  * @param {string} inputDefault If defined, a form input tag will be shown with the argument as its value/text.
  * @param {string} textareaDefault If defined, a form textarea tag will be shown with the argument as its value/text.
- * @param {number} width Width of the dialog (default is min-width from css).
- * @param {number} height Height of the dialog (default is min-width from css).
+ * @param {number} width Min-Width of the dialog or its textarea (defaults to css value).
+ * @param {number} height Min-Height of the dialog or its textarea (defaults to css value).
  * @returns {JQuery} The created dialog.
  */
 const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, textareaDefault, width, height) {
@@ -144,6 +143,7 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	$dialog.find(".confirmDialog-message").html(message);
 	const $input = $dialog.find(".confirmDialog-input");
 	const $textarea = $dialog.find(".confirmDialog-textarea");
+	const $okButton = $dialog.find(".confirmDialog-ok");
 	const $cancelButton = $dialog.find(".confirmDialog-cancel");
 	if(inputDefault !== undefined) {
 		$input.attr("value", inputDefault);
@@ -152,7 +152,8 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	else {
 		$input.hide();
 	}
-	if(textareaDefault !== undefined) {
+	const isTextAreaVisible = textareaDefault !== undefined;
+	if(isTextAreaVisible) {
 		$textarea.text(textareaDefault);
 		$textarea.show();
 	}
@@ -161,7 +162,7 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	}
 	$cancelButton.toggle(hasCancel);
 	//set width and height & center
-	setDialogDimensions($dialog, width, height);
+	setDialogDimensions(isTextAreaVisible ? $textarea : $dialog, width, height);
 	const numberOfExisting = $confirmDialogContainer.children().length;
 	centerDialog($dialog, numberOfExisting, width, height);
 	$dialog.css("z-index", zOverlayCurrent + (zIncrement / 2));
@@ -169,6 +170,26 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	$dialog.show();
 	if(inputDefault !== undefined) {
 		$input.select();
+	} else if (isTextAreaVisible) {
+		$textarea.focus();
+	} else {
+		$dialog.focus();
+	}
+	if (hasCancel) {
+		$dialog.on("keyup", function (event) {
+			if (event.key === "Escape") {
+				$cancelButton.click();
+				event.stopPropagation();
+			}
+		})
+	}
+	if(!isTextAreaVisible) {
+		$dialog.on("keyup", function (event) {
+			if (event.key === "Enter") {
+				$okButton.click();
+				event.stopPropagation();
+			}
+		});
 	}
 	return $dialog;
 };

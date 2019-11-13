@@ -113,7 +113,7 @@ const init = function() {
         const onClickTaskName = function() {
             const $taskName = $(this);
             const idLink = $taskName.data("id");
-            TaskDialogs.openDialog(idLink);
+            TaskDialogs.openDialog(idLink, true);
         }
 
         $notifications.resizable({ handles: 'e', minWidth: 100 });
