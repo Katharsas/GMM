@@ -155,7 +155,7 @@ public abstract class TaskListState implements DataChangeCallback<Task> {
 	}
 	
 	protected List<String> getIds(Collection<? extends Task> tasks) {
-		final List<String> ids = new LinkedList<>(String.class);
+		final List<String> ids = new ArrayList<>(String.class, tasks.size());
 		for(final Task task : tasks) {
 			ids.add(task.getIdLink());
 		}
@@ -175,7 +175,7 @@ public abstract class TaskListState implements DataChangeCallback<Task> {
 	/**
 	 * Checks type with {@link #isTaskTypeVisible(TaskType)} and filters with {@link #filter(Collection)}.
 	 */
-	private <T extends Task> boolean shouldBeVisible(T task) {
+	protected <T extends Task> boolean shouldBeVisible(T task) {
 		final Class<T> type = Util.classOf(task);
 		final List<T> single = new LinkedList<>(type, task);
 		if(isTaskTypeVisible(TaskType.fromClass(type))) {

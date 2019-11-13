@@ -8,6 +8,7 @@ import gmm.collections.Collection;
 import gmm.collections.HashSet;
 import gmm.collections.List;
 import gmm.collections.Set;
+import gmm.collections.UnmodifiableSet;
 import gmm.domain.Linkable;
 import gmm.domain.User;
 import gmm.domain.User.UserId;
@@ -42,7 +43,7 @@ public class DataChangeEvent<T extends Linkable> implements GenericTyped<T> {
 		Objects.requireNonNull(source);
 		Objects.requireNonNull(changed);
 		if (changed.size() == 0) {
-			throw new IllegalArgumentException("Don't emit stupid events!");
+			throw new IllegalArgumentException("Don't emit stupid events (empty change list)!");
 		}
 		if (!Task.class.isAssignableFrom(changed.getGenericType())
 				&& !User.class.isAssignableFrom(changed.getGenericType())) {
@@ -50,7 +51,7 @@ public class DataChangeEvent<T extends Linkable> implements GenericTyped<T> {
 		}
 		this.type = type;
 		this.source = source;
-		this.changed = new HashSet<>(changed);
+		this.changed = new UnmodifiableSet<>(new HashSet<>(changed));
 		this.isSingleItem = changed.size() == 1;
 		created = Instant.now();
 	}

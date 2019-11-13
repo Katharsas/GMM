@@ -107,7 +107,7 @@ public class PublicController {
 			@PathVariable String ids,
 			@PathVariable String key) {
 		try {
-			linkSession.setTaskLinks(ids, key);
+			linkSession.initTaskLinks(ids, key);
 		} catch (IllegalArgumentException e) {
 			throw new ControllerSettings.NotFoundException();
 		}

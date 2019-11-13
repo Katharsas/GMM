@@ -115,8 +115,8 @@ public class PinnedSession extends TaskListState {
 	 * The same event cannot be retrieved multiple times.
 	 */
 	public synchronized List<TaskListEvent> retrieveEvents() {
-			final List<TaskListEvent> result = taskListEvents.copy();
-			taskListEvents.clear();
-			return result;
+		final List<TaskListEvent> result = taskListEvents.copy();
+		taskListEvents.clear();
+		return result;
 	}
 }

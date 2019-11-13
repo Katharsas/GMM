@@ -4,6 +4,7 @@ import TaskCache from "./tasks/TaskCache";
 import TaskList from "./tasks/TaskList";
 import TaskSwitcher from "./tasks/TaskSwitcher";
 import TaskEventBindings from "./tasks/TaskEventBindings";
+import EventListener from "./shared/EventListener";
 import { TaskDialogsInit } from "./shared/TaskDialog";
 import { allVars } from "./shared/default";
 import {} from "./shared/template";
@@ -38,7 +39,10 @@ $(document).ready(
 			expandSingleTask : true
 		};
 		var taskList = TaskList(taskListSettings, taskCache, taskSwitcher, {});
-		taskList.update();
+		
+		// TODO: list should not need to listen for TaskDataChangeEvent
+		// (currently the server does not send specific PublicListChangeEvent)
+		EventListener.subscribe(EventListener.events.TaskDataChangeEvent, taskList.update);
 
 		TaskDialogsInit(taskCache, taskBinders);
 	}

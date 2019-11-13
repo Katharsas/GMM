@@ -17,19 +17,20 @@ public class Util {
 	
 	/**
 	 * Allows you to change the upper bound of a collection/wrapper if its actual generic type is a
-	 * subtype of the target bound.<br>
+	 * subtype of the target bound. This is safe for immutable collections or when the casted result
+	 * is only read.<br>
 	 * The collection/wrapper implementation is responsible for returning its generic type correctly.
 	 * (For example, a collection is responsible for making sure that all of its elements are of the
 	 * generic type returned by {@link GenericTyped#getGenericType()}).
 	 * <br>
 	 * Example:
 	 * <pre>{@code 
-	 * Collection<?> data = new List<ChildClass>();
-	 * Collection<? extends ChildClass> = downCastBound(data, ChildClass.class);
+	 * Collection<?> data = new List<>(ChildClass.class);
+	 * Collection<? extends ChildClass> = castBound(data, ChildClass.class);
 	 * }</pre>
 	 * 
 	 * @param <T> - upper bound target type
-	 * @param data - object with unknown generic type
+	 * @param obj - object with unknown generic type
 	 * @param to - used to make runtime check
 	 * @exception ClassCastException If the generic type of obj (at runtime) is not same or
 	 * subtype of target type T.

@@ -7,13 +7,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.HashSet;
 import gmm.collections.LinkedList;
 import gmm.collections.List;
 import gmm.collections.Set;
 import gmm.domain.UniqueObject;
-import gmm.domain.User;
 import gmm.domain.task.Task;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataChangeEvent;
@@ -28,7 +28,7 @@ public class LinkSession extends StaticTaskListState {
 
 	private final DataAccess data;
 	
-	private final List<Task> tasks = new LinkedList<>(Task.class);
+	private final List<Task> tasks = new ArrayList<>(Task.class);
 	
 	private final List<ClientDataChangeEvent> taskDataEvents;
 	
@@ -50,7 +50,7 @@ public class LinkSession extends StaticTaskListState {
 	 * @param key - linkKey of given task or key from taskToLinkKeyMapping for multiple tasks.
 	 * @throws IllegalArgumentException if given ids are missing, not found or keys are wrong
 	 */
-	public void setTaskLinks(String ids, String key) {
+	public void initTaskLinks(String ids, String key) {
 		final String[] idArray = ids.split(",");
 		if (idArray.length < 1) throw new IllegalArgumentException("No task ID specified!");
 		tasks.clear();
@@ -76,8 +76,7 @@ public class LinkSession extends StaticTaskListState {
 			}
 			else throw new IllegalArgumentException("Taskgroup not found or wrong link key!");
 		}
-		final List<String> addedIds = getIds(tasks);
-		taskListEvents.add(new TaskListEvent.AddAll(User.NULL, addedIds, addedIds));
+		createInitEvent();
 	}
 	
 	public List<Task> getLinkedTasks() {
@@ -104,11 +103,30 @@ public class LinkSession extends StaticTaskListState {
 	@Override
 	protected void sortVisible() {}
 	
+	@Override
+	protected <T extends Task> boolean shouldBeVisible(T task) {
+		if (getVisible().contains(task)) {
+			return super.shouldBeVisible(task);
+		} else {
+			return false;
+		}
+	}
 	
 	@Override
 	public void onEvent(DataChangeEvent<? extends Task> event) {
 		if (!event.type.equals(DataChangeType.ADDED)) {
-			taskDataEvents.add(event.toClientEvent());
+			Set<? extends Task> filtered = new HashSet<>(event.getGenericType());
+			@SuppressWarnings("unchecked")
+			Set<Task> filteredCast = (Set<Task>) filtered;
+			for (Task task : tasks) {
+				if (event.changed.contains(task)) {
+					filteredCast.add(task);
+				}
+			}
+			if (filtered.size() > 0) {
+				DataChangeEvent<? extends Task> filteredEvent = new DataChangeEvent<>(event.type, event.source, filtered);
+				taskDataEvents.add(filteredEvent.toClientEvent());
+			}
 		}
 		super.onEvent(event);
 	}
