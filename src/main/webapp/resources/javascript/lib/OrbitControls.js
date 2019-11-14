@@ -209,7 +209,7 @@ THREE.OrbitControls = function ( object, domElement, localElement ) {
 
 	this.dispose = function() {
 
-		scope.domElement.removeEventListener( 'contextmenu', onContextMenu, false );
+		scope.localElement.removeEventListener( 'contextmenu', onContextMenu, false );
 		scope.localElement.removeEventListener( 'mousedown', onMouseDown, false );
 		scope.localElement.removeEventListener( 'wheel', onMouseWheel, false );
 
@@ -698,8 +698,7 @@ THREE.OrbitControls = function ( object, domElement, localElement ) {
 		event.preventDefault();
 	}
 
-	scope.domElement.addEventListener( 'contextmenu', onContextMenu, false );
-
+	scope.localElement.addEventListener( 'contextmenu', onContextMenu, false );
 	scope.localElement.addEventListener( 'mousedown', onMouseDown, false );
 	scope.localElement.addEventListener( 'wheel', onMouseWheel, false );
 
