@@ -102,10 +102,6 @@ var TaskSwitcher = function() {
     		$task.removeClass("collapsing");
     		$task.removeClass("collapsed");
     		$task.addClass("expanding");
-			
-			// TODO Taskswitcher should not have anything to do with pinned tasks
-    		// var hide = isPinnedTask === undefined;
-    		// switchPinOperation($task, hide ? null : isPinnedTask(taskId));
     		
     		$body.show();
     		$body.css("height","");

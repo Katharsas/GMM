@@ -201,7 +201,6 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 
 	const expandIfSingleTask = function() {
 		if (current.length === 1) {
-			console.log("expanding");
 			const id = current[0];
 			const $task = findTask(id);
 			if (!taskSwitcher.isTaskExpanded($task)) {
@@ -344,29 +343,62 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 				}
 			}
 		});
+
+		const onswitch = function($task) {
+			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
+		};
 		settings.$list.on("keyup", function (event) {
 			if (event.key === "Escape") {
 				const expandedTasks = taskSwitcher.getAllExpandedTasks($task => $task.parent().is(settings.$list));
 				for (let $task of expandedTasks) {
-					taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
+					onswitch($task);
 				}
 				event.stopPropagation();
 			}
-		})
-		
-		const onswitch = function($task) {
-			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
-		};
+		});
+		settings.$list.on("keyup", function (event) {
+			if (event.key === "Enter") {
+				if (current.length >= 1) {
+					const $task = findTask(current[0]);
+					if (!taskSwitcher.isTaskExpanded($task)) {
+						onswitch($task);
+					} else {
+						$task.focus();
+					}
+					event.stopPropagation();
+				}
+			}
+		});
 		settings.$list.on("click", ".task-header", function() {
 			onswitch($(this).parent(".task"));
 		});
-		settings.$list.on("keyup", ".task", function (event) {
+		const arrowKeyAction = function($task, $targetTask) {
+			if ($targetTask.length !== 0) {
+				if (taskSwitcher.isTaskExpanded($task)) {
+					onswitch($task);
+				}
+				if (!taskSwitcher.isTaskExpanded($targetTask)) {
+					onswitch($targetTask);
+				} else {
+					$targetTask.focus();
+				}
+			}
+		};
+		settings.$list.on("keyup", ".task", function(event) {
 			if (event.key === "Escape") {
 				const $task = $(this);
 				if (taskSwitcher.isTaskExpanded($task)) {
 					onswitch($task);
 					event.stopPropagation();
 				}
+			}
+			if (event.key === "ArrowUp") {
+				const $task = $(this);
+				arrowKeyAction($task, $task.prev().filter(taskSelector));
+			}
+			if (event.key === "ArrowDown") {
+				const $task = $(this);
+				arrowKeyAction($task, $task.next().filter(taskSelector));
 			}
 		});
 
