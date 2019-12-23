@@ -156,7 +156,7 @@ public class PythonTCPSocket {
 		
 		private static final int port = 8090;
 		private static final int tryReconnectCount = 10;
-		private static final int tryReconnectSleep = 500;
+		private static final int tryReconnectSleep = 750;
 		private static final int threadTimeout = 10000;
 		
 		private static final String conversionStart = "CONVERSION_START";
@@ -228,7 +228,7 @@ public class PythonTCPSocket {
 					success = true;
 				}
 				catch (final ConnectException e) {
-					final String message = "Connect failed, trying to reconnect.";
+					final String message = "Connect failed, trying to reconnect: " + e.getMessage();
 					logger.info(message);
 					logger.debug(message, e);
 					try {
