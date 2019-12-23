@@ -464,7 +464,8 @@ public class AssetService {
 		} else {
 			newAssetFolders.put(asset, newInfo.get());
 		}
-		{
+		try {
+			lockService.readLock("AssetService::onNewAssetFolderChanged");
 			final AssetTask<?> task = assetTasks.get(asset);
 			Objects.requireNonNull(task);
 			// TODO use batch updater
@@ -494,6 +495,8 @@ public class AssetService {
 					}
 				}
 			}
+		} finally {
+			lockService.readUnlock("AssetService::onNewAssetFolderChanged");
 		}
 		if (isPreviewDeletionNeeded(oldInfo, newInfo)) {
 			deleteNewAssetPreview(asset);
