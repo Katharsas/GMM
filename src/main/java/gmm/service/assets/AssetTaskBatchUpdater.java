@@ -3,6 +3,7 @@ package gmm.service.assets;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -12,8 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import gmm.collections.ArrayList;
 import gmm.collections.Collection;
-import gmm.collections.HashSet;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.assets.AssetTaskUpdater.OnNewAssetUpdate;
 import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
@@ -21,74 +22,112 @@ import gmm.service.assets.AssetTaskUpdater.OnOriginalAssetUpdate;
 @Service
 public class AssetTaskBatchUpdater {
 	
-	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
+	public static interface OnBatchComplete extends Consumer<Collection<AssetTask<?>>> {}
 	public static interface OnAssetUpdateProvider {
 		public OnOriginalAssetUpdate createOnOriginalAssetUpdate();
 		public OnNewAssetUpdate createOnNewAssetUpdate();
 	}
 	
-	public static interface OnBatchComplete extends Consumer<Collection<AssetTask<?>>> {}
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	public class ResultCollector implements OnAssetUpdateProvider {
-		
-		private final Collection<AssetTask<?>> updatedTasks = new HashSet<>(AssetTask.getGenericClass());
-		private final OnBatchComplete onComplete;
-		int remainingSize;
-		
-		public ResultCollector(int totalTaskNumber, OnBatchComplete onComplete) {
+	private final AssetTaskUpdater taskUpdater;
+	private final Set<ResultCollector> remaining = ConcurrentHashMap.newKeySet();
+	
+	
+	public class UpdateProvider implements OnAssetUpdateProvider {
+		private final Consumer<AssetTask<?>> onComplete;
+		private OnOriginalAssetUpdate originalUpdate = null;
+		private OnNewAssetUpdate newUpdate = null;
+		public UpdateProvider(Consumer<AssetTask<?>> onComplete) {
 			this.onComplete = onComplete;
-			remainingSize = totalTaskNumber;
 		}
-		
 		@Override
 		public OnOriginalAssetUpdate createOnOriginalAssetUpdate() {
-			return taskUpdater.new OnOriginalAssetUpdate(result -> {
-				synchronized (updatedTasks) {
-					updatedTasks.add(result);
-				}
-			});
+			if (originalUpdate == null) {
+				originalUpdate = taskUpdater.new OnOriginalAssetUpdate(onComplete);
+			}
+			return originalUpdate;
 		}
-		
 		@Override
 		public OnNewAssetUpdate createOnNewAssetUpdate() {
-			return taskUpdater.new OnNewAssetUpdate(result -> {
-				synchronized (updatedTasks) {
-					updatedTasks.add(result);
-				}
-			});
-		}
-		
-		/**
-		 * @return true if all tasks have been completed an no more batches are left, false otherwise.
-		 */
-		private boolean completeBatch() {
-			synchronized (updatedTasks) {
-				if (updatedTasks.size() > 0) {
-					Collection<AssetTask<?>> resultBatch;
-					resultBatch = updatedTasks.copy();
-					updatedTasks.clear();
-					final int completedSize = resultBatch.size();
-					onComplete.accept(resultBatch);
-					remainingSize -= completedSize;
-				}
+			if (newUpdate == null) {
+				newUpdate = taskUpdater.new OnNewAssetUpdate(onComplete);
 			}
-			return remainingSize <= 0;
+			return newUpdate;
+		}
+		private int calledUpdateOperations() {
+			int count = 0;
+			if (originalUpdate != null) {
+				if (originalUpdate.isUsed()) count++;
+			}
+			if (newUpdate != null) {
+				if (newUpdate.isUsed()) count++;
+			}
+			return count;
 		}
 	}
 	
-	@Autowired private AssetTaskUpdater taskUpdater;
+	public class ResultCollector {
+		
+		// TODO should probably use AssetTask ids instead of the tasks themselves (for immutable tasks)
+		private final ConcurrentHashMap<AssetTask<?>, AtomicInteger> pendingAsyncCompletions = new ConcurrentHashMap<>();
+		private final OnBatchComplete onComplete;
+		
+		public ResultCollector(OnBatchComplete onComplete) {
+			this.onComplete = onComplete;
+		}
+		
+		public void updateTask(AssetTask<?> toUpdate, BiConsumer<AssetTask<?>, OnAssetUpdateProvider> updateFunction) {
+			UpdateProvider updateProvider = new UpdateProvider(completedTask -> {
+				AtomicInteger pendingUpdates = pendingAsyncCompletions.get(completedTask);
+				if (pendingUpdates == null) {
+					logger.error("Could not retrieve AssetTask pending update counter!");
+				} else {
+					pendingUpdates.getAndDecrement();
+				}
+			});
+			AtomicInteger updateCount = new AtomicInteger(0);
+			pendingAsyncCompletions.put(toUpdate, updateCount);
+			updateFunction.accept(toUpdate, updateProvider);
+			updateCount.set(updateCount.get() + updateProvider.calledUpdateOperations());
+		}
+		
+		/**
+		 * @return true if all tasks have been completed and no more batches are left, false otherwise.
+		 */
+		private boolean completeBatch() {
+			if (!pendingAsyncCompletions.isEmpty()) {
+				Collection<AssetTask<?>> resultBatch = new ArrayList<>(AssetTask.getGenericClass());
+				pendingAsyncCompletions.entrySet().removeIf(entry -> {
+					if (entry.getValue().get() <= 0) {
+						resultBatch.add(entry.getKey());
+						return true;
+					} else {
+						return false;
+					}
+				});
+				if (resultBatch.size() > 0) {
+					onComplete.accept(resultBatch);
+				}
+			}
+			return pendingAsyncCompletions.isEmpty();
+		}
+	}
 	
-	private final Set<ResultCollector> remaining = ConcurrentHashMap.newKeySet();
 	
+	@Autowired
+	public AssetTaskBatchUpdater(AssetTaskUpdater taskUpdater) {
+		this.taskUpdater = taskUpdater;
+	}
+
 	public void updateTasks(
 			Collection<? extends AssetTask<?>> toUpdate,
 			BiConsumer<AssetTask<?>, OnAssetUpdateProvider> updateFunction,
 			OnBatchComplete onComplete) {
 		
-		final ResultCollector resultCollector = new ResultCollector(toUpdate.size(), onComplete);
-		for (final AssetTask<?> task : toUpdate ) {
-			updateFunction.accept(task, resultCollector);
+		final ResultCollector resultCollector = new ResultCollector(onComplete);
+		for (final AssetTask<?> task : toUpdate) {
+			resultCollector.updateTask(task, updateFunction);
 		}
 		final boolean haveAllCompleted = resultCollector.completeBatch();
 		if (!haveAllCompleted) {
@@ -96,7 +135,7 @@ public class AssetTaskBatchUpdater {
 		}
 	}
 	
-	@Scheduled(fixedDelay = 10000)
+	@Scheduled(fixedDelay = 5000)
 	private void callback() {
 		if (remaining.size() > 0) {
 			for (final Iterator<ResultCollector> i = remaining.iterator(); i.hasNext();) {
@@ -107,7 +146,7 @@ public class AssetTaskBatchUpdater {
 				}
 			}
 			if (remaining.size() > 20) {
-				logger.warn("High number of uncompleted batches. Leak?");
+				logger.warn("High number of uncompleted batch processes. Leak?");
 			}
 		}
 	}

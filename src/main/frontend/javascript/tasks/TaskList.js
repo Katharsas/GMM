@@ -175,7 +175,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		.then(function(taskListEvents) {
 			const asyncTasks = [];
 			for (const event of taskListEvents) {
-				console.debug("TaskList: Received event '" + event.eventName + "'");
+				console.debug("TaskList " + taskListId + ": Received event '" + event.eventName + "'");
 				if (event.eventName in baseEventHandlers) {
 					asyncTasks.push(function() {
 						return baseEventHandlers[event.eventName](event);

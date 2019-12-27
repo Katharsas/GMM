@@ -72,7 +72,7 @@ public class PinnedSession extends TaskListState {
 
 	@Override
 	protected <T extends Task> Collection<T> filter(Collection<T> tasks) {
-		final Collection<T> filtered = new LinkedList<>(tasks.getGenericType());
+		final Collection<T> filtered = new ArrayList<>(tasks.getGenericType());
 		for (final T task : tasks) {
 			if(pinnedTasks.contains(task)) {
 				filtered.add(task);

@@ -183,6 +183,10 @@ public class AssetTaskUpdater {
 			this.onCompletion = onCompletion;
 		}
 		
+		protected boolean isUsed() {
+			return usedUp;
+		}
+		
 		protected synchronized void doUpdate(Runnable updateMethod) {
 			if (usedUp) throw new IllegalStateException("Updater can only used for one update operation!");
 			updateMethod.run();

@@ -21,6 +21,7 @@ import gmm.domain.task.asset.AssetKey;
 import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetProperties;
 import gmm.domain.task.asset.AssetTask;
+import gmm.domain.task.asset.ModelProperties;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.assets.AssetService;
@@ -47,8 +48,8 @@ public class TextureModelLinkService {
 	@Autowired
 	public TextureModelLinkService(DataAccess data, AssetService assets) {
 		this.data = data;
-		this.assetTasks = assets.getNewAssetFoldersTaskEvents().getLiveView();
 		
+		this.assetTasks = assets.getNewAssetFoldersTaskEvents().getLiveView();
 		// only one thread writes to these at a time, but any number of threads may read at the same time
 		// TODO check if unsynchronized MultiMap is thread-safe for this scenario
 		// see https://github.com/google/guava/issues/135
@@ -85,6 +86,7 @@ public class TextureModelLinkService {
 					modelsToTextureNames.putAll(modelTask, props.getTextureNames());
 					for (final AssetName textureName : props.getTextureNames()) {
 						textureNamesToModels.put(textureName, modelTask);
+						updateModelPropsViewModel(props, textureName);
 					}
 				});
 			} else if (event.type == DataChangeType.ADDED) {
@@ -92,19 +94,25 @@ public class TextureModelLinkService {
 					modelsToTextureNames.putAll(modelTask, props.getTextureNames());
 					for (final AssetName textureName : props.getTextureNames()) {
 						textureNamesToModels.put(textureName, modelTask);
-						AssetTask<?> assetTask = assetTasks.get(textureName.getKey());
-						if (assetTask != null) {
-							if (!(assetTask instanceof TextureTask)) {
-								throw new IllegalStateException("Expected to find 'TextureTask' for asset '" + textureName + "',"
-										+ " but was '" + assetTask.getClass().getSimpleName() +"'!");
-							}
-							TextureTask textureTask = (TextureTask) assetTask;
-							props.getViewModel().addTextureTask(textureTask);
-//							System.out.println("MES_ADD: Initializing for model '" + modelTask + "' texture '" + textureName + "'");
-						}
+						updateModelPropsViewModel(props, textureName);
 					}
 				});
 			}
+		}
+	}
+	
+	private void updateModelPropsViewModel(ModelProperties modelProps, AssetName textureName) {
+		AssetTask<?> assetTask = assetTasks.get(textureName.getKey());
+		// if asset/props changed, then viewModel is in default state (all textures are texturesWithoutTasks)
+		// if it didn't, then re-adding textures wont actually do anything
+		if (assetTask != null) {
+			if (!(assetTask instanceof TextureTask)) {
+				logger.warn("Expected to find 'TextureTask' for asset '" + textureName + "',"
+						+ " but was '" + assetTask.getClass().getSimpleName() +"'!");
+				return;
+			}
+			TextureTask textureTask = (TextureTask) assetTask;
+			modelProps.getViewModel().addTextureTask(textureTask);
 		}
 	}
 
