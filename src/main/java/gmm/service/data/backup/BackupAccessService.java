@@ -83,18 +83,23 @@ public class BackupAccessService {
 	/**
 	 * Creates backups when executed if the supplied condition evaluates to true.
 	 */
-	protected class ConditionalBackupExecutor extends BackupExecutor {
+	protected class PeriodicBackupExecutor extends BackupExecutor {
 		
-		private final TimeCondition condition;
+		private final ChronoUnit timeUnit;
+		private final int timePeriod;
 		
-		ConditionalBackupExecutor(String subDir, int maxBackups, TimeCondition condition) {
+		PeriodicBackupExecutor(String subDir, int maxBackups, ChronoUnit timeUnit, int timePerdiod) {
 			super(subDir, maxBackups);
-			this.condition = condition;
+			this.timeUnit = timeUnit;
+			this.timePeriod = timePerdiod;
 		}
 		@Override
 		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
 			final LocalDateTime now = LocalDateTime.now();
-			if(condition.get(now, last())) super.execute(saveTasks, saveUsers, data);
+			long lastBackupDuration = Math.abs(timeUnit.between(now, last()));
+			if (lastBackupDuration >= timePeriod) {
+				super.execute(saveTasks, saveUsers, data);
+			}
 		}
 	}
 	
@@ -112,9 +117,9 @@ public class BackupAccessService {
 	
 	private final Path backupPath = Paths.get("autoBackups");
 	
-	protected final ConditionalBackupExecutor monthlyBackup;
-	protected final ConditionalBackupExecutor daylyBackup;
-	protected final ConditionalBackupExecutor hourlyBackup;
+	protected final PeriodicBackupExecutor monthlyBackup;
+	protected final PeriodicBackupExecutor daylyBackup;
+	protected final PeriodicBackupExecutor hourlyBackup;
 	protected final BackupExecutor triggeredBackup;
 	
 	@Autowired
@@ -123,14 +128,14 @@ public class BackupAccessService {
 		this.fileService = service;
 		
 		// timed backups
-		monthlyBackup = new ConditionalBackupExecutor(
-				"monthly", 6, (now, last) -> ChronoUnit.MONTHS.between(now, last) >= 1);
+		monthlyBackup = new PeriodicBackupExecutor(
+				"monthly", 6, ChronoUnit.MONTHS, 1);
 		
-		daylyBackup = new ConditionalBackupExecutor(
-				"dayly", 7, (now, last) -> ChronoUnit.DAYS.between(now, last) >= 1);
+		daylyBackup = new PeriodicBackupExecutor(
+				"dayly", 7, ChronoUnit.DAYS, 1);
 		
-		hourlyBackup = new ConditionalBackupExecutor(
-				"hourly", 24, (now, last) -> ChronoUnit.HOURS.between(now, last) >= 1);
+		hourlyBackup = new PeriodicBackupExecutor(
+				"hourly", 24, ChronoUnit.HOURS, 1);
 		
 		// triggered backups
 		triggeredBackup = new BackupExecutor("triggered", 100);
