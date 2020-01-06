@@ -96,8 +96,8 @@ public class BackupAccessService {
 		@Override
 		public void execute(boolean saveTasks, boolean saveUsers, DataAccess data) {
 			final LocalDateTime now = LocalDateTime.now();
-			long lastBackupDuration = Math.abs(timeUnit.between(now, last()));
-			if (lastBackupDuration >= timePeriod) {
+			final long timeSinceLastBackup = Math.abs(timeUnit.between(now, last()));
+			if (timeSinceLastBackup >= timePeriod) {
 				super.execute(saveTasks, saveUsers, data);
 			}
 		}

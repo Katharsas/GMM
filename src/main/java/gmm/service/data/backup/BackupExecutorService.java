@@ -22,14 +22,21 @@ public class BackupExecutorService implements ServletContextListener {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
-	@Autowired private AssetTaskUpdater assetTaskUpdater;
-	@Autowired private BackupAccessService backups;
-	@Autowired private DataAccess data;
+	private final AssetTaskUpdater assetTaskUpdater;
+	private final BackupAccessService backups;
+	private final DataAccess data;
 	
+	@Autowired
+	public BackupExecutorService(AssetTaskUpdater assetTaskUpdater, BackupAccessService backups, DataAccess data) {
+		this.assetTaskUpdater = assetTaskUpdater;
+		this.backups = backups;
+		this.data = data;
+	}
+
 	/**
-	 * fixedRate should not influence backup rate
+	 * Initial delay to test things in development without persisting
 	 */
-	@Scheduled(fixedRate = 600000, initialDelay = 600000)
+	@Scheduled(fixedRate = 1 * 60 * 1000, initialDelay = 5 * 60 * 1000)
 	private void callback() {
 		backups.monthlyBackup.execute(true, true, data);
 		backups.hourlyBackup.execute(true, true, data);
