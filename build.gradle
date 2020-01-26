@@ -32,7 +32,7 @@ buildscript {
 	    jcenter()
     }
     dependencies {
-    	classpath 'org.gretty:gretty:2.3.1'
+    	classpath 'org.gretty:gretty:3.0.1'
         classpath "com.github.node-gradle:gradle-node-plugin:1.3.0"
         classpath 'com.bmuschko:gradle-cargo-plugin:2.4'
     }
@@ -44,6 +44,8 @@ apply plugin: 'org.gretty'
 apply plugin: 'com.bmuschko.cargo'
 apply plugin: 'com.github.node-gradle.node'
 apply plugin: "com.github.node-gradle.gulp"
+
+wrapper.gradleVersion = '6.1.1'
 
 class Profile {
 	String name
@@ -68,7 +70,7 @@ apply plugin: ProfilesPlugin
 profiles {
    	local {
    		type = "dev"
-   		// warName = "staging.war" // use default war name
+   		// warName = "foo.war" // change default war name
    		workspaceLocation = "$projectDir/gmm-workspace"
    	}
    	ext.active = local
@@ -98,49 +100,49 @@ repositories {
 dependencies {
 
 	// Spring 5
-	ext.springVersion = '5.0.4.RELEASE'
-	ext.springSecVersion = '5.0.3.RELEASE'
+	ext.springVersion = '5.2.2.RELEASE'
+	ext.springSecVersion = '5.2.1.RELEASE'
 	
-	compile group: "com.realityinteractive.imageio.tga", name: "undefined"
+	implementation group: "com.realityinteractive.imageio.tga", name: "undefined"
 	
-	compile group: 'org.springframework', name: 'spring-context', version: springVersion
-    compile group: 'org.springframework', name: 'spring-core', version: springVersion
-    compile group: 'org.springframework', name: 'spring-context-support', version: springVersion
-    compile group: 'org.springframework', name: 'spring-webmvc', version: springVersion
-    compile group: 'org.springframework', name: 'spring-test', version: springVersion
-    compile group: 'org.springframework', name: 'spring-beans', version: springVersion
-    compile group: 'org.springframework', name: 'spring-messaging', version: springVersion
-    compile group: 'org.springframework', name: 'spring-websocket', version: springVersion
-    compile group: 'org.springframework.security', name: 'spring-security-core', version: springSecVersion
-    compile group: 'org.springframework.security', name: 'spring-security-config', version: springSecVersion
-    compile group: 'org.springframework.security', name: 'spring-security-web', version: springSecVersion
-    compile group: 'org.springframework.security', name: 'spring-security-taglibs', version: springSecVersion
-    compile group: 'org.springframework.security', name: 'spring-security-messaging', version: springSecVersion
+	implementation group: 'org.springframework', name: 'spring-context', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-core', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-context-support', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-webmvc', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-test', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-beans', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-messaging', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-websocket', version: springVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-core', version: springSecVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-config', version: springSecVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-web', version: springSecVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-taglibs', version: springSecVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-messaging', version: springSecVersion
 
 	// Libs
-    compile group: 'com.google.jimfs', name: 'jimfs', version:'1.1'
-    compile group: 'org.tmatesoft.svnkit', name: 'svnkit', version:'1.9.3'
-    /* compile(group: 'com.sun.mail', name: 'javax.mail', version:'1.5.3') {
+    implementation group: 'com.google.jimfs', name: 'jimfs', version:'1.1'
+    implementation group: 'org.tmatesoft.svnkit', name: 'svnkit', version:'1.9.3'
+    /* implementation(group: 'com.sun.mail', name: 'javax.mail', version:'1.5.3') {
 		exclude(module: 'activation')
     } */
-    compile group: 'com.google.guava', name: 'guava', version:'18.0'
-    //compile group: 'joda-time', name: 'joda-time', version:'2.8.1'
-	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.4'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.4'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.3.2'
-    compile group: 'org.apache.commons', name: 'commons-collections4', version:'4.1'
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'com.thoughtworks.xstream', name: 'xstream', version:'1.4.8'
-    compile group: 'org.freemarker', name: 'freemarker', version:'2.3.27-incubating'
-    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
-    compile group: 'commons-fileupload', name: 'commons-fileupload', version:'1.3.1'
-    compile group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
+    implementation group: 'com.google.guava', name: 'guava', version:'18.0'
+    //implementation group: 'joda-time', name: 'joda-time', version:'2.8.1'
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.4'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.4'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version:'3.3.2'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version:'4.1'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'com.thoughtworks.xstream', name: 'xstream', version:'1.4.8'
+    implementation group: 'org.freemarker', name: 'freemarker', version:'2.3.27-incubating'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    implementation group: 'commons-fileupload', name: 'commons-fileupload', version:'1.3.1'
+    implementation group: 'org.imgscalr', name: 'imgscalr-lib', version:'4.2'
     
     // JavaEE
-    compile group: 'javax.servlet', name: 'jstl', version:'1.2'
+    implementation group: 'javax.servlet', name: 'jstl', version:'1.2'
     
     // Testing
-	testCompile group: 'junit', name: 'junit', version:'4.12'
+	testImplementation group: 'junit', name: 'junit', version:'4.12'
     
     // JavaEE APIs
     providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version:'4.0.0'
@@ -148,7 +150,7 @@ dependencies {
 	providedCompile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
     
 	// Change gretty tomcat version
-	def tomcatVersion = '9.0.13'
+	def tomcatVersion = '9.0.30'
     gretty(
     	"org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
@@ -205,14 +207,15 @@ processResources {
 war {
 	exclude '**/META-INF-src'
 	def profile = project.profiles.ext.active;
-	if (profile.hasProperty('warName')){
-		archiveName = profile.warName
+	if (profile.hasProperty('warName') && profile.warName) {
+		archiveFileName = profile.warName
 	}
 }
 
 
 // Embedded Tomcat/Jetty Configuration
 gretty {
+	httpPort = 8080
 	contextPath = '/GMM'
 	servletContainer = "tomcat9"
 	//serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
