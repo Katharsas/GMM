@@ -12,6 +12,7 @@ import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.web.multipart.MultipartFile;
 
 import gmm.ConfigurationException;
@@ -40,13 +41,14 @@ import gmm.web.forms.TaskForm;
  * 
  * @author Jan Mothes
  */
-public abstract class AssetTaskService<A extends AssetProperties> extends TaskFormService<AssetTask<A>>{
+public abstract class AssetTaskService<A extends AssetProperties> extends TaskFormService<AssetTask<A>> implements DisposableBean {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	protected final PathConfig config;
 	protected final FileService fileService;
 	
+	// currently only TaskAssetService uses its pool, maybe move pool to there
 	protected final ForkJoinPool threadPool;
 	
 	protected abstract CompletableFuture<A> recreatePreview(Path sourceFile, Path previewFolder, AssetGroupType type);
@@ -80,7 +82,8 @@ public abstract class AssetTaskService<A extends AssetProperties> extends TaskFo
 		return extensions;
 	}
 	
-	protected void shutdown() {
+	@Override
+	public void destroy() {
 		synchronized (threadPool) {
 			if (!threadPool.isShutdown()) {
 				boolean isTerminated = ThreadUtil.shutdownThreadPool(threadPool, 10);

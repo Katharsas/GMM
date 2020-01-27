@@ -11,8 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;
@@ -36,8 +34,7 @@ import gmm.service.data.DataAccess;
  * @author Jan
  */
 @Service
-public class TextureTaskService extends AssetTaskService<TextureProperties>
-		implements ServletContextListener {
+public class TextureTaskService extends AssetTaskService<TextureProperties> {
 	
 	@Autowired
 	public TextureTaskService(DataAccess data, Config config, FileService fileService) {
@@ -52,11 +49,6 @@ public class TextureTaskService extends AssetTaskService<TextureProperties>
 		//register TGA loader plugin
 		final IIORegistry registry = IIORegistry.getDefaultInstance();
 		registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
-	}
-	
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		super.shutdown();
 	}
 	
 	/**

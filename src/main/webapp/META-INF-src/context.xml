@@ -40,7 +40,7 @@
         		spring-security-taglibs-*.jar"/>
     </JarScanner>
     
-    <!-- Disable session persistence -->
+    <!-- Disable session persistence (by setting empty session state file path) -->
     <Manager pathname="" />
     
 </Context>

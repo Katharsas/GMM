@@ -7,9 +7,6 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +28,7 @@ import gmm.service.data.DataAccess;
 import gmm.service.tasks.PythonTCPSocket.MeshData;
 
 @Service
-public class ModelTaskService extends AssetTaskService<ModelProperties>
-		implements ServletContextListener {
+public class ModelTaskService extends AssetTaskService<ModelProperties> {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -72,11 +68,6 @@ public class ModelTaskService extends AssetTaskService<ModelProperties>
 					meshData.getPolygonCount(), textureNames);
 			return asset;
 		}, threadPool);
-	}
-	
-	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
-		super.shutdown();
 	}
 	
 	@Override
