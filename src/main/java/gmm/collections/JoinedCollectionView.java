@@ -147,7 +147,7 @@ public class JoinedCollectionView<E> implements Collection<E>, java.io.Serializa
 	/**
 	 * Since copying a read-only-view just to get the same read-only-view does not make much sense,
 	 * this method actually returns a proper collection as the caller would probably expect it to
-	 * do, since he probably does not now that this is just a view. <br>
+	 * do, since he probably does not know that this is just a view. <br>
 	 * To make an copy of the actual view itself, use {@link #viewCopy()}.
 	 */
 	@Override

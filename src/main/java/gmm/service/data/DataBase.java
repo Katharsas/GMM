@@ -6,6 +6,7 @@ import static gmm.service.data.DataChangeType.REMOVED;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -70,6 +71,15 @@ public class DataBase extends DataBaseEventService implements DataAccess {
 	/** Maps supertypes (=compounds) to collection views of objects of concrete types from {@link #concretes}.
 	 */
 	final private CollectionTypeMap<Linkable> compounds = new CollectionTypeMap<>();
+	
+//	@Scheduled(fixedDelay = 2000)
+//	public void scheduleFixedDelayTask() {
+//		Collection<ModelTask> ms = concretes.getSafe(ModelTask.class);
+//	    int modelCount = ms.size();
+//	    if (modelCount == 0) {
+//	    	return;
+//	    }
+//	}
 	
 	// ###################
 	// INIT
@@ -268,14 +278,19 @@ public class DataBase extends DataBaseEventService implements DataAccess {
 			final java.util.Set<Class<? extends Linkable>> concreteTypes = concretes.keySet();
 			// If data is concrete, pass it, else create mapping
 			if (concreteTypes.contains(genericType)) {
+				final HashSet<T> duplicateCheckBuffer = new HashSet<>(genericType, data.size());
+				Util.copyThrowOnDuplicate(data, duplicateCheckBuffer);
 				action.accept(data);
 			} else {
 				final Multimap<Class<T>, T> clazzToData = ArrayListMultimap.create();
 				for(final T item : data) {
 					clazzToData.put(Util.classOf(item), item);
 				}
-				for(final Class<T> clazz : clazzToData.keySet()) {
-					final ArrayList<? extends T> concreteData = new ArrayList<>(clazz, clazzToData.get(clazz));
+				for (Entry<Class<T>, java.util.Collection<T>> entry : clazzToData.asMap().entrySet()) {
+					final Class<T> clazz = entry.getKey();
+					final java.util.Collection<T> concreteDataRaw = entry.getValue();
+					final HashSet<T> concreteData = new HashSet<>(clazz, concreteDataRaw.size());
+					Util.copyThrowOnDuplicate(concreteDataRaw, concreteData);
 					action.accept(concreteData);
 				}
 			}

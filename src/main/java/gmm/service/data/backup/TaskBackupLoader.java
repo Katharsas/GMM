@@ -76,13 +76,15 @@ public class TaskBackupLoader {
 	private Collection<Task> fullyChecked;
 	
 	public void prepareLoadTasks(Collection<Task> tasks) {
+		// remove duplicates
+		final HashSet<Task> tasksClean = new HashSet<>(tasks);
 		// split tasks into types to use correct conflict checker for loading
 		multiMap = HashMultimap.create();
-		StreamSupport.stream(tasks.spliterator(), false)
+		StreamSupport.stream(tasksClean.spliterator(), false)
 			.forEach(task -> multiMap.put(task.getClass(), task));
-		assetImportChecked = new ArrayList<AssetTask<?>>(AssetTask.getGenericClass(), tasks.size());
+		assetImportChecked = new ArrayList<AssetTask<?>>(AssetTask.getGenericClass(), tasksClean.size());
 		isAssetImportCheckDone = false;
-		fullyChecked = new ArrayList<>(Task.class, tasks.size());
+		fullyChecked = new ArrayList<>(Task.class, tasksClean.size());
 	}
 	
 	public BundledMessageResponsesProducer getBundledMessageResponses() {

@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import gmm.collections.Collection;
+import gmm.collections.Set;
 
 public class Util {
 
@@ -118,5 +119,21 @@ public class Util {
 	
 	public static Class<?> anyClass() {
 		return Object.class;
+	}
+
+	/**
+	 * Adds given elements to given set, throws if duplicate is found on add.
+	 * @param elements - Elements to check for duplicates.
+	 * @param target - Empty collection created by caller so this method does not need to know generic type or size.
+	 * @return Given buffer filled with elements guaranteed to not have duplicates.
+	 * @throws IllegalArgumentException
+	 */
+	public static <T> Set<T> copyThrowOnDuplicate(Iterable<T> elements, Set<T> target) {
+	    for (T element: elements) {
+	    	if (!target.add(element)) {
+				throw new IllegalArgumentException("Given elements for type '" + target.getGenericType() + "' contain duplicates!");
+	    	}
+	    }
+	    return target;
 	}
 }

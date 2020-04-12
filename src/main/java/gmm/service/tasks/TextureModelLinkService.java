@@ -15,6 +15,7 @@ import com.google.common.collect.Multimaps;
 
 import gmm.collections.ArrayList;
 import gmm.collections.Collection;
+import gmm.collections.HashSet;
 import gmm.domain.User;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.domain.task.asset.AssetKey;
@@ -118,7 +119,7 @@ public class TextureModelLinkService {
 
 	private void onTextureChange(DataChangeEvent<? extends TextureTask> event) {
 		logger.debug("Updating texture-model linking due to potential texture change.");
-		final Collection<ModelTask> changedModelTasks = new ArrayList<>(ModelTask.class);
+		final Collection<ModelTask> changedModelTasks = new HashSet<>(ModelTask.class);
 		for (final TextureTask textureTask : event.changed) {
 			if (textureNamesToModels.containsKey(textureTask.getAssetName())) {
 				changedModelTasks.addAll(onTextureChange(textureTask, event.type));
