@@ -116,7 +116,7 @@ public class TaskAssetController {
 	 * @param key - task link key required for public access to assets
 	 */
 	@PreAuthorize("permitAll()")
-	@RequestMapping(value="/preview/texture/{key}", method = RequestMethod.GET, produces="image/png")
+	@RequestMapping(value="/preview/texture/{key}", method = RequestMethod.GET)
 	public void sendTexturePreviewPublic(
 			HttpServletResponse response,
 			@PathVariable("key") String key,
@@ -124,22 +124,24 @@ public class TaskAssetController {
 			@RequestParam(value="ver") String version,
 			@RequestParam(value="id") String idLink) throws Exception {
 		
-		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
 		validatePreviewParams(task, Optional.of(key), version);
+		setPreviewCaching(response);
+		response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		checkPreviewIOException(() -> textureService.writePreview(task, small, version, response.getOutputStream()));
 	}
 	
-	@RequestMapping(value="/preview/texture", method = RequestMethod.GET, produces="image/png")
+	@RequestMapping(value="/preview/texture", method = RequestMethod.GET)
 	public void sendTexturePreview(
 			HttpServletResponse response,
 			@RequestParam(value="small", defaultValue="true") boolean small,
 			@RequestParam(value="ver") String version,
 			@RequestParam(value="id") String idLink) throws Exception {
 		
-		setPreviewCaching(response);
 		final TextureTask task = UniqueObject.getFromIdLink(data.getList(TextureTask.class), idLink);
 		validatePreviewParams(task, Optional.empty(), version);
+		setPreviewCaching(response);
+		response.setContentType(MediaType.IMAGE_PNG_VALUE);
 		checkPreviewIOException(() -> textureService.writePreview(task, small, version, response.getOutputStream()));
 	}
 	
