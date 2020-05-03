@@ -21,6 +21,18 @@ var TaskForm = (function() {
 		var $new = $("#newTaskButton");
 		var $cancel = $("#cancelTaskButton");
 		var $submit = $("#submitTaskButton");
+
+		var $assetPath;
+		var $assetPathInput;
+		var $nameInput;
+		
+		const WILDCARD_FILENAME = "%filename%";
+
+		function initElements() {
+			$assetPath = $form.find(".taskForm-element-path");
+			$assetPathInput = $assetPath.find("input");
+			$nameInput = $form.find(".taskForm-element-name input");
+		}
 		
 		$new.on("click", function() {
 			show();
@@ -68,6 +80,7 @@ var TaskForm = (function() {
 			Ajax.get(contextUrl + "/tasks/renderTaskForm")
 			.then(function(data) {
 				$form.html(data.taskFormHtml);
+				initElements();
 				currentlyEditedId = data.editedTaskIdLink;
 				if(currentlyEditedId !== null) {
 					// if editing, hide type selection
@@ -85,10 +98,17 @@ var TaskForm = (function() {
 		
 		function switchAssetPath($taskElementType) {
 			var selected = $taskElementType.find(":selected").val();
-			var $path = $form.find("#taskForm-element-path");
-			switch(selected) {
-				case "GENERAL":	$path.hide();break;
-				default:		$path.show();break;
+			var isTypeGeneral = selected === "GENERAL";
+			$assetPath.toggleClass("inactive", isTypeGeneral);
+			$assetPathInput.prop("disabled", isTypeGeneral);
+			if (!isTypeGeneral) {
+				if ($nameInput.val().length === 0) {
+					$nameInput.val(WILDCARD_FILENAME);
+				}
+			} else {
+				if ($nameInput.val() === WILDCARD_FILENAME) {
+					$nameInput.val("");
+				}
 			}
 		}
 		

@@ -1,25 +1,32 @@
-#taskForm {
-	//this allows using height 100% for textareas so textareas fills container on resize
-	display:table-cell;
-}
-
 .taskForm-group {
-	float:left;
 	margin-right:20px;
 	margin-bottom:20px;
 	resize:horizontal;
 	overflow:hidden;
-	width:25em;
+	width:27em;
+}
+.taskForm-group.textArea{
+	resize:both;
+}
+.taskForm-group.textArea .taskForm-element.textArea {
+	height: calc(100% - (8px * 2));
+	.taskForm-input {
+		height: 100%;
+		textarea {
+			resize:none;
+		}
+	}
 }
 
 .taskForm-element {
 	margin:8px 15px;
 }
-.taskForm-group.textArea{
-	resize:both;
-}
-.taskForm-group.textArea .taskForm-Element textarea{
-	resize:none;
+.taskForm-element-path.inactive {
+	color: #666;
+	input {
+		background-color: #555;
+		border-color: #666;
+	}
 }
 
 .taskForm-description {
@@ -27,7 +34,7 @@
 	min-width:5em;
 }
 .taskForm-input {
-	margin-left:5em;
+	margin-left:7em;
 	
 	input, select, textarea {
 		width:100%;
