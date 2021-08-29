@@ -409,11 +409,16 @@ public class AssetService {
 		// removed assets
 		for (final AssetKey notFound : oldFolders) {
 			final AssetTask<?> task = assetTasks.get(notFound);
-			if (task != null && task.getAssetProperties(type) != null) {
+			if (task != null) {
 				// TODO use batch updater
-				taskUpdater.new OnNewAssetUpdate(result -> {
+				OnNewAssetUpdate updater = taskUpdater.new OnNewAssetUpdate(result -> {
 					data.editBy(result, User.UNKNOWN);
-				}).removePropsAndSetInfo(task, Optional.empty());
+				});
+				if (task.getAssetProperties(type) != null) {
+					updater.removePropsAndSetInfo(task, Optional.empty());
+				} else {
+					updater.setInfo(task, Optional.empty());
+				}
 			}
 			newAssetFolders.remove(notFound);
 			newAssetFoldersWithoutTasks.remove(notFound);
