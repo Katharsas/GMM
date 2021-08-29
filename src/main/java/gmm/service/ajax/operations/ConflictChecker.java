@@ -1,9 +1,11 @@
 package gmm.service.ajax.operations;
 
 import java.util.Map;
+import java.util.function.Function;
 
 import gmm.domain.UniqueObject;
 import gmm.service.ajax.BundledMessageResponses;
+import gmm.util.TypedString;
 
 /**
  * Defines of a set of {@link Conflict}s that can occur on loading an element of type T.<br>
@@ -18,7 +20,7 @@ import gmm.service.ajax.BundledMessageResponses;
  * @author Jan Mothes
  * @param <T> See {@link BundledMessageResponses}
  */
-public abstract class ConflictChecker<T> {
+public abstract class ConflictChecker<T, O extends TypedString> {
 	
 	/**
 	 * An operation which can be executed to resolve a conflict.
@@ -53,6 +55,8 @@ public abstract class ConflictChecker<T> {
 		}
 	}
 	
+
+	
 	public final Conflict<T> NO_CONFLICT = new Conflict<T>() {
 		@Override
 		public String getName() {
@@ -64,11 +68,27 @@ public abstract class ConflictChecker<T> {
 		}
 	};
 	
+	private final Function<String, O> newOperation;
+	public final O DEFAULT_OPERATION;
+	
+	public ConflictChecker(Function<String, O> newOperation) {
+		this.newOperation = newOperation;
+		DEFAULT_OPERATION = newOperation.apply("default");
+	}
+	
+	public O parseOpFromString(String operationString) {
+		O op = newOperation.apply(operationString);
+		if (!DEFAULT_OPERATION.equals(op) && !getAllOperations().containsKey(op)) {
+			throw new IllegalArgumentException("The given operation '" + operationString + "' is not available for this conflict checker!");
+		}
+		return op;
+	}
+	
 	/**
 	 * Get an operations used to resolve conflicts.
 	 * @return A map which maps all operation names which the client can send to operations.
 	 */
-	public abstract Map<String, Operation<T>> getAllOperations();
+	public abstract Map<O, Operation<T>> getAllOperations();
 	
 	/**
 	 * @return {@link #NO_CONFLICT} if no conflict occurred, otherwise the conflict which occurred.

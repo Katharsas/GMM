@@ -27,7 +27,6 @@ import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetGroupType;
 import gmm.service.FileService;
 import gmm.service.FileService.PathFilter;
-import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.PathConfig;
@@ -194,7 +193,7 @@ public class AdminController {
 				xmlService.deserializeAll(visible.resolve(dirRelative), Task.class);
 		
 		session.prepareLoadTasks(tasks);
-		return session.firstAssetPathCheckBundle();
+		return session.getFirstLoader().firstBundle();
 	}
 	
 	/**
@@ -206,7 +205,8 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return loadNextTask(operation, doForAll);
+		var loader = session.getFirstLoader();
+		return loader.nextBundle(loader.createAnswer(operation, doForAll));
 	}
 	
 	/**
@@ -217,7 +217,7 @@ public class AdminController {
 	@RequestMapping(value = "/load/tasks", method = RequestMethod.POST)
 	public @ResponseBody List<MessageResponse> loadTasks() {
 		
-		return session.firstTaskIdCheckBundle();
+		return session.getSecondLoader().firstBundle();
 	}
 	
 	/**
@@ -229,7 +229,8 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.nextCheckBundle(new ConflictAnswer(operation, doForAll));
+		var loader = session.getSecondLoader();
+		return loader.nextBundle(loader.createAnswer(operation, doForAll));
 	}
 	
 	/**
@@ -329,6 +330,6 @@ public class AdminController {
 			@RequestParam("operation") String operation,
 			@RequestParam("doForAll") boolean doForAll) {
 		
-		return session.nextImportCheckBundle(new ConflictAnswer(operation, doForAll));
+		return session.nextImportCheckBundle(operation, doForAll);
 	}
 }

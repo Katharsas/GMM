@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import gmm.collections.List;
 import gmm.service.ajax.operations.ConflictChecker;
+import gmm.util.TypedString;
 
 /**
  * 
@@ -14,7 +15,7 @@ import gmm.service.ajax.operations.ConflictChecker;
  * @see {@link BundledMessageResponses}
  */
 @Service
-public class AutoResponseBundleHandler<T> {
+public class AutoResponseBundleHandler {
 
 	/**
 	 * Creates a BundledMessageResponses instance with the given operations, starts loading all
@@ -26,18 +27,18 @@ public class AutoResponseBundleHandler<T> {
 	 * @param conflictHandler - Called if a conflict occurs, given the conflict status as parameter.
 	 * @throws IllegalStateException if a response contains a conflict
 	 */
-	public void processResponses(Iterable<T> elements, ConflictChecker<T> ops,
-			Function<MessageResponse, ConflictAnswer> conflictHandler) {
+	public <T,O extends TypedString> void processResponses(Iterable<T> elements, ConflictChecker<T,O> ops,
+			Function<MessageResponse, ConflictAnswer<O>> conflictHandler) {
 		
-		final BundledMessageResponses<T> responses = new BundledMessageResponses<>(elements, ops);
+		final BundledMessageResponses<T,O> responses = new BundledMessageResponses<>(elements, ops);
 		processResponses(responses, conflictHandler);
 	}
 	
 	/**
 	 * @see {@link #processResponses(Iterable, ConflictChecker, Function)}
 	 */
-	public void processResponses(BundledMessageResponsesProducer responses,
-			Function<MessageResponse, ConflictAnswer> conflictHandler) {
+	public <O extends TypedString> void processResponses(BundledMessageResponsesProducer<O> responses,
+			Function<MessageResponse, ConflictAnswer<O>> conflictHandler) {
 		
 		List<MessageResponse> list = responses.firstBundle();
 		while(true) {
@@ -47,10 +48,10 @@ public class AutoResponseBundleHandler<T> {
 				break;
 			}
 			else if (!status.equals(BundledMessageResponses.success)) {
-				final ConflictAnswer answer = conflictHandler.apply(response);
+				final ConflictAnswer<O> answer = conflictHandler.apply(response);
 				list = responses.nextBundle(answer);
 			} else {
-				list = responses.nextBundle(BundledMessageResponses.defaultAnswer);
+				list = responses.nextBundle(responses.defaultAnswer());
 			}
 		}
 	}

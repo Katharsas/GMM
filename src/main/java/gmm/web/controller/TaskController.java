@@ -26,7 +26,6 @@ import gmm.domain.Label;
 import gmm.domain.UniqueObject;
 import gmm.domain.User;
 import gmm.domain.task.Task;
-import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.data.DataAccess;
 import gmm.service.data.DataChangeEvent.ClientDataChangeEvent;
@@ -182,7 +181,7 @@ public class TaskController {
 	public List<MessageResponse> createTaskNext(
 			@RequestParam("operation") String operation) {
 		
-		return taskSession.getNextTaskCheck(new ConflictAnswer(operation, false));
+		return taskSession.getNextTaskCheck(operation, false);
 	}
 	
 	/**

@@ -11,12 +11,26 @@ import gmm.domain.task.asset.AssetTask;
 import gmm.service.ajax.operations.ConflictChecker.Conflict;
 import gmm.service.ajax.operations.ConflictChecker.Operation;
 import gmm.service.data.DataAccess;
+import gmm.util.TypedString;
 
 /**
  * @author Jan Mothes
  */
 @Service
 public class AssetNameConflictCheckerFactory {
+	
+	public static enum ConflictKey {
+		autoSkipConflict, fileNameConflict
+	}
+	
+	public static class OpKey extends TypedString {
+		public final static OpKey skip = new OpKey("skip");
+		public final static OpKey overwrite = new OpKey("overwrite");
+		
+		private OpKey(String name) {
+			super(name);
+		}
+	}
 	
 	private final DataAccess data;
 	
@@ -46,17 +60,17 @@ public class AssetNameConflictCheckerFactory {
 		}
 	};
 	
-	private Map<String, Operation<AssetName>> createOperations(
+	private Map<OpKey, Operation<AssetName>> createOperations(
 			AssetNameConflictChecker checker, DataAccess data) {
-		final Map<String, Operation<AssetName>> map = new HashMap<>();
+		final Map<OpKey, Operation<AssetName>> map = new HashMap<>();
 		// both
-		map.put("skip", (conflict, assetName) -> {
+		map.put(OpKey.skip, (conflict, assetName) -> {
 			checker.assertConflict(conflict.equals(fileNameConflict) || conflict.equals(autoSkipConflict));
 			
 			return "Skipping this task for conflicting filename \""+assetName+"\"";
 		});
 		// task conflict
-		map.put("overwrite", (conflict, assetName) -> {
+		map.put(OpKey.overwrite, (conflict, assetName) -> {
 			checker.assertConflict(conflict.equals(fileNameConflict));
 			
 			data.remove(checker.conflictingTask);
@@ -67,16 +81,17 @@ public class AssetNameConflictCheckerFactory {
 		return map;
 	}
 	
-	public class AssetNameConflictChecker extends ConflictChecker<AssetName> {
+	public class AssetNameConflictChecker extends ConflictChecker<AssetName, OpKey> {
 
 		private final boolean skipIfNameConflict;
 		
 		private final Consumer<AssetName> onAssetNameChecked;
-		private final Map<String, Operation<AssetName>> ops;
+		private final Map<OpKey, Operation<AssetName>> ops;
 		
 		private AssetTask<?> conflictingTask;
 	
 		private AssetNameConflictChecker(Consumer<AssetName> onAssetNameChecked, boolean skipIfNameConflict) {
+			super(OpKey::new);
 			this.skipIfNameConflict = skipIfNameConflict;
 			this.onAssetNameChecked = onAssetNameChecked;
 			this.ops = createOperations(this, data);
@@ -87,7 +102,7 @@ public class AssetNameConflictCheckerFactory {
 		}
 		
 		@Override
-		public Map<String, Operation<AssetName>> getAllOperations() {
+		public Map<OpKey, Operation<AssetName>> getAllOperations() {
 			return ops;
 		}
 		

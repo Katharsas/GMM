@@ -25,8 +25,12 @@ public class EventMap<K, V> implements Map<K, V>, EventMapSource<K,V> {
 	
 	@Override
 	public void register(BiConsumer<K, V> onPut, BiConsumer<K, V> onRemove) {
-		onPutListeners.add(onPut);
-		onRemoveListeners.add(onRemove);
+		if (onPut != null) {
+			onPutListeners.add(onPut);
+		}
+		if (onRemove != null) {
+			onRemoveListeners.add(onRemove);
+		}
 	}
 	
 	@Override

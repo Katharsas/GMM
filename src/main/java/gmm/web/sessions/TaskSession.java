@@ -15,10 +15,10 @@ import gmm.domain.task.Task;
 import gmm.domain.task.TaskType;
 import gmm.domain.task.asset.AssetName;
 import gmm.service.ajax.BundledMessageResponses;
-import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.OpKey;
 import gmm.service.data.DataAccess;
 import gmm.service.tasks.TaskServiceFinder;
 import gmm.service.users.UserService;
@@ -98,7 +98,7 @@ public class TaskSession {
 	 * Create new task (& conflict checking)
 	 * ---------------------------------------------------*/
 	
-	private BundledMessageResponses<AssetName> importer;
+	private BundledMessageResponses<AssetName, OpKey> importer;
 	
 	public void cleanUp() {
 		importer = null;
@@ -133,7 +133,7 @@ public class TaskSession {
 		}
 	}
 	
-	public List<MessageResponse> getNextTaskCheck(ConflictAnswer answer) {
-		return importer.nextBundle(answer);
+	public List<MessageResponse> getNextTaskCheck(String operation, boolean doForAll) {
+		return importer.nextBundle(importer.createAnswer(operation, doForAll));
 	}
 }

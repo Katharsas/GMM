@@ -20,10 +20,10 @@ import gmm.domain.task.asset.AssetName;
 import gmm.domain.task.asset.AssetTask;
 import gmm.service.VirtualNewAssetFileSystem;
 import gmm.service.ajax.BundledMessageResponses;
-import gmm.service.ajax.ConflictAnswer;
 import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.OpKey;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.assets.AssetService;
 import gmm.service.data.DataAccess;
@@ -78,15 +78,30 @@ public class AdminSession extends TaskBackupLoader {
 		newAssetsWithoutTasksVfs = new VirtualNewAssetFileSystem(assets.getNewAssetFoldersWithoutTasks());
 	}
 	
-	 public VirtualNewAssetFileSystem getNewAssetsWithoutTasksVfs() {
-		 return newAssetsWithoutTasksVfs;
-	 }
+	public VirtualNewAssetFileSystem getNewAssetsWithoutTasksVfs() {
+		return newAssetsWithoutTasksVfs;
+	}
+	
+	/*--------------------------------------------------
+	 * Load task backups
+	 * ---------------------------------------------------*/
+	
+	public List<MessageResponse> nextCheckBundle(String operation, boolean doForAll) {
+		if (super.isFirstLoaderDone()) {
+			var loader = super.getSecondLoader();
+			return loader.nextBundle(loader.createAnswer(operation, doForAll));
+		} else {
+			var loader = super.getFirstLoader();
+			return loader.nextBundle(loader.createAnswer(operation, doForAll));
+		}
+	}
+	 
 	
 	/*--------------------------------------------------
 	 * Import asset tasks
 	 * ---------------------------------------------------*/
 	
-	private BundledMessageResponses<AssetName> assetImporter;
+	private BundledMessageResponses<AssetName, OpKey> assetImporter;
 	private final List<Path> importFilePaths = new ArrayList<>(Path.class);
 	private AssetGroupType type = AssetGroupType.ORIGINAL;
 	private Collection<AssetTask<?>> importedTasks;
@@ -143,7 +158,7 @@ public class AdminSession extends TaskBackupLoader {
 		return assetImporter.firstBundle();
 	}
 	
-	public List<MessageResponse> nextImportCheckBundle(ConflictAnswer answer) {
-		return assetImporter.nextBundle(answer);
+	public List<MessageResponse> nextImportCheckBundle(String operation, boolean doForAll) {
+		return assetImporter.nextBundle(assetImporter.createAnswer(operation, doForAll));
 	}
 }

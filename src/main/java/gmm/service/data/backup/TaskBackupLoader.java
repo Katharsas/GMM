@@ -16,7 +16,6 @@ import com.google.common.collect.Multimap;
 import gmm.collections.ArrayList;
 import gmm.collections.Collection;
 import gmm.collections.HashSet;
-import gmm.collections.List;
 import gmm.domain.task.GeneralTask;
 import gmm.domain.task.Task;
 import gmm.domain.task.asset.AssetName;
@@ -24,9 +23,6 @@ import gmm.domain.task.asset.AssetTask;
 import gmm.domain.task.asset.ModelTask;
 import gmm.domain.task.asset.TextureTask;
 import gmm.service.ajax.BundledMessageResponses;
-import gmm.service.ajax.BundledMessageResponsesProducer;
-import gmm.service.ajax.ConflictAnswer;
-import gmm.service.ajax.MessageResponse;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
@@ -66,8 +62,8 @@ public class TaskBackupLoader {
 		this.taskIdConflictCheckerFactory = taskIdConflictCheckerFactory;
 	}
 
-	private BundledMessageResponses<? extends Task> generalTaskLoader;
-	private BundledMessageResponses<AssetName> assetTaskLoader;
+	private BundledMessageResponses<? extends Task, TaskIdConflictCheckerFactory.OpKey> generalTaskLoader;
+	private BundledMessageResponses<AssetName, AssetNameConflictCheckerFactory.OpKey> assetTaskLoader;
 	
 	private Multimap<Class<? extends Task>, Task> multiMap;
 	private Collection<AssetTask<?>> assetImportChecked;
@@ -87,21 +83,27 @@ public class TaskBackupLoader {
 		fullyChecked = new ArrayList<>(Task.class, tasksClean.size());
 	}
 	
-	public BundledMessageResponsesProducer getBundledMessageResponses() {
-		return new BundledMessageResponsesProducer() {
-			@Override
-			public List<MessageResponse> firstBundle() {
-				return isAssetImportCheckDone ?
-						firstTaskIdCheckBundle() : firstAssetPathCheckBundle();
-			}
-			@Override
-			public List<MessageResponse> nextBundle(ConflictAnswer answer) {
-				return nextCheckBundle(answer);
-			}
-		};
+	public boolean isFirstLoaderDone() {
+		return isAssetImportCheckDone;
 	}
 	
-	public List<MessageResponse> firstAssetPathCheckBundle() {
+	public BundledMessageResponses<AssetName, AssetNameConflictCheckerFactory.OpKey> getFirstLoader() {
+		if (isAssetImportCheckDone == false && assetTaskLoader == null) {
+			createAssetTaskLoader();
+		}
+		Objects.requireNonNull(assetTaskLoader);
+		return assetTaskLoader;
+	}
+	
+	public BundledMessageResponses<? extends Task, TaskIdConflictCheckerFactory.OpKey> getSecondLoader() {
+		if (isAssetImportCheckDone == true && generalTaskLoader == null) {
+			createGeneralTaskLoader();
+		}
+		Objects.requireNonNull(generalTaskLoader);
+		return generalTaskLoader;
+	}
+	
+	public void createAssetTaskLoader() {
 		final Collection<Task> assetTasks = new HashSet<>(Task.class);
 		assetTasks.addAll(multiMap.get(TextureTask.class));
 		assetTasks.addAll(multiMap.get(ModelTask.class));
@@ -122,12 +124,10 @@ public class TaskBackupLoader {
 			assetTaskLoader = null;
 			isAssetImportCheckDone = true;
 		};
-		assetTaskLoader = new BundledMessageResponses<AssetName>(assetNameToTask.keySet(), ops, onAssetImportCheckDone);
-		
-		return assetTaskLoader.firstBundle();
+		assetTaskLoader = new BundledMessageResponses<>(assetNameToTask.keySet(), ops, onAssetImportCheckDone);
 	}
 	
-	public List<MessageResponse> firstTaskIdCheckBundle() {
+	public void createGeneralTaskLoader() {
 		if(!isAssetImportCheckDone) {
 			throw new IllegalStateException(
 					"This method cannot be called until assetPath conflict checking has been completed!");
@@ -140,20 +140,8 @@ public class TaskBackupLoader {
 		final Runnable onAllChecksDone = () -> {
 			generalTaskLoader = null;
 			data.addAll(fullyChecked);
+			isAssetImportCheckDone = false;
 		};
 		generalTaskLoader = new BundledMessageResponses<>(tasks, ops, onAllChecksDone);
-		
-		return generalTaskLoader.firstBundle();
-	}
-	
-	public List<MessageResponse> nextCheckBundle(ConflictAnswer answer) {
-		BundledMessageResponses<?> current;
-		if (isAssetImportCheckDone) {
-			current = generalTaskLoader;
-		} else {
-			current = assetTaskLoader;
-		}
-		Objects.requireNonNull(current);
-		return current.nextBundle(answer);
 	}
 }

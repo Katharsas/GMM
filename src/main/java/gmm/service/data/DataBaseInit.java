@@ -14,6 +14,8 @@ import gmm.domain.User.UserNameOccupiedException;
 import gmm.domain.task.Task;
 import gmm.service.ajax.AutoResponseBundleHandler;
 import gmm.service.ajax.ConflictAnswer;
+import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
+import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
 import gmm.service.data.backup.BackupAccessService;
 import gmm.service.data.backup.TaskBackupLoader;
 import gmm.service.users.UserService;
@@ -77,20 +79,15 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 	
 	private void loadTasks(Collection<Task> tasks) {
 		backupLoader.prepareLoadTasks(tasks);
-		final AutoResponseBundleHandler<Task> autoLoader = new AutoResponseBundleHandler<>();
+		final AutoResponseBundleHandler autoLoader = new AutoResponseBundleHandler();
 		
-		autoLoader.processResponses(backupLoader.getBundledMessageResponses(),  (conflict) -> {
-			if (conflict.getStatus().equals("folderConflict")) {
-				logger.info("Aquiring data on automatic task import caused by: " + conflict);
-				return new ConflictAnswer("aquireData", true);
-			} else {
-				logger.error("Conflict occured on automatic task import: " + conflict);
-				return new ConflictAnswer("skip", true);
-			}
+		autoLoader.processResponses(backupLoader.getFirstLoader(),  (conflict) -> {
+			logger.error("AssetName checker conflict!", new IllegalStateException("Unexpected conflict during automatic task import: " + conflict));
+			return new ConflictAnswer<>(AssetNameConflictCheckerFactory.OpKey.skip, true);
 		});
-		autoLoader.processResponses(backupLoader.getBundledMessageResponses(), (conflict) -> {
-			logger.error("Conflict occured on automatic task import: " + conflict);
-			return new ConflictAnswer("skip", true);
+		autoLoader.processResponses(backupLoader.getSecondLoader(), (conflict) -> {
+			logger.error("TaskId checker conflict!", new IllegalStateException("Unexpected conflict during automatic task import: " + conflict));
+			return new ConflictAnswer<>(TaskIdConflictCheckerFactory.OpKey.skip, true);
 		});
 	}
 	

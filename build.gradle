@@ -67,8 +67,8 @@ version = '0.6.9-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 12
+targetCompatibility = 12
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'

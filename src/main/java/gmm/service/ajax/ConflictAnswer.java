@@ -1,11 +1,13 @@
 package gmm.service.ajax;
 
-public class ConflictAnswer {
+import gmm.util.TypedString;
+
+public class ConflictAnswer<O extends TypedString> {
 	
-	public final String operation;
+	public final O operation;
 	public final boolean doForAllFlag;
 	
-	public ConflictAnswer(String operation, boolean doForAllFlag) {
+	public ConflictAnswer(O operation, boolean doForAllFlag) {
 		this.operation = operation;
 		this.doForAllFlag = doForAllFlag;
 	}

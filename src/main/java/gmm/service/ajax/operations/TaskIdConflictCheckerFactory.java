@@ -12,12 +12,23 @@ import gmm.domain.task.Task;
 import gmm.service.ajax.operations.ConflictChecker.Conflict;
 import gmm.service.ajax.operations.ConflictChecker.Operation;
 import gmm.service.data.DataAccess;
+import gmm.util.TypedString;
 
 /**
  * @author Jan Mothes
  */
 @Service
 public class TaskIdConflictCheckerFactory {
+	
+	public static class OpKey extends TypedString {
+		public final static OpKey skip = new OpKey("skip");
+		public final static OpKey overwrite = new OpKey("overwrite");
+		public final static OpKey both = new OpKey("both");
+		
+		private OpKey(String name) {
+			super (name);
+		}
+	}
 
 	private final DataAccess data;
 	
@@ -39,18 +50,18 @@ public class TaskIdConflictCheckerFactory {
 		}
 	};
 	
-	public Map<String, Operation<Task>> createOperations(DataAccess data, Consumer<Task> onAdd) {
-		final Map<String, Operation<Task>> map = new HashMap<>();
+	public Map<OpKey, Operation<Task>> createOperations(DataAccess data, Consumer<Task> onAdd) {
+		final Map<OpKey, Operation<Task>> map = new HashMap<>();
 		
-		map.put("skip", (conflict, element) -> {
+		map.put(OpKey.skip, (conflict, element) -> {
 			return "Skipping this conflicting "+print(element);
 		});
-		map.put("overwrite", (conflict, element) -> {
+		map.put(OpKey.overwrite, (conflict, element) -> {
 			data.remove(element);
 			onAdd.accept(element);
 			return "Overwriting existing task with this "+print(element);
 		});
-		map.put("both", (conflict, element) -> {
+		map.put(OpKey.both, (conflict, element) -> {
 			element.makeUnique();
 			onAdd.accept(element);
 			return "Adding this as new "+print(element);
@@ -63,18 +74,19 @@ public class TaskIdConflictCheckerFactory {
 	}
 	
 	
-	public class TaskIdConflictChecker extends ConflictChecker<Task> {
+	public class TaskIdConflictChecker extends ConflictChecker<Task, OpKey> {
 		
-		private final Map<String, Operation<Task>> ops;
+		private final Map<OpKey, Operation<Task>> ops;
 		private final Consumer<Task> onAdd;
 		
 		private TaskIdConflictChecker(Consumer<Task> onAdd) {
+			super(OpKey::new);
 			ops = createOperations(data, onAdd);
 			this.onAdd = onAdd;
 		}
 		
 		@Override
-		public Map<String, Operation<Task>> getAllOperations() {
+		public Map<OpKey, Operation<Task>> getAllOperations() {
 			return ops;
 		}
 		
