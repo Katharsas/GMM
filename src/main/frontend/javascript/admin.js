@@ -123,6 +123,24 @@ var AssetImport = function() {
 		$assets.find('#taskForm').hide();
 	};
 	hideImport();
+
+	// Auto import
+	var $autoImportInput = $assets.find("#autoImportInput");
+	$autoImportInput.on("change", function(event) {
+		const isEnabled = $(this).is(':checked');
+		const ajaxCall = function() {
+			return Ajax.post(contextUrl + "/admin/autoImport", {"isEnabled": isEnabled});
+		}
+		if (isEnabled) {
+			const dialog = Dialogs.confirm(function() {
+				ajaxCall().then(function() {
+					window.location.reload();
+				});
+			}, "Enabling will trigger an initial new asset import. Continue?");
+		} else {
+			ajaxCall();
+		}
+	});
 	
 	// FileTrees
 	

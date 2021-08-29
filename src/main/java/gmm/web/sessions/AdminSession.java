@@ -25,6 +25,7 @@ import gmm.service.ajax.operations.AssetNameConflictCheckerFactory;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.AssetNameConflictChecker;
 import gmm.service.ajax.operations.AssetNameConflictCheckerFactory.OpKey;
 import gmm.service.ajax.operations.TaskIdConflictCheckerFactory;
+import gmm.service.assets.AssetAutoImportService;
 import gmm.service.assets.AssetService;
 import gmm.service.data.DataAccess;
 import gmm.service.data.backup.BackupExecutorService;
@@ -47,6 +48,7 @@ public class AdminSession extends TaskBackupLoader {
 	private final TaskServiceFinder taskService;
 	private final BackupExecutorService backups;
 	private final DataAccess data;
+	private final AssetAutoImportService autoImportService;
 	
 	private final User loggedInUser;
 	private final AssetNameConflictCheckerFactory assetNameConflictCheckerFactory;
@@ -59,6 +61,7 @@ public class AdminSession extends TaskBackupLoader {
 			BackupExecutorService backups,
 			AssetNameConflictCheckerFactory assetNameConflictCheckerFactory,
 			TaskIdConflictCheckerFactory taskIdConflictCheckerFactory,
+			AssetAutoImportService autoImportService,
 			DataAccess data, UserService users) {
 		
 		super(data, assetNameConflictCheckerFactory, taskIdConflictCheckerFactory);
@@ -66,6 +69,7 @@ public class AdminSession extends TaskBackupLoader {
 		this.assets = assets;
 		this.taskService = taskService;
 		this.backups = backups;
+		this.autoImportService = autoImportService;
 		
 		this.assetNameConflictCheckerFactory = assetNameConflictCheckerFactory;
 		this.data = data;
@@ -80,6 +84,14 @@ public class AdminSession extends TaskBackupLoader {
 	
 	public VirtualNewAssetFileSystem getNewAssetsWithoutTasksVfs() {
 		return newAssetsWithoutTasksVfs;
+	}
+	
+	public void setAutoImportEnabled(boolean isEnabled) {
+		data.getCombinedData().setTaskAutoImportEnabled(isEnabled);
+		if (isEnabled) {
+			backups.triggerTaskBackup(true);
+			autoImportService.createAllMissingTasks();
+		}
 	}
 	
 	/*--------------------------------------------------

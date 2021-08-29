@@ -65,8 +65,8 @@ public class AdminController {
 	@PostConstruct
 	private void init() {
 		// taskForm template dependencies
-		templates.registerVariable("users", ()->data.getList(User.class));
-		templates.registerVariable("taskLabels", ()->data.getList(Label.class));
+		templates.registerVariable("users", () -> data.getList(User.class));
+		templates.registerVariable("taskLabels", () -> data.getList(Label.class));
 		templates.registerVariable("taskForm", this::createNewTaskForm);
 		templates.registerForm("taskForm", this::createNewTaskForm);
 		
@@ -77,6 +77,11 @@ public class AdminController {
 		final TaskForm defaultFacade = new TaskForm();
 		defaultFacade.setName("%filename%");
 		return defaultFacade;
+	}
+	
+	@ModelAttribute("isAutoImportEnabled")
+	public boolean isTaskAutoImportEnabled() {
+		return data.getCombinedData().isTaskAutoImportEnabled();
 	}
 	
 	
@@ -234,9 +239,19 @@ public class AdminController {
 	}
 	
 	/**
-	 * Original Asset Import <br>
+	 * Asset Import <br>
 	 * -----------------------------------------------------------------<br/>
 	 */
+	
+	/**
+	 * Clear selection when user hits cancel <br/>
+	 * @see {@link #getAssetPaths(Path, boolean)}
+	 */
+	@RequestMapping(value = {"/autoImport"} , method = RequestMethod.POST)
+	public @ResponseBody void setAutoImportConfig(@RequestParam("isEnabled") boolean isEnabled) {
+		
+		session.setAutoImportEnabled(isEnabled);
+	}
 	
 	/**
 	 * Show original asset folder file tree.

@@ -57,13 +57,19 @@
         
         <div class="admin-groupDesc"><fmt:message key="admin.importAssets"/></div>
         <div class="admin-group" id="assets">
+        	<div id=autoImportNewAssets>
+        		<label>
+        			<input id="autoImportInput" class="clickable" type="checkbox" ${isAutoImportEnabled ? 'checked' : ''}>
+        			<fmt:message key="admin.autoImport"/>
+        		</label>
+        	</div>
         	<div id="originalAssets">
-        	<div class="admin-inner hint">Original assets:</div>
-			<div class="admin-inner fileTreeContainer" id="originalAssets-fileTreeContainer"></div>
+	        	<div class="admin-inner hint">Original assets:</div>
+				<div class="admin-inner fileTreeContainer" id="originalAssets-fileTreeContainer"></div>
 			</div>
 			<div id="newAssets">
-			<div class="admin-inner hint">New assets:</div>
-			<div class="admin-inner fileTreeContainer" id="newAssets-fileTreeContainer"></div>
+				<div class="admin-inner hint">New assets:</div>
+				<div class="admin-inner fileTreeContainer" id="newAssets-fileTreeContainer"></div>
 			</div>
 			
 			<div id="addAssetsButton" class="left button pageButton"><fmt:message key="admin.database.addassets"/></div>
