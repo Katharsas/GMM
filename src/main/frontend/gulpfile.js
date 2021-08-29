@@ -3,8 +3,6 @@
 
 var fs = require('fs');
 
-var notify = require("gulp-notify");
-
 var gulp = require("gulp");
 var gulpif = require('gulp-if');
 var sass = require("gulp-sass");
@@ -57,12 +55,6 @@ var cssSourceMaps = false;
 function handleErrors() {
 	var args = Array.prototype.slice.call(arguments);
 	console.log(args.toString());
-
-	// notify.onError({
-	// 	title: "Compile Error in line <%= error.lineNumber %>",
-	// 	message: "<%= error.message %>",
-	// 	onLast: true,
-	// }).apply(this, args);
 	this.emit("end"); // Keep gulp from hanging on this task
 }
 
@@ -93,7 +85,8 @@ function buildScript(files) {
 			}))
 			.pipe(gulp.dest(jsDest));
 	});
-	return eventStream.merge.apply(null, tasks);
+	eventStream.merge.apply(null, tasks);
+	return Promise.resolve();
 }
 
 gulp.task("three", function () {
@@ -151,4 +144,4 @@ gulp.task("build_sass", function () {
 		.pipe(gulp.dest(sassDest));
 });
 
-gulp.task("build", ["build_js", "build_sass"]);
+gulp.task("build", gulp.series("build_js", "build_sass"));

@@ -7,7 +7,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
  *
  * FRONTEND BUILD:
  * Nodejs and npm must be globally installed (windows: must be on PATH).
- * Run 'gradle gulp_build' to build frontend (javascript and sass).
+ * Run 'gradle buildFrontend' to build frontend (javascript and sass).
  * 
  * BACKEND BUILD & RUN:
  * See 'https://github.com/gretty-gradle-plugin/gretty' for detailed instructions.
@@ -21,31 +21,14 @@ import org.apache.tools.ant.filters.ReplaceTokens
  * Use Gradle task 'appRunDebug' to cause the webapp container to wait for debugger on port 5005.
  */
 
-
-buildscript {
-    repositories {
-        // gradle node/gulp plugin
-        maven {
-	    	url "https://plugins.gradle.org/m2/"
-	    }
-	    // gretty, cargo
-	    jcenter()
-    }
-    dependencies {
-    	classpath 'org.gretty:gretty:3.0.1'
-        classpath "com.github.node-gradle:gradle-node-plugin:1.3.0"
-        classpath 'com.bmuschko:gradle-cargo-plugin:2.4'
-    }
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.gretty' version '3.0.6'
+	id 'com.github.node-gradle.node' version '3.1.0'
 }
 
-apply plugin: 'java'
-apply plugin: 'war'
-apply plugin: 'org.gretty'
-apply plugin: 'com.bmuschko.cargo'
-apply plugin: 'com.github.node-gradle.node'
-apply plugin: "com.github.node-gradle.gulp"
-
-wrapper.gradleVersion = '6.1.1'
+wrapper.gradleVersion = '6.9.1'
 
 class Profile {
 	String name
@@ -84,18 +67,15 @@ version = '0.6.9-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 11
+targetCompatibility = 11
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 }
 
 repositories {
-	// all
     mavenCentral()
-    // gretty
-    jcenter()
 }
 dependencies {
 
@@ -150,7 +130,7 @@ dependencies {
 	providedCompile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
     
 	// Change gretty tomcat version
-	def tomcatVersion = '9.0.30'
+	def tomcatVersion = '9.0.52'
     gretty(
     	"org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
@@ -243,7 +223,7 @@ tasks.whenTaskAdded { task ->
 		}
 	}
 }
-
+/*
 cargo {
     containerId = 'tomcat9x'
     port = 8080
@@ -255,26 +235,27 @@ cargo {
         username = 'tomcat'
         password = 'tomcat'
     }
-}
+}*/
 
 
 // #####################
 //  Fontend Build
 // #####################
 
-// installGulp is unnecessary since it should be installed by npm
-
-gulp_three.dependsOn 'npmInstall'
-gulp_build_js.dependsOn 'npmInstall'
-gulp_build_sass.dependsOn 'npmInstall'
-
-gulp_build.dependsOn 'npmInstall'
-gulp_build.dependsOn 'gulp_three'
+task buildFrontend(type: NpmTask) {
+	dependsOn npmInstall
+	args = ['run', 'gulp_build']
+}
+task buildJs(type: NpmTask) {
+	dependsOn npmInstall
+	args = ['run', 'gulp_build_js']
+}
+task buildSass(type: NpmTask) {
+	dependsOn npmInstall
+	args = ['run', 'gulp_build_sass']
+}
 
 node {
 	download = false
 	nodeModulesDir = file("$projectDir/src/main/frontend")
-}
-gulp {
-	workDir = file("$projectDir/src/main/frontend")
 }
