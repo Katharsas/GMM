@@ -8,6 +8,7 @@ This is a web application for managing a big number of tasks and assets. It's is
 
 More detailed information here: https://github.com/Katharsas/GMM/wiki  
 Gothic Reloaded Mod Website: http://www.gothic-reloaded-mod.de
+Releases: https://github.com/Katharsas/GMM/releases
 
 #### License
 This software is licensed under GPLv3 (see LICENSE.TXT), excluding third party code & libraries which are di

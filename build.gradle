@@ -255,6 +255,8 @@ task buildSass(type: NpmTask) {
 	args = ['run', 'gulp_build_sass']
 }
 
+war.dependsOn buildFrontend
+
 node {
 	download = false
 	nodeModulesDir = file("$projectDir/src/main/frontend")
