@@ -37,7 +37,7 @@ import gmm.service.tasks.TaskServiceFinder;
 import gmm.web.ControllerArgs;
 import gmm.web.FileTreeScript;
 import gmm.web.FtlTemplateService;
-import gmm.web.forms.TaskForm;
+import gmm.web.forms.AssetTaskTemplateForm;
 import gmm.web.sessions.AdminSession;
 
 
@@ -67,16 +67,14 @@ public class AdminController {
 		// taskForm template dependencies
 		templates.registerVariable("users", () -> data.getList(User.class));
 		templates.registerVariable("taskLabels", () -> data.getList(Label.class));
-		templates.registerVariable("taskForm", this::createNewTaskForm);
-		templates.registerForm("taskForm", this::createNewTaskForm);
+		templates.registerVariable("taskTemplate", this::getTaskTemplate);// is this necessary so model variable can be passed to controller method?
+		templates.registerForm("taskTemplate", this::getTaskTemplate);
 		
-		templates.registerFtl("all_taskForm", "users", "taskLabels", "taskForm");
+		templates.registerFtl("taskTemplate", "users", "taskLabels", "taskTemplate");
 	}
 	
-	private TaskForm createNewTaskForm() {
-		final TaskForm defaultFacade = new TaskForm();
-		defaultFacade.setName("%filename%");
-		return defaultFacade;
+	private AssetTaskTemplateForm getTaskTemplate() {
+		return data.getCombinedData().getImportTaskForm();
 	}
 	
 	@ModelAttribute("isAutoImportEnabled")
@@ -99,7 +97,7 @@ public class AdminController {
 		session.getNewAssetsWithoutTasksVfs().update();
 		
 		final ControllerArgs requestData = new ControllerArgs(model, request, response);
-		templates.insertFtl("all_taskForm", requestData);
+		templates.insertFtl("taskTemplate", requestData);
 		return "admin";
 	}
 	
@@ -244,13 +242,24 @@ public class AdminController {
 	 */
 	
 	/**
-	 * Clear selection when user hits cancel <br/>
+	 * Save config option for auto import.
 	 * @see {@link #getAssetPaths(Path, boolean)}
 	 */
 	@RequestMapping(value = {"/autoImport"} , method = RequestMethod.POST)
 	public @ResponseBody void setAutoImportConfig(@RequestParam("isEnabled") boolean isEnabled) {
 		
 		session.setAutoImportEnabled(isEnabled);
+	}
+	
+	/**
+	 * Save asset task template to config.
+	 * @see {@link #importNextAsset(String, boolean)}
+	 */
+	@RequestMapping(value = {"/taskTemplate"} , method = RequestMethod.POST)
+	public @ResponseBody void setAssetTaskTemplate (
+			@ModelAttribute("taskTemplate") AssetTaskTemplateForm form) {
+		
+		data.getCombinedData().setImportTaskForm(form);
 	}
 	
 	/**
@@ -329,11 +338,10 @@ public class AdminController {
 	 * @see {@link #importNextAsset(String, boolean)}
 	 */
 	@RequestMapping(value = {"/importAssets"} , method = RequestMethod.POST)
-	public @ResponseBody List<MessageResponse> importAssets (
-			@ModelAttribute("taskForm") TaskForm form) {
+	public @ResponseBody List<MessageResponse> importAssets () {
 		
 		backups.triggerTaskBackup(true);
-		return session.firstImportCheckBundle(form);
+		return session.firstImportCheckBundle();
 	}
 	
 	/**

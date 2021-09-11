@@ -141,14 +141,14 @@ public class AdminSession extends TaskBackupLoader {
 	
 	// Check asset filenames for conflict
 	
-	public List<MessageResponse> firstImportCheckBundle(TaskForm form) {
+	public List<MessageResponse> firstImportCheckBundle() {
 		
 		importedTasks = new ArrayList<>(AssetTask.getGenericClass(), importFilePaths.size());
 		
-		final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
-			form.setAssetName(assetName.get());
+		final Consumer<AssetName> onAssetNameChecked = (assetName) -> {			
 			final AssetTaskService<?> service = taskService.getAssetService(assetName.getKey());
-			form.setType(service.getTaskType());
+			var taskTemplate = data.getCombinedData().getImportTaskForm();
+			TaskForm form = taskTemplate.createTaskForm(service.getTaskType(), assetName.get(), true);
 			importedTasks.add(service.create(form, loggedInUser));
 		};
 		final AssetNameConflictChecker ops =

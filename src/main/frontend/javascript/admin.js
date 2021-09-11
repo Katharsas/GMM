@@ -115,24 +115,27 @@ var Database = function() {
 var AssetImport = function() {
 	var $assets = $("#assets");
 	
-	$assets.find("#taskForm").find("#taskForm-group-type").hide();
-	
-	var hideImport = function() {
-		$assets.find("#selectedPaths ul").empty();
-		$assets.find('#importButtons .button').hide();
-		$assets.find('#taskForm').hide();
+	const $selectedPaths = $assets.find("#selectedPaths");
+	const $importButtons = $assets.find('#importButtons');
+	const clearHideImport = function() {
+		$selectedPaths.hide();
+		$selectedPaths.find("ul").empty();
+		$importButtons.hide();
 	};
-	hideImport();
+	clearHideImport();
 
 	// Auto import
 	var $autoImportInput = $assets.find("#autoImportInput");
 	$autoImportInput.on("change", function(event) {
-		const isEnabled = $(this).is(':checked');
+		const $input = $(this);
+		const isEnabled = $input.is(':checked');
 		const ajaxCall = function() {
 			return Ajax.post(contextUrl + "/admin/autoImport", {"isEnabled": isEnabled});
 		}
 		if (isEnabled) {
+			$input.prop('checked', false);
 			const dialog = Dialogs.confirm(function() {
+				$input.prop('checked', true);
 				ajaxCall().then(function() {
 					window.location.reload();
 				});
@@ -140,6 +143,14 @@ var AssetImport = function() {
 		} else {
 			ajaxCall();
 		}
+	});
+
+	// Task Template
+
+	const $templateForm = $assets.find("#taskTemplate");
+	const $saveTemplateButton = $assets.find("#saveTaskTemplateButton");
+	$saveTemplateButton.on("click", function(event) {
+		Ajax.post(contextUrl + "/admin/taskTemplate", {}, $templateForm);
 	});
 	
 	// FileTrees
@@ -189,7 +200,7 @@ var AssetImport = function() {
 			$selectedPathsList.empty();
 			
 			var data = { dir: dir, isOriginal: fileTreeId.startsWith("original") };
-			Ajax.get(contextUrl + "/admin/getAssetPaths", data, $("form#taskForm"))
+			Ajax.get(contextUrl + "/admin/getAssetPaths", data)
 				.then(function(paths) {
 					if(paths.length === 0) {
 						cancelImport();
@@ -203,8 +214,8 @@ var AssetImport = function() {
 					$selectedPathsListContainer.scrollTop($selectedPathsList.height());
 				});
 			
-			$assets.find('#importButtons .button').show();
-			$assets.find('#taskForm').show();
+			$selectedPaths.show();
+			$importButtons.show();
 		}
 	};
 	
@@ -217,29 +228,28 @@ var AssetImport = function() {
 	var importAssets = function(callback) {
 		var url = contextUrl + "/admin/importAssets";
 		var ajaxChannel = new ResponseBundleHandler(url, "assets");
-		ajaxChannel.start({$taskForm: $("#taskForm")}, function() {
+		ajaxChannel.start({}, function() {
 			if (allVars.activeFileTree === $originalFileTree.attr('id')) {
 				updateFileTreeOriginal();
 			} else if (allVars.activeFileTree === $newFileTree.attr('id')) {
 				updateFileTreeNew();
 			}
-			// TODO hideImport? (like cancelimport)?
+			clearHideImport();
 		});
 	};
 	
 	var cancelImport = function() {
 		return Ajax.post(contextUrl + "/admin/import/cancel")
 			.then(function() {
-				hideImport();
+				clearHideImport();
 				allVars.activeFileTree = null;
 			});
 	};
 	
-	var $buttons = $assets.find("#importButtons");
-	$buttons.find("#importAssetsButton").click(function() {
+	$importButtons.find("#importAssetsButton").click(function() {
 		importAssets();
 	});
-	$buttons.find("#cancelImportButton").click(function() {
+	$importButtons.find("#cancelImportButton").click(function() {
 		cancelImport();
 	});
 };

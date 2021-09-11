@@ -51,12 +51,15 @@ public class CombinedData {
 	public synchronized AssetTaskTemplateForm getImportTaskForm() {
 		if (importTaskForm == null) {
 			importTaskForm = new AssetTaskTemplateForm();
-			// TODO changing the form client side needs to update (= mutate) this object!
 		}
 		return importTaskForm;
 	}
 
-	
+	public void setImportTaskForm(AssetTaskTemplateForm importTaskForm) {
+		Objects.requireNonNull(importTaskForm);
+		this.importTaskForm = importTaskForm;
+	}
+
 	public Map<Set<Long>, String> getTaskToLinkKeys() {
 		return tasksToLinkKeys;
 	}

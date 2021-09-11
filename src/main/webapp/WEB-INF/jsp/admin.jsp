@@ -15,7 +15,7 @@
     
     	<div class="admin-groupDesc"><fmt:message key="admin.customization"/></div>
         <div class="admin-group">
-			<div class="admin-inner customizationDescription left"><fmt:message key="admin.htmlCode"/></div>
+			<div id="customizationDescription" class="left"><fmt:message key="admin.htmlCode"/></div>
 			<c:if test="${isCustomAdminBannerActive}">
 				<div  class="button pageButton right"><a href="admin/deactivateBanner"><fmt:message key="admin.deactivate"/><span></span></a></div>
 			</c:if>
@@ -23,17 +23,20 @@
 				<div  class="button pageButton right"><a href="admin/activateBanner"><fmt:message key="admin.activate"/><span></span></a></div>
 			</c:if>
         	<div class="clear"></div>
-        	<div class="admin-inner">
+        	<div>
         		<textarea id="adminBannerTextArea" ></textarea>
         	</div>
         </div>
     
     	<div class="admin-groupDesc"><fmt:message key="admin.database"/></div>
         <div class="admin-group" id="database">
-        	<div class="admin-inner left" id="loadTasks" >
-        	    <div class="admin-inner hint"><fmt:message key="admin.database.message"/></div>
-        		<div id="database-fileTreeContainer" class="admin-inner"></div>
-        		<br/>
+        	<div class="left" id="loadTasks" >
+        		<div class="admin-inner">
+        			<div class="admin-inner-header hint">
+	        	    	<fmt:message key="admin.database.message"/>
+	        	    </div>
+        			<div id="database-fileTreeContainer" class="admin-inner-main"></div>
+        		</div>
         		<div id="database-loadFile" class="button pageButton left">
         			<fmt:message key="admin.database.load"/>
         		</div>
@@ -42,51 +45,54 @@
         		</div>
         		<div class="clear"></div>
         	</div>
-			<div id="save" class="admin-inner left">
-				<div id="database-saveAllAs" class="button pageButton">
+			<div id="save" class="left">
+				<div id="database-saveAllAs" class="button pageButton innerButton">
         			<fmt:message key="admin.database.saveallas"/>
         		</div>
-        		<div id="database-saveAll" class="button pageButton">
+        		<div id="database-saveAll" class="button pageButton innerButton">
         			<fmt:message key="admin.database.saveall"/>
         		</div>
         		<div class="verticalSpace"></div>
-        		<div id="database-deleteAll" class="button pageButton"><fmt:message key="admin.database.deleteall"/></div>
+        		<div id="database-deleteAll" class="button pageButton innerButton">
+        			<fmt:message key="admin.database.deleteall"/>
+        		</div>
 			</div>
 			<div class="clear"></div>
         </div>
         
         <div class="admin-groupDesc"><fmt:message key="admin.importAssets"/></div>
         <div class="admin-group" id="assets">
-        	<div id=autoImportNewAssets>
+        	<div id="autoImportNewAssets" class="admin-inner admin-inner-main">
         		<label>
         			<input id="autoImportInput" class="clickable" type="checkbox" ${isAutoImportEnabled ? 'checked' : ''}>
         			<fmt:message key="admin.autoImport"/>
         		</label>
         	</div>
-        	<div id="originalAssets">
-	        	<div class="admin-inner hint">Original assets:</div>
-				<div class="admin-inner fileTreeContainer" id="originalAssets-fileTreeContainer"></div>
+        	<div id="importTaskTemplate" class="admin-inner">
+        		<div class="admin-inner-header"><fmt:message key="tasks.template"/></div>
+				<form:form id="taskTemplate" modelAttribute="taskTemplate" class="admin-inner-main">
+					${taskTemplate}
+				</form:form>
+				<div id="saveTaskTemplateButton" class="left button pageButton innerButton"><fmt:message key="tasks.template.save"/></div>
+				<div class="clear"></div>
 			</div>
-			<div id="newAssets">
-				<div class="admin-inner hint">New assets:</div>
-				<div class="admin-inner fileTreeContainer" id="newAssets-fileTreeContainer"></div>
+        	<div id="originalAssets" class="admin-inner">
+	        	<div class="admin-inner-header">Original assets</div>
+				<div class="admin-inner-main fileTreeContainer" id="originalAssets-fileTreeContainer"></div>
+			</div>
+			<div id="newAssets" class="admin-inner">
+				<div class="admin-inner-header">New assets</div>
+				<div class="admin-inner-main fileTreeContainer" id="newAssets-fileTreeContainer"></div>
 			</div>
 			
 			<div id="addAssetsButton" class="left button pageButton"><fmt:message key="admin.database.addassets"/></div>
 			<div class="clear"></div>
-			<div id="selectedPaths" class="admin-inner"><ul></ul></div>
+			<div id="selectedPaths" class="admin-inner admin-inner-main"><ul></ul></div>
 
-			<div id="importTaskForm" class="admin-inner">
-				<form:form id="taskForm" modelAttribute="taskForm">
-					${all_taskForm}
-				</form:form>
-				
+			<div id="importButtons">
+				<div id="importAssetsButton" class="left button pageButton"><fmt:message key="admin.database.importassets"/></div>
+				<div id="cancelImportButton" class="left button pageButton"><fmt:message key="admin.database.cancelimport"/></div>
 				<div class="clear"></div>
-				<div id="importButtons">
-					<div id="importAssetsButton" class="left button pageButton"><fmt:message key="admin.database.importassets"/></div>
-					<div id="cancelImportButton" class="left button pageButton"><fmt:message key="admin.database.cancelimport"/></div>
-					<div class="clear"></div>
-				</div>
 			</div>
 		</div>
 		
@@ -94,8 +100,7 @@
 			<fmt:message key="admin.database.useraccounts"/>
 		</div>
 		<div class="admin-group">
-			<br/>
-			<div class="admin-inner" id="admin-users">
+			<div id="admin-users">
 				<c:forEach items="${users}" var="user">
 					<div id="${user.getIdLink()}" class="admin-user ${user.isEnabled() ? '' : 'disabled'}">
 						<div class="admin-user-enabled clickable left">
