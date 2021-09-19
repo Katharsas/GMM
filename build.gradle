@@ -56,14 +56,14 @@ profiles {
    		// warName = "foo.war" // change default war name
    		workspaceLocation = "$projectDir/gmm-workspace"
    	}
-   	ext.active = local
+   	ext.active = local// overriden by profile.gradle!
 }
 if (file('profile.gradle').exists()) {
 	apply from: 'profile.gradle'
 }
 
 group = 'de.gothic-reloaded-mod'
-version = '0.6.9-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
