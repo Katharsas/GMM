@@ -76,10 +76,14 @@ public class AssetAutoImportService {
 		AssetTaskTemplateForm formTemplate = data.getCombinedData().getImportTaskForm();
 		
 		final Consumer<AssetName> onAssetNameChecked = (assetName) -> {
-			final AssetTaskService<?> service = taskService.getAssetService(assetName.getKey());
-			TaskForm form = formTemplate.createTaskForm(service.getTaskType(), assetName.get(), true);
-			AssetTask<?> task = service.create(form, User.SYSTEM);
-			data.add(task);
+			final AssetTaskService<?> service = taskService.tryGetAssetService(assetName.getKey());
+			if (service != null) {
+				TaskForm form = formTemplate.createTaskForm(service.getTaskType(), assetName.get(), true);
+				AssetTask<?> task = service.create(form, User.SYSTEM);
+				data.add(task);
+			} else {
+				logger.info("Skipping auto-import for '" + assetName + "' because no matching asset service could be found.");
+			}
 		};
 		final AssetNameConflictChecker ops = assetNameConflictCheckerFactory.create(onAssetNameChecked, false);
 		

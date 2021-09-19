@@ -89,17 +89,25 @@ public class TaskServiceFinder {
 	
 	/**
 	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
-	 * filter that will accept the given assetName.
+	 * filter that will accept the given assetName, or null if assetName does not match a supported extension.
 	 */
-	public AssetTaskService<?> getAssetService(AssetKey assetName) {
+	public AssetTaskService<?> tryGetAssetService(AssetKey assetName) {
 		Objects.requireNonNull(assetName);
 		final String extension = FileExtensionFilter.getExtension(assetName.toString());
 		if (extension == null) {
 			throw new IllegalArgumentException("Asset name '" + assetName + "' does not have an extension!");
 		}
-		final AssetTaskService<?> service = getAssetService(extension);
+		return getAssetService(extension);
+	}
+	
+	/**
+	 * @return A service whose {@link AssetTaskService#getExtensionFilter()} method will return a 
+	 * filter that will accept the given assetName.
+	 */
+	public AssetTaskService<?> getAssetService(AssetKey assetName) {
+		final AssetTaskService<?> service = tryGetAssetService(assetName);
 		if (service == null) {
-			throw new IllegalStateException("No service registered for asset task with extension " + extension);
+			throw new IllegalStateException("No asset service registered for asset name '" + assetName + "'!");
 		}
 		return service;
 	}
