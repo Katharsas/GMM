@@ -26,7 +26,7 @@
 			    	</div>
 					<#if isUserLoggedIn && comment.getAuthor().getIdLink() == principal.getIdLink()>
 				    	<div class="task-comment-editButton right button">
-							<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
+							<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/edit.svg">
 							<#--<@s.message "edit"/>-->
 						</div>
 					</#if>
@@ -230,7 +230,7 @@
 					    	<td class="task-preview-maximize">
 					    		<div class="task-preview-maximize-centerer">
 					    			<div class="button">
-					    				<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/maximize.svg">
+					    				<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/maximize.svg">
 					    			</div>
 					    		</div>
 					    	</td>
@@ -388,7 +388,7 @@
     	<div class="task-operations">
 	    	<#if isUserLoggedIn>
 			    <div class="task-operations-switchComment left task-button button">
-		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/bubble.svg">
+		    		<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/bubble.svg">
 		    		<@s.message "to.comment"/>
 		    	</div>
 		    	<div class="task-operations-unpin left task-button button">
@@ -399,7 +399,7 @@
 		    	</div>
 		    	<div class="left task-button button">
 			    	<a href="${request.contextPath}/public/link/${task.getId()}/${task.getLinkKey()}">
-		    			<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/link.svg">
+		    			<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/link.svg">
 			    		Link <span></span>
 			    	</a>
 			    </div>
@@ -421,11 +421,11 @@
 	    	</div>
 	    	<#if isUserLoggedIn>
 		    	<div class="task-operations-deleteTask right task-button button">
-		    		<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/delete.svg">
+		    		<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/delete.svg">
 		    		<@s.message "delete"/>
 		    	</div>
 		    	<div class="task-operations-editTask right task-button button">
-					<img class="buttonIcon svg" src="${request.contextPath}/res/gfx/edit.svg">
+					<img class="buttonIcon svg" data-src="${request.contextPath}/res/gfx/edit.svg">
 					<@s.message "edit"/><span></span>
 		    	</div>
 		    </#if>

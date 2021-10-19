@@ -11,6 +11,7 @@ import TaskEventBindings from "./tasks/TaskEventBindings";
 import { TaskDialogsInit } from "./shared/TaskDialog";
 import Notifications from "./shared/notifications";
 import { contextUrl, getURLParameter, allVars } from "./shared/default";
+import HtmlPreProcessor from "./shared/preprocessor";
 import {} from "./shared/template";
 
 var tasksVars = {
@@ -137,6 +138,8 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 			.then(function(answer){
 				var html = answer.html;
 				$tab.append(html);
+				HtmlPreProcessor.apply($tab);
+
 				$loadForm = $tab.find("form#workbench-loadForm");
 				$loadButtons = $tab.find(".workbench-load-typeButton");
 				
@@ -215,6 +218,7 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 				if (html !== undefined) {
 					$tab.children().remove();
 					$tab.append(html);
+					HtmlPreProcessor.apply($tab);
 				}
 				$searchForm = $tab.find("form#workbench-searchForm");
 				$searchType = $searchForm.find("select#workbench-search-type");
@@ -262,6 +266,7 @@ var Workbench = function(taskCache, taskSwitcher, taskBinders) {
 				if (html !== undefined) {
 					$tab.children().remove();
 					$tab.append(html);
+					HtmlPreProcessor.apply($tab);
 				}
 				$filterForm = $tab.find("form#generalFilters");
 				$all = $tab.find(allSelector);

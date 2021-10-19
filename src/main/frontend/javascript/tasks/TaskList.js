@@ -347,6 +347,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		const onswitch = function($task) {
 			taskSwitcher.switchTask($task, getIdOfTask($task[0]), taskListId);
 		};
+		settings.$list.attr("tabindex", "0");
 		settings.$list.on("keyup", function (event) {
 			if (event.key === "Escape") {
 				const expandedTasks = taskSwitcher.getAllExpandedTasks($task => $task.parent().is(settings.$list));
@@ -358,7 +359,7 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 		});
 		settings.$list.on("keyup", function (event) {
 			if (event.key === "Enter") {
-				if (current.length >= 1) {
+				if (current.length >= 1 && settings.$list.is(":focus")) {
 					const $task = findTask(current[0]);
 					if (!taskSwitcher.isTaskExpanded($task)) {
 						onswitch($task);
@@ -384,7 +385,8 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 				}
 			}
 		};
-		settings.$list.on("keyup", ".task", function(event) {
+		// keydown to prevent scrolling with arrow keys
+		settings.$list.on("keydown keyup", ".task", function(event) {
 			if (event.key === "Escape") {
 				const $task = $(this);
 				if (taskSwitcher.isTaskExpanded($task)) {
@@ -393,12 +395,18 @@ const TaskList = function(settings =r, cache =r, taskSwitcher =r, eventHandlers 
 				}
 			}
 			if (event.key === "ArrowUp") {
-				const $task = $(this);
-				arrowKeyAction($task, $task.prev().filter(taskSelector));
+				if (event.type === "keyup") {
+					const $task = $(this);
+					arrowKeyAction($task, $task.prev().filter(taskSelector));
+				}
+				event.preventDefault();
 			}
 			if (event.key === "ArrowDown") {
-				const $task = $(this);
-				arrowKeyAction($task, $task.next().filter(taskSelector));
+				if (event.type === "keyup") {
+					const $task = $(this);
+					arrowKeyAction($task, $task.next().filter(taskSelector));
+				}
+				event.preventDefault();
 			}
 		});
 

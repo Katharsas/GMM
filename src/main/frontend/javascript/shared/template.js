@@ -16,10 +16,18 @@ var pageName = window.location.pathname.substr(window.location.pathname.lastInde
  */
 $(document).ready(function() {
 
-	var $menu = $("#page-tabmenu");
-
+	const $menu = $("#page-tabmenu");
+	const $page = $("#page");
 
 	HtmlPreProcessor.apply($("body")).then(function() {
+
+		$page.on("keyup", ".button, .clickable", function(event) {
+			const $button = $(this);
+			if (event.key === "Enter") {
+				$button.click();
+				event.stopPropagation();
+			}
+		});
 
 		var $menuLoading = $menu.find("#loading");
 

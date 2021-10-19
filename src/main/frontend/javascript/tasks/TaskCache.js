@@ -29,21 +29,27 @@ const TaskCache = function(renderUrl) {
 	let currentlyLoadingPromise = Promise.resolve();
 
 	const pinnedSubscribers = [];
-	
+
 	/**
 	 * - converts html strings to dom elements
 	 * - converts svg links to svg code
 	 * - hides bodies
 	 */
 	const preprocess = function(task) {
-		
-		task.$header = $(task.header);
-		delete task.header;
+
+		const headerAndBody = task.header.trim() + task.body.trim();
+
+		const tempElement = document.createElement('div');
+		tempElement.innerHTML = headerAndBody;
+
+		task.$header = $(tempElement.firstChild);
+		task.$body = $(tempElement.lastChild);
+
 		const headerDone = HtmlPreProcessor.apply(task.$header);
-		
-		task.$body = $(task.body);
-		delete task.body;
 		const bodyDone = HtmlPreProcessor.apply(task.$body);
+		
+		delete task.header;
+		delete task.body;
 		
 		task.$body.hide();
 
@@ -94,13 +100,17 @@ const TaskCache = function(renderUrl) {
 		}
 		idLinks.forEach(idLink => currentlyLoadingIds.add(idLink));
 		currentlyLoadingPromise = currentlyLoadingPromise.then(function() {
+			const start = performance.now();
+			console.debug("TaskCache: Loading task data for ids: " + idLinks);
 
 			let idLinksMissing = new Set(idLinks);
-			console.debug("TaskCache: Loading task data for ids: " + idLinks);
 			const data = { "idLinks[]" : idLinks };
 
 			return Ajax.post(contextUrl + renderUrl, data)
 			.then(function (taskRenders) {
+				const ajaxDone = performance.now();
+				console.debug("TaskCache: loadTasks request (" + idLinks.length + " tasks): " + (ajaxDone - start) + "ms");
+
 				const preprocessPromises = [];
 				taskRenders.forEach(function(taskData) {
 					const preprocessDone = preprocess(taskData.render)
@@ -109,11 +119,13 @@ const TaskCache = function(renderUrl) {
 						idToTaskData[idLink] = taskData;
 						idLinksMissing.delete(idLink);
 						currentlyLoadingIds.delete(idLink);
-						console.debug("TaskCache: Loading done for id: " + idLink);
 					});
 					preprocessPromises.push(preprocessDone);
 				});
-				return Promise.all(preprocessPromises);
+				return Promise.all(preprocessPromises).then(() => {
+					const preprocessDone = performance.now();
+					console.debug("TaskCache: loadTasks parse/preprocess (" + idLinks.length + " tasks): " + (preprocessDone - ajaxDone) + "ms");
+				});
 			})
 			.then(function() {
 				for (const idLink of idLinksMissing) {
@@ -121,6 +133,7 @@ const TaskCache = function(renderUrl) {
 					currentlyLoadingIds.delete(idLink);
 					console.warn("TaskCache: Loading failed for id: " + idLink);
 				}
+				console.debug("TaskCache: Loading done.");
 			});
 		});
 		return currentlyLoadingPromise;

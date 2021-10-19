@@ -3,12 +3,14 @@ package gmm.web;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UncheckedIOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
@@ -89,13 +91,11 @@ public class FtlRenderer {
 	private TaskRenderResult renderSingleTask(Task task, ModelMap model) {
 		model.put("task", task);
 		
-		final StringWriter outH = new StringWriter();
-		final StringBuffer bufferH = outH.getBuffer();
-		renderTemplate("taskheader", model, outH);
+		final var bufferH = new StringBuilderWriter();
+		renderTemplate("taskheader", model, bufferH);
 		
-		final StringWriter outB = new StringWriter();
-		final StringBuffer bufferB = outB.getBuffer();
-		renderTemplate("taskbody", model, outB);
+		final var bufferB = new StringBuilderWriter();
+		renderTemplate("taskbody", model, bufferB);
 		
 		return new TaskRenderResult(task, bufferH.toString(), bufferB.toString());
 	}
@@ -113,7 +113,7 @@ public class FtlRenderer {
 	/**
 	 * @param fileName - Name of template file without file extension.
 	 */
-	private void renderTemplate(String fileName, ModelMap model, StringWriter target) {
+	private void renderTemplate(String fileName, ModelMap model, Writer target) {
 		try {
 			final String fileExtension = ".html.ftl";
 			Template template = config.getTemplate(fileName + fileExtension);

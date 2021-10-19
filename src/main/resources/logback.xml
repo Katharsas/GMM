@@ -11,7 +11,7 @@
  
 
 <!-- Enable scanning of this config file -->
-<configuration scan="true" scanPeriod="30 seconds" debug="false">
+<configuration scan="true" scanPeriod="10 seconds" debug="false">
 	
 	<!-- Console -->
 	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">

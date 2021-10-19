@@ -185,7 +185,7 @@ const showConfirmDialog = function(onConfirm, message, hasCancel, inputDefault, 
 	}
 	if(!isTextAreaVisible) {
 		$dialog.on("keyup", function (event) {
-			if (event.key === "Enter") {
+			if (event.key === "Enter" && $dialog.is(":focus")) {
 				$okButton.click();
 				event.stopPropagation();
 			}

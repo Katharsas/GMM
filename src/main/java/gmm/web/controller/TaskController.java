@@ -257,8 +257,14 @@ public class TaskController {
 		if(idLinks == null) {
 			return new ArrayList<>(TaskDataResult.class, 0);
 		} else {
+			long start = System.currentTimeMillis();
+			
 			ControllerArgs args = new ControllerArgs(model, request, response);
-			return session.renderTasks(idLinks, data.getList(Task.class), args);
+			List<TaskDataResult> result = session.renderTasks(idLinks, data.getList(Task.class), args);
+			
+			long duration = System.currentTimeMillis() - start;
+			logger.debug("Time (POST /renderTaskData, " + result.size() + " tasks): " + duration + "ms");
+			return result;
 		}
 	}
 	

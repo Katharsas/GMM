@@ -18,4 +18,8 @@ export default {
     IllegalArgumentException,
     IllegalStateException
 };
+export {
+    IllegalArgumentException,
+    IllegalStateException
+};
 

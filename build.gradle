@@ -198,7 +198,7 @@ gretty {
 	httpPort = 8080
 	contextPath = '/GMM'
 	servletContainer = "tomcat9"
-	//serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
+	serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
 	recompileOnSourceChange = false // call javaCompile to reload or auto reload
 	enableNaming = true // enable JNDI in context.xml for embedded tomcat
 	
