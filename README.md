@@ -10,6 +10,12 @@ More detailed information here: https://github.com/Katharsas/GMM/wiki
 Gothic Reloaded Mod Website: http://www.gothic-reloaded-mod.de
 Releases: https://github.com/Katharsas/GMM/releases
 
+#### Screenshots
+
+![Screenshot_1](/doc/Screenshot_1.png?raw=true)
+![Screenshot_2](/doc/Screenshot_2.png?raw=true)
+![Screenshot_3](/doc/Screenshot_3.png?raw=true)
+
 #### License
 This software is licensed under GPLv3 (see LICENSE.TXT), excluding third party code & libraries which are di
 stributed under their own terms (as specified in the code files or as specified in THIRD-PARTY-LICENSES/third-party-licenses.txt).
