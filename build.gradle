@@ -80,7 +80,7 @@ repositories {
 dependencies {
 
 	// Spring 5
-	ext.springVersion = '5.2.2.RELEASE'
+	ext.springVersion = '5.2.20.RELEASE'
 	ext.springSecVersion = '5.2.1.RELEASE'
 	
 	implementation group: "com.realityinteractive.imageio.tga", name: "undefined"
