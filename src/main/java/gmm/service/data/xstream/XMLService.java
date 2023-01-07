@@ -50,8 +50,12 @@ public class XMLService implements PersistenceService {
 				// Other
 				gmm.domain.Comment.class,
 				gmm.domain.User.class,
-				gmm.service.data.CombinedData.class };
+				gmm.service.data.CombinedData.class,
+				gmm.domain.Notification.class,
+				gmm.domain.TaskNotification.class
+		};
 		// aliases
+		xstream.allowTypes(supportedClasses);
 		xstream.processAnnotations(supportedClasses);
 		for (final Class<?> clazz : supportedClasses) {
 			xstream.alias(clazz.getSimpleName(), clazz);
