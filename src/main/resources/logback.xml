@@ -53,6 +53,7 @@
   	<logger name="org.springframework.web.servlet.PageNotFound" level="ERROR"/>
   	<logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
 	<logger name="org.springframework" level="WARN"/>
+	<logger name="_org.springframework" level="INFO"/>
 	<!-- Suppress template stuff -->
 	<logger name="freemarker.cache" level="INFO"/>
 	<!-- Suppress GMM details -->

@@ -249,5 +249,6 @@ pip-log.txt
 /src/main/webapp/META-INF
 
 /gmm-workspace
+/gmm-repository
 /blender
 /temp_testing
