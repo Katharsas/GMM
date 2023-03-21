@@ -63,7 +63,7 @@ if (file('profile.gradle').exists()) {
 }
 
 group = 'de.gothic-reloaded-mod'
-version = '1.0.2-SNAPSHOT'
+version = '1.0.3-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
