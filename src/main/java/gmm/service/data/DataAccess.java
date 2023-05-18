@@ -30,6 +30,7 @@ public interface DataAccess {
 	public <T extends Linkable> void editAllBy(Collection<T> data, User source);
 	@Deprecated public boolean hasIds(long[] id);
 	public CombinedData getCombinedData();
+	public void setCombinedData(CombinedData combined);
 	
 	
 	/**

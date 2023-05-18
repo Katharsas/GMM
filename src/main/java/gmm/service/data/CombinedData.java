@@ -8,6 +8,7 @@ import gmm.collections.Set;
 import gmm.web.forms.AssetTaskTemplateForm;
 
 /**
+ * Multithreading-safe.
  * Anything that is not task/users is in here.
  * @author Jan Mothes
  */

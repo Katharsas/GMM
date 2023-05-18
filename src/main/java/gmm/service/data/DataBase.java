@@ -46,7 +46,7 @@ public class DataBase extends DataBaseEventService implements DataAccess {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	final private Supplier<User> executingUser;
-	final private CombinedData combined;
+	private CombinedData combined;
 	
 	// ###################
 	// DATA TYPES
@@ -404,6 +404,11 @@ public class DataBase extends DataBaseEventService implements DataAccess {
 	@Override
 	public CombinedData getCombinedData() {
 		return combined;
+	}
+	
+	@Override
+	public void setCombinedData(CombinedData combined) {
+		this.combined = combined;
 	}
 	
 	@Override

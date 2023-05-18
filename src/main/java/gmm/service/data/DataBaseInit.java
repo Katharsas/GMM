@@ -53,7 +53,7 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 				try {
 					initUsers();
 					initTasks();
-					initCombinedData(data.getCombinedData());
+					initCombinedData();
 					notifier.setInitDone();
 				} catch (final Exception e) {
 					logger.error("Database initialization failed!", e);
@@ -141,11 +141,10 @@ public class DataBaseInit implements ApplicationListener<ContextRefreshedEvent> 
 		return defaultUser;
 	}
 	
-	private void initCombinedData(CombinedData target) {
+	private void initCombinedData() {
 		final CombinedData combined = backups.getLatestCombinedDataBackup();
 		if (combined != null) {
-			target.setCustomAdminBanner(combined.getCustomAdminBanner());
-			target.setCustomAdminBannerActive(combined.isCustomAdminBannerActive());
+			data.setCombinedData(combined);
 			logger.info("Autoloaded latest combined data.");
 		} else {
 			logger.info("Mising backup files caused combined data not to be autoloaded.");
