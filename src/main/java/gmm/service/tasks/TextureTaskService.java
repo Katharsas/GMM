@@ -8,9 +8,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
+
+import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
 import org.imgscalr.Scalr;

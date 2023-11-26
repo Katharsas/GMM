@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;

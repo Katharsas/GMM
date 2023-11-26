@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import jakarta.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.MessageSource;
@@ -37,12 +37,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -79,14 +78,9 @@ import gmm.web.binding.PathEditor;
 public class ApplicationConfiguration implements WebMvcConfigurer {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-	
-	@Autowired
-    private RequestMappingHandlerAdapter requestMappingHandlerAdapter;
 
     @PostConstruct
     public void init() {
-        requestMappingHandlerAdapter.setIgnoreDefaultModelOnRedirect(true);
-
         // Copy default.properties file to workspace folder if config.properties does not exist.
 		try {
 			final Context initContext = new InitialContext();
@@ -120,9 +114,8 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 	
 	@Bean
 	public RequestMappingHandlerMapping requestMappingHandlerMapping() {
+		// TODO remove this entire method
 		final RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
-		mapping.setUseSuffixPatternMatch(false);
-		mapping.setUseTrailingSlashMatch(false);
 		return mapping;
 	}
 	
@@ -209,7 +202,7 @@ public class ApplicationConfiguration implements WebMvcConfigurer {
 	 */
 	@Bean
 	public MultipartResolver multipartResolver() {
-		return new CommonsMultipartResolver();
+		return new StandardServletMultipartResolver();
 	}
 	
 	/**

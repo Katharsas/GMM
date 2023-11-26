@@ -1,7 +1,7 @@
 package gmm.web.sessions.tasklist;
 
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

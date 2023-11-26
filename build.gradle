@@ -24,11 +24,11 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
 	id 'java'
 	id 'war'
-	id 'org.gretty' version '3.1.1'
+	id 'org.gretty' version '4.1.1'
 	id 'com.github.node-gradle.node' version '3.1.0'
 }
 
-wrapper.gradleVersion = '7.6'
+wrapper.gradleVersion = '8.4'
 
 class Profile {
 	String name
@@ -67,8 +67,8 @@ version = '1.0.3-SNAPSHOT'
 
 description = "Gothic Mod Manager"
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 17
+targetCompatibility = 17
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
@@ -80,8 +80,8 @@ repositories {
 dependencies {
 
 	// Spring 5
-	ext.springVersion = '5.3.25'
-	ext.springSecVersion = '5.8.1'
+	ext.springVersion = '6.1.1'
+	ext.springSecVersion = '6.2.0'
 	
 	implementation group: "com.realityinteractive.imageio.tga", name: "undefined"
 	
@@ -117,18 +117,20 @@ dependencies {
     implementation group: 'commons-fileupload', name: 'commons-fileupload', version:'1.4'
     
     // JavaEE
-    implementation group: 'javax.servlet', name: 'jstl', version:'1.2'
+    // JSTL: see https://stackoverflow.com/questions/4928271/how-to-install-jstl-it-fails-with-the-absolute-uri-cannot-be-resolved-or-java/4928309#4928309
+    implementation group: 'jakarta.servlet.jsp.jstl', name: 'jakarta.servlet.jsp.jstl-api', version: '3.0.0'
+    implementation group: 'org.glassfish.web', name: 'jakarta.servlet.jsp.jstl', version: '3.0.1'
     
     // Testing
 	testImplementation group: 'junit', name: 'junit', version:'4.12'
     
     // JavaEE APIs
-    providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version:'4.0.0'
-    providedCompile group: 'javax.servlet.jsp', name: 'javax.servlet.jsp-api', version:'2.3.1'
-	providedCompile group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
+    providedCompile group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.0.0'
+    providedCompile group: 'jakarta.servlet.jsp', name: 'jakarta.servlet.jsp-api', version: '3.1.1'
+	providedCompile group: 'jakarta.annotation', name: 'jakarta.annotation-api', version: '2.1.1'
     
 	// Change gretty tomcat version
-	def tomcatVersion = '9.0.71'
+	def tomcatVersion = '10.1.16'
     gretty(
     	"org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-el:${tomcatVersion}",
@@ -196,7 +198,7 @@ war {
 gretty {
 	httpPort = 8080
 	contextPath = '/GMM'
-	servletContainer = "tomcat9"
+	servletContainer = "tomcat10"
 	serverConfigFile = "tomcat.xml" // Connectors for HTTP2 can be specified in this file
 	recompileOnSourceChange = false // call javaCompile to reload or auto reload
 	enableNaming = true // enable JNDI in context.xml for embedded tomcat

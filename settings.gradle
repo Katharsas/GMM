@@ -2,6 +2,6 @@ rootProject.name = 'gmm'
 
 includeBuild('./TGAReader') {
     dependencySubstitution {
-        substitute module('com.realityinteractive.imageio.tga:undefined') with project(':')
+        substitute module('com.realityinteractive.imageio.tga:undefined') using project(':')
     }
 }

@@ -35,7 +35,7 @@
         	pluggabilitySkip="*"
         	defaultTldScan="false"
         	tldScan="
-        		jstl-1.2.jar,
+        		jakarta.servlet.jsp.jstl*.jar,
         		spring-webmvc-*.jar,
         		spring-security-taglibs-*.jar"/>
     </JarScanner>

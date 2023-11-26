@@ -1,6 +1,6 @@
 package gmm.service;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
